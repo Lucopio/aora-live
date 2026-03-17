@@ -588,6 +588,88 @@ body {
 .mode-option h4 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
 .mode-option p { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
 
+/* CATALOG SCREEN */
+.catalog-screen {
+  background: var(--surface); display: flex; flex-direction: column;
+  min-height: 100vh; padding: 16px 20px 0;
+}
+.catalog-top-bar {
+  width: 100%; display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 20px;
+}
+.catalog-timer-sm {
+  font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text-secondary);
+}
+.catalog-header { margin-bottom: 16px; }
+.catalog-header h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+.catalog-header p { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+.catalog-search { position: relative; margin-bottom: 16px; }
+.catalog-search input {
+  width: 100%; padding: 12px 16px 12px 42px; border: 2px solid var(--border);
+  border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px;
+  color: var(--text-primary); outline: none; transition: border-color 0.2s; background: var(--bg);
+}
+.catalog-search input:focus { border-color: var(--primary); }
+.catalog-search-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; stroke: var(--text-tertiary); fill: none; stroke-width: 2; pointer-events: none;
+}
+.exercise-group { margin-bottom: 4px; }
+.exercise-group-title {
+  font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 1px; padding: 10px 4px 6px;
+}
+.exercise-item {
+  width: 100%; padding: 14px 16px; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 6px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text-primary);
+  text-align: left; transition: all 0.15s; box-shadow: var(--shadow-sm);
+}
+.exercise-item:active { transform: scale(0.98); background: var(--primary-light); border-color: var(--primary); }
+.exercise-item svg { width: 16px; height: 16px; stroke: var(--text-tertiary); fill: none; stroke-width: 2.5; flex-shrink: 0; }
+.catalog-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
+  background: var(--surface); padding: 12px 20px 32px; border-top: 1px solid var(--border);
+}
+
+/* EXERCISE CARD (full mode) */
+.exercise-card {
+  width: 100%; background: var(--bg); border-radius: var(--radius);
+  border: 1.5px solid var(--border); padding: 16px; margin-bottom: 16px;
+}
+.exercise-card-name {
+  font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;
+}
+.sets-list { margin-bottom: 10px; min-height: 24px; }
+.set-chip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--surface); border-radius: 8px;
+  margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.set-chip-num { font-family: var(--mono); font-size: 11px; color: var(--text-tertiary); min-width: 52px; }
+.set-inputs { display: flex; gap: 8px; align-items: flex-end; }
+.set-input-group { flex: 1; }
+.set-input-group label {
+  display: block; font-size: 10px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.set-input-group input {
+  width: 100%; padding: 10px 8px; border: 2px solid var(--border);
+  border-radius: var(--radius-sm); font-family: var(--mono); font-size: 20px;
+  font-weight: 700; color: var(--text-primary); text-align: center; outline: none;
+  transition: border-color 0.2s; background: var(--surface);
+}
+.set-input-group input:focus { border-color: var(--primary); }
+.add-set-btn {
+  padding: 12px 14px; background: var(--primary); color: white; border: none;
+  border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px;
+  font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.15s;
+  align-self: flex-end;
+}
+.add-set-btn:active { transform: scale(0.97); opacity: 0.9; }
+
 </style>
 </head>
 <body>
@@ -643,6 +725,23 @@ body {
       </div>
     </div>
 
+    <!-- Exercise card (full mode only) -->
+    <div class="exercise-card" id="exerciseCard" style="display:none">
+      <div class="exercise-card-name" id="exerciseCardName">Ejercicio</div>
+      <div class="sets-list" id="setsList"></div>
+      <div class="set-inputs">
+        <div class="set-input-group">
+          <label>Peso (kg)</label>
+          <input type="number" id="weightInput" value="0" min="0" step="2.5" inputmode="decimal">
+        </div>
+        <div class="set-input-group">
+          <label>Reps</label>
+          <input type="number" id="repsInput" value="10" min="1" inputmode="numeric">
+        </div>
+        <button class="add-set-btn" onclick="addSet()">+ Serie</button>
+      </div>
+    </div>
+
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
@@ -675,7 +774,7 @@ body {
     </div>
 
     <div class="workout-actions">
-      <button class="finish-exercise-btn" onclick="finishExercise()">Ejercicio Terminado</button>
+      <button class="finish-exercise-btn" id="nextExerciseBtn" onclick="nextExercise()">Siguiente Ejercicio</button>
       <button class="end-workout-btn" onclick="endWorkout()">Finalizar Entrenamiento</button>
     </div>
   </div>
@@ -809,6 +908,29 @@ body {
   </button>
 </div>
 
+<!-- EXERCISE CATALOG -->
+<div class="screen fullscreen" id="catalogScreen">
+  <div class="catalog-screen">
+    <div class="catalog-top-bar">
+      <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
+      <div class="catalog-timer-sm" id="catalogTimerSm">00:00:00</div>
+    </div>
+    <div class="catalog-header">
+      <h2>Seleccionar ejercicio</h2>
+      <p id="catalogExCount">0 ejercicios completados</p>
+    </div>
+    <div class="catalog-search">
+      <svg class="catalog-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="catalogSearchInput" placeholder="Buscar ejercicio..." oninput="filterExercises(this.value)">
+    </div>
+    <div id="exerciseList"></div>
+    <div style="height:100px"></div>
+  </div>
+  <div class="catalog-footer">
+    <button class="end-workout-btn" onclick="endWorkout()">Finalizar Entrenamiento</button>
+  </div>
+</div>
+
 <!-- MODE SELECTION MODAL -->
 <div class="mode-modal" id="modeModal">
   <div class="mode-modal-sheet">
@@ -890,11 +1012,11 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, history: 1, settings: 2 };
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen' };
+  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen', catalog:'catalogScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['workout','summary'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['workout','summary','catalog'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
 }
 
@@ -935,36 +1057,145 @@ function selectMode(mode) {
 
   const motivationCard = document.getElementById('motivationCard');
   const exercisePill = document.getElementById('exBadge').parentElement;
-  const finishBtn = document.querySelector('.finish-exercise-btn');
-
-  if (mode === 'rest-only') {
-    motivationCard.style.display = 'none';
-    exercisePill.style.display = 'none';
-    finishBtn.style.display = 'none';
-  } else {
-    motivationCard.style.display = '';
-    exercisePill.style.display = '';
-    finishBtn.style.display = '';
-  }
+  const nextBtn = document.getElementById('nextExerciseBtn');
+  const exerciseCard = document.getElementById('exerciseCard');
 
   requestWakeLock();
-  setTimeout(() => {
-    showScreen('workout');
-    resetRestZone();
-    startTimer();
-    if (mode === 'full') {
-      document.getElementById('exBadge').textContent = '0';
-      updateMotivation();
-      clearInterval(motivationInterval);
-      motivationInterval = setInterval(updateMotivation, 45000);
-    }
-  }, 300);
+  startTimer();
+  resetRestZone();
+
+  if (mode === 'full') {
+    completedExercises = [];
+    currentExerciseName = '';
+    currentExerciseSets = [];
+    motivationCard.style.display = 'none';
+    exercisePill.style.display = '';
+    nextBtn.style.display = '';
+    exerciseCard.style.display = '';
+    document.getElementById('exBadge').textContent = '0';
+    document.getElementById('catalogExCount').textContent = '0 ejercicios completados';
+    document.getElementById('catalogSearchInput').value = '';
+    renderCatalog();
+    setTimeout(() => showScreen('catalog'), 300);
+  } else {
+    // rest-only mode
+    motivationCard.style.display = '';
+    exercisePill.style.display = 'none';
+    nextBtn.style.display = 'none';
+    exerciseCard.style.display = 'none';
+    updateMotivation();
+    clearInterval(motivationInterval);
+    motivationInterval = setInterval(updateMotivation, 45000);
+    setTimeout(() => {
+      showScreen('workout');
+      resetRestZone();
+    }, 300);
+  }
+}
+
+// ─── Exercise Database ───────────────────────────────────────
+const exerciseDB = [
+  { group: 'Pecho', items: ['Press de banca', 'Press inclinado', 'Press con mancuernas', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea'] },
+  { group: 'Espalda', items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto'] },
+  { group: 'Hombros', items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Arnold press'] },
+  { group: 'Biceps', items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea'] },
+  { group: 'Triceps', items: ['Extension en polea alta', 'Press frances', 'Patada de triceps', 'Fondos de triceps', 'Extension con mancuerna'] },
+  { group: 'Piernas', items: ['Sentadilla', 'Prensa de piernas', 'Extension de cuadriceps', 'Curl de femoral', 'Peso muerto rumano', 'Zancadas', 'Elevacion de gemelos'] },
+  { group: 'Abdomen', items: ['Plancha', 'Crunch', 'Elevacion de piernas', 'Rueda abdominal', 'Russian twist'] },
+  { group: 'Cardio', items: ['Caminadora', 'Bicicleta estatica', 'Remo', 'Cuerda', 'Burpees'] },
+];
+
+// ─── Full mode state ─────────────────────────────────────────
+let currentExerciseName = '';
+let currentExerciseSets = [];
+let completedExercises = [];
+
+function renderCatalog(filter) {
+  const list = document.getElementById('exerciseList');
+  const f = (filter || '').toLowerCase().trim();
+  let html = '';
+  exerciseDB.forEach(group => {
+    const items = f ? group.items.filter(i => i.toLowerCase().includes(f)) : group.items;
+    if (!items.length) return;
+    html += `<div class="exercise-group">`;
+    if (!f) html += `<div class="exercise-group-title">${group.group}</div>`;
+    items.forEach(item => {
+      html += `<button class="exercise-item" data-exercise="${item}" onclick="selectExercise(this.dataset.exercise)">
+        ${item}
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>`;
+    });
+    html += `</div>`;
+  });
+  if (!html) html = `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Sin resultados</p></div>`;
+  list.innerHTML = html;
+}
+
+function filterExercises(value) { renderCatalog(value); }
+
+function selectExercise(name) {
+  // Save previous exercise if it had sets
+  if (currentExerciseName && currentExerciseSets.length > 0) {
+    completedExercises.push({ name: currentExerciseName, sets: [...currentExerciseSets] });
+    exerciseCount = completedExercises.length;
+    document.getElementById('exBadge').textContent = exerciseCount;
+  }
+  currentExerciseName = name;
+  currentExerciseSets = [];
+  skipRest();
+  document.getElementById('exerciseCardName').textContent = name;
+  renderSets();
+  document.getElementById('weightInput').value = '0';
+  document.getElementById('repsInput').value = '10';
+  showScreen('workout');
+}
+
+function addSet() {
+  const weight = parseFloat(document.getElementById('weightInput').value) || 0;
+  const reps = parseInt(document.getElementById('repsInput').value) || 0;
+  if (reps <= 0) return;
+  currentExerciseSets.push({ weight, reps });
+  renderSets();
+  startRestTimer();
+}
+
+function renderSets() {
+  const list = document.getElementById('setsList');
+  if (!currentExerciseSets.length) {
+    list.innerHTML = '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Registra tu primera serie</p>';
+    return;
+  }
+  list.innerHTML = currentExerciseSets.map((s, i) =>
+    `<div class="set-chip">
+      <span class="set-chip-num">Serie ${i + 1}</span>
+      <span>${s.weight > 0 ? s.weight + ' kg' : 'Sin peso'} &times; ${s.reps} reps</span>
+    </div>`
+  ).join('');
+}
+
+function nextExercise() {
+  // Save current exercise
+  if (currentExerciseName && currentExerciseSets.length > 0) {
+    completedExercises.push({ name: currentExerciseName, sets: [...currentExerciseSets] });
+  }
+  currentExerciseName = '';
+  currentExerciseSets = [];
+  exerciseCount = completedExercises.length;
+  document.getElementById('exBadge').textContent = exerciseCount;
+  skipRest();
+  const count = exerciseCount;
+  document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
+  document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+  showScreen('catalog');
 }
 
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
-    document.getElementById('timerDisplay').textContent = formatTime(Date.now() - workoutStartTime);
+    const t = formatTime(Date.now() - workoutStartTime);
+    document.getElementById('timerDisplay').textContent = t;
+    document.getElementById('catalogTimerSm').textContent = t;
   }, 1000);
 }
 
@@ -1076,6 +1307,11 @@ function endWorkout() {
     document.getElementById('sumExercises').previousElementSibling.innerHTML =
       '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
   } else {
+    // Save current exercise if it has sets
+    if (currentExerciseName && currentExerciseSets.length > 0) {
+      completedExercises.push({ name: currentExerciseName, sets: [...currentExerciseSets] });
+    }
+    exerciseCount = completedExercises.length;
     document.getElementById('sumExercises').textContent = exerciseCount;
     document.getElementById('sumExercises').nextElementSibling.textContent = 'Ejercicios';
     document.getElementById('sumExercises').previousElementSibling.innerHTML =
