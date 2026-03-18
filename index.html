@@ -796,7 +796,10 @@ body {
 
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
-      <div class="exercise-card-name" id="exerciseCardName">Ejercicio</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0">Ejercicio</div>
+        <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
+      </div>
       <div class="sets-list" id="setsList"></div>
       <div class="set-inputs">
         <div class="set-input-group">
@@ -1028,6 +1031,20 @@ body {
       <input type="text" id="catalogSearchInput" placeholder="Buscar ejercicio..." oninput="filterExercises(this.value)">
     </div>
     <div id="exerciseList"></div>
+
+    <!-- Ejercicio personalizado -->
+    <div style="padding:16px 0 8px;border-top:1px solid var(--border);margin-top:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Ejercicio personalizado</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="customExerciseInput" placeholder="Nombre del ejercicio..."
+          style="flex:1;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;color:var(--text-primary);outline:none;background:var(--bg)"
+          onkeydown="if(event.key==='Enter') addCustomExercise()">
+        <button onclick="addCustomExercise()"
+          style="padding:12px 16px;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
+          Agregar
+        </button>
+      </div>
+    </div>
     <div style="height:100px"></div>
   </div>
   <div class="catalog-footer">
@@ -1269,6 +1286,14 @@ function renderCatalog(filter) {
 
 function filterExercises(value) { renderCatalog(value); }
 
+function addCustomExercise() {
+  const input = document.getElementById('customExerciseInput');
+  const name = input.value.trim();
+  if (!name) return;
+  input.value = '';
+  selectExercise(name);
+}
+
 function setWeightUnit(unit) {
   if (weightUnit === unit) return;
   const input = document.getElementById('weightInput');
@@ -1309,6 +1334,7 @@ function addSet() {
   if (reps <= 0) return;
   currentExerciseSets.push({ weight, reps, unit: weightUnit });
   renderSets();
+  if (isResting) skipRest(); // reiniciar si ya habia un descanso corriendo
   startRestTimer();
 }
 
@@ -1337,6 +1363,18 @@ function nextExercise() {
   document.getElementById('exBadge').textContent = exerciseCount;
   skipRest();
   const count = exerciseCount;
+  document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
+  document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+  showScreen('catalog');
+}
+
+function changeExercise() {
+  // Descartar el ejercicio actual sin guardarlo y volver al catálogo
+  currentExerciseName = '';
+  currentExerciseSets = [];
+  skipRest();
+  const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
   document.getElementById('catalogSearchInput').value = '';
   renderCatalog();
@@ -1502,10 +1540,11 @@ function getAudioContext() {
 function playBeep(freq, dur) {
   if (!soundEnabled) return;
   try {
-    const c = getAudioContext(), o = c.createOscillator(), g = c.createGain();
-    o.connect(g); g.connect(c.destination);
-    o.frequency.value = freq; o.type = 'sine';
-    g.gain.setValueAtTime(0.3, c.currentTime);
+    const c = getAudioContext();
+    const o = c.createOscillator(), g = c.createGain(), comp = c.createDynamicsCompressor();
+    o.connect(g); g.connect(comp); comp.connect(c.destination);
+    o.frequency.value = freq; o.type = 'triangle';
+    g.gain.setValueAtTime(1.0, c.currentTime);
     g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + dur/1000);
     o.start(c.currentTime); o.stop(c.currentTime + dur/1000);
   } catch(e) {}
@@ -1513,12 +1552,13 @@ function playBeep(freq, dur) {
 function playFinalBeep() {
   if (!soundEnabled) return;
   try {
-    const c = getAudioContext(), o = c.createOscillator(), g = c.createGain();
-    o.connect(g); g.connect(c.destination);
-    o.frequency.value = 1200; o.type = 'sine';
-    g.gain.setValueAtTime(0.5, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + 0.6);
-    o.start(c.currentTime); o.stop(c.currentTime + 0.6);
+    const c = getAudioContext();
+    const o = c.createOscillator(), g = c.createGain(), comp = c.createDynamicsCompressor();
+    o.connect(g); g.connect(comp); comp.connect(c.destination);
+    o.frequency.value = 1046; o.type = 'triangle'; // Do6 — más claro y audible
+    g.gain.setValueAtTime(1.0, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + 0.8);
+    o.start(c.currentTime); o.stop(c.currentTime + 0.8);
   } catch(e) {}
 }
 
