@@ -670,6 +670,61 @@ body {
 }
 .add-set-btn:active { transform: scale(0.97); opacity: 0.9; }
 
+/* WARMUP SCREEN */
+.warmup-screen {
+  background: var(--surface); display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; padding: 40px 24px; text-align: center;
+}
+.warmup-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px; background: var(--warning-light); border-radius: var(--radius-full);
+  margin-bottom: 36px;
+}
+.warmup-badge-dot {
+  width: 7px; height: 7px; background: var(--warning); border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+.warmup-badge span { font-size: 11px; font-weight: 700; color: #92400E; text-transform: uppercase; letter-spacing: 0.8px; }
+.warmup-timer-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+.warmup-timer-display {
+  font-family: var(--mono); font-size: 64px; font-weight: 700;
+  color: var(--text-primary); letter-spacing: 2px; line-height: 1.1; margin-bottom: 14px;
+}
+.warmup-subtitle {
+  font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+  margin-bottom: 52px; max-width: 280px;
+}
+.warmup-go-btn {
+  width: 100%; padding: 18px; background: var(--success); color: white;
+  border: none; border-radius: var(--radius); font-size: 16px; font-weight: 700;
+  font-family: var(--font); cursor: pointer; box-shadow: 0 4px 20px rgba(52,168,83,0.35);
+  transition: all 0.15s; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.warmup-go-btn:active { transform: scale(0.97); }
+.warmup-skip-btn {
+  background: none; border: none; font-family: var(--font); font-size: 14px;
+  font-weight: 600; color: var(--text-tertiary); cursor: pointer; padding: 8px 16px;
+  border-radius: var(--radius-sm); transition: all 0.15s;
+}
+.warmup-skip-btn:active { background: var(--bg); color: var(--text-secondary); }
+/* Warmup stat row in summary */
+.summary-warmup-row {
+  background: var(--warning-light); border-radius: var(--radius-sm);
+  padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+  margin-bottom: 24px;
+}
+.summary-warmup-row .wu-icon {
+  width: 40px; height: 40px; border-radius: 10px; background: rgba(251,188,4,0.25);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.summary-warmup-row .wu-info { flex: 1; text-align: left; }
+.summary-warmup-row .wu-value { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.summary-warmup-row .wu-label { font-size: 11px; color: #92400E; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+/* Warmup indicator in history */
+.h-warmup { font-size: 10px; color: #92400E; font-weight: 600; margin-top: 2px; }
+
 /* UNIT TOGGLE (kg / lb) */
 .weight-label-row {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
@@ -811,6 +866,17 @@ body {
     <div class="summary-stat"><div class="s-icon" style="background:var(--primary-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumDuration">--</div><div class="s-label">Duracion</div></div>
     <div class="summary-stat"><div class="s-icon" style="background:var(--success-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="s-value" id="sumExercises">--</div><div class="s-label">Ejercicios</div></div>
   </div>
+  <!-- Warmup row (shown only when warmupDuration > 0) -->
+  <div class="summary-warmup-row" id="summaryWarmupRow" style="display:none">
+    <div class="wu-icon">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#92400E" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div class="wu-info">
+      <div class="wu-value" id="sumWarmup">--</div>
+      <div class="wu-label">Calentamiento previo</div>
+    </div>
+  </div>
+
   <div class="summary-motivation">
     <div class="sm-emoji">🏆</div>
     <div class="sm-text" id="summaryMotivation">Gran trabajo hoy. La constancia es lo que construye resultados.</div>
@@ -928,6 +994,24 @@ body {
   </button>
 </div>
 
+<!-- WARMUP -->
+<div class="screen fullscreen" id="warmupScreen">
+  <div class="warmup-screen">
+    <div class="warmup-badge">
+      <div class="warmup-badge-dot"></div>
+      <span>Calentamiento</span>
+    </div>
+    <div class="warmup-timer-label">Tiempo de calentamiento</div>
+    <div class="warmup-timer-display" id="warmupDisplay">00:00:00</div>
+    <p class="warmup-subtitle">Prepara tu cuerpo antes de empezar.<br>Presiona cuando estés listo.</p>
+    <button class="warmup-go-btn" onclick="finishWarmup()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Listo, empezar entrenamiento
+    </button>
+    <button class="warmup-skip-btn" onclick="skipWarmup()">Saltar calentamiento</button>
+  </div>
+</div>
+
 <!-- EXERCISE CATALOG -->
 <div class="screen fullscreen" id="catalogScreen">
   <div class="catalog-screen">
@@ -994,6 +1078,9 @@ let savedWorkouts = [];
 let motivationInterval = null;
 let workoutMode = 'full'; // 'full' | 'rest-only'
 let restCount = 0;
+let warmupStartTime = null;
+let warmupDuration = 0;
+let warmupInterval = null;
 
 // ─── Motivational quotes ────────────────────────────────────
 const quotes = [
@@ -1032,11 +1119,11 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, history: 1, settings: 2 };
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen', catalog:'catalogScreen' };
+  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['workout','summary','catalog'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['workout','summary','catalog','warmup'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
 }
 
@@ -1065,13 +1152,51 @@ function startWorkout() {
   }, 400);
 }
 
+// ─── Warmup ──────────────────────────────────────────────────
+function showWarmup() {
+  warmupDuration = 0;
+  warmupStartTime = Date.now();
+  document.getElementById('warmupDisplay').textContent = '00:00:00';
+  clearInterval(warmupInterval);
+  warmupInterval = setInterval(() => {
+    document.getElementById('warmupDisplay').textContent = formatTime(Date.now() - warmupStartTime);
+  }, 1000);
+  showScreen('warmup');
+}
+
+function finishWarmup() {
+  clearInterval(warmupInterval);
+  warmupDuration = warmupStartTime ? Date.now() - warmupStartTime : 0;
+  launchWorkout();
+}
+
+function skipWarmup() {
+  clearInterval(warmupInterval);
+  warmupDuration = 0;
+  launchWorkout();
+}
+
+function launchWorkout() {
+  workoutStartTime = Date.now();
+  resetRestZone();
+  startTimer();
+  requestWakeLock();
+  if (workoutMode === 'full') {
+    document.getElementById('catalogExCount').textContent = '0 ejercicios completados';
+    document.getElementById('catalogSearchInput').value = '';
+    renderCatalog();
+    showScreen('catalog');
+  } else {
+    showScreen('workout');
+  }
+}
+
 function selectMode(mode) {
   workoutMode = mode;
   document.getElementById('modeModal').classList.remove('active');
   exerciseCount = 0;
   restCount = 0;
   isResting = false;
-  workoutStartTime = Date.now();
   document.getElementById('restIdleSeconds').textContent = restSeconds;
   document.getElementById('settingsRestInput').value = restSeconds;
 
@@ -1079,10 +1204,6 @@ function selectMode(mode) {
   const exercisePill = document.getElementById('exBadge').parentElement;
   const nextBtn = document.getElementById('nextExerciseBtn');
   const exerciseCard = document.getElementById('exerciseCard');
-
-  requestWakeLock();
-  startTimer();
-  resetRestZone();
 
   if (mode === 'full') {
     completedExercises = [];
@@ -1093,12 +1214,7 @@ function selectMode(mode) {
     nextBtn.style.display = '';
     exerciseCard.style.display = '';
     document.getElementById('exBadge').textContent = '0';
-    document.getElementById('catalogExCount').textContent = '0 ejercicios completados';
-    document.getElementById('catalogSearchInput').value = '';
-    renderCatalog();
-    setTimeout(() => showScreen('catalog'), 300);
   } else {
-    // rest-only mode
     motivationCard.style.display = '';
     exercisePill.style.display = 'none';
     nextBtn.style.display = 'none';
@@ -1106,11 +1222,10 @@ function selectMode(mode) {
     updateMotivation();
     clearInterval(motivationInterval);
     motivationInterval = setInterval(updateMotivation, 45000);
-    setTimeout(() => {
-      showScreen('workout');
-      resetRestZone();
-    }, 300);
   }
+
+  // Siempre pasa por calentamiento (el usuario puede saltar)
+  setTimeout(() => showWarmup(), 300);
 }
 
 // ─── Exercise Database ───────────────────────────────────────
@@ -1358,7 +1473,16 @@ function endWorkout() {
   const now = new Date();
   document.getElementById('summaryDate').textContent = now.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' });
   document.getElementById('summaryMotivation').textContent = summaryQuotes[Math.floor(Math.random() * summaryQuotes.length)];
-  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount });
+  // Warmup stat — show only if the user actually warmed up
+  const warmupRow = document.getElementById('summaryWarmupRow');
+  if (warmupDuration > 0) {
+    document.getElementById('sumWarmup').textContent = formatTimeMM(warmupDuration);
+    warmupRow.style.display = 'flex';
+  } else {
+    warmupRow.style.display = 'none';
+  }
+
+  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration });
   showScreen('summary');
 }
 
@@ -1502,9 +1626,10 @@ function renderHistory() {
     const iconSvg = isRestOnly
       ? `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${strokes[c]}" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
       : `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${strokes[c]}" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    const warmupStr = w.warmupDuration > 0 ? `<div class="h-warmup">⚡ +${formatTimeMM(w.warmupDuration)} calent.</div>` : '';
     return `<div class="history-item">
       <div class="h-icon" style="background:${colors[c]}">${iconSvg}</div>
-      <div class="h-info"><h4>${isRestOnly ? 'Solo descansos' : 'Entrenamiento'}</h4><p>${d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'})} - ${detailLabel}</p></div>
+      <div class="h-info"><h4>${isRestOnly ? 'Solo descansos' : 'Entrenamiento'}</h4><p>${d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'})} - ${detailLabel}</p>${warmupStr}</div>
       <div class="h-meta"><div class="h-duration">${formatTimeMM(w.duration)}</div><div class="h-excount">${detailLabel}</div></div>
     </div>`;
   }).join('');
