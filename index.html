@@ -670,6 +670,20 @@ body {
 }
 .add-set-btn:active { transform: scale(0.97); opacity: 0.9; }
 
+/* UNIT TOGGLE (kg / lb) */
+.weight-label-row {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+}
+.unit-toggle {
+  display: flex; border: 1.5px solid var(--border); border-radius: 7px; overflow: hidden;
+}
+.unit-btn {
+  padding: 3px 9px; border: none; background: transparent; font-family: var(--font);
+  font-size: 11px; font-weight: 700; color: var(--text-tertiary); cursor: pointer;
+  transition: all 0.15s; line-height: 1;
+}
+.unit-btn.active { background: var(--primary); color: white; }
+
 </style>
 </head>
 <body>
@@ -731,11 +745,17 @@ body {
       <div class="sets-list" id="setsList"></div>
       <div class="set-inputs">
         <div class="set-input-group">
-          <label>Peso (kg)</label>
+          <div class="weight-label-row">
+            <label id="weightLabel">PESO (kg)</label>
+            <div class="unit-toggle">
+              <button class="unit-btn active" id="unitKg" onclick="setWeightUnit('kg')">kg</button>
+              <button class="unit-btn" id="unitLb" onclick="setWeightUnit('lb')">lb</button>
+            </div>
+          </div>
           <input type="number" id="weightInput" value="0" min="0" step="2.5" inputmode="decimal">
         </div>
         <div class="set-input-group">
-          <label>Reps</label>
+          <label>REPS</label>
           <input type="number" id="repsInput" value="10" min="1" inputmode="numeric">
         </div>
         <button class="add-set-btn" onclick="addSet()">+ Serie</button>
@@ -1109,6 +1129,7 @@ const exerciseDB = [
 let currentExerciseName = '';
 let currentExerciseSets = [];
 let completedExercises = [];
+let weightUnit = 'kg';
 
 function renderCatalog(filter) {
   const list = document.getElementById('exerciseList');
@@ -1133,6 +1154,23 @@ function renderCatalog(filter) {
 
 function filterExercises(value) { renderCatalog(value); }
 
+function setWeightUnit(unit) {
+  if (weightUnit === unit) return;
+  const input = document.getElementById('weightInput');
+  const val = parseFloat(input.value) || 0;
+  if (val > 0) {
+    if (unit === 'lb') {
+      input.value = Math.round(val * 2.20462 * 2) / 2; // redondea a 0.5 lb
+    } else {
+      input.value = Math.round(val * 0.453592 * 2) / 2; // redondea a 0.5 kg
+    }
+  }
+  weightUnit = unit;
+  document.getElementById('unitKg').classList.toggle('active', unit === 'kg');
+  document.getElementById('unitLb').classList.toggle('active', unit === 'lb');
+  document.getElementById('weightLabel').textContent = `PESO (${unit})`;
+}
+
 function selectExercise(name) {
   // Save previous exercise if it had sets
   if (currentExerciseName && currentExerciseSets.length > 0) {
@@ -1154,7 +1192,7 @@ function addSet() {
   const weight = parseFloat(document.getElementById('weightInput').value) || 0;
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
   if (reps <= 0) return;
-  currentExerciseSets.push({ weight, reps });
+  currentExerciseSets.push({ weight, reps, unit: weightUnit });
   renderSets();
   startRestTimer();
 }
@@ -1168,7 +1206,7 @@ function renderSets() {
   list.innerHTML = currentExerciseSets.map((s, i) =>
     `<div class="set-chip">
       <span class="set-chip-num">Serie ${i + 1}</span>
-      <span>${s.weight > 0 ? s.weight + ' kg' : 'Sin peso'} &times; ${s.reps} reps</span>
+      <span>${s.weight > 0 ? s.weight + '\u00a0' + (s.unit || 'kg') : 'Sin peso'} &times; ${s.reps} reps</span>
     </div>`
   ).join('');
 }
