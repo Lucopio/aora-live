@@ -1677,9 +1677,16 @@ function renderHistory() {
 
 // ─── PWA: Service Worker ────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('SW registered'))
-    .catch(e => console.log('SW failed', e));
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    // Cuando el nuevo SW toma control, recargar para servir archivos frescos
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+    // Verificar actualizaciones cada vez que la app vuelve al foco
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update();
+    });
+  }).catch(e => console.log('SW failed', e));
 }
 
 // ─── PWA: Wake Lock (keep screen on during workout) ─────────
