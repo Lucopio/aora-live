@@ -725,6 +725,37 @@ body {
 /* Warmup indicator in history */
 .h-warmup { font-size: 10px; color: #92400E; font-weight: 600; margin-top: 2px; }
 
+/* EQUIPMENT SHEET */
+.equip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.equip-btn {
+  padding: 16px 12px; border: 2px solid var(--border); background: var(--surface);
+  border-radius: var(--radius-sm); font-family: var(--font); font-size: 14px;
+  font-weight: 600; color: var(--text-primary); cursor: pointer; text-align: center;
+  transition: all 0.15s;
+}
+.equip-btn:active { background: var(--primary-light); border-color: var(--primary); transform: scale(0.97); }
+
+/* UNILATERAL TOGGLE */
+.unilateral-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.unilateral-btn {
+  display: flex; align-items: center; gap: 6px; padding: 5px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-full);
+  background: var(--surface); font-family: var(--font); font-size: 12px;
+  font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+}
+.unilateral-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+.unilateral-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+.side-selector { display: flex; gap: 6px; }
+.side-btn {
+  padding: 5px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-full);
+  background: var(--surface); font-family: var(--font); font-size: 12px;
+  font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+}
+.side-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+
+/* LAST WEIGHT BADGE in catalog */
+.last-weight-badge { display: block; font-size: 11px; color: var(--text-tertiary); font-weight: 500; margin-top: 2px; }
+
 /* UNIT TOGGLE (kg / lb) */
 .weight-label-row {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
@@ -801,6 +832,17 @@ body {
         <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
       </div>
       <div class="sets-list" id="setsList"></div>
+      <!-- Unilateral toggle -->
+      <div class="unilateral-row">
+        <button class="unilateral-btn" id="unilateralBtn" onclick="toggleUnilateral()">
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          Unilateral
+        </button>
+        <div class="side-selector" id="sideSelector" style="display:none">
+          <button class="side-btn active" id="sideL" onclick="setSide('left')">Izq</button>
+          <button class="side-btn" id="sideR" onclick="setSide('right')">Der</button>
+        </div>
+      </div>
       <div class="set-inputs">
         <div class="set-input-group">
           <div class="weight-label-row">
@@ -995,6 +1037,15 @@ body {
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     Comenzar Entrenamiento
   </button>
+</div>
+
+<!-- EQUIPMENT SELECTION -->
+<div class="overlay" id="equipOverlay" onclick="closeEquipSheet()"></div>
+<div class="bottom-sheet" id="equipSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="equipSheetTitle">Ejercicio</div>
+  <div class="sheet-subtitle">¿Con qué equipo?</div>
+  <div class="equip-grid" id="equipGrid"></div>
 </div>
 
 <!-- WARMUP -->
@@ -1262,6 +1313,66 @@ let currentExerciseName = '';
 let currentExerciseSets = [];
 let completedExercises = [];
 let weightUnit = 'kg';
+let currentEquipment = '';
+let pendingExerciseName = '';
+let isUnilateral = false;
+let activeSide = 'left';
+let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit } }
+
+const EQUIPMENT_OPTIONS = [
+  { id: 'barra',       label: 'Barra' },
+  { id: 'mancuernas',  label: 'Mancuernas' },
+  { id: 'maquina',     label: 'Máquina' },
+  { id: 'cable',       label: 'Cable' },
+  { id: 'corporal',    label: 'Peso corporal' },
+  { id: '',            label: 'Sin especificar' },
+];
+const EQUIP_LABEL = { barra:'Barra', mancuernas:'Mancuernas', maquina:'Máquina', cable:'Cable', corporal:'Corporal', '':'' };
+
+function exKey(name, equip) { return equip ? `${name} · ${equip}` : name; }
+
+function showEquipSheet(name) {
+  pendingExerciseName = name;
+  document.getElementById('equipSheetTitle').textContent = name;
+  document.getElementById('equipGrid').innerHTML = EQUIPMENT_OPTIONS.map(e =>
+    `<button class="equip-btn" data-equip="${e.id}" onclick="selectEquipAndStart(this.dataset.equip)">${e.label}</button>`
+  ).join('');
+  document.getElementById('equipOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('equipSheet').classList.add('active'), 10);
+}
+function closeEquipSheet() {
+  document.getElementById('equipSheet').classList.remove('active');
+  setTimeout(() => document.getElementById('equipOverlay').classList.remove('active'), 350);
+}
+function selectEquipAndStart(equip) {
+  closeEquipSheet();
+  setTimeout(() => selectExercise(pendingExerciseName, equip), 360);
+}
+
+function toggleUnilateral() {
+  isUnilateral = !isUnilateral;
+  document.getElementById('unilateralBtn').classList.toggle('active', isUnilateral);
+  document.getElementById('sideSelector').style.display = isUnilateral ? 'flex' : 'none';
+}
+function setSide(side) {
+  activeSide = side;
+  document.getElementById('sideL').classList.toggle('active', side === 'left');
+  document.getElementById('sideR').classList.toggle('active', side === 'right');
+}
+
+function getLastWeightForExercise(name) {
+  // Buscar la entrada más reciente para este ejercicio (cualquier equipo)
+  let best = null;
+  for (const [key, data] of Object.entries(lastWeights)) {
+    if (key === name || key.startsWith(name + ' · ')) {
+      if (!best || (data.ts || 0) > (best.ts || 0)) {
+        const equip = key.startsWith(name + ' · ') ? key.replace(name + ' · ', '') : '';
+        best = { ...data, equip };
+      }
+    }
+  }
+  return best;
+}
 
 function renderCatalog(filter) {
   const list = document.getElementById('exerciseList');
@@ -1273,9 +1384,13 @@ function renderCatalog(filter) {
     html += `<div class="exercise-group">`;
     if (!f) html += `<div class="exercise-group-title">${group.group}</div>`;
     items.forEach(item => {
-      html += `<button class="exercise-item" data-exercise="${item}" onclick="selectExercise(this.dataset.exercise)">
-        ${item}
-        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      const lw = getLastWeightForExercise(item);
+      const lwStr = lw && lw.weight > 0
+        ? `<span class="last-weight-badge">Último: ${lw.weight} ${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
+        : '';
+      html += `<button class="exercise-item" data-exercise="${item}" onclick="showEquipSheet(this.dataset.exercise)">
+        <div><div>${item}</div>${lwStr}</div>
+        <svg viewBox="0 0 24 24" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
       </button>`;
     });
     html += `</div>`;
@@ -1311,20 +1426,40 @@ function setWeightUnit(unit) {
   document.getElementById('weightLabel').textContent = `PESO (${unit})`;
 }
 
-function selectExercise(name) {
+function selectExercise(name, equip) {
   // Save previous exercise if it had sets
   if (currentExerciseName && currentExerciseSets.length > 0) {
-    completedExercises.push({ name: currentExerciseName, sets: [...currentExerciseSets] });
+    completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
   }
   currentExerciseName = name;
+  currentEquipment = equip || '';
   currentExerciseSets = [];
+  // Reset unilateral state
+  isUnilateral = false;
+  activeSide = 'left';
+  document.getElementById('unilateralBtn').classList.remove('active');
+  document.getElementById('sideSelector').style.display = 'none';
+  document.getElementById('sideL').classList.add('active');
+  document.getElementById('sideR').classList.remove('active');
+
   skipRest();
-  document.getElementById('exerciseCardName').textContent = name;
-  renderSets();
-  document.getElementById('weightInput').value = '0';
+  // Show name + equipment in card header
+  const equipLabel = equip ? EQUIP_LABEL[equip] : '';
+  document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
+
+  // Pre-fill last weight for this exercise+equipment combination
+  const key = exKey(name, currentEquipment);
+  const lw = lastWeights[key];
+  if (lw && lw.weight > 0) {
+    document.getElementById('weightInput').value = lw.weight;
+    if (lw.unit && lw.unit !== weightUnit) setWeightUnit(lw.unit);
+  } else {
+    document.getElementById('weightInput').value = '0';
+  }
   document.getElementById('repsInput').value = '10';
+  renderSets();
   showScreen('workout');
 }
 
@@ -1332,10 +1467,18 @@ function addSet() {
   const weight = parseFloat(document.getElementById('weightInput').value) || 0;
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
   if (reps <= 0) return;
-  currentExerciseSets.push({ weight, reps, unit: weightUnit });
+  const side = isUnilateral ? activeSide : null;
+  currentExerciseSets.push({ weight, reps, unit: weightUnit, side });
+  // Guardar último peso para este ejercicio+equipo
+  if (weight > 0) {
+    const key = exKey(currentExerciseName, currentEquipment);
+    lastWeights[key] = { weight, unit: weightUnit, ts: Date.now() };
+  }
   renderSets();
-  if (isResting) skipRest(); // reiniciar si ya habia un descanso corriendo
+  if (isResting) skipRest();
   startRestTimer();
+  // Auto-cambiar lado en ejercicios unilaterales
+  if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
 }
 
 function renderSets() {
@@ -1344,21 +1487,22 @@ function renderSets() {
     list.innerHTML = '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Registra tu primera serie</p>';
     return;
   }
-  list.innerHTML = currentExerciseSets.map((s, i) =>
-    `<div class="set-chip">
-      <span class="set-chip-num">Serie ${i + 1}</span>
-      <span>${s.weight > 0 ? s.weight + '\u00a0' + (s.unit || 'kg') : 'Sin peso'} &times; ${s.reps} reps</span>
-    </div>`
-  ).join('');
+  list.innerHTML = currentExerciseSets.map((s, i) => {
+    const sideLabel = s.side ? ` · ${s.side === 'left' ? 'Izq' : 'Der'}` : '';
+    const weightStr = s.weight > 0 ? `${s.weight}\u00a0${s.unit || 'kg'}` : 'Sin peso';
+    return `<div class="set-chip">
+      <span class="set-chip-num">Serie ${i + 1}${sideLabel}</span>
+      <span>${weightStr} &times; ${s.reps} reps</span>
+    </div>`;
+  }).join('');
 }
 
 function nextExercise() {
-  // Save current exercise
   if (currentExerciseName && currentExerciseSets.length > 0) {
-    completedExercises.push({ name: currentExerciseName, sets: [...currentExerciseSets] });
+    completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
   }
-  currentExerciseName = '';
-  currentExerciseSets = [];
+  currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
+  isUnilateral = false;
   exerciseCount = completedExercises.length;
   document.getElementById('exBadge').textContent = exerciseCount;
   skipRest();
@@ -1370,9 +1514,8 @@ function nextExercise() {
 }
 
 function changeExercise() {
-  // Descartar el ejercicio actual sin guardarlo y volver al catálogo
-  currentExerciseName = '';
-  currentExerciseSets = [];
+  currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
+  isUnilateral = false;
   skipRest();
   const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
@@ -1500,7 +1643,7 @@ function endWorkout() {
   } else {
     // Save current exercise if it has sets
     if (currentExerciseName && currentExerciseSets.length > 0) {
-      completedExercises.push({ name: currentExerciseName, sets: [...currentExerciseSets] });
+      completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
     }
     exerciseCount = completedExercises.length;
     document.getElementById('sumExercises').textContent = exerciseCount;
@@ -1720,7 +1863,8 @@ function saveToStorage() {
     restSeconds,
     soundEnabled,
     vibrationEnabled,
-    historyCleared
+    historyCleared,
+    lastWeights
   };
   try { localStorage.setItem('gymtracker_data', JSON.stringify(data)); } catch(e) {}
 }
@@ -1756,6 +1900,7 @@ function loadFromStorage() {
       document.getElementById('toggleVibration').classList.toggle('on', vibrationEnabled);
     }
     if (data.historyCleared) historyCleared = true;
+    if (data.lastWeights) lastWeights = data.lastWeights;
 
     // Update home stats
     updateHomeStats();
