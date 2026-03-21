@@ -619,6 +619,32 @@ body {
   font-size: 11px; font-weight: 700; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: 1px; padding: 10px 4px 6px;
 }
+/* Catalog exercise row with inline equipment */
+.exercise-row {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  margin-bottom: 8px; box-shadow: var(--shadow-sm);
+}
+.exercise-row-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.exercise-row-name {
+  font-size: 14px; font-weight: 600; color: var(--text-primary);
+}
+.last-weight-badge {
+  font-size: 11px; font-weight: 600; color: var(--primary);
+  background: var(--primary-light); padding: 2px 8px; border-radius: var(--radius-full);
+  white-space: nowrap; flex-shrink: 0;
+}
+.equip-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.equip-chip {
+  padding: 5px 12px; border: 1.5px solid var(--border); background: var(--bg);
+  border-radius: var(--radius-full); font-family: var(--font); font-size: 12px;
+  font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+}
+.equip-chip:active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); transform: scale(0.96); }
+/* Keep for custom exercises */
 .exercise-item {
   width: 100%; padding: 14px 16px; background: var(--surface); border: 1.5px solid var(--border);
   border-radius: var(--radius-sm); margin-bottom: 6px; cursor: pointer;
@@ -1249,6 +1275,7 @@ function launchWorkout() {
   resetRestZone();
   startTimer();
   requestWakeLock();
+  history.pushState({ gym: 'active' }, ''); // mantiene el back button dentro de la app
   if (workoutMode === 'full') {
     document.getElementById('catalogExCount').textContent = '0 ejercicios completados';
     document.getElementById('catalogSearchInput').value = '';
@@ -1258,6 +1285,21 @@ function launchWorkout() {
     showScreen('workout');
   }
 }
+
+// Interceptar botón atrás de Android durante un entrenamiento activo
+window.addEventListener('popstate', () => {
+  if (!workoutStartTime) return;
+  history.pushState({ gym: 'active' }, ''); // re-insertar para no salir de la app
+  const active = document.querySelector('.screen.active')?.id;
+  if (active === 'workoutScreen') {
+    // Desde workout → volver al catálogo (guarda el ejercicio actual)
+    nextExercise();
+  } else if (active === 'catalogScreen' && currentExerciseName) {
+    // Desde catálogo con ejercicio en progreso → volver al workout
+    showScreen('workout');
+  }
+  // Si está en catálogo sin ejercicio en curso → no hace nada (usa botón Finalizar)
+});
 
 function selectMode(mode) {
   workoutMode = mode;
@@ -1318,6 +1360,7 @@ let pendingExerciseName = '';
 let isUnilateral = false;
 let activeSide = 'left';
 let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit } }
+let customExercises = []; // ejercicios personalizados guardados entre sesiones
 
 const EQUIPMENT_OPTIONS = [
   { id: 'barra',       label: 'Barra' },
@@ -1327,7 +1370,63 @@ const EQUIPMENT_OPTIONS = [
   { id: 'corporal',    label: 'Peso corporal' },
   { id: '',            label: 'Sin especificar' },
 ];
-const EQUIP_LABEL = { barra:'Barra', mancuernas:'Mancuernas', maquina:'Máquina', cable:'Cable', corporal:'Corporal', '':'' };
+const EQUIP_LABEL = { barra:'Barra', mancuernas:'Mancuernas', maquina:'Máquina', cable:'Cable', corporal:'Corporal', '':'Sin equipo' };
+
+// Equipment options per exercise (inline catalog chips)
+const EXERCISE_EQUIP = {
+  // Pecho
+  'Press de banca':        ['barra','mancuernas','maquina'],
+  'Press inclinado':       ['barra','mancuernas','maquina'],
+  'Press con mancuernas':  ['mancuernas'],
+  'Aperturas':             ['mancuernas','cable','maquina'],
+  'Fondos en paralelas':   ['corporal'],
+  'Crossover en polea':    ['cable'],
+  // Espalda
+  'Dominadas':             ['corporal'],
+  'Remo con barra':        ['barra'],
+  'Remo con mancuerna':    ['mancuernas'],
+  'Jalones al pecho':      ['cable','maquina'],
+  'Remo en maquina':       ['maquina'],
+  'Peso muerto':           ['barra','mancuernas'],
+  // Hombros
+  'Press militar':         ['barra','mancuernas','maquina'],
+  'Elevaciones laterales': ['mancuernas','cable'],
+  'Elevaciones frontales': ['mancuernas','cable'],
+  'Pajaros':               ['mancuernas','cable'],
+  'Arnold press':          ['mancuernas'],
+  // Biceps
+  'Curl con barra':        ['barra'],
+  'Curl con mancuernas':   ['mancuernas'],
+  'Curl martillo':         ['mancuernas'],
+  'Curl concentrado':      ['mancuernas'],
+  'Curl en polea':         ['cable'],
+  // Triceps
+  'Extension en polea alta':  ['cable'],
+  'Press frances':            ['barra','mancuernas'],
+  'Patada de triceps':        ['mancuernas','cable'],
+  'Fondos de triceps':        ['corporal'],
+  'Extension con mancuerna':  ['mancuernas'],
+  // Piernas
+  'Sentadilla':            ['barra','corporal'],
+  'Prensa de piernas':     ['maquina'],
+  'Extension de cuadriceps': ['maquina'],
+  'Curl de femoral':       ['maquina'],
+  'Peso muerto rumano':    ['barra','mancuernas'],
+  'Zancadas':              ['barra','mancuernas','corporal'],
+  'Elevacion de gemelos':  ['maquina','corporal'],
+  // Abdomen
+  'Plancha':               ['corporal'],
+  'Crunch':                ['corporal'],
+  'Elevacion de piernas':  ['corporal'],
+  'Rueda abdominal':       ['corporal'],
+  'Russian twist':         ['corporal','mancuernas'],
+  // Cardio
+  'Caminadora':            ['maquina'],
+  'Bicicleta estatica':    ['maquina'],
+  'Remo':                  ['maquina','cable'],
+  'Cuerda':                ['corporal'],
+  'Burpees':               ['corporal'],
+};
 
 function exKey(name, equip) { return equip ? `${name} · ${equip}` : name; }
 
@@ -1378,23 +1477,61 @@ function renderCatalog(filter) {
   const list = document.getElementById('exerciseList');
   const f = (filter || '').toLowerCase().trim();
   let html = '';
+
+  function exerciseRowHtml(item, equips) {
+    const lw = getLastWeightForExercise(item);
+    const lwStr = lw && lw.weight > 0
+      ? `<span class="last-weight-badge">Último: ${lw.weight}${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
+      : '';
+    const chips = equips.map(e =>
+      `<button class="equip-chip" onclick="selectExercise(${JSON.stringify(item)},${JSON.stringify(e)})">${EQUIP_LABEL[e]}</button>`
+    ).join('');
+    return `<div class="exercise-row">
+      <div class="exercise-row-header">
+        <span class="exercise-row-name">${item}</span>${lwStr}
+      </div>
+      <div class="equip-chips">${chips}</div>
+    </div>`;
+  }
+
   exerciseDB.forEach(group => {
     const items = f ? group.items.filter(i => i.toLowerCase().includes(f)) : group.items;
     if (!items.length) return;
     html += `<div class="exercise-group">`;
     if (!f) html += `<div class="exercise-group-title">${group.group}</div>`;
     items.forEach(item => {
-      const lw = getLastWeightForExercise(item);
-      const lwStr = lw && lw.weight > 0
-        ? `<span class="last-weight-badge">Último: ${lw.weight} ${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
-        : '';
-      html += `<button class="exercise-item" data-exercise="${item}" onclick="showEquipSheet(this.dataset.exercise)">
-        <div><div>${item}</div>${lwStr}</div>
-        <svg viewBox="0 0 24 24" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>`;
+      const equips = EXERCISE_EQUIP[item] || [''];
+      html += exerciseRowHtml(item, equips);
     });
     html += `</div>`;
   });
+
+  // Custom exercises group
+  const filteredCustom = f
+    ? customExercises.filter(i => i.toLowerCase().includes(f))
+    : customExercises;
+  if (filteredCustom.length) {
+    html += `<div class="exercise-group">`;
+    if (!f) html += `<div class="exercise-group-title">Personalizados</div>`;
+    filteredCustom.forEach(item => {
+      const lw = getLastWeightForExercise(item);
+      const lwStr = lw && lw.weight > 0
+        ? `<span class="last-weight-badge">Último: ${lw.weight}${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
+        : '';
+      html += `<div class="exercise-row">
+        <div class="exercise-row-header">
+          <span class="exercise-row-name">${item}</span>${lwStr}
+        </div>
+        <div class="equip-chips">
+          ${EQUIPMENT_OPTIONS.map(e =>
+            `<button class="equip-chip" onclick="selectExercise(${JSON.stringify(item)},${JSON.stringify(e.id)})">${e.label}</button>`
+          ).join('')}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
   if (!html) html = `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Sin resultados</p></div>`;
   list.innerHTML = html;
 }
@@ -1406,7 +1543,13 @@ function addCustomExercise() {
   const name = input.value.trim();
   if (!name) return;
   input.value = '';
-  selectExercise(name);
+  // Guardar para futuros entrenamientos si no existe ya
+  if (!customExercises.includes(name)) {
+    customExercises.push(name);
+    saveToStorage();
+    renderCatalog(); // refrescar para que aparezca en Personalizados
+  }
+  showEquipSheet(name);
 }
 
 function setWeightUnit(unit) {
@@ -1493,8 +1636,14 @@ function renderSets() {
     return `<div class="set-chip">
       <span class="set-chip-num">Serie ${i + 1}${sideLabel}</span>
       <span>${weightStr} &times; ${s.reps} reps</span>
+      <button onclick="deleteSet(${i})" style="background:none;border:none;color:var(--text-tertiary);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;margin-left:4px" title="Eliminar">&times;</button>
     </div>`;
   }).join('');
+}
+
+function deleteSet(index) {
+  currentExerciseSets.splice(index, 1);
+  renderSets();
 }
 
 function nextExercise() {
@@ -1864,7 +2013,8 @@ function saveToStorage() {
     soundEnabled,
     vibrationEnabled,
     historyCleared,
-    lastWeights
+    lastWeights,
+    customExercises
   };
   try { localStorage.setItem('gymtracker_data', JSON.stringify(data)); } catch(e) {}
 }
@@ -1901,6 +2051,7 @@ function loadFromStorage() {
     }
     if (data.historyCleared) historyCleared = true;
     if (data.lastWeights) lastWeights = data.lastWeights;
+    if (Array.isArray(data.customExercises)) customExercises = data.customExercises;
 
     // Update home stats
     updateHomeStats();
