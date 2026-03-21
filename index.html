@@ -408,6 +408,24 @@ body {
 .insights-ex-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .insights-ex-count { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--primary); white-space: nowrap; }
 
+/* HISTORY DETAIL */
+.history-item { cursor: pointer; }
+.h-detail { display: none; border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
+.h-detail.open { display: block; }
+.h-ex-row { margin-bottom: 10px; }
+.h-ex-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.h-ex-equip { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
+.h-sets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+.h-set-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; text-align: center; }
+.h-set-chip .h-set-num { font-size: 10px; color: var(--text-tertiary); }
+.h-set-chip .h-set-val { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--text-primary); }
+.h-set-chip .h-set-reps { font-size: 10px; color: var(--text-secondary); }
+.h-detail-empty { font-size: 12px; color: var(--text-tertiary); padding: 4px 0; }
+.h-rest-summary { margin-top: 8px; padding: 7px 10px; background: var(--bg); border-radius: 8px; font-size: 12px; color: var(--text-secondary); display: flex; gap: 14px; flex-wrap: wrap; }
+.h-rest-summary span b { color: var(--text-primary); }
+.h-toggle-icon { margin-left: auto; font-size: 13px; color: var(--text-tertiary); transition: transform 0.2s; }
+.h-toggle-icon.open { transform: rotate(180deg); }
+
 /* AI INSIGHTS */
 .ai-section-title { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
 .ai-generate-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s; }
@@ -1112,7 +1130,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.4.0</span>
+        <span class="app-version">v1.4.1</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1459,6 +1477,19 @@ body {
         </div>
         <button class="profile-edit-btn" onclick="showOnboarding(true)">Editar</button>
       </div>
+    </div>
+
+    <!-- Login (visible solo cuando NO hay sesion) -->
+    <div class="settings-group" id="loginGroup" style="display:none">
+      <div class="settings-group-title">Cuenta</div>
+      <div class="setting-row" style="cursor:pointer" onclick="showScreen('auth')">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Iniciar sesion</span>
+        </div>
+        <div class="setting-value" style="color:var(--primary)">Entrar →</div>
+      </div>
+      <div style="padding:0 0 10px 0;font-size:12px;color:var(--text-tertiary)">Inicia sesión para sincronizar tus datos y acceder al análisis IA.</div>
     </div>
 
     <!-- Cuenta (visible solo cuando hay sesion) -->
@@ -2345,7 +2376,12 @@ function skipRest() {
     const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
     lastSet.rest_after_ms = restDuration;
     lastSet.rest_configured_ms = restConfigured;
-    lastSet.rest_status = restDuration <= restConfigured ? 'early_or_on_time' : 'overtime';
+    // Ratio real: cuánto descansó vs cuánto debía descansar
+    const ratio = restDuration / restConfigured;
+    if (ratio >= 1.5) lastSet.rest_status = 'overtime';
+    else if (ratio >= 0.8) lastSet.rest_status = 'on_time';
+    else if (ratio >= 0.3) lastSet.rest_status = 'early';
+    else lastSet.rest_status = 'skipped'; // < 30% del tiempo = prácticamente no descansó
   }
   restStartedAt = null;
   clearInterval(countdownInterval);
@@ -2361,7 +2397,11 @@ function endWorkout() {
     const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
     lastSet.rest_after_ms = restDuration;
     lastSet.rest_configured_ms = restConfigured;
-    lastSet.rest_status = restDuration <= restConfigured ? 'early_or_on_time' : 'overtime';
+    const ratio = restDuration / restConfigured;
+    if (ratio >= 1.5) lastSet.rest_status = 'overtime';
+    else if (ratio >= 0.8) lastSet.rest_status = 'on_time';
+    else if (ratio >= 0.3) lastSet.rest_status = 'early';
+    else lastSet.rest_status = 'skipped';
   }
   restStartedAt = null;
   clearInterval(timerInterval);
@@ -2401,7 +2441,11 @@ function endWorkout() {
   const allExDetail = workoutMode === 'full' ? completedExercises.map(e => ({ name: e.name, equipment: e.equipment, sets: e.sets.map(s => ({...s})) })) : [];
   const allRests = allExDetail.flatMap(ex => ex.sets.filter(s => s.rest_after_ms != null));
   const avgRestMs = allRests.length ? Math.round(allRests.reduce((sum, s) => sum + s.rest_after_ms, 0) / allRests.length) : null;
-  const restAdherence = allRests.length ? Math.round(allRests.filter(s => s.rest_status === 'early_or_on_time').length / allRests.length * 100) / 100 : null;
+  // Adherencia = promedio de (descanso real / descanso configurado), máx 1.0 por serie
+  // Así: 0s descansados = 0%, 30s de 60s = 50%, 60s de 60s = 100%, 90s de 60s = 100%
+  const restAdherence = allRests.length ? Math.round(
+    allRests.reduce((sum, s) => sum + Math.min(s.rest_after_ms / s.rest_configured_ms, 1.0), 0) / allRests.length * 100
+  ) / 100 : null;
   const totalRestsTracked = allRests.length;
 
   savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked });
@@ -2813,19 +2857,69 @@ function renderHistory() {
     const c = i % 4;
     const d = w.date instanceof Date ? w.date : new Date(w.date);
     const isRestOnly = w.mode === 'rest-only';
-    const detailLabel = isRestOnly
-      ? `${w.restCount || 0} descansos`
-      : `${w.exercises} ejercicios`;
+    const detailLabel = isRestOnly ? `${w.restCount || 0} descansos` : `${w.exercises || 0} ejercicios`;
     const iconSvg = isRestOnly
       ? `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${strokes[c]}" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
       : `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="${strokes[c]}" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
     const warmupStr = w.warmupDuration > 0 ? `<div class="h-warmup">⚡ +${formatTimeMM(w.warmupDuration)} calent.</div>` : '';
-    return `<div class="history-item">
+
+    // Detalle expandible de ejercicios y series
+    const exDetail = w.exercises_detail || [];
+    let detailHtml = '';
+    if (exDetail.length > 0) {
+      const exRows = exDetail.map(ex => {
+        const sets = ex.sets || [];
+        const setsHtml = sets.map((s, idx) => {
+          const wVal = s.weight > 0 ? `${s.weight}${s.unit || 'kg'}` : 'PC';
+          const restBadge = s.rest_after_ms != null
+            ? `<div class="h-set-reps" style="color:${s.rest_status === 'on_time' ? 'var(--success)' : s.rest_status === 'skipped' ? 'var(--danger)' : s.rest_status === 'overtime' ? 'var(--warning)' : 'var(--text-tertiary)'}">⏱ ${Math.round(s.rest_after_ms/1000)}s</div>`
+            : '';
+          return `<div class="h-set-chip">
+            <div class="h-set-num">Serie ${idx+1}</div>
+            <div class="h-set-val">${wVal}</div>
+            <div class="h-set-reps">${s.reps} reps</div>
+            ${restBadge}
+          </div>`;
+        }).join('');
+        return `<div class="h-ex-row">
+          <div class="h-ex-name">${ex.name}${ex.equipment ? `<span class="h-ex-equip">${ex.equipment}</span>` : ''}</div>
+          <div class="h-sets-grid">${setsHtml || '<div class="h-detail-empty">Sin series registradas</div>'}</div>
+        </div>`;
+      }).join('');
+
+      // Resumen de descanso del entrenamiento
+      const adherencePct = w.rest_adherence != null ? Math.round(w.rest_adherence * 100) : null;
+      const avgRest = w.avg_rest_ms != null ? Math.round(w.avg_rest_ms / 1000) : null;
+      const restSummaryHtml = (adherencePct != null || avgRest != null) ? `
+        <div class="h-rest-summary">
+          ${avgRest != null ? `<span>⏱ Descanso prom: <b>${avgRest}s</b></span>` : ''}
+          ${adherencePct != null ? `<span>📊 Adherencia: <b style="color:${adherencePct >= 70 ? 'var(--success)' : adherencePct >= 40 ? 'var(--warning)' : 'var(--danger)'}">${adherencePct}%</b></span>` : ''}
+          ${w.total_rests_tracked ? `<span>✓ ${w.total_rests_tracked} descansos medidos</span>` : ''}
+        </div>` : '';
+
+      detailHtml = `<div class="h-detail" id="hd${i}">${restSummaryHtml}${exRows}</div>`;
+    } else if (!isRestOnly) {
+      detailHtml = `<div class="h-detail" id="hd${i}"><div class="h-detail-empty">Sin detalle de ejercicios disponible</div></div>`;
+    }
+
+    const hasDetail = detailHtml.length > 0;
+    const toggleIcon = hasDetail ? `<span class="h-toggle-icon" id="hti${i}">▾</span>` : '';
+
+    return `<div class="history-item" ${hasDetail ? `onclick="toggleHistoryDetail(${i})"` : ''} style="${hasDetail ? 'cursor:pointer' : ''}">
       <div class="h-icon" style="background:${colors[c]}">${iconSvg}</div>
-      <div class="h-info"><h4>${isRestOnly ? 'Solo descansos' : 'Entrenamiento'}</h4><p>${d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'})} - ${detailLabel}</p>${warmupStr}</div>
-      <div class="h-meta"><div class="h-duration">${formatTimeMM(w.duration)}</div><div class="h-excount">${detailLabel}</div></div>
+      <div class="h-info"><h4>${isRestOnly ? 'Solo descansos' : 'Entrenamiento'}</h4><p>${d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'})} · ${detailLabel}</p>${warmupStr}</div>
+      <div class="h-meta"><div class="h-duration">${formatTimeMM(w.duration)}</div><div class="h-excount">${detailLabel}</div>${toggleIcon}</div>
+      ${detailHtml}
     </div>`;
   }).join('');
+}
+
+function toggleHistoryDetail(i) {
+  const detail = document.getElementById('hd' + i);
+  const icon = document.getElementById('hti' + i);
+  if (!detail) return;
+  detail.classList.toggle('open');
+  if (icon) icon.classList.toggle('open');
 }
 
 // ─── PWA: Service Worker ────────────────────────────────────
@@ -3136,13 +3230,16 @@ async function handleLogout() {
 
 function updateAccountUI() {
   const group = document.getElementById('accountGroup');
+  const loginGroup = document.getElementById('loginGroup');
   const profileGroup = document.getElementById('profileGroup');
   if (currentUser) {
     group.style.display = 'block';
+    if (loginGroup) loginGroup.style.display = 'none';
     document.getElementById('accountEmail').textContent = currentUser.email;
     if (profileGroup) profileGroup.style.display = 'block';
   } else {
     group.style.display = 'none';
+    if (loginGroup) loginGroup.style.display = 'block';
     if (profileGroup) profileGroup.style.display = 'none';
   }
 }
