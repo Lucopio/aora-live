@@ -408,6 +408,41 @@ body {
 .insights-ex-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .insights-ex-count { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--primary); white-space: nowrap; }
 
+/* AI INSIGHTS */
+.ai-section-title { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
+.ai-generate-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s; }
+.ai-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.ai-generate-btn svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; }
+.ai-cooldown-note { text-align: center; font-size: 12px; color: var(--text-tertiary); margin-top: 8px; }
+.ai-loader { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 0; }
+.ai-loader-dots { display: flex; gap: 6px; }
+.ai-loader-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: aiDot 1.2s infinite; }
+.ai-loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ai-loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes aiDot { 0%,80%,100%{opacity:.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+.ai-loader-text { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.ai-summary-box { background: linear-gradient(135deg, var(--primary-light) 0%, #EEF4FF 100%); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 14px; font-size: 14px; color: var(--text-primary); line-height: 1.5; }
+.ai-rest-box { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.ai-rest-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.ai-rest-dot.good { background: var(--success); }
+.ai-rest-dot.needs_work { background: var(--warning); }
+.ai-rest-dot.critical { background: var(--danger); }
+.ai-rest-dot.no_data { background: var(--text-tertiary); }
+.ai-rest-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.ai-rec-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
+.ai-rec-card.high { border-left: 3px solid var(--danger); }
+.ai-rec-card.medium { border-left: 3px solid var(--warning); }
+.ai-rec-card.low { border-left: 3px solid var(--success); }
+.ai-rec-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.ai-rec-body { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.ai-rec-type { display: inline-block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg); color: var(--text-tertiary); margin-bottom: 6px; }
+.ai-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+.ai-generated-at { font-size: 11px; color: var(--text-tertiary); }
+.ai-refresh-btn { font-size: 12px; color: var(--primary); background: none; border: none; font-family: var(--font); font-weight: 600; cursor: pointer; padding: 0; }
+.ai-suggest-banner { background: var(--primary-light); border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ai-suggest-text { font-size: 13px; color: var(--primary); font-weight: 500; }
+.ai-suggest-btn { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-full); padding: 6px 14px; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+
 /* SETTINGS */
 .settings-header { margin-bottom: 20px; }
 .settings-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
@@ -1287,6 +1322,60 @@ body {
       <div id="insTopExercises"><div style="text-align:center;padding:16px 0;color:var(--text-tertiary);font-size:13px">Sin datos suficientes aún</div></div>
     </div>
 
+    <!-- IA: Análisis y Recomendaciones -->
+    <div class="insights-card" id="aiInsightsCard">
+      <div class="ai-section-title">🤖 Análisis con IA</div>
+
+      <!-- Estado: Botón para generar -->
+      <div id="aiGenerateState">
+        <button class="ai-generate-btn" id="aiGenerateBtn" onclick="generateAIInsights()">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Generar análisis personalizado
+        </button>
+        <div class="ai-cooldown-note" id="aiCooldownNote">Análisis IA disponible · Máximo 1 por semana</div>
+      </div>
+
+      <!-- Estado: Cargando -->
+      <div id="aiLoadingState" style="display:none">
+        <div class="ai-loader">
+          <div class="ai-loader-dots"><span></span><span></span><span></span></div>
+          <div class="ai-loader-text">Analizando tus datos de entrenamiento…</div>
+        </div>
+      </div>
+
+      <!-- Estado: Resultados -->
+      <div id="aiResultState" style="display:none">
+        <!-- Resumen general -->
+        <div class="ai-summary-box" id="aiSummaryText"></div>
+
+        <!-- Análisis de descanso -->
+        <div class="ai-rest-box">
+          <div class="ai-rest-dot" id="aiRestDot"></div>
+          <div class="ai-rest-text" id="aiRestText"></div>
+        </div>
+
+        <!-- Recomendaciones -->
+        <div id="aiRecsList"></div>
+
+        <!-- Sugerencia ajuste de descanso -->
+        <div class="ai-suggest-banner" id="aiSuggestBanner" style="display:none">
+          <div class="ai-suggest-text" id="aiSuggestText"></div>
+          <button class="ai-suggest-btn" id="aiSuggestBtn" onclick="applyAISuggestedRest()">Aplicar</button>
+        </div>
+
+        <div class="ai-footer">
+          <div class="ai-generated-at" id="aiGeneratedAt"></div>
+          <button class="ai-refresh-btn" onclick="generateAIInsights()">Regenerar</button>
+        </div>
+      </div>
+
+      <!-- Estado: Error -->
+      <div id="aiErrorState" style="display:none;text-align:center;padding:16px 0">
+        <div style="font-size:13px;color:var(--danger);font-weight:500" id="aiErrorMsg"></div>
+        <button onclick="generateAIInsights()" style="margin-top:10px;font-size:12px;color:var(--primary);background:none;border:none;font-family:var(--font);font-weight:600;cursor:pointer">Reintentar</button>
+      </div>
+    </div>
+
     <div style="height:80px"></div>
   </div>
 </div>
@@ -1598,7 +1687,7 @@ function showScreen(name) {
   const nav = document.getElementById('bottomNav');
   ['workout','summary','catalog','warmup','auth','onboarding'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
-  if (name === 'insights') renderInsights();
+  if (name === 'insights') { renderInsights(); loadLastAIInsights(); }
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
@@ -2581,6 +2670,124 @@ function renderInsights() {
         <div class="insights-ex-count">${ex.count} vez${ex.count !== 1 ? '' : ''}${ex.count !== 1 ? 'es' : ''} · ${ex.totalSets} series</div>
       </div>`).join('');
   }
+}
+
+// ─── AI Insights ─────────────────────────────────────────────
+let aiSuggestedRest = null;
+
+function showAIState(state) {
+  ['aiGenerateState','aiLoadingState','aiResultState','aiErrorState'].forEach(id => {
+    document.getElementById(id).style.display = id === state ? 'block' : 'none';
+  });
+}
+
+async function loadLastAIInsights() {
+  if (!sb || !currentUser) return;
+  try {
+    const { data } = await sb.from('ai_insights')
+      .select('insights, generated_at')
+      .eq('user_id', currentUser.id)
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .single();
+    if (data) renderAIInsights(data.insights, data.generated_at);
+  } catch (_) { /* no prev insights */ }
+}
+
+async function generateAIInsights() {
+  if (!sb || !currentUser) {
+    showAIState('aiErrorState');
+    document.getElementById('aiErrorMsg').textContent = 'Inicia sesión para usar el análisis IA.';
+    return;
+  }
+  const btn = document.getElementById('aiGenerateBtn');
+  btn.disabled = true;
+  showAIState('aiLoadingState');
+
+  try {
+    const session = await sb.auth.getSession();
+    const token = session.data.session?.access_token;
+    if (!token) throw new Error('Sin sesión activa');
+
+    const res = await fetch(
+      `${SB_URL}/functions/v1/generate-insights`,
+      {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      }
+    );
+    const json = await res.json();
+
+    if (!res.ok) {
+      showAIState('aiErrorState');
+      document.getElementById('aiErrorMsg').textContent = json.error || 'Error al generar análisis.';
+      btn.disabled = false;
+      return;
+    }
+
+    renderAIInsights(json.insights, json.generated_at);
+  } catch (e) {
+    console.error('AI insights error:', e);
+    showAIState('aiErrorState');
+    document.getElementById('aiErrorMsg').textContent = 'Error de conexión. Verifica tu red e intenta de nuevo.';
+    btn.disabled = false;
+  }
+}
+
+function renderAIInsights(insights, generatedAt) {
+  // Summary
+  document.getElementById('aiSummaryText').textContent = insights.summary || '';
+
+  // Rest analysis
+  const dotEl = document.getElementById('aiRestDot');
+  const textEl = document.getElementById('aiRestText');
+  const status = insights.rest_analysis?.status || 'no_data';
+  dotEl.className = 'ai-rest-dot ' + status;
+  textEl.textContent = insights.rest_analysis?.message || 'Sin datos de descanso suficientes.';
+
+  // Recommendations
+  const recsEl = document.getElementById('aiRecsList');
+  const typeLabels = { rest:'Descanso', volume:'Volumen', frequency:'Frecuencia', progression:'Progresión', recovery:'Recuperación' };
+  recsEl.innerHTML = (insights.recommendations || []).map(rec => `
+    <div class="ai-rec-card ${rec.priority || 'medium'}">
+      <div class="ai-rec-type">${typeLabels[rec.type] || rec.type}</div>
+      <div class="ai-rec-title">${rec.title}</div>
+      <div class="ai-rec-body">${rec.body}</div>
+    </div>`).join('');
+
+  // Rest suggestion banner
+  const suggestBanner = document.getElementById('aiSuggestBanner');
+  if (insights.rest_suggestion_seconds) {
+    aiSuggestedRest = insights.rest_suggestion_seconds;
+    document.getElementById('aiSuggestText').textContent = `💡 IA sugiere ajustar tu descanso a ${insights.rest_suggestion_seconds}s`;
+    suggestBanner.style.display = 'flex';
+  } else {
+    suggestBanner.style.display = 'none';
+  }
+
+  // Footer
+  if (generatedAt) {
+    const d = new Date(generatedAt);
+    document.getElementById('aiGeneratedAt').textContent = 'Generado ' + d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  showAIState('aiResultState');
+  document.getElementById('aiGenerateBtn').disabled = false;
+}
+
+function applyAISuggestedRest() {
+  if (!aiSuggestedRest) return;
+  restSeconds = aiSuggestedRest;
+  localStorage.setItem('restSeconds', restSeconds);
+  // Sincroniza preset buttons de settings
+  document.querySelectorAll('.s-preset').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.val) === restSeconds);
+  });
+  const customInput = document.getElementById('settingsCustomRest');
+  if (customInput) customInput.value = restSeconds;
+  document.getElementById('aiSuggestBanner').style.display = 'none';
+  showToast(`Descanso ajustado a ${restSeconds}s ✓`);
 }
 
 // ─── History ────────────────────────────────────────────────
