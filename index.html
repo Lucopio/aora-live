@@ -426,6 +426,32 @@ body {
 .h-toggle-icon { margin-left: auto; font-size: 13px; color: var(--text-tertiary); transition: transform 0.2s; }
 .h-toggle-icon.open { transform: rotate(180deg); }
 
+/* PROACTIVE AI TIPS */
+.tips-section { margin-bottom: 16px; }
+.tip-card { background: var(--surface); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px; box-shadow: var(--shadow-sm); border-left: 3px solid var(--primary); position: relative; }
+.tip-card.sleep { border-left-color: #7C5CBF; }
+.tip-card.hydration { border-left-color: #1A73E8; }
+.tip-card.supplement_omega3, .tip-card.supplement_magnesium, .tip-card.supplement_multivitamin { border-left-color: #34A853; }
+.tip-card.recovery { border-left-color: #F4511E; }
+.tip-card.nutrition { border-left-color: #FBBC04; }
+.tip-card.workout_feedback { border-left-color: var(--primary); }
+.tip-emoji { font-size: 22px; flex-shrink: 0; line-height: 1.3; }
+.tip-body { flex: 1; }
+.tip-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-tertiary); margin-bottom: 3px; }
+.tip-message { font-size: 14px; color: var(--text-primary); line-height: 1.45; }
+.tip-time { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+.tip-dismiss { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 16px; color: var(--text-tertiary); cursor: pointer; padding: 2px 6px; line-height: 1; }
+.tip-generating { display: flex; align-items: center; gap: 8px; padding: 12px 0; color: var(--text-tertiary); font-size: 13px; }
+.tip-generating-dots { display: flex; gap: 4px; }
+.tip-generating-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); animation: aiDot 1.2s infinite; }
+.tip-generating-dots span:nth-child(2) { animation-delay: 0.2s; }
+.tip-generating-dots span:nth-child(3) { animation-delay: 0.4s; }
+/* Summary screen tip */
+.summary-tip-card { margin: 16px 20px 0; background: rgba(255,255,255,0.12); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+.summary-tip-emoji { font-size: 24px; flex-shrink: 0; }
+.summary-tip-text { flex: 1; font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.45; }
+.summary-tip-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
+
 /* AI INSIGHTS */
 .ai-section-title { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
 .ai-generate-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s; }
@@ -1130,7 +1156,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.4.1</span>
+        <span class="app-version">v1.5.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1145,6 +1171,13 @@ body {
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nuevo Entrenamiento
     </button>
+
+    <!-- Tips proactivos de IA -->
+    <div id="homeTipsSection" style="display:none">
+      <div class="section-title" style="margin-top:20px">💡 Para ti</div>
+      <div id="homeTipsList" class="tips-section"></div>
+    </div>
+
     <div class="section-title">Recientes</div>
     <div id="homeRecents">
       <div class="recent-item"><div class="recent-left"><div class="recent-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="recent-info"><h4>Entrenamiento</h4><p>Hoy, 7:15 AM - 8 ejercicios</p></div></div><div class="recent-duration">1:12:34</div></div>
@@ -1278,6 +1311,18 @@ body {
     <div class="sm-emoji">🏆</div>
     <div class="sm-text" id="summaryMotivation">Gran trabajo hoy. La constancia es lo que construye resultados.</div>
   </div>
+
+  <!-- AI tip post-entrenamiento -->
+  <div id="summaryTipWrap" style="display:none">
+    <div class="summary-tip-card">
+      <div class="summary-tip-emoji" id="summaryTipEmoji">💡</div>
+      <div class="summary-tip-text">
+        <div class="summary-tip-label" id="summaryTipLabel">Consejo IA</div>
+        <div id="summaryTipText">Analizando tu entrenamiento…</div>
+      </div>
+    </div>
+  </div>
+
   <button class="save-btn" onclick="saveAndExit()">Guardar y Salir</button>
 </div>
 
@@ -1719,6 +1764,7 @@ function showScreen(name) {
   ['workout','summary','catalog','warmup','auth','onboarding'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); }
+  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); }
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
@@ -2834,6 +2880,145 @@ function applyAISuggestedRest() {
   showToast(`Descanso ajustado a ${restSeconds}s ✓`);
 }
 
+// ─── Proactive AI Tips ───────────────────────────────────────
+const TIP_STORAGE_KEY = 'gymtracker_ai_tips';
+const MAX_TIPS = 5;
+const DAILY_TIP_DATE_KEY = 'gymtracker_daily_tip_date';
+const TIP_CATEGORY_INDEX_KEY = 'gymtracker_tip_cat_idx';
+
+const TIP_CATEGORY_LABELS = {
+  workout_feedback: 'Tu entrenamiento',
+  sleep: 'Sueño y recuperación',
+  hydration: 'Hidratación',
+  supplement_omega3: 'Omega-3',
+  supplement_magnesium: 'Magnesio',
+  supplement_multivitamin: 'Multivitamínico',
+  recovery: 'Recuperación activa',
+  nutrition: 'Nutrición',
+  general: 'Consejo IA',
+};
+
+function getStoredTips() {
+  try { return JSON.parse(localStorage.getItem(TIP_STORAGE_KEY) || '[]'); } catch { return []; }
+}
+
+function storeTip(tip) {
+  const tips = getStoredTips();
+  tips.unshift({ ...tip, id: Date.now(), ts: new Date().toISOString() });
+  if (tips.length > MAX_TIPS) tips.splice(MAX_TIPS);
+  localStorage.setItem(TIP_STORAGE_KEY, JSON.stringify(tips));
+}
+
+function dismissTip(id) {
+  const tips = getStoredTips().filter(t => t.id !== id);
+  localStorage.setItem(TIP_STORAGE_KEY, JSON.stringify(tips));
+  renderHomeTips();
+}
+
+function renderHomeTips() {
+  const tips = getStoredTips();
+  const section = document.getElementById('homeTipsSection');
+  const list = document.getElementById('homeTipsList');
+  if (!section || !list) return;
+  if (tips.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const timeAgo = ts => {
+    const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+    if (mins < 60) return `Hace ${mins} min`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `Hace ${hrs}h`;
+    return `Hace ${Math.round(hrs/24)} día${Math.round(hrs/24) > 1 ? 's' : ''}`;
+  };
+  list.innerHTML = tips.map(t => `
+    <div class="tip-card ${t.category || 'general'}">
+      <div class="tip-emoji">${t.emoji || '💡'}</div>
+      <div class="tip-body">
+        <div class="tip-label">${TIP_CATEGORY_LABELS[t.category] || 'Consejo IA'}</div>
+        <div class="tip-message">${t.message}</div>
+        <div class="tip-time">${timeAgo(t.ts)}</div>
+      </div>
+      <button class="tip-dismiss" onclick="dismissTip(${t.id})" title="Descartar">×</button>
+    </div>`).join('');
+}
+
+// Genera un tip post-entrenamiento (llamado en saveAndExit)
+async function generatePostWorkoutTip(workout) {
+  if (!sb || !currentUser) return;
+  try {
+    const session = await sb.auth.getSession();
+    const token = session.data.session?.access_token;
+    if (!token) return;
+
+    // Muestra indicador de carga en la pantalla de summary (si aún está visible)
+    const wrap = document.getElementById('summaryTipWrap');
+    if (wrap) {
+      wrap.style.display = 'block';
+      document.getElementById('summaryTipText').textContent = 'Analizando tu entrenamiento…';
+    }
+
+    const res = await fetch(`${SB_URL}/functions/v1/generate-insights`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'tip', context: { workout, days_since_last_workout: 0, total_workouts: savedWorkouts.length } })
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.tip) return;
+
+    storeTip(json.tip);
+
+    // Muestra en la pantalla de summary si sigue abierta
+    if (wrap && document.getElementById('summaryScreen').classList.contains('active')) {
+      document.getElementById('summaryTipEmoji').textContent = json.tip.emoji || '💡';
+      document.getElementById('summaryTipLabel').textContent = TIP_CATEGORY_LABELS[json.tip.category] || 'Consejo IA';
+      document.getElementById('summaryTipText').textContent = json.tip.message;
+      wrap.style.display = 'block';
+    }
+
+    // Actualiza home si ya está visible
+    renderHomeTips();
+  } catch (e) {
+    console.error('Post-workout tip error:', e);
+  }
+}
+
+// Genera un tip de bienestar diario (llamado al abrir home, 1 por día)
+async function generateDailyTip() {
+  if (!sb || !currentUser) return;
+  const today = new Date().toDateString();
+  if (localStorage.getItem(DAILY_TIP_DATE_KEY) === today) return; // ya se generó hoy
+  localStorage.setItem(DAILY_TIP_DATE_KEY, today);
+
+  try {
+    const session = await sb.auth.getSession();
+    const token = session.data.session?.access_token;
+    if (!token) return;
+
+    // Rotar categorías de bienestar
+    const wellnessCategories = ['sleep', 'hydration', 'supplement_omega3', 'supplement_magnesium', 'supplement_multivitamin', 'recovery', 'nutrition'];
+    const idx = (parseInt(localStorage.getItem(TIP_CATEGORY_INDEX_KEY) || '0') + 1) % wellnessCategories.length;
+    localStorage.setItem(TIP_CATEGORY_INDEX_KEY, idx.toString());
+    const category = wellnessCategories[idx];
+
+    const lastWo = savedWorkouts[0];
+    const daysSince = lastWo ? Math.round((Date.now() - new Date(lastWo.date).getTime()) / 86400000) : 99;
+
+    const res = await fetch(`${SB_URL}/functions/v1/generate-insights`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'tip', context: { tip_category: category, days_since_last_workout: daysSince, total_workouts: savedWorkouts.length } })
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.tip) return;
+
+    storeTip(json.tip);
+    renderHomeTips();
+  } catch (e) {
+    console.error('Daily tip error:', e);
+  }
+}
+
 // ─── History ────────────────────────────────────────────────
 let historyCleared = false;
 
@@ -3057,9 +3242,23 @@ function isYesterday(d) {
 
 // Hook save into key actions
 const _origEndWorkout = endWorkout;
-endWorkout = function() { _origEndWorkout(); releaseWakeLock(); saveToStorage(); };
+endWorkout = function() {
+  _origEndWorkout();
+  releaseWakeLock();
+  saveToStorage();
+  // Genera tip post-entrenamiento de forma asíncrona (no bloquea)
+  if (savedWorkouts.length > 0) {
+    const lastWo = savedWorkouts[0];
+    generatePostWorkoutTip(lastWo);
+  }
+};
 const _origSaveAndExit = saveAndExit;
-saveAndExit = function() { _origSaveAndExit(); saveToStorage(); updateHomeStats(); };
+saveAndExit = function() {
+  _origSaveAndExit();
+  saveToStorage();
+  updateHomeStats();
+  renderHomeTips(); // Muestra cualquier tip ya generado
+};
 const _origClearAll = clearAllHistory;
 clearAllHistory = function() { _origClearAll(); saveToStorage(); };
 const _origSetDefaultRest = setDefaultRest;
