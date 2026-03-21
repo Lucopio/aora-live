@@ -14,3 +14,17 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS experience        TEXT;         --
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS training_goal     TEXT;         -- 'muscle' | 'fat_loss' | 'strength' | 'maintenance'
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS activity_level    TEXT;         -- 'sedentary' | 'light' | 'moderate' | 'active'
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_done   BOOLEAN DEFAULT FALSE;
+
+-- ═══════════════════════════════════════════════════════════
+-- GymTracker - Update Schema: Captura de descansos (v1.4.0)
+-- ═══════════════════════════════════════════════════════════
+
+-- Duracion real de descanso por serie
+ALTER TABLE exercise_sets ADD COLUMN IF NOT EXISTS rest_after_ms      INT;          -- duracion real del descanso en ms
+ALTER TABLE exercise_sets ADD COLUMN IF NOT EXISTS rest_configured_ms INT;          -- tiempo configurado en ms
+ALTER TABLE exercise_sets ADD COLUMN IF NOT EXISTS rest_status        TEXT;         -- 'early_or_on_time' | 'overtime'
+
+-- Agregados de descanso por sesion
+ALTER TABLE workouts ADD COLUMN IF NOT EXISTS avg_rest_ms          INT;            -- promedio de descanso en ms
+ALTER TABLE workouts ADD COLUMN IF NOT EXISTS rest_adherence       NUMERIC(3,2);   -- 0.00 a 1.00
+ALTER TABLE workouts ADD COLUMN IF NOT EXISTS total_rests_tracked  INT DEFAULT 0;  -- cantidad de descansos medidos

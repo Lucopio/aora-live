@@ -380,6 +380,34 @@ body {
 .h-meta .h-duration { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--primary); }
 .h-meta .h-excount { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
 
+/* INSIGHTS */
+.insights-card {
+  background: var(--surface); border-radius: var(--radius); padding: 18px 16px;
+  margin-bottom: 14px; box-shadow: var(--shadow-sm);
+}
+.insights-card-title { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
+.insights-week-row { display: flex; justify-content: space-around; }
+.insights-metric { text-align: center; }
+.insights-metric-val { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.insights-metric-label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+.insights-rest-row { display: flex; align-items: center; gap: 20px; }
+.insights-gauge-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.insights-gauge { width: 80px; height: 80px; }
+.insights-gauge-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.insights-rest-detail { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.insights-rest-stat { display: flex; justify-content: space-between; align-items: center; }
+.insights-rest-label { font-size: 12px; color: var(--text-secondary); }
+.insights-rest-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.insights-status-pill { margin-top: 14px; border-radius: var(--radius-full); padding: 8px 14px; font-size: 13px; font-weight: 500; text-align: center; }
+.insights-status-pill.good { background: var(--success-light); color: var(--success); }
+.insights-status-pill.needs_work { background: var(--warning-light); color: #9A6000; }
+.insights-status-pill.critical { background: var(--danger-light); color: var(--danger); }
+.insights-ex-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.insights-ex-item:last-child { border-bottom: none; }
+.insights-ex-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.insights-ex-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.insights-ex-count { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--primary); white-space: nowrap; }
+
 /* SETTINGS */
 .settings-header { margin-bottom: 20px; }
 .settings-header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
@@ -1049,7 +1077,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.3.1</span>
+        <span class="app-version">v1.4.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1200,6 +1228,69 @@ body {
   <button class="save-btn" onclick="saveAndExit()">Guardar y Salir</button>
 </div>
 
+<!-- INSIGHTS -->
+<div class="screen" id="insightsScreen">
+  <div class="screen-pad">
+    <div class="history-header"><h1>Insights</h1></div>
+
+    <!-- Resumen semanal -->
+    <div class="insights-card" id="insightsSummary">
+      <div class="insights-card-title">Esta semana</div>
+      <div class="insights-week-row">
+        <div class="insights-metric">
+          <div class="insights-metric-val" id="insWeekWorkouts">—</div>
+          <div class="insights-metric-label">Sesiones</div>
+        </div>
+        <div class="insights-metric">
+          <div class="insights-metric-val" id="insWeekTime">—</div>
+          <div class="insights-metric-label">Tiempo total</div>
+        </div>
+        <div class="insights-metric">
+          <div class="insights-metric-val" id="insWeekExercises">—</div>
+          <div class="insights-metric-label">Ejercicios</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adherencia de descanso -->
+    <div class="insights-card" id="insightsRestCard">
+      <div class="insights-card-title">Adherencia al descanso</div>
+      <div class="insights-rest-row">
+        <div class="insights-gauge-wrap">
+          <svg class="insights-gauge" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="7"/>
+            <circle id="insGaugeArc" cx="40" cy="40" r="32" fill="none" stroke="var(--primary)" stroke-width="7"
+              stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201"
+              transform="rotate(-90 40 40)" style="transition:stroke-dashoffset 0.8s ease"/>
+          </svg>
+          <div class="insights-gauge-pct" id="insGaugePct">—</div>
+        </div>
+        <div class="insights-rest-detail">
+          <div class="insights-rest-stat"><span class="insights-rest-label">Descanso promedio</span><span class="insights-rest-val" id="insAvgRest">—</span></div>
+          <div class="insights-rest-stat"><span class="insights-rest-label">Configurado</span><span class="insights-rest-val" id="insConfigRest">—</span></div>
+          <div class="insights-rest-stat"><span class="insights-rest-label">Descansos analizados</span><span class="insights-rest-val" id="insTotalRests">—</span></div>
+        </div>
+      </div>
+      <div id="insRestStatus" class="insights-status-pill" style="display:none"></div>
+    </div>
+
+    <!-- Tendencia de descanso (últimas 6 semanas) -->
+    <div class="insights-card">
+      <div class="insights-card-title">Tendencia semanal de descanso</div>
+      <canvas id="insRestChart" height="100" style="width:100%;margin-top:8px"></canvas>
+      <div id="insRestChartEmpty" style="display:none;text-align:center;padding:20px 0;color:var(--text-tertiary);font-size:13px">Sin datos suficientes aún</div>
+    </div>
+
+    <!-- Top ejercicios -->
+    <div class="insights-card">
+      <div class="insights-card-title">Ejercicios frecuentes</div>
+      <div id="insTopExercises"><div style="text-align:center;padding:16px 0;color:var(--text-tertiary);font-size:13px">Sin datos suficientes aún</div></div>
+    </div>
+
+    <div style="height:80px"></div>
+  </div>
+</div>
+
 <!-- HISTORY -->
 <div class="screen" id="historyScreen">
   <div class="screen-pad"><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
@@ -1315,6 +1406,10 @@ body {
   <div class="nav-item active" onclick="showScreen('home')">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Inicio</span>
+  </div>
+  <div class="nav-item" onclick="showScreen('insights')">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Insights</span>
   </div>
   <div class="nav-item" onclick="showScreen('history')">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1495,14 +1590,15 @@ function updateMotivation() {
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const map = { home: 0, history: 1, settings: 2 };
+  const map = { home: 0, insights: 1, history: 2, settings: 3 };
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen' };
+  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
   ['workout','summary','catalog','warmup','auth','onboarding'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
+  if (name === 'insights') renderInsights();
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
@@ -1603,6 +1699,7 @@ window.addEventListener('popstate', () => {
   if (active === 'warmupScreen') { cancelWarmup(); return; }
   if (active === 'summaryScreen') { saveAndExit(); return; }
   if (active === 'historyScreen') { showScreen('home'); return; }
+  if (active === 'insightsScreen') { showScreen('home'); return; }
   if (active === 'settingsScreen') { showScreen('home'); return; }
 });
 
@@ -1958,6 +2055,7 @@ function selectExercise(name, equip) {
 }
 
 let setJustDeleted = false; // true cuando se borró una serie; inhibe el reinicio del timer
+let restStartedAt = null;   // timestamp de inicio del descanso actual
 
 function addSet() {
   const weight = parseFloat(document.getElementById('weightInput').value) || 0;
@@ -2005,6 +2103,7 @@ function deleteSet(index) {
 }
 
 function nextExercise() {
+  skipRest(); // Capturar descanso antes de limpiar sets
   if (currentExerciseName && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
   }
@@ -2012,16 +2111,15 @@ function nextExercise() {
   isUnilateral = false;
   exerciseCount = completedExercises.length;
   document.getElementById('exBadge').textContent = exerciseCount;
-  skipRest();
   const count = exerciseCount;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
   openCatalog();
 }
 
 function changeExercise() {
+  skipRest(); // Capturar descanso antes de limpiar sets
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
-  skipRest();
   const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
   openCatalog();
@@ -2073,6 +2171,7 @@ function startRestTimer() {
   if (isResting) return;
   isResting = true;
   restCount++;
+  restStartedAt = Date.now();
   countdownRemaining = restSeconds;
   const total = restSeconds;
   const circ = 2 * Math.PI * 34;
@@ -2149,10 +2248,33 @@ function startRestTimer() {
   }
 }
 
-function skipRest() { clearInterval(countdownInterval); resetRestZone(); }
+function skipRest() {
+  // Capturar duración real del descanso antes de limpiar
+  if (restStartedAt && currentExerciseSets.length > 0) {
+    const restDuration = Date.now() - restStartedAt;
+    const restConfigured = restSeconds * 1000;
+    const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
+    lastSet.rest_after_ms = restDuration;
+    lastSet.rest_configured_ms = restConfigured;
+    lastSet.rest_status = restDuration <= restConfigured ? 'early_or_on_time' : 'overtime';
+  }
+  restStartedAt = null;
+  clearInterval(countdownInterval);
+  resetRestZone();
+}
 
 // ─── End Workout ────────────────────────────────────────────
 function endWorkout() {
+  // Capturar descanso activo antes de cerrar
+  if (isResting && restStartedAt && currentExerciseSets.length > 0) {
+    const restDuration = Date.now() - restStartedAt;
+    const restConfigured = restSeconds * 1000;
+    const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
+    lastSet.rest_after_ms = restDuration;
+    lastSet.rest_configured_ms = restConfigured;
+    lastSet.rest_status = restDuration <= restConfigured ? 'early_or_on_time' : 'overtime';
+  }
+  restStartedAt = null;
   clearInterval(timerInterval);
   clearInterval(countdownInterval);
   clearInterval(motivationInterval);
@@ -2186,7 +2308,14 @@ function endWorkout() {
     warmupRow.style.display = 'none';
   }
 
-  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: workoutMode === 'full' ? completedExercises.map(e => ({ name: e.name, equipment: e.equipment, sets: e.sets.map(s => ({...s})) })) : [] });
+  // Calcular agregados de descanso
+  const allExDetail = workoutMode === 'full' ? completedExercises.map(e => ({ name: e.name, equipment: e.equipment, sets: e.sets.map(s => ({...s})) })) : [];
+  const allRests = allExDetail.flatMap(ex => ex.sets.filter(s => s.rest_after_ms != null));
+  const avgRestMs = allRests.length ? Math.round(allRests.reduce((sum, s) => sum + s.rest_after_ms, 0) / allRests.length) : null;
+  const restAdherence = allRests.length ? Math.round(allRests.filter(s => s.rest_status === 'early_or_on_time').length / allRests.length * 100) / 100 : null;
+  const totalRestsTracked = allRests.length;
+
+  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked });
   showScreen('summary');
 }
 
@@ -2301,6 +2430,157 @@ function clearAllHistory() {
   document.getElementById('homeRecents').innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--border)" stroke-width="1.5" style="margin-bottom:8px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p style="font-size:14px">Sin entrenamientos registrados</p><p style="font-size:12px;margin-top:4px">Comienza uno nuevo desde Inicio</p></div>';
   // Hide done message after a while
   setTimeout(() => document.getElementById('clearDone').classList.remove('show'), 3000);
+}
+
+// ─── Insights ───────────────────────────────────────────────
+function renderInsights() {
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)); // lunes
+  weekStart.setHours(0, 0, 0, 0);
+
+  // ── Resumen semanal ──────────────────────────────────────
+  const weekWorkouts = savedWorkouts.filter(w => new Date(w.date) >= weekStart);
+  const weekTotalMs  = weekWorkouts.reduce((s, w) => s + (w.duration || 0), 0);
+  const weekExercises = weekWorkouts.reduce((s, w) => s + (w.exercises || 0), 0);
+  document.getElementById('insWeekWorkouts').textContent  = weekWorkouts.length;
+  document.getElementById('insWeekTime').textContent      = weekTotalMs ? formatTimeMM(weekTotalMs) : '0:00';
+  document.getElementById('insWeekExercises').textContent = weekExercises || 0;
+
+  // ── Adherencia de descanso (últimas 4 semanas) ───────────
+  const fourWeeksAgo = new Date(now);
+  fourWeeksAgo.setDate(now.getDate() - 28);
+  const recentWorkouts = savedWorkouts.filter(w => new Date(w.date) >= fourWeeksAgo && w.total_rests_tracked > 0);
+
+  let totalAdherence = null;
+  let totalAvgRestMs = null;
+  let totalRestsTracked = 0;
+  let configuredRestMs = restSeconds * 1000;
+
+  if (recentWorkouts.length) {
+    const withAdherence = recentWorkouts.filter(w => w.rest_adherence != null);
+    if (withAdherence.length) {
+      totalAdherence = withAdherence.reduce((s, w) => s + w.rest_adherence, 0) / withAdherence.length;
+    }
+    const withAvg = recentWorkouts.filter(w => w.avg_rest_ms != null);
+    if (withAvg.length) {
+      totalAvgRestMs = Math.round(withAvg.reduce((s, w) => s + w.avg_rest_ms, 0) / withAvg.length);
+    }
+    totalRestsTracked = recentWorkouts.reduce((s, w) => s + (w.total_rests_tracked || 0), 0);
+  }
+
+  // Gauge
+  const arc = document.getElementById('insGaugeArc');
+  const pctEl = document.getElementById('insGaugePct');
+  const circ = 2 * Math.PI * 32; // r=32 → ~201
+  if (totalAdherence != null) {
+    const pct = Math.round(totalAdherence * 100);
+    arc.style.strokeDashoffset = circ * (1 - totalAdherence);
+    arc.style.stroke = pct >= 70 ? 'var(--success)' : pct >= 40 ? 'var(--warning)' : 'var(--danger)';
+    pctEl.textContent = pct + '%';
+    // Status pill
+    const pill = document.getElementById('insRestStatus');
+    const status = pct >= 70 ? 'good' : pct >= 40 ? 'needs_work' : 'critical';
+    const msgs = { good: '¡Muy bien! Tu adherencia al descanso es excelente.', needs_work: 'Tienes margen de mejora en respetar los tiempos de descanso.', critical: 'Estás descansando muy poco o demasiado. Ajusta tu tempo.' };
+    pill.textContent = msgs[status];
+    pill.className = `insights-status-pill ${status}`;
+    pill.style.display = 'block';
+  } else {
+    arc.style.strokeDashoffset = circ;
+    pctEl.textContent = '—';
+    document.getElementById('insRestStatus').style.display = 'none';
+  }
+  document.getElementById('insAvgRest').textContent      = totalAvgRestMs != null ? Math.round(totalAvgRestMs / 1000) + 's' : '—';
+  document.getElementById('insConfigRest').textContent   = restSeconds + 's';
+  document.getElementById('insTotalRests').textContent   = totalRestsTracked || '—';
+
+  // ── Gráfico de tendencia (últimas 6 semanas) ─────────────
+  const canvas = document.getElementById('insRestChart');
+  const emptyEl = document.getElementById('insRestChartEmpty');
+  const weeks = [];
+  for (let i = 5; i >= 0; i--) {
+    const wEnd = new Date(now);
+    wEnd.setDate(now.getDate() - i * 7);
+    wEnd.setHours(23, 59, 59, 999);
+    const wStart = new Date(wEnd);
+    wStart.setDate(wEnd.getDate() - 6);
+    wStart.setHours(0, 0, 0, 0);
+    const wWorkouts = savedWorkouts.filter(w => {
+      const d = new Date(w.date);
+      return d >= wStart && d <= wEnd && w.rest_adherence != null;
+    });
+    weeks.push({ label: wStart.toLocaleDateString('es', { month: 'short', day: 'numeric' }), adherence: wWorkouts.length ? wWorkouts.reduce((s, w) => s + w.rest_adherence, 0) / wWorkouts.length : null });
+  }
+  const hasData = weeks.some(w => w.adherence != null);
+  if (!hasData) {
+    canvas.style.display = 'none';
+    emptyEl.style.display = 'block';
+  } else {
+    canvas.style.display = 'block';
+    emptyEl.style.display = 'none';
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const cw = canvas.parentElement.clientWidth - 32;
+    canvas.width = cw * dpr; canvas.height = 100 * dpr;
+    canvas.style.width = cw + 'px'; canvas.style.height = '100px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, cw, 100);
+    const padL = 8, padR = 8, padT = 10, padB = 26;
+    const drawW = cw - padL - padR;
+    const drawH = 100 - padT - padB;
+    const n = weeks.length;
+    const slotW = drawW / (n - 1 || 1);
+    // Grid line 70%
+    const y70 = padT + drawH * (1 - 0.7);
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(padL, y70); ctx.lineTo(padL + drawW, y70); ctx.stroke();
+    ctx.setLineDash([]);
+    // Line
+    ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    let prevX = null, prevY = null;
+    weeks.forEach((w, i) => {
+      if (w.adherence == null) return;
+      const x = padL + i * slotW;
+      const y = padT + drawH * (1 - w.adherence);
+      const color = w.adherence >= 0.7 ? '#34A853' : w.adherence >= 0.4 ? '#FBBC04' : '#EA4335';
+      if (prevX !== null) {
+        ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y); ctx.stroke();
+      }
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill();
+      prevX = x; prevY = y;
+    });
+    // Labels
+    ctx.fillStyle = '#9AA0A6'; ctx.font = '10px DM Sans, sans-serif'; ctx.textAlign = 'center';
+    weeks.forEach((w, i) => {
+      const x = padL + i * slotW;
+      ctx.fillText(w.label, x, 100 - padB + 14);
+    });
+  }
+
+  // ── Top ejercicios ───────────────────────────────────────
+  const exCounts = {};
+  savedWorkouts.forEach(w => {
+    (w.exercises_detail || []).forEach(ex => {
+      const k = ex.name + (ex.equipment ? ` · ${ex.equipment}` : '');
+      if (!exCounts[k]) exCounts[k] = { name: ex.name, equipment: ex.equipment, count: 0, totalSets: 0 };
+      exCounts[k].count++;
+      exCounts[k].totalSets += ex.sets ? ex.sets.length : 0;
+    });
+  });
+  const topEx = Object.values(exCounts).sort((a, b) => b.count - a.count).slice(0, 6);
+  const topEl = document.getElementById('insTopExercises');
+  if (!topEx.length) {
+    topEl.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--text-tertiary);font-size:13px">Sin datos aún. Completa un entrenamiento para ver estadísticas.</div>';
+  } else {
+    topEl.innerHTML = topEx.map(ex => `
+      <div class="insights-ex-item">
+        <div>
+          <div class="insights-ex-name">${ex.name}</div>
+          ${ex.equipment ? `<div class="insights-ex-sub">${ex.equipment}</div>` : ''}
+        </div>
+        <div class="insights-ex-count">${ex.count} vez${ex.count !== 1 ? '' : ''}${ex.count !== 1 ? 'es' : ''} · ${ex.totalSets} series</div>
+      </div>`).join('');
+  }
 }
 
 // ─── History ────────────────────────────────────────────────
@@ -2687,13 +2967,13 @@ async function saveWorkoutToCloud(workout, exercises) {
   if (!currentUser || !sb || !isOnline) return;
   try {
     updateSyncStatus('Guardando...');
-    const { data: wRow, error: wErr } = await sb.from('workouts').insert({ user_id: currentUser.id, started_at: workout.date instanceof Date ? workout.date.toISOString() : workout.date, duration_ms: workout.duration, warmup_duration_ms: workout.warmupDuration || 0, mode: workout.mode, rest_count: workout.restCount || 0, exercise_count: workout.exercises || 0 }).select().single();
+    const { data: wRow, error: wErr } = await sb.from('workouts').insert({ user_id: currentUser.id, started_at: workout.date instanceof Date ? workout.date.toISOString() : workout.date, duration_ms: workout.duration, warmup_duration_ms: workout.warmupDuration || 0, mode: workout.mode, rest_count: workout.restCount || 0, exercise_count: workout.exercises || 0, avg_rest_ms: workout.avg_rest_ms || null, rest_adherence: workout.rest_adherence || null, total_rests_tracked: workout.total_rests_tracked || 0 }).select().single();
     if (wErr) { console.error('Workout insert:', wErr); updateSyncStatus('Error'); return; }
     for (let i = 0; i < exercises.length; i++) {
       const ex = exercises[i];
       const { data: exRow } = await sb.from('workout_exercises').insert({ workout_id: wRow.id, exercise_name: ex.name, equipment: ex.equipment || '', sort_order: i }).select().single();
       if (!exRow) continue;
-      const setRows = ex.sets.map((s, idx) => ({ workout_exercise_id: exRow.id, set_number: idx + 1, weight: s.weight || 0, reps: s.reps, unit: s.unit || 'kg', side: s.side || null }));
+      const setRows = ex.sets.map((s, idx) => ({ workout_exercise_id: exRow.id, set_number: idx + 1, weight: s.weight || 0, reps: s.reps, unit: s.unit || 'kg', side: s.side || null, rest_after_ms: s.rest_after_ms || null, rest_configured_ms: s.rest_configured_ms || null, rest_status: s.rest_status || null }));
       if (setRows.length) await sb.from('exercise_sets').insert(setRows);
     }
     updateSyncStatus('Al dia');
@@ -2751,7 +3031,7 @@ async function syncFromCloud() {
       const cloudDates = new Set(wData.map(w => new Date(w.started_at).getTime()));
       const localOnly  = savedWorkouts.filter(w => !cloudDates.has(new Date(w.date).getTime()));
       savedWorkouts = [
-        ...wData.map(w => ({ date: new Date(w.started_at), duration: w.duration_ms, exercises: w.exercise_count, mode: w.mode, restCount: w.rest_count, warmupDuration: w.warmup_duration_ms || 0, exercises_detail: [] })),
+        ...wData.map(w => ({ date: new Date(w.started_at), duration: w.duration_ms, exercises: w.exercise_count, mode: w.mode, restCount: w.rest_count, warmupDuration: w.warmup_duration_ms || 0, exercises_detail: [], avg_rest_ms: w.avg_rest_ms || null, rest_adherence: w.rest_adherence || null, total_rests_tracked: w.total_rests_tracked || 0 })),
         ...localOnly
       ];
       savedWorkouts.sort((a,b) => new Date(b.date) - new Date(a.date));
