@@ -1049,7 +1049,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.3.0</span>
+        <span class="app-version">v1.3.1</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1501,7 +1501,7 @@ function showScreen(name) {
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['workout','summary','catalog','warmup'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['workout','summary','catalog','warmup','auth','onboarding'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
