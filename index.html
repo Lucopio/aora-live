@@ -619,6 +619,23 @@ body {
   font-size: 11px; font-weight: 700; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: 1px; padding: 10px 4px 6px;
 }
+/* Catalog group list (level 1) */
+.group-item {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 8px; cursor: pointer;
+  font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--text-primary);
+  text-align: left; transition: all 0.15s; box-shadow: var(--shadow-sm);
+}
+.group-item:active { transform: scale(0.98); background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+.group-item svg { width: 18px; height: 18px; stroke: var(--text-tertiary); fill: none; stroke-width: 2.5; flex-shrink: 0; }
+/* Back button in catalog exercise level */
+.catalog-back-btn {
+  display: flex; align-items: center; gap: 4px; padding: 6px 4px 14px;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--primary);
+}
+.catalog-back-btn svg { width: 18px; height: 18px; stroke: var(--primary); fill: none; stroke-width: 2.5; }
 /* Catalog exercise row with inline equipment */
 .exercise-row {
   background: var(--surface); border: 1.5px solid var(--border);
@@ -1100,7 +1117,7 @@ body {
       <div class="catalog-timer-sm" id="catalogTimerSm">00:00:00</div>
     </div>
     <div class="catalog-header">
-      <h2>Seleccionar ejercicio</h2>
+      <h2 id="catalogTitle">Seleccionar ejercicio</h2>
       <p id="catalogExCount">0 ejercicios completados</p>
     </div>
     <div class="catalog-search">
@@ -1278,9 +1295,7 @@ function launchWorkout() {
   history.pushState({ gym: 'active' }, ''); // mantiene el back button dentro de la app
   if (workoutMode === 'full') {
     document.getElementById('catalogExCount').textContent = '0 ejercicios completados';
-    document.getElementById('catalogSearchInput').value = '';
-    renderCatalog();
-    showScreen('catalog');
+    openCatalog();
   } else {
     showScreen('workout');
   }
@@ -1361,6 +1376,7 @@ let isUnilateral = false;
 let activeSide = 'left';
 let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit } }
 let customExercises = []; // ejercicios personalizados guardados entre sesiones
+let catalogGroup = null;  // null = lista de grupos, string = ejercicios de ese grupo
 
 const EQUIPMENT_OPTIONS = [
   { id: 'barra',       label: 'Barra' },
@@ -1473,67 +1489,111 @@ function getLastWeightForExercise(name) {
   return best;
 }
 
+// Escape string for safe use in HTML attribute values
+function attr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+
+function equipChipLabel(id) {
+  const opt = EQUIPMENT_OPTIONS.find(e => e.id === id);
+  return opt ? opt.label : (EQUIP_LABEL[id] || id);
+}
+
+function exerciseRowHtml(item, equips) {
+  const lw = getLastWeightForExercise(item);
+  const lwStr = lw && lw.weight > 0
+    ? `<span class="last-weight-badge">Último: ${lw.weight}${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
+    : '';
+  const chips = equips.map(e =>
+    `<button class="equip-chip" data-exercise="${attr(item)}" data-equip="${attr(e)}" onclick="catalogSelectEquip(this)">${equipChipLabel(e)}</button>`
+  ).join('');
+  return `<div class="exercise-row">
+    <div class="exercise-row-header">
+      <span class="exercise-row-name">${item}</span>${lwStr}
+    </div>
+    <div class="equip-chips">${chips}</div>
+  </div>`;
+}
+
 function renderCatalog(filter) {
   const list = document.getElementById('exerciseList');
   const f = (filter || '').toLowerCase().trim();
+  const titleEl = document.getElementById('catalogTitle');
   let html = '';
 
-  function exerciseRowHtml(item, equips) {
-    const lw = getLastWeightForExercise(item);
-    const lwStr = lw && lw.weight > 0
-      ? `<span class="last-weight-badge">Último: ${lw.weight}${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
-      : '';
-    const chips = equips.map(e =>
-      `<button class="equip-chip" onclick="selectExercise(${JSON.stringify(item)},${JSON.stringify(e)})">${EQUIP_LABEL[e]}</button>`
+  // Search mode: flat list across all groups
+  if (f) {
+    titleEl.textContent = 'Seleccionar ejercicio';
+    exerciseDB.forEach(g => {
+      g.items.filter(i => i.toLowerCase().includes(f)).forEach(item => {
+        html += exerciseRowHtml(item, EXERCISE_EQUIP[item] || ['']);
+      });
+    });
+    customExercises.filter(i => i.toLowerCase().includes(f)).forEach(item => {
+      html += exerciseRowHtml(item, EQUIPMENT_OPTIONS.map(e => e.id));
+    });
+    if (!html) html = `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Sin resultados</p></div>`;
+    list.innerHTML = html;
+    return;
+  }
+
+  // Level 1: Group list
+  if (!catalogGroup) {
+    titleEl.textContent = 'Seleccionar ejercicio';
+    const groups = exerciseDB.map(g => g.group);
+    if (customExercises.length) groups.push('Personalizados');
+    html = groups.map(g =>
+      `<button class="group-item" data-group="${attr(g)}" onclick="showCatalogGroup(this.dataset.group)">
+        <span>${g}</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>`
     ).join('');
-    return `<div class="exercise-row">
-      <div class="exercise-row-header">
-        <span class="exercise-row-name">${item}</span>${lwStr}
-      </div>
-      <div class="equip-chips">${chips}</div>
-    </div>`;
+    list.innerHTML = html;
+    return;
   }
 
-  exerciseDB.forEach(group => {
-    const items = f ? group.items.filter(i => i.toLowerCase().includes(f)) : group.items;
-    if (!items.length) return;
-    html += `<div class="exercise-group">`;
-    if (!f) html += `<div class="exercise-group-title">${group.group}</div>`;
-    items.forEach(item => {
-      const equips = EXERCISE_EQUIP[item] || [''];
-      html += exerciseRowHtml(item, equips);
+  // Level 2: Exercise list for selected group
+  titleEl.textContent = catalogGroup;
+  html = `<button class="catalog-back-btn" onclick="backToCatalogGroups()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Grupos musculares
+  </button>`;
+  if (catalogGroup === 'Personalizados') {
+    if (customExercises.length) {
+      customExercises.forEach(item => {
+        html += exerciseRowHtml(item, EQUIPMENT_OPTIONS.map(e => e.id));
+      });
+    } else {
+      html += `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Agrega tu primer ejercicio personalizado abajo</p></div>`;
+    }
+  } else {
+    const grp = exerciseDB.find(g => g.group === catalogGroup);
+    if (grp) grp.items.forEach(item => {
+      html += exerciseRowHtml(item, EXERCISE_EQUIP[item] || ['']);
     });
-    html += `</div>`;
-  });
-
-  // Custom exercises group
-  const filteredCustom = f
-    ? customExercises.filter(i => i.toLowerCase().includes(f))
-    : customExercises;
-  if (filteredCustom.length) {
-    html += `<div class="exercise-group">`;
-    if (!f) html += `<div class="exercise-group-title">Personalizados</div>`;
-    filteredCustom.forEach(item => {
-      const lw = getLastWeightForExercise(item);
-      const lwStr = lw && lw.weight > 0
-        ? `<span class="last-weight-badge">Último: ${lw.weight}${lw.unit}${lw.equip ? ' · ' + EQUIP_LABEL[lw.equip] : ''}</span>`
-        : '';
-      html += `<div class="exercise-row">
-        <div class="exercise-row-header">
-          <span class="exercise-row-name">${item}</span>${lwStr}
-        </div>
-        <div class="equip-chips">
-          ${EQUIPMENT_OPTIONS.map(e =>
-            `<button class="equip-chip" onclick="selectExercise(${JSON.stringify(item)},${JSON.stringify(e.id)})">${e.label}</button>`
-          ).join('')}
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
   }
-
-  if (!html) html = `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Sin resultados</p></div>`;
   list.innerHTML = html;
+}
+
+function openCatalog() {
+  catalogGroup = null;
+  document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+  showScreen('catalog');
+}
+
+function showCatalogGroup(group) {
+  catalogGroup = group;
+  document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+}
+
+function backToCatalogGroups() {
+  catalogGroup = null;
+  document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+}
+
+function catalogSelectEquip(btn) {
+  selectExercise(btn.dataset.exercise, btn.dataset.equip);
 }
 
 function filterExercises(value) { renderCatalog(value); }
@@ -1543,13 +1603,12 @@ function addCustomExercise() {
   const name = input.value.trim();
   if (!name) return;
   input.value = '';
-  // Guardar para futuros entrenamientos si no existe ya
   if (!customExercises.includes(name)) {
     customExercises.push(name);
     saveToStorage();
-    renderCatalog(); // refrescar para que aparezca en Personalizados
   }
-  showEquipSheet(name);
+  // Llevar al usuario al grupo Personalizados para que seleccione el equipo
+  showCatalogGroup('Personalizados');
 }
 
 function setWeightUnit(unit) {
@@ -1657,9 +1716,7 @@ function nextExercise() {
   skipRest();
   const count = exerciseCount;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
-  document.getElementById('catalogSearchInput').value = '';
-  renderCatalog();
-  showScreen('catalog');
+  openCatalog();
 }
 
 function changeExercise() {
@@ -1668,9 +1725,7 @@ function changeExercise() {
   skipRest();
   const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
-  document.getElementById('catalogSearchInput').value = '';
-  renderCatalog();
-  showScreen('catalog');
+  openCatalog();
 }
 
 function startTimer() {
