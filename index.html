@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>GymTracker</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --primary: #1A73E8;
@@ -819,18 +820,71 @@ body {
 }
 .unit-btn.active { background: var(--primary); color: white; }
 
+/* ─── AUTH SCREEN ────────────────────────────────────────── */
+.auth-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:32px 24px; }
+.auth-logo { text-align:center; margin-bottom:36px; }
+.auth-logo h1 { font-size:34px; font-weight:700; color:var(--text-primary); letter-spacing:-0.5px; }
+.auth-logo p { font-size:14px; color:var(--text-secondary); margin-top:6px; }
+.auth-card { width:100%; max-width:360px; background:var(--surface); border-radius:var(--radius); border:1.5px solid var(--border); padding:28px 24px; box-shadow:var(--shadow); }
+.auth-card h2 { font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
+.auth-card > p { font-size:13px; color:var(--text-secondary); margin-bottom:22px; }
+.auth-field { margin-bottom:14px; }
+.auth-field label { font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.4px; }
+.auth-field input { width:100%; padding:13px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font); font-size:15px; background:var(--bg); color:var(--text-primary); box-sizing:border-box; outline:none; transition:border-color 0.15s; }
+.auth-field input:focus { border-color:var(--primary); }
+.auth-submit { width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:var(--radius-sm); font-family:var(--font); font-size:15px; font-weight:700; cursor:pointer; margin-top:8px; transition:opacity 0.15s; }
+.auth-submit:active { opacity:0.85; }
+.auth-submit:disabled { opacity:0.5; cursor:not-allowed; }
+.auth-error { background:#FFF0F0; border:1.5px solid var(--danger); border-radius:var(--radius-sm); padding:10px 14px; font-size:13px; color:var(--danger); margin-bottom:14px; display:none; }
+.auth-toggle { text-align:center; margin-top:18px; font-size:13px; color:var(--text-secondary); }
+.auth-toggle button { background:none; border:none; color:var(--primary); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; padding:0; }
+.auth-skip { display:block; text-align:center; margin-top:24px; font-size:13px; color:var(--text-tertiary); cursor:pointer; }
+.auth-skip:active { color:var(--primary); }
+
+/* ─── SETTINGS ACCOUNT SECTION ──────────────────────────── */
+.account-email { font-size:13px; color:var(--text-secondary); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
 </style>
 </head>
 <body>
 
 
+<!-- AUTH SCREEN -->
+<div class="screen active" id="authScreen">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <h1>GymTracker</h1>
+      <p>Tu entrenamiento, donde quieras</p>
+    </div>
+    <div class="auth-card">
+      <h2 id="authTitle">Iniciar sesion</h2>
+      <p id="authSubtitle">Sincroniza tus datos en todos tus dispositivos</p>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-field">
+        <label>Correo electronico</label>
+        <input type="email" id="authEmail" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Contrasena</label>
+        <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-submit" id="authSubmitBtn" onclick="handleAuthSubmit()">Iniciar sesion</button>
+      <div class="auth-toggle">
+        <span id="authToggleText">No tienes cuenta?</span>
+        <button onclick="toggleAuthMode()">Crear cuenta</button>
+      </div>
+    </div>
+    <span class="auth-skip" onclick="continueWithoutAccount()">Continuar sin cuenta →</span>
+  </div>
+</div>
+
 <!-- HOME -->
-<div class="screen active" id="homeScreen">
+<div class="screen" id="homeScreen">
   <div class="screen-pad">
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.1.0</span>
+        <span class="app-version">v1.2.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1048,6 +1102,31 @@ body {
       </div>
     </div>
 
+    <!-- Cuenta (visible solo cuando hay sesion) -->
+    <div class="settings-group" id="accountGroup" style="display:none">
+      <div class="settings-group-title">Cuenta</div>
+      <div class="setting-row">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="account-email" id="accountEmail">—</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <span>Sincronizacion</span>
+        </div>
+        <div class="setting-value" id="syncStatusText">Al dia</div>
+      </div>
+      <div class="setting-row" style="cursor:pointer" onclick="handleLogout()">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Cerrar sesion</span>
+        </div>
+        <div class="setting-value" style="color:var(--danger)">Salir</div>
+      </div>
+    </div>
+
   </div>
   <div style="height:80px"></div>
 </div>
@@ -1239,7 +1318,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, history: 1, settings: 2 };
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen' };
+  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
@@ -1927,7 +2006,7 @@ function endWorkout() {
     warmupRow.style.display = 'none';
   }
 
-  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration });
+  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: workoutMode === 'full' ? completedExercises.map(e => ({ name: e.name, equipment: e.equipment, sets: e.sets.map(s => ({...s})) })) : [] });
   showScreen('summary');
 }
 
@@ -2270,9 +2349,256 @@ const style = document.createElement('style');
 style.textContent = '@keyframes slideUp{from{transform:translateY(100px);opacity:0}to{transform:translateY(0);opacity:1}}';
 document.head.appendChild(style);
 
-// ─── Init: Load saved data ──────────────────────────────────
-history.pushState({ screen: 'home' }, ''); // estado base para que popstate siempre tenga algo
+// ═══════════════════════════════════════════════════════════
+// SUPABASE — Auth + Sync
+// ═══════════════════════════════════════════════════════════
+const SB_URL  = 'https://edythbvezafpnkslavcv.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkeXRoYnZlemFmcG5rc2xhdmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTE3MDgsImV4cCI6MjA4OTY4NzcwOH0.IlcXNBRAJNN5C9lRR1gQ6qjHeEplLr73Vt3iZ0NXd6c';
+
+let sb = null;
+let currentUser = null;
+isOnline = navigator.onLine; // eslint-disable-line (declared elsewhere)
+
+// ─── Inicialización ────────────────────────────────────────
+function initSupabase() {
+  try {
+    sb = supabase.createClient(SB_URL, SB_ANON);
+    sb.auth.onAuthStateChange(async (event, session) => {
+      const prevUser = currentUser;
+      currentUser = session?.user ?? null;
+      if (currentUser) {
+        updateAccountUI();
+        if (!prevUser) {
+          await migrateLocalData(currentUser.id);
+          await syncFromCloud();
+        }
+        if (document.getElementById('authScreen').classList.contains('active')) {
+          showScreen('home');
+        }
+      } else if (event !== 'INITIAL_SESSION') {
+        updateAccountUI();
+        showScreen('auth');
+      }
+    });
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session && !localStorage.getItem('gymtracker_skip_auth')) {
+        showScreen('auth');
+      } else if (!session) {
+        showScreen('home');
+      }
+    });
+  } catch(e) {
+    console.error('Supabase init failed:', e);
+    showScreen('home');
+  }
+}
+
+// ─── Auth Mode ─────────────────────────────────────────────
+let authMode = 'login';
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  const isLogin = authMode === 'login';
+  document.getElementById('authTitle').textContent    = isLogin ? 'Iniciar sesion' : 'Crear cuenta';
+  document.getElementById('authSubtitle').textContent = isLogin ? 'Sincroniza tus datos en todos tus dispositivos' : 'Crea una cuenta para guardar tus entrenamientos';
+  document.getElementById('authSubmitBtn').textContent = isLogin ? 'Iniciar sesion' : 'Crear cuenta';
+  document.getElementById('authToggleText').textContent = isLogin ? 'No tienes cuenta?' : 'Ya tienes cuenta?';
+  document.querySelector('.auth-toggle button').textContent = isLogin ? 'Crear cuenta' : 'Iniciar sesion';
+  document.getElementById('authError').style.display = 'none';
+}
+
+async function handleAuthSubmit() {
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const btn      = document.getElementById('authSubmitBtn');
+  if (!email || !password) { showAuthError('Completa todos los campos'); return; }
+  if (password.length < 6) { showAuthError('La contrasena debe tener al menos 6 caracteres'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Cargando...';
+  document.getElementById('authError').style.display = 'none';
+  try {
+    const fn = authMode === 'login'
+      ? sb.auth.signInWithPassword({ email, password })
+      : sb.auth.signUp({ email, password });
+    const { data, error } = await fn;
+    if (error) {
+      showAuthError(translateAuthError(error.message));
+    } else if (authMode === 'signup' && !data.session) {
+      showAuthError('Revisa tu correo para confirmar tu cuenta, luego inicia sesion.');
+    }
+  } catch(e) { showAuthError('Error de conexion. Intenta de nuevo.'); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'Iniciar sesion' : 'Crear cuenta';
+  }
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg; el.style.display = 'block';
+}
+function translateAuthError(msg) {
+  if (msg.includes('Invalid login credentials')) return 'Correo o contrasena incorrectos';
+  if (msg.includes('Email not confirmed'))        return 'Confirma tu correo antes de iniciar sesion';
+  if (msg.includes('User already registered'))    return 'Este correo ya tiene una cuenta. Inicia sesion.';
+  if (msg.includes('rate limit'))                 return 'Demasiados intentos. Espera un momento.';
+  return msg;
+}
+
+function continueWithoutAccount() {
+  localStorage.setItem('gymtracker_skip_auth', 'true');
+  currentUser = null;
+  updateAccountUI();
+  showScreen('home');
+}
+
+async function handleLogout() {
+  localStorage.removeItem('gymtracker_skip_auth');
+  if (sb) await sb.auth.signOut();
+  currentUser = null;
+  updateAccountUI();
+  showScreen('auth');
+}
+
+function updateAccountUI() {
+  const group = document.getElementById('accountGroup');
+  if (currentUser) {
+    group.style.display = 'block';
+    document.getElementById('accountEmail').textContent = currentUser.email;
+  } else {
+    group.style.display = 'none';
+  }
+}
+
+// ─── Migracion: localStorage → Supabase ────────────────────
+async function migrateLocalData(userId) {
+  const flag = `gymtracker_migrated_${userId}`;
+  if (localStorage.getItem(flag)) return;
+  const raw = localStorage.getItem('gymtracker_data');
+  if (!raw) { localStorage.setItem(flag, 'true'); return; }
+  try {
+    const data = JSON.parse(raw);
+    await sb.from('profiles').upsert({ id: userId, rest_seconds: data.restSeconds || 60, sound_enabled: data.soundEnabled !== false, vibration_enabled: data.vibrationEnabled !== false });
+    if (data.savedWorkouts?.length) {
+      const rows = data.savedWorkouts.map(w => ({ user_id: userId, started_at: w.date instanceof Date ? w.date.toISOString() : w.date, duration_ms: w.duration || 0, warmup_duration_ms: w.warmupDuration || 0, mode: w.mode || 'full', rest_count: w.restCount || 0, exercise_count: w.exercises || 0 }));
+      for (let i = 0; i < rows.length; i += 50) await sb.from('workouts').insert(rows.slice(i, i + 50));
+    }
+    const lwRows = Object.entries(data.lastWeights || {}).map(([key, val]) => ({ user_id: userId, exercise_key: key, weight: val.weight || 0, unit: val.unit || 'kg', updated_at: val.ts ? new Date(val.ts).toISOString() : new Date().toISOString() }));
+    if (lwRows.length) await sb.from('last_weights').upsert(lwRows);
+    for (const name of (data.customExercises || [])) {
+      await sb.from('custom_exercises').upsert({ user_id: userId, name }, { onConflict: 'user_id,name' });
+    }
+    localStorage.setItem(flag, 'true');
+  } catch(e) { console.error('Migration failed:', e); }
+}
+
+// ─── Sync: subir entrenamiento completo ────────────────────
+async function saveWorkoutToCloud(workout, exercises) {
+  if (!currentUser || !sb || !isOnline) return;
+  try {
+    updateSyncStatus('Guardando...');
+    const { data: wRow, error: wErr } = await sb.from('workouts').insert({ user_id: currentUser.id, started_at: workout.date instanceof Date ? workout.date.toISOString() : workout.date, duration_ms: workout.duration, warmup_duration_ms: workout.warmupDuration || 0, mode: workout.mode, rest_count: workout.restCount || 0, exercise_count: workout.exercises || 0 }).select().single();
+    if (wErr) { console.error('Workout insert:', wErr); updateSyncStatus('Error'); return; }
+    for (let i = 0; i < exercises.length; i++) {
+      const ex = exercises[i];
+      const { data: exRow } = await sb.from('workout_exercises').insert({ workout_id: wRow.id, exercise_name: ex.name, equipment: ex.equipment || '', sort_order: i }).select().single();
+      if (!exRow) continue;
+      const setRows = ex.sets.map((s, idx) => ({ workout_exercise_id: exRow.id, set_number: idx + 1, weight: s.weight || 0, reps: s.reps, unit: s.unit || 'kg', side: s.side || null }));
+      if (setRows.length) await sb.from('exercise_sets').insert(setRows);
+    }
+    updateSyncStatus('Al dia');
+  } catch(e) { console.error('saveWorkoutToCloud:', e); updateSyncStatus('Error'); }
+}
+
+async function syncPrefs() {
+  if (!currentUser || !sb) return;
+  try { await sb.from('profiles').upsert({ id: currentUser.id, rest_seconds: restSeconds, sound_enabled: soundEnabled, vibration_enabled: vibrationEnabled }); } catch(e) {}
+}
+
+async function syncLastWeightsUp() {
+  if (!currentUser || !sb || !isOnline) return;
+  try {
+    const rows = Object.entries(lastWeights).map(([key, val]) => ({ user_id: currentUser.id, exercise_key: key, weight: val.weight, unit: val.unit || 'kg', updated_at: val.ts ? new Date(val.ts).toISOString() : new Date().toISOString() }));
+    if (rows.length) await sb.from('last_weights').upsert(rows);
+  } catch(e) {}
+}
+
+// ─── Pull desde cloud ──────────────────────────────────────
+async function syncFromCloud() {
+  if (!currentUser || !sb || !isOnline) return;
+  try {
+    updateSyncStatus('Sincronizando...');
+    // Preferencias
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (profile) {
+      restSeconds = profile.rest_seconds || 60;
+      soundEnabled = profile.sound_enabled !== false;
+      vibrationEnabled = profile.vibration_enabled !== false;
+      document.getElementById('settingsRestInput').value = restSeconds;
+      document.getElementById('customRestInput').value  = restSeconds;
+      document.getElementById('restIdleSeconds').textContent = restSeconds;
+      document.getElementById('toggleSound').classList.toggle('on', soundEnabled);
+      document.getElementById('toggleVibration').classList.toggle('on', vibrationEnabled);
+    }
+    // Entrenamientos
+    const { data: wData } = await sb.from('workouts').select('*').eq('user_id', currentUser.id).order('started_at', { ascending: false });
+    if (wData?.length) {
+      const cloudDates = new Set(wData.map(w => new Date(w.started_at).getTime()));
+      const localOnly  = savedWorkouts.filter(w => !cloudDates.has(new Date(w.date).getTime()));
+      savedWorkouts = [
+        ...wData.map(w => ({ date: new Date(w.started_at), duration: w.duration_ms, exercises: w.exercise_count, mode: w.mode, restCount: w.rest_count, warmupDuration: w.warmup_duration_ms || 0, exercises_detail: [] })),
+        ...localOnly
+      ];
+      savedWorkouts.sort((a,b) => new Date(b.date) - new Date(a.date));
+    }
+    // Ultimo peso
+    const { data: lw } = await sb.from('last_weights').select('*').eq('user_id', currentUser.id);
+    if (lw?.length) {
+      lw.forEach(row => {
+        const ts = new Date(row.updated_at).getTime();
+        if (!lastWeights[row.exercise_key] || lastWeights[row.exercise_key].ts < ts) {
+          lastWeights[row.exercise_key] = { weight: row.weight, unit: row.unit, ts };
+        }
+      });
+    }
+    // Ejercicios custom
+    const { data: ce } = await sb.from('custom_exercises').select('name').eq('user_id', currentUser.id);
+    if (ce?.length) ce.forEach(r => { if (!customExercises.includes(r.name)) customExercises.push(r.name); });
+    saveToStorage();
+    updateHomeStats();
+    updateSyncStatus('Al dia');
+  } catch(e) { console.error('syncFromCloud:', e); updateSyncStatus('Sin conexion'); }
+}
+
+function updateSyncStatus(s) { const el = document.getElementById('syncStatusText'); if (el) el.textContent = s; }
+
+window.addEventListener('online',  () => { isOnline = true;  if (currentUser) syncFromCloud(); });
+window.addEventListener('offline', () => { isOnline = false; updateSyncStatus('Sin conexion'); });
+
+// Wrap endWorkout para sync al cloud
+const _origEndWorkoutSync = endWorkout;
+endWorkout = function() {
+  _origEndWorkoutSync();
+  const exercises = completedExercises.map(e => ({ name: e.name, equipment: e.equipment, sets: e.sets.map(s => ({...s})) }));
+  const workout   = savedWorkouts[0];
+  if (currentUser) {
+    saveWorkoutToCloud(workout, exercises);
+    syncLastWeightsUp();
+  }
+};
+
+// Wrap toggleSetting para sync preferencias
+const _origToggleSync = toggleSetting;
+toggleSetting = function(el) { _origToggleSync(el); syncPrefs(); };
+
+// ─── Init ───────────────────────────────────────────────────
+history.pushState({ screen: 'home' }, '');
 loadFromStorage();
+// Arrancar auth: si el usuario eligio "sin cuenta" antes, ir directo al home
+if (localStorage.getItem('gymtracker_skip_auth')) {
+  showScreen('home');
+} else {
+  initSupabase();
+}
 
 </script>
 </body>
