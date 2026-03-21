@@ -285,12 +285,16 @@ body {
   transition: stroke-dashoffset 0.3s linear, stroke 0.4s;
 }
 .rest-ring-container .ring-progress.alert { stroke: var(--danger); }
+.rest-ring-container .ring-progress.overtime { stroke: var(--danger); }
 .rest-ring-number {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--text-primary);
   transition: color 0.3s;
 }
 .rest-ring-number.alert { color: var(--danger); }
+.rest-ring-number.overtime { color: var(--danger); font-weight: 700; }
+.rest-message-text.overtime { color: var(--danger); }
+.rest-active-label.overtime { color: var(--danger); }
 
 .rest-info { flex: 1; }
 .rest-message-text { font-size: 16px; font-weight: 600; color: var(--text-secondary); transition: color 0.3s; }
@@ -826,7 +830,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.0.9</span>
+        <span class="app-version">v1.1.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1241,6 +1245,8 @@ function showScreen(name) {
   const nav = document.getElementById('bottomNav');
   ['workout','summary','catalog','warmup'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
+  // Registrar en el historial del navegador para que el botón atrás funcione
+  if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
 
 // ─── Config ─────────────────────────────────────────────────
@@ -1306,19 +1312,40 @@ function launchWorkout() {
   }
 }
 
-// Interceptar botón atrás de Android durante un entrenamiento activo
+function cancelWarmup() {
+  clearInterval(warmupInterval);
+  warmupDuration = 0;
+  warmupStartTime = null;
+  showScreen('home');
+}
+
+// Interceptar botón atrás en todas las pantallas
 window.addEventListener('popstate', () => {
-  if (!workoutStartTime) return;
-  history.pushState({ gym: 'active' }, ''); // re-insertar para no salir de la app
-  const active = document.querySelector('.screen.active')?.id;
-  if (active === 'workoutScreen') {
-    // Desde workout → volver al catálogo (guarda el ejercicio actual)
-    nextExercise();
-  } else if (active === 'catalogScreen' && currentExerciseName) {
-    // Desde catálogo con ejercicio en progreso → volver al workout
-    showScreen('workout');
+  // Siempre re-insertar estado para que el OS no salga de la app
+  history.pushState({}, '');
+
+  // Primero cerrar overlays abiertos
+  if (document.getElementById('equipSheet')?.classList.contains('active')) { closeEquipSheet(); return; }
+  if (document.getElementById('configSheet')?.classList.contains('active')) { closeConfig(); return; }
+  if (document.getElementById('modeModal')?.classList.contains('active')) {
+    document.getElementById('modeModal').classList.remove('active'); return;
   }
-  // Si está en catálogo sin ejercicio en curso → no hace nada (usa botón Finalizar)
+
+  const active = document.querySelector('.screen.active')?.id;
+
+  if (workoutStartTime) {
+    // Durante entrenamiento activo
+    if (active === 'workoutScreen') nextExercise();
+    else if (active === 'catalogScreen' && currentExerciseName) showScreen('workout');
+    // En catálogo sin ejercicio en curso → no hacer nada
+    return;
+  }
+
+  // Fuera de entrenamiento — navegación entre pantallas
+  if (active === 'warmupScreen') { cancelWarmup(); return; }
+  if (active === 'summaryScreen') { saveAndExit(); return; }
+  if (active === 'historyScreen') { showScreen('home'); return; }
+  if (active === 'settingsScreen') { showScreen('home'); return; }
 });
 
 function selectMode(mode) {
@@ -1772,8 +1799,15 @@ function resetRestZone() {
   isResting = false;
   document.getElementById('restIdle').style.display = 'flex';
   const a = document.getElementById('restActive');
-  a.classList.remove('show');
-  a.classList.remove('alert-mode');
+  a.classList.remove('show', 'alert-mode');
+  const ring = document.getElementById('ringProgress');
+  const ringNum = document.getElementById('ringNumber');
+  const label = document.getElementById('restActiveLabel');
+  const msg = document.getElementById('restMsgText');
+  ring.classList.remove('alert', 'overtime');
+  ringNum.classList.remove('alert', 'overtime');
+  label.classList.remove('alert', 'overtime');
+  msg.classList.remove('alert', 'overtime');
 }
 
 function startRestTimer() {
@@ -1809,30 +1843,43 @@ function startRestTimer() {
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
     countdownRemaining--;
-    if (countdownRemaining <= 10 && countdownRemaining > 0) {
-      ring.classList.add('alert');
-      ringNum.classList.add('alert');
-      label.classList.add('alert');
-      label.innerHTML = '<div class="rest-dot"></div>PREPARATE';
-      msg.textContent = 'Siguiente ejercicio!';
-      msg.classList.add('alert');
-      bar.classList.add('alert');
-      sub.textContent = `${countdownRemaining}s restantes`;
-      active.classList.add('alert-mode');
-      playBeep(800, 150);
-    }
-    if (countdownRemaining <= 0) {
-      clearInterval(countdownInterval);
+    if (countdownRemaining > 0) {
+      if (countdownRemaining <= 10) {
+        ring.classList.add('alert');
+        ringNum.classList.add('alert');
+        label.classList.add('alert');
+        label.innerHTML = '<div class="rest-dot"></div>PREPARATE';
+        msg.textContent = 'Siguiente ejercicio!';
+        msg.classList.add('alert');
+        bar.classList.add('alert');
+        sub.textContent = `${countdownRemaining}s restantes`;
+        active.classList.add('alert-mode');
+        playBeep(800, 150);
+      }
+      update();
+    } else if (countdownRemaining === 0) {
+      // Sonido y vibración solo una vez al llegar a 0
       playFinalBeep();
       if (vibrationEnabled && navigator.vibrate) navigator.vibrate([400, 200, 400]);
-      ringNum.textContent = '0';
+      // Cambiar a modo overtime (rojo, sin detener el contador)
+      ring.classList.remove('alert'); ring.classList.add('overtime');
+      ringNum.classList.remove('alert'); ringNum.classList.add('overtime');
+      label.classList.remove('alert'); label.classList.add('overtime');
+      msg.classList.remove('alert'); msg.classList.add('overtime');
+      bar.classList.remove('alert');
+      label.innerHTML = '<div class="rest-dot" style="background:var(--danger)"></div>TIEMPO';
+      msg.textContent = '¡Tiempo!';
       bar.style.width = '0%';
-      msg.textContent = 'Tiempo!';
-      sub.textContent = 'Descanso completado';
-      setTimeout(resetRestZone, 2000);
-      return;
+      ring.style.strokeDashoffset = circ;
+      ringNum.textContent = '0';
+      sub.textContent = '¡A ejercitar!';
+      active.classList.add('alert-mode');
+    } else {
+      // Negativo — seguir contando en rojo, sin sonido
+      const over = Math.abs(countdownRemaining);
+      ringNum.textContent = `-${over}`;
+      sub.textContent = `+${over}s extra`;
     }
-    update();
   }, 1000);
 
   function update() {
@@ -2224,6 +2271,7 @@ style.textContent = '@keyframes slideUp{from{transform:translateY(100px);opacity
 document.head.appendChild(style);
 
 // ─── Init: Load saved data ──────────────────────────────────
+history.pushState({ screen: 'home' }, ''); // estado base para que popstate siempre tenga algo
 loadFromStorage();
 
 </script>
