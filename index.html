@@ -1638,6 +1638,7 @@ function selectExercise(name, equip) {
   currentExerciseName = name;
   currentEquipment = equip || '';
   currentExerciseSets = [];
+  setJustDeleted = false;
   // Reset unilateral state
   isUnilateral = false;
   activeSide = 'left';
@@ -1665,6 +1666,8 @@ function selectExercise(name, equip) {
   showScreen('workout');
 }
 
+let setJustDeleted = false; // true cuando se borró una serie; inhibe el reinicio del timer
+
 function addSet() {
   const weight = parseFloat(document.getElementById('weightInput').value) || 0;
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
@@ -1677,8 +1680,12 @@ function addSet() {
     lastWeights[key] = { weight, unit: weightUnit, ts: Date.now() };
   }
   renderSets();
-  if (isResting) skipRest();
-  startRestTimer();
+  // Solo reinicia el timer si NO estamos reemplazando una serie borrada
+  if (!setJustDeleted) {
+    if (isResting) skipRest();
+    startRestTimer();
+  }
+  setJustDeleted = false;
   // Auto-cambiar lado en ejercicios unilaterales
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
 }
@@ -1702,6 +1709,7 @@ function renderSets() {
 
 function deleteSet(index) {
   currentExerciseSets.splice(index, 1);
+  setJustDeleted = true;
   renderSets();
 }
 
