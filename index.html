@@ -884,7 +884,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.2.0</span>
+        <span class="app-version">v1.2.1</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1767,8 +1767,9 @@ function selectExercise(name, equip) {
   const key = exKey(name, currentEquipment);
   const lw = lastWeights[key];
   if (lw && lw.weight > 0) {
-    document.getElementById('weightInput').value = lw.weight;
+    // Cambiar unidad PRIMERO (mientras el input aún vale 0) para evitar conversión incorrecta
     if (lw.unit && lw.unit !== weightUnit) setWeightUnit(lw.unit);
+    document.getElementById('weightInput').value = lw.weight;
   } else {
     document.getElementById('weightInput').value = '0';
   }
