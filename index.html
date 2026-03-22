@@ -878,6 +878,14 @@ body {
   border: 1px solid var(--border);
 }
 .set-chip-num { font-family: var(--mono); font-size: 11px; color: var(--text-tertiary); min-width: 52px; }
+.rpe-btn {
+  padding: 14px 8px; background: var(--bg); border: 2px solid var(--border);
+  border-radius: 12px; font-family: var(--mono); font-size: 16px; font-weight: 700;
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.rpe-btn:active { transform: scale(0.93); border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+.rpe-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
 .set-inputs { display: flex; gap: 8px; align-items: flex-end; }
 .set-input-group { flex: 1; }
 .set-input-group label {
@@ -1228,7 +1236,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.8.0</span>
+        <span class="app-version">v1.9.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1325,6 +1333,18 @@ body {
       </div>
     </div>
 
+    <!-- RPE SELECTION SHEET -->
+    <div id="rpeOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140" onclick="skipRPESelection()"></div>
+    <div id="rpeSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 32px;z-index:150;box-shadow:0 -4px 20px rgba(0,0,0,0.15)">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
+      <div style="text-align:center;margin-bottom:20px">
+        <h3 style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:6px">¿Cómo estuvo esa serie?</h3>
+        <p style="font-size:12px;color:var(--text-secondary)">1 = muy fácil &nbsp;·&nbsp; 5 = moderado &nbsp;·&nbsp; 10 = máximo esfuerzo</p>
+      </div>
+      <div id="rpeButtons" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px"></div>
+      <button onclick="skipRPESelection()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Saltar</button>
+    </div>
+
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
@@ -1395,6 +1415,15 @@ body {
   <div class="summary-motivation">
     <div class="sm-emoji">🏆</div>
     <div class="sm-text" id="summaryMotivation">Gran trabajo hoy. La constancia es lo que construye resultados.</div>
+  </div>
+
+  <!-- RPE Promedio (visible solo si hay datos) -->
+  <div id="summaryRPERow" style="display:none;padding:14px 16px;background:var(--bg);border-radius:12px;margin-bottom:12px;display:none;align-items:center;gap:12px">
+    <div style="font-size:26px">🔥</div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">RPE Promedio</div>
+      <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--text-primary)"><span id="sumRPEAvg">—</span><span style="font-size:13px;color:var(--text-secondary);font-weight:500"> / 10</span></div>
+    </div>
   </div>
 
   <!-- AI tip post-entrenamiento -->
@@ -3100,21 +3129,17 @@ function addSet() {
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
   if (reps <= 0) return;
   const side = isUnilateral ? activeSide : null;
-  currentExerciseSets.push({ weight, reps, unit: weightUnit, side });
+  currentExerciseSets.push({ weight, reps, unit: weightUnit, side, rpe: null });
   // Guardar último peso + reps para este ejercicio+equipo
   const key = exKey(currentExerciseName, currentEquipment);
   if (weight > 0 || lastWeights[key]) {
     lastWeights[key] = { weight: weight || (lastWeights[key]?.weight || 0), unit: weightUnit, reps, ts: Date.now() };
   }
   renderSets();
-  // Solo reinicia el timer si NO estamos reemplazando una serie borrada
-  if (!setJustDeleted) {
-    if (isResting) skipRest();
-    startRestTimer();
-  }
-  setJustDeleted = false;
   // Auto-cambiar lado en ejercicios unilaterales
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
+  // Mostrar selector RPE → luego el RPE flow inicia el timer
+  showRPESelection();
 }
 
 function renderSets() {
@@ -3126,9 +3151,10 @@ function renderSets() {
   list.innerHTML = currentExerciseSets.map((s, i) => {
     const sideLabel = s.side ? ` · ${s.side === 'left' ? 'Izq' : 'Der'}` : '';
     const weightStr = s.weight > 0 ? `${s.weight}\u00a0${s.unit || 'kg'}` : 'Sin peso';
+    const rpeTag = s.rpe != null ? `<span style="font-size:10px;font-weight:700;font-family:var(--mono);color:white;background:${s.rpe>=9?'#EA4335':s.rpe>=7?'#E8710A':s.rpe>=4?'#FBBC04':'#34A853'};padding:2px 6px;border-radius:6px;margin-left:6px">RPE ${s.rpe}</span>` : '';
     return `<div class="set-chip">
       <span class="set-chip-num">Serie ${i + 1}${sideLabel}</span>
-      <span>${weightStr} &times; ${s.reps} reps</span>
+      <span>${weightStr} &times; ${s.reps} reps${rpeTag}</span>
       <button onclick="deleteSet(${i})" style="background:none;border:none;color:var(--text-tertiary);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;margin-left:4px" title="Eliminar">&times;</button>
     </div>`;
   }).join('');
@@ -3515,6 +3541,55 @@ function skipRest() {
   resetRestZone();
 }
 
+// ─── RPE Selection ───────────────────────────────────────────
+function showRPESelection() {
+  const container = document.getElementById('rpeButtons');
+  container.innerHTML = '';
+  // Colors: 1-3 green, 4-6 yellow, 7-8 orange, 9-10 red
+  const colors = ['','#34A853','#34A853','#34A853','#FBBC04','#FBBC04','#FBBC04','#E8710A','#E8710A','#EA4335','#EA4335'];
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'rpe-btn';
+    btn.textContent = i;
+    btn.style.setProperty('--rpe-color', colors[i]);
+    btn.onclick = () => selectRPE(i);
+    container.appendChild(btn);
+  }
+  document.getElementById('rpeOverlay').style.display = 'block';
+  document.getElementById('rpeSheet').style.display = 'block';
+}
+
+function selectRPE(value) {
+  // Highlight selected
+  document.querySelectorAll('#rpeButtons .rpe-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i + 1 === value);
+  });
+  if (currentExerciseSets.length > 0) {
+    currentExerciseSets[currentExerciseSets.length - 1].rpe = value;
+  }
+  // Brief visual feedback then close
+  setTimeout(() => {
+    document.getElementById('rpeOverlay').style.display = 'none';
+    document.getElementById('rpeSheet').style.display = 'none';
+    renderSets();
+    if (!setJustDeleted) {
+      if (isResting) skipRest();
+      startRestTimer();
+    }
+    setJustDeleted = false;
+  }, 300);
+}
+
+function skipRPESelection() {
+  document.getElementById('rpeOverlay').style.display = 'none';
+  document.getElementById('rpeSheet').style.display = 'none';
+  if (!setJustDeleted) {
+    if (isResting) skipRest();
+    startRestTimer();
+  }
+  setJustDeleted = false;
+}
+
 // ─── End Workout ────────────────────────────────────────────
 function endWorkout() {
   // Capturar descanso activo antes de cerrar
@@ -3575,8 +3650,25 @@ function endWorkout() {
   ) / 100 : null;
   const totalRestsTracked = allRests.length;
 
-  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked });
+  // RPE promedio de la sesión
+  const sessionRPE = calculateSessionRPE(allExDetail);
+  const rpeRow = document.getElementById('summaryRPERow');
+  if (sessionRPE != null) {
+    document.getElementById('sumRPEAvg').textContent = sessionRPE;
+    rpeRow.style.display = 'flex';
+  } else {
+    rpeRow.style.display = 'none';
+  }
+
+  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked, avg_rpe: sessionRPE });
   showScreen('summary');
+}
+
+function calculateSessionRPE(exDetail) {
+  const allSets = (exDetail || []).flatMap(ex => ex.sets);
+  const setsWithRPE = allSets.filter(s => s.rpe != null);
+  if (!setsWithRPE.length) return null;
+  return Math.round(setsWithRPE.reduce((sum, s) => sum + s.rpe, 0) / setsWithRPE.length * 10) / 10;
 }
 
 function saveAndExit() {
