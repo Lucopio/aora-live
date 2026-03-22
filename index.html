@@ -966,9 +966,18 @@ body {
 }
 .wu-ex-check.checked { background: var(--success); border-color: var(--success); color: white; }
 .wu-ex-body { flex: 1; min-width: 0; }
-.wu-ex-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+.wu-ex-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.wu-ex-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .wu-ex-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
-.wu-ex-why { font-size: 11px; color: var(--text-tertiary); line-height: 1.4; font-style: italic; }
+.wu-ex-why { font-size: 11px; color: var(--text-tertiary); line-height: 1.4; font-style: italic; margin-bottom: 8px; }
+.wu-yt-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; background: #FF0000; color: white;
+  border: none; border-radius: 8px; font-family: var(--font);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: opacity 0.15s;
+}
+.wu-yt-btn:active { opacity: 0.75; }
 /* Warmup group picker */
 .wu-group-btn {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -1282,7 +1291,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.11.0</span>
+        <span class="app-version">v1.12.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -2108,9 +2117,31 @@ function renderGroupPicker() {
     </button>`).join('');
 }
 
+function openWarmupYT(query) {
+  window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(query), '_blank');
+}
+function toggleGoalTip(idx) {
+  const el = document.getElementById(`goalTip${idx}`);
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  const btn = document.getElementById(`goalTipBtn${idx}`);
+  if (btn) btn.style.background = open ? 'var(--primary-light)' : 'var(--primary)';
+  if (btn) btn.style.color = open ? 'var(--primary)' : 'white';
+}
+
 function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupDuration').textContent = data.duration;
-  document.getElementById('warmupGoals').innerHTML = data.goals.map(g => `<li>${g}</li>`).join('');
+  document.getElementById('warmupGoals').innerHTML = data.goals.map((g, i) => {
+    const hasTip = g.tip;
+    const tipBtn = hasTip
+      ? `<button id="goalTipBtn${i}" onclick="toggleGoalTip(${i})" style="margin-left:6px;padding:1px 7px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle">¿qué es?</button>`
+      : '';
+    const tipBox = hasTip
+      ? `<div id="goalTip${i}" style="display:none;margin-top:6px;padding:8px 10px;background:var(--bg);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.5">${g.tip}</div>`
+      : '';
+    return `<li style="margin-bottom:4px">${g.text}${tipBtn}${tipBox}</li>`;
+  }).join('');
 
   // Animation map per exercise keyword
   const animMap = {
@@ -2142,15 +2173,25 @@ function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupExercisesList').innerHTML = data.exercises.map((ex, i) => {
     const animCls = getAnim(ex.name);
     const icon    = iconMap[animCls];
+    const ytBtn   = ex.yt
+      ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupYT('${ex.yt}')">
+           <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 1.99-.14 3.47-.44 4.44-.27.97-.9 1.6-1.87 1.87-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.14-7.76-.44-.97-.27-1.6-.9-1.87-1.87-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-1.99.14-3.47.44-4.44.27-.97.9-1.6 1.87-1.87.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.14 7.76.44.97.27 1.6.9 1.87 1.87z"/></svg>
+           Ver cómo
+         </button>`
+      : '';
     return `
     <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
       <div class="wu-ex-check" id="wuCheck${i}">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div class="wu-ex-body">
-        <div class="wu-ex-name">${ex.name} <span class="${animCls}" style="font-size:14px;margin-left:4px">${icon}</span></div>
+        <div class="wu-ex-name-row">
+          <span class="wu-ex-name">${ex.name}</span>
+          <span class="${animCls}" style="font-size:13px">${icon}</span>
+        </div>
         <div class="wu-ex-meta">${ex.duration} &nbsp;·&nbsp; ${ex.reps}</div>
         <div class="wu-ex-why">${ex.why}</div>
+        ${ytBtn}
       </div>
     </div>`;
   }).join('');
@@ -2590,88 +2631,120 @@ const EXERCISE_INFO = {
 const warmupDatabase = {
   'Pecho': {
     duration: '5-8 minutos',
-    goals: ['Movilizar articulación glenohumeral', 'Activar pectoral', 'Elevar temperatura corporal'],
-    exercises: [
-      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Moviliza los hombros y evita impingement' },
-      { name: 'Stretch de pecho (en pared)', reps: '2×30 seg', duration: '1 min', why: 'Aumenta ROM y prepara el pectoral' },
-      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Activa pectoral sin fatiga, prepara el movimiento' },
-      { name: 'Fondos en paralelas (asistidos)', reps: '10 reps', duration: '2 min', why: 'Familiariza el cuerpo con el patrón de empuje' }
+    goals: [
+      { text: 'Calentar el hombro', tip: 'El hombro es la articulación más móvil del cuerpo y la que más se lesiona. Calentarla bien antes del press de pecho es fundamental para no dañar los tendones.' },
+      { text: 'Activar el pectoral', tip: 'Antes de levantar peso, el músculo necesita "despertarse" con carga ligera para que las fibras respondan mejor y haya menos riesgo de desgarro.' },
+      { text: 'Elevar la temperatura muscular' }
     ],
-    injuries: ['Impingement subacromial', 'Tendinitis pectoral', 'Dolor en codo']
+    exercises: [
+      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', yt: 'rotaciones de brazos calentamiento hombros como hacer' },
+      { name: 'Stretch de pecho en pared', reps: '2×30 seg', duration: '1 min', why: 'Estira el pectoral y mejora cuánto puedes abrir los brazos durante el press', yt: 'stretch pecho en pared como hacer estiramiento' },
+      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', yt: 'press banca barra vacia calentamiento como hacer' },
+      { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', yt: 'fondos en banco triceps calentamiento como hacer' }
+    ],
+    injuries: ['Impingement de hombro (pellizco de tendón)', 'Tendinitis del pectoral', 'Dolor en codo']
   },
   'Espalda': {
     duration: '5-8 minutos',
-    goals: ['Movilizar columna torácica', 'Activar dorsal y escápulas', 'Elevar temperatura'],
-    exercises: [
-      { name: 'Cat-Cow (yoga)', reps: '10 reps', duration: '2 min', why: 'Moviliza toda la columna, previene hernias discales' },
-      { name: 'Dead bugs', reps: '10 reps cada lado', duration: '1 min', why: 'Activa core y estabiliza la espalda baja' },
-      { name: 'Jalón al pecho (muy ligero)', reps: '15 reps', duration: '2 min', why: 'Activa dorsal y prepara el movimiento de tirón' },
-      { name: 'Band pull-aparts', reps: '15 reps', duration: '1 min', why: 'Activa escápulas y mejora postura' }
+    goals: [
+      { text: 'Movilizar la columna', tip: 'La columna tiene vértebras que necesitan "lubricarse" antes de ejercicios de tracción. Sin esto, los discos intervertebrales están más expuestos a lesiones.' },
+      { text: 'Activar el dorsal y los omóplatos', tip: 'El dorsal es el músculo grande de la espalda. Los omóplatos (escápulas) son los huesos que deben jalar hacia atrás al hacer remo o dominadas — activarlos primero mejora la fuerza.' },
+      { text: 'Elevar la temperatura muscular' }
     ],
-    injuries: ['Hernia discal', 'Tensión lumbar', 'Tendinitis dorsal']
+    exercises: [
+      { name: 'Cat-Cow (movimiento de columna)', reps: '10 reps', duration: '2 min', why: 'Mueve toda la columna suavemente — reduce el riesgo de hernias discales durante peso muerto o remo', yt: 'cat cow ejercicio columna como hacer yoga' },
+      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core sin comprimir la espalda baja — estabiliza antes de cargar', yt: 'dead bugs ejercicio core espalda como hacer' },
+      { name: 'Jalón al pecho muy ligero', reps: '15 reps', duration: '2 min', why: 'Despierta el dorsal con poco peso para preparar el movimiento de tirón', yt: 'jalones al pecho calentamiento espalda como hacer' },
+      { name: 'Band pull-aparts (banda elástica)', reps: '15 reps', duration: '1 min', why: 'Activa los músculos entre los omóplatos — mejora la postura y previene lesiones de hombro', yt: 'band pull aparts calentamiento espalda omoplatos como hacer' }
+    ],
+    injuries: ['Hernia discal', 'Contractura lumbar', 'Tendinitis dorsal']
   },
   'Hombros': {
     duration: '5-8 minutos',
-    goals: ['Movilizar articulación glenohumeral', 'Activar manguito rotador', 'Preparar para movimientos overhead'],
-    exercises: [
-      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Movilidad completa del hombro' },
-      { name: 'Scapular push-ups', reps: '12 reps', duration: '1 min', why: 'Activa manguito rotador y escápula' },
-      { name: 'Press militar (barra vacía)', reps: '10 reps', duration: '2 min', why: 'Prepara articulación para movimiento overhead' },
-      { name: 'Elevaciones laterales (muy ligero)', reps: '12 reps', duration: '2 min', why: 'Activa deltoides medio' }
+    goals: [
+      { text: 'Calentar el hombro en todo su rango', tip: 'El hombro puede moverse en más direcciones que cualquier otra articulación del cuerpo. Por eso necesita calentarse en todos los ángulos antes de cargar peso.' },
+      { text: 'Activar el manguito rotador', tip: 'El manguito rotador son 4 músculos pequeños que estabilizan el hombro. Si no se calientan, se lesionan fácilmente durante press militar o elevaciones.' },
+      { text: 'Preparar el cuerpo para levantar sobre la cabeza' }
     ],
-    injuries: ['Impingement subacromial', 'Lesión manguito rotador', 'Tendinitis del bíceps']
+    exercises: [
+      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Recorre todo el rango del hombro — el calentamiento más completo para esta articulación', yt: 'arm circles calentamiento hombros como hacer' },
+      { name: 'Scapular push-ups (en pared o suelo)', reps: '12 reps', duration: '1 min', why: 'Activa los músculos que estabilizan el hombro — previene lesiones al hacer press', yt: 'scapular push ups calentamiento hombros como hacer' },
+      { name: 'Press militar con barra vacía', reps: '10 reps', duration: '2 min', why: 'Práctica del movimiento sin carga — prepara la articulación para el peso real', yt: 'press militar barra vacia calentamiento hombros como hacer' },
+      { name: 'Elevaciones laterales muy ligeras', reps: '12 reps', duration: '2 min', why: 'Activa el deltoides medio con poco peso antes de las series pesadas', yt: 'elevaciones laterales calentamiento hombros como hacer' }
+    ],
+    injuries: ['Impingement (pellizco de tendón en el hombro)', 'Desgarro del manguito rotador', 'Tendinitis bicipital']
   },
   'Biceps': {
     duration: '3-5 minutos',
-    goals: ['Movilizar codo y antebrazo', 'Activar bíceps', 'Elevar temperatura'],
-    exercises: [
-      { name: 'Extensiones de brazo sin peso', reps: '15 reps', duration: '1 min', why: 'Moviliza el codo en todo el rango' },
-      { name: 'Curl (barra vacía o banda)', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps y prepara el movimiento' },
-      { name: 'Forearm plank', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo y core' }
+    goals: [
+      { text: 'Movilizar el codo', tip: 'El codo es una bisagra simple pero con tendones delicados. Flexionarlo y extenderlo suavemente antes de cargar reduce el riesgo de tendinitis.' },
+      { text: 'Activar el bíceps con carga ligera' },
+      { text: 'Calentar los antebrazos' }
     ],
-    injuries: ['Tendinitis en codo', 'Dolor de antebrazo', 'Síndrome del pronador']
+    exercises: [
+      { name: 'Extensiones de codo sin peso', reps: '15 reps', duration: '1 min', why: 'Lleva el codo a todo su rango — lo lubrica antes de cargar', yt: 'extensiones codo calentamiento biceps como hacer' },
+      { name: 'Curl con barra vacía o banda', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps sin fatigarlo — prepara el movimiento de curl', yt: 'curl barra vacia calentamiento biceps como hacer' },
+      { name: 'Plancha sobre antebrazos', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo, muñeca y core — base de estabilidad', yt: 'plancha antebrazos como hacer ejercicio core' }
+    ],
+    injuries: ['Tendinitis de codo (codo de tenista)', 'Dolor de antebrazo al rotar', 'Síndrome del pronador']
   },
   'Triceps': {
     duration: '3-5 minutos',
-    goals: ['Movilizar codo', 'Activar tríceps', 'Preparar para movimientos de empuje'],
-    exercises: [
-      { name: 'Flexiones (modificadas si es necesario)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps y cuerpo completo' },
-      { name: 'Dips en banco (sin peso)', reps: '8-10 reps', duration: '1 min', why: 'Prepara articulación para movimientos de empuje' },
-      { name: 'Extensión de tríceps (muy ligero)', reps: '12 reps', duration: '2 min', why: 'Activa tríceps específicamente' }
+    goals: [
+      { text: 'Movilizar codo y hombro' },
+      { text: 'Activar el tríceps', tip: 'El tríceps es el músculo que extiende el brazo. Se lesiona poco, pero si está frío puede tener desgarros menores al inicio de un press o extensión pesada.' },
+      { text: 'Preparar articulaciones para movimientos de empuje' }
     ],
-    injuries: ['Tendinitis en codo', 'Dolor en el olécranon', 'Impingement de codo']
+    exercises: [
+      { name: 'Flexiones (o en rodillas)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps, pecho y core al mismo tiempo — calentamiento completo', yt: 'flexiones push ups como hacer bien tecnica' },
+      { name: 'Dips en banco sin peso', reps: '8-10 reps', duration: '1 min', why: 'Replica el movimiento de los fondos de tríceps con solo el peso corporal', yt: 'dips banco triceps calentamiento como hacer' },
+      { name: 'Extensión de tríceps muy ligera', reps: '12 reps', duration: '2 min', why: 'Activa específicamente el tríceps antes de las series pesadas', yt: 'extension triceps calentamiento ligero como hacer' }
+    ],
+    injuries: ['Tendinitis de codo', 'Dolor en la punta del codo (olécranon)', 'Pellizco de codo']
   },
   'Piernas': {
     duration: '8-12 minutos',
-    goals: ['Movilizar cadera y rodilla', 'Activar glúteos y cuádriceps', 'Elevar temperatura'],
-    exercises: [
-      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Moviliza cadera completamente' },
-      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Prepara la movilidad dinámica de la pierna' },
-      { name: 'Glute bridges', reps: '15 reps', duration: '2 min', why: 'Activa glúteos — clave para la sentadilla' },
-      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Prepara el patrón de movimiento' },
-      { name: 'Elevación de gemelos', reps: '15 reps', duration: '1 min', why: 'Activa pantorrilla y tobillo' }
+    goals: [
+      { text: 'Movilizar cadera y rodillas', tip: 'La cadera y las rodillas trabajan juntas durante sentadilla y peso muerto. Calentar ambas reduce el estrés en los cartílagos y ligamentos.' },
+      { text: 'Activar glúteos y cuádriceps', tip: 'Los glúteos son el motor principal de la sentadilla. Si no están "encendidos" al inicio, las rodillas compensan — lo que puede causar dolor o lesión.' },
+      { text: 'Preparar los ligamentos de rodilla' }
     ],
-    injuries: ['Lesión de rodilla (LCA/menisco)', 'Desgarro de isquiotibial', 'Dolor lumbar']
+    exercises: [
+      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Lubrica la articulación de la cadera antes de cargar en sentadilla o peso muerto', yt: 'circulos cadera movilidad calentamiento piernas como hacer' },
+      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Calienta isquiotibiales, cuádriceps y cadera con movimiento dinámico', yt: 'leg swings balanceo piernas calentamiento como hacer' },
+      { name: 'Glute bridges (puente de glúteos)', reps: '15 reps', duration: '2 min', why: '"Enciende" los glúteos — si no están activos, las rodillas y la espalda baja compensan el trabajo', yt: 'glute bridges puente gluteos calentamiento como hacer' },
+      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Practica el patrón de la sentadilla sin peso — activa todo el tren inferior', yt: 'sentadilla peso corporal calentamiento como hacer bien' },
+      { name: 'Elevación de talones (gemelos)', reps: '15 reps', duration: '1 min', why: 'Activa el tobillo y la pantorrilla — apoyo en toda sentadilla y zancada', yt: 'elevacion talones gemelos calentamiento como hacer' }
+    ],
+    injuries: ['Lesión de rodilla (LCA o menisco)', 'Desgarro de isquiotibial', 'Dolor lumbar al agacharse']
   },
   'Abdomen': {
     duration: '3-5 minutos',
-    goals: ['Activar core profundo', 'Movilizar columna', 'Elevar temperatura'],
-    exercises: [
-      { name: 'Dead bugs', reps: '10 reps cada lado', duration: '1 min', why: 'Activa core sin tensión lumbar' },
-      { name: 'Bird dogs', reps: '10 reps cada lado', duration: '1 min', why: 'Estabilidad anti-rotacional' },
-      { name: 'Plancha (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa core completo antes de series pesadas' }
+    goals: [
+      { text: 'Activar el core', tip: 'El "core" no es solo el abdomen — incluye todos los músculos del tronco (abdomen, espalda baja, diafragma). Activarlo primero protege la columna durante cualquier ejercicio.' },
+      { text: 'Movilizar la columna lumbar', tip: 'La columna lumbar (zona baja de la espalda) se comprime al hacer abdominales con carga. Movilizarla antes reduce el riesgo de hernia discal.' },
+      { text: 'Elevar temperatura del tronco' }
     ],
-    injuries: ['Tensión lumbar', 'Hernia discal', 'Distensión de oblicuo']
+    exercises: [
+      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core profundo sin comprimir la espalda — el mejor ejercicio previo a abdominales', yt: 'dead bugs ejercicio core abdomen como hacer' },
+      { name: 'Bird dogs (cuatro patas)', reps: '10 reps cada lado', duration: '1 min', why: 'Trabaja la estabilidad del tronco sin movimiento de columna — previene lesiones', yt: 'bird dog ejercicio core espalda como hacer' },
+      { name: 'Plancha frontal (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa todo el core antes de series más intensas de abdomen', yt: 'plancha abdominal como hacer bien tecnica' }
+    ],
+    injuries: ['Contractura lumbar', 'Hernia discal lumbar', 'Distensión del oblicuo']
   },
   'Cardio': {
     duration: '5-10 minutos',
-    goals: ['Elevar frecuencia cardíaca gradualmente', 'Lubricar articulaciones', 'Elevar temperatura corporal'],
-    exercises: [
-      { name: 'Jumping jacks (suave)', reps: '30 reps', duration: '2 min', why: 'Eleva el HR y moviliza todo el cuerpo' },
-      { name: 'Trote en el lugar', reps: 'Low intensity', duration: '2 min', why: 'Eleva HR gradualmente' },
-      { name: 'Aceleración progresiva', reps: '50-70% intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo' }
+    goals: [
+      { text: 'Subir la frecuencia cardíaca gradualmente', tip: 'Empezar cardio intenso con el corazón frío puede causar arritmias leves y lesiones musculares. La frecuencia cardíaca (latidos por minuto) debe subir poco a poco.' },
+      { text: 'Lubricar todas las articulaciones' },
+      { text: 'Elevar temperatura corporal general' }
     ],
-    injuries: ['Lesión muscular por frío', 'Dolor articular']
+    exercises: [
+      { name: 'Jumping jacks suaves', reps: '30 reps', duration: '2 min', why: 'Moviliza todo el cuerpo y eleva el ritmo cardíaco al mismo tiempo', yt: 'jumping jacks calentamiento como hacer bien' },
+      { name: 'Trote en el lugar', reps: 'Baja intensidad', duration: '2 min', why: 'Eleva la frecuencia cardíaca de forma gradual y segura', yt: 'trote en el lugar calentamiento cardio como hacer' },
+      { name: 'Aceleración progresiva', reps: '50-70% de intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo sin sobrecargar el corazón', yt: 'calentamiento cardio progresivo como hacer' }
+    ],
+    injuries: ['Lesión muscular por arrancar en frío', 'Dolor articular por impacto sin calentar']
   }
 };
 
