@@ -174,6 +174,41 @@ body {
 /* ─── History superset ───────────────────── */
 .h-superset-badge { display: inline-block; background: var(--warning-light); color: #92400E; border-radius: 6px; padding: 1px 7px; font-size: 10px; font-weight: 700; margin-left: 6px; }
 
+/* ─── Exercise info modal ────────────────── */
+.ex-info-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s; }
+.ex-info-overlay.active { opacity:1;pointer-events:all; }
+.ex-info-sheet { position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 40px;z-index:201;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:88vh;overflow-y:auto; }
+.ex-info-sheet.active { transform:translateY(0); }
+.ex-info-name { font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:10px; }
+.ex-info-muscles { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px; }
+.ex-info-muscle-chip { background:var(--primary-light);color:var(--primary);border-radius:var(--radius-full);padding:4px 10px;font-size:12px;font-weight:600; }
+.ex-info-desc { font-size:14px;color:var(--text-secondary);line-height:1.65;margin-bottom:16px; }
+.ex-info-section-title { font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px; }
+.ex-info-list { list-style:none;margin-bottom:16px; }
+.ex-info-list li { font-size:13px;color:var(--text-secondary);padding:5px 0;display:flex;gap:8px;line-height:1.5; }
+.ex-info-list li .ex-tip-icon { flex-shrink:0;font-size:13px; }
+.ex-info-yt-btn { width:100%;padding:14px;background:#FF0000;color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px; }
+.ex-info-btn { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--bg);border:1px solid var(--border);border-radius:50%;font-size:13px;cursor:pointer;color:var(--text-tertiary);flex-shrink:0;transition:all .15s; }
+.ex-info-btn:hover,.ex-info-btn:active { background:var(--primary-light);color:var(--primary);border-color:var(--primary); }
+/* ─── Routines ───────────────────────────── */
+.routines-fab { position:fixed;bottom:80px;right:16px;max-width:calc(480px - 32px);background:var(--primary);color:white;border:none;border-radius:var(--radius-full);padding:12px 18px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(26,115,232,0.35);z-index:30;transition:all .2s; }
+.routines-section { margin-top:16px; }
+.routines-section-title { font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px; }
+.routine-level-tabs { display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px; }
+.routine-level-tab { padding:6px 14px;border-radius:var(--radius-full);border:1.5px solid var(--border);background:transparent;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;transition:all .2s;color:var(--text-secondary); }
+.routine-level-tab.active { border-color:var(--primary);background:var(--primary-light);color:var(--primary); }
+.routine-card { background:var(--surface);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);cursor:pointer;transition:all .2s; }
+.routine-card:active { opacity:0.85; }
+.routine-card-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:6px; }
+.routine-card-name { font-size:14px;font-weight:700;color:var(--text-primary); }
+.routine-card-count { font-size:12px;color:var(--text-tertiary);font-weight:600; }
+.routine-card-exercises { font-size:12px;color:var(--text-secondary);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.routine-card-start-btn { margin-top:10px;width:100%;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer; }
+.routines-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s; }
+.routines-overlay.active { opacity:1;pointer-events:all; }
+.routines-sheet { position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 50px;z-index:151;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:85vh;overflow-y:auto; }
+.routines-sheet.active { transform:translateY(0); }
+
 .custom-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
 .custom-input-row label { font-size: 14px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
 .custom-input {
@@ -1173,7 +1208,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.6.0</span>
+        <span class="app-version">v1.7.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1187,6 +1222,12 @@ body {
     <button class="start-btn" onclick="openConfig()">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nuevo Entrenamiento
+    </button>
+
+    <!-- Rutinas sugeridas -->
+    <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm)">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Rutinas por nivel (Principiante · Intermedio · Avanzado)
     </button>
 
     <!-- Tips proactivos de IA -->
@@ -1610,6 +1651,38 @@ body {
   </div>
 </div>
 
+<!-- EXERCISE INFO SHEET -->
+<div class="ex-info-overlay" id="exInfoOverlay" onclick="closeExerciseInfo()"></div>
+<div class="ex-info-sheet" id="exInfoSheet">
+  <div class="sheet-handle" style="margin-bottom:16px"></div>
+  <div class="ex-info-name" id="exInfoName">Ejercicio</div>
+  <div class="ex-info-muscles" id="exInfoMuscles"></div>
+  <div class="ex-info-desc" id="exInfoDesc"></div>
+  <div class="ex-info-section-title">Puntos clave</div>
+  <ul class="ex-info-list" id="exInfoTips"></ul>
+  <div class="ex-info-section-title">Errores comunes</div>
+  <ul class="ex-info-list" id="exInfoErrors"></ul>
+  <button class="ex-info-yt-btn" id="exInfoYtBtn" onclick="openExerciseYT()">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#FF0000" style="fill:white"/></svg>
+    Ver demostración en YouTube
+  </button>
+</div>
+
+<!-- ROUTINES SHEET -->
+<div class="routines-overlay" id="routinesOverlay" onclick="closeRoutinesSheet()"></div>
+<div class="routines-sheet" id="routinesSheet">
+  <div class="sheet-handle" style="margin-bottom:16px"></div>
+  <div style="font-size:18px;font-weight:700;margin-bottom:4px">Rutinas sugeridas</div>
+  <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Selecciona tu nivel y el día de entrenamiento</div>
+  <div class="routine-level-tabs" id="routineLevelTabs">
+    <button class="routine-level-tab active" onclick="switchRoutineLevel('beginner',this)">🌱 Principiante</button>
+    <button class="routine-level-tab" onclick="switchRoutineLevel('intermediate',this)">⚡ Intermedio</button>
+    <button class="routine-level-tab" onclick="switchRoutineLevel('advanced',this)">🔥 Avanzado</button>
+  </div>
+  <div id="routinesLevelInfo" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:8px"></div>
+  <div id="routinesList"></div>
+</div>
+
 <!-- Config Sheet -->
 <div class="overlay" id="configOverlay" onclick="closeConfig()"></div>
 <div class="bottom-sheet" id="configSheet">
@@ -1963,6 +2036,363 @@ const exerciseDB = [
   { group: 'Cardio', items: ['Caminadora', 'Bicicleta estatica', 'Remo', 'Cuerda', 'Burpees'] },
 ];
 
+// ─── Exercise Info Database ───────────────────────────────────
+const EXERCISE_INFO = {
+  'Press de banca': {
+    muscles: ['Pectoral mayor','Tríceps','Deltoides ant.'],
+    desc: 'Ejercicio compuesto fundamental para el pecho. Trabaja el pectoral mayor con asistencia de tríceps y deltoides anterior en un movimiento de empuje horizontal.',
+    tips: ['Agarre ligeramente más ancho que hombros','Pies firmes en el suelo en todo momento','Arco lumbar natural, glúteos pegados al banco','Baja la barra de forma controlada hasta el pecho','Empuja explosivo en la subida, exhalando'],
+    errors: ['Rebotar la barra en el pecho','Codos a 90° del cuerpo (lesión de hombro)','Levantar glúteos del banco'],
+    yt: 'como hacer press banca correctamente'
+  },
+  'Press inclinado': {
+    muscles: ['Pectoral superior','Tríceps','Deltoides ant.'],
+    desc: 'Variante inclinada del press de banca que pone énfasis en la parte superior del pecho y el deltoides anterior. El banco debe estar a 30-45°.',
+    tips: ['Banco a 30-45° para máximo énfasis en pectoral superior','Misma técnica que press plano','No subir demasiado el ángulo (se convierte en press de hombros)','Controla la bajada 2-3 segundos'],
+    errors: ['Ángulo demasiado alto (>50°)','No bajar la barra al nivel del pecho superior','Arquear excesivamente la espalda baja'],
+    yt: 'como hacer press inclinado correctamente'
+  },
+  'Press con mancuernas': {
+    muscles: ['Pectoral mayor','Tríceps','Deltoides ant.'],
+    desc: 'Versión con mancuernas del press de banca que permite mayor rango de movimiento y trabaja cada lado de forma independiente, mejorando los desequilibrios musculares.',
+    tips: ['Mayor rango de movimiento que con barra','Mantén las mancuernas paralelas o ligeramente rotadas','Junta las mancuernas arriba para mayor contracción','No dejes caer los codos por debajo del banco'],
+    errors: ['Dejar caer los codos demasiado abajo','Peso excesivo con mala técnica','No controlar la bajada'],
+    yt: 'press mancuernas tecnica correcta'
+  },
+  'Aperturas': {
+    muscles: ['Pectoral mayor','Deltoides ant.'],
+    desc: 'Ejercicio de aislamiento para el pecho. Con los brazos ligeramente flexionados, baja las mancuernas en un arco hasta sentir el estiramiento del pectoral.',
+    tips: ['Mantén una ligera flexión en los codos (10-15°)','El movimiento es como abrazar un árbol grande','Siente el estiramiento en el pecho en la bajada','Contrae el pecho al subir, no uses el tríceps'],
+    errors: ['Extender completamente los codos (lesión)','Usar demasiado peso','Movimiento de press en lugar de apertura'],
+    yt: 'aperturas pecho mancuernas tecnica'
+  },
+  'Fondos en paralelas': {
+    muscles: ['Pectoral inferior','Tríceps','Deltoides ant.'],
+    desc: 'Ejercicio de peso corporal que trabaja el pecho inferior y los tríceps. Inclinar el torso hacia adelante aumenta el trabajo del pecho.',
+    tips: ['Inclina el torso ~30° hacia adelante para enfatizar el pecho','Baja hasta que los codos estén a 90°','Control total en la bajada','Expande el pecho al bajar'],
+    errors: ['Bajar demasiado (lesión de hombros)','No inclinar el torso (trabaja solo tríceps)','Movimiento demasiado rápido'],
+    yt: 'fondos paralelas correctamente pecho'
+  },
+  'Crossover en polea': {
+    muscles: ['Pectoral mayor','Deltoides ant.'],
+    desc: 'Ejercicio de aislamiento para el pecho en polea alta o baja. Permite trabajar el pecho en un rango completo de movimiento y es ideal para definición.',
+    tips: ['Mantén una ligera inclinación hacia adelante','Los brazos ligeramente flexionados en todo momento','Siente la contracción máxima al cruzar las manos','Control total en todo el arco del movimiento'],
+    errors: ['Usar demasiado peso y perder la técnica','No controlar el retorno','Mover el torso en lugar de los brazos'],
+    yt: 'crossover polea pecho tecnica'
+  },
+  'Dominadas': {
+    muscles: ['Dorsal ancho','Bíceps','Romboides'],
+    desc: 'Ejercicio de peso corporal rey para la espalda. Trabaja el dorsal ancho de forma intensa. El agarre prono trabaja más el dorsal, el supino más el bíceps.',
+    tips: ['Empezar desde posición completamente extendida','Jalar con los codos hacia las caderas, no hacia atrás','Subir hasta que el mentón pase la barra','Bajada lenta y controlada (3-4 segundos)','Depress los hombros antes de comenzar a jalar'],
+    errors: ['No extenderse completamente abajo','Usar impulso del cuerpo (kipping excesivo)','Encoger los hombros en la posición baja'],
+    yt: 'dominadas correctamente tecnica espalda'
+  },
+  'Remo con barra': {
+    muscles: ['Dorsal ancho','Romboides','Bíceps','Trapecios'],
+    desc: 'Ejercicio compuesto fundamental para el grosor de la espalda. Con el torso inclinado ~45°, se jala la barra hacia el abdomen trabajando todos los músculos de la espalda.',
+    tips: ['Torso a 45° o paralelo al suelo','Jala hacia el ombligo, no hacia el pecho','Lleva los codos pegados al cuerpo','Mantén la espalda recta en todo momento','Retrae los omóplatos al final del movimiento'],
+    errors: ['Redondear la espalda baja','Usar impulso de las piernas','Jalar hacia el pecho en lugar del abdomen'],
+    yt: 'remo con barra tecnica correcta espalda'
+  },
+  'Remo con mancuerna': {
+    muscles: ['Dorsal ancho','Romboides','Bíceps'],
+    desc: 'Variante unilateral del remo que permite mayor rango de movimiento y corrige desequilibrios entre lados. Se apoya una mano y rodilla en un banco.',
+    tips: ['Apoya la mano y rodilla del mismo lado en el banco','Jala la mancuerna hacia la cadera, no hacia el hombro','Rota el torso ligeramente para mayor rango','Mantén la espalda paralela al suelo'],
+    errors: ['Rotar excesivamente el torso','No extender el brazo completamente abajo','Jalar con el bíceps en lugar del dorsal'],
+    yt: 'remo mancuerna unilateral tecnica'
+  },
+  'Jalones al pecho': {
+    muscles: ['Dorsal ancho','Bíceps','Romboides'],
+    desc: 'Ejercicio en polea alta que imita las dominadas. Ideal para quienes no pueden hacer dominadas aún o para aumentar el volumen de trabajo del dorsal.',
+    tips: ['Inclina ligeramente el torso hacia atrás (~15°)','Jala la barra hacia la parte superior del pecho','Lleva los codos hacia abajo y atrás','Retrae los omóplatos durante el jalón','Control en la extensión'],
+    errors: ['Jalar detrás de la nuca (lesión cervical)','Inclinar demasiado el torso','Usar peso excesivo y perder el rango de movimiento'],
+    yt: 'jalones al pecho tecnica correcta'
+  },
+  'Remo en maquina': {
+    muscles: ['Dorsal ancho','Romboides','Bíceps'],
+    desc: 'Variante de remo en máquina que proporciona estabilidad y permite enfocarse en la contracción del dorsal. Seguro y efectivo para todos los niveles.',
+    tips: ['Ajusta el asiento para que los brazos queden paralelos al suelo','Jala con los codos hacia atrás, no los hombros','Contrae la espalda al final del movimiento','Control total en la fase excéntrica'],
+    errors: ['Encorvar la espalda hacia adelante','Usar los bíceps como músculo principal','No completar el rango de movimiento'],
+    yt: 'remo maquina espalda tecnica'
+  },
+  'Peso muerto': {
+    muscles: ['Erector espinal','Glúteos','Isquiotibiales','Dorsal','Trapecios'],
+    desc: 'El ejercicio rey del entrenamiento. Trabaja prácticamente todos los músculos del cuerpo, especialmente la cadena posterior. Requiere técnica impecable para evitar lesiones.',
+    tips: ['Pies al ancho de cadera, barra sobre los metatarsos','Agarra la barra con los brazos rectos, fuera de las rodillas','Empuja el suelo con los pies al iniciar (no jales con la espalda)','Mantén la espalda neutra durante todo el movimiento','Las caderas y los hombros suben a la misma velocidad'],
+    errors: ['Redondear la espalda baja (lesión grave)','Iniciar el movimiento jalando con la espalda','Dejar que la barra se separe del cuerpo','Hiperextender al llegar arriba'],
+    yt: 'peso muerto tecnica correcta principiantes'
+  },
+  'Press militar': {
+    muscles: ['Deltoides medio','Deltoides ant.','Tríceps','Trapecios'],
+    desc: 'Ejercicio compuesto de empuje vertical que trabaja todos los deltoides con énfasis en el medio y anterior. Se puede realizar de pie o sentado, con barra o mancuernas.',
+    tips: ['Agarre ligeramente más ancho que hombros','Empuja la barra (o mancuernas) directamente hacia arriba','Activa el core durante todo el movimiento','No inclinar el torso hacia atrás (se convierte en press inclinado)','Lleva la barra frente a la cara, no detrás'],
+    errors: ['Inclinar el torso hacia atrás excesivamente','No activar el core (daño lumbar)','Jalar el cuello hacia adelante','Agarre demasiado ancho o estrecho'],
+    yt: 'press militar hombros tecnica correcta'
+  },
+  'Elevaciones laterales': {
+    muscles: ['Deltoides medio'],
+    desc: 'Ejercicio de aislamiento para el deltoides medio que crea el ancho de hombros. Sencillo en apariencia pero requiere buena técnica para evitar compensaciones.',
+    tips: ['Ligera flexión en los codos (10-15°)','Sube hasta el nivel de los hombros (no más arriba)','El meñique ligeramente más alto que el pulgar (como verter agua)','Movimiento lento y controlado, sin impulso','Baja lentamente (3 segundos)'],
+    errors: ['Usar impulso del cuerpo (trampa)','Subir por encima del nivel del hombro','Brazos completamente rectos (lesión de hombro)','Bajar demasiado rápido'],
+    yt: 'elevaciones laterales hombros tecnica'
+  },
+  'Elevaciones frontales': {
+    muscles: ['Deltoides ant.','Pectoral superior'],
+    desc: 'Ejercicio de aislamiento para el deltoides anterior. Complementa el press militar trabajando la parte frontal del hombro.',
+    tips: ['Sube hasta el nivel de los hombros','Mantén los brazos casi rectos','Alterna entre ambos brazos o hazlo simultáneo','Control total en la bajada'],
+    errors: ['Subir demasiado alto','Usar impulso del cuerpo','Peso excesivo para el hombro anterior'],
+    yt: 'elevaciones frontales hombros tecnica'
+  },
+  'Pajaros': {
+    muscles: ['Deltoides post.','Romboides','Trapecios med.'],
+    desc: 'Ejercicio para el deltoides posterior y los músculos de la parte alta de la espalda. Excelente para la postura y equilibrar el desarrollo del hombro.',
+    tips: ['Torso paralelo al suelo (o casi)','Sube los brazos hasta el nivel del hombro','Codos ligeramente flexionados','Siente la contracción entre los omóplatos','Movimiento lento y controlado'],
+    errors: ['No inclinar el torso lo suficiente','Usar demasiado peso','No activar los músculos de la espalda alta'],
+    yt: 'pajaros deltoides posterior tecnica'
+  },
+  'Arnold press': {
+    muscles: ['Todos los deltoides','Tríceps'],
+    desc: 'Creado por Arnold Schwarzenegger. Combina rotación y press para trabajar los tres haces del deltoides. Excelente ejercicio para hombros completos.',
+    tips: ['Empieza con las palmas mirando hacia ti','Rota las muñecas al subir hasta que miren al frente','Movimiento fluido y continuo','Sube y baja con control','Rango completo de movimiento'],
+    errors: ['Movimiento mecánico y discontinuo','Peso excesivo que interrumpe la rotación','No completar la rotación de muñecas'],
+    yt: 'arnold press hombros tecnica correcta'
+  },
+  'Curl con barra': {
+    muscles: ['Bíceps braquial','Braquial','Braquiorradial'],
+    desc: 'Ejercicio clásico de aislamiento para el bíceps. La barra recta o EZ permite trabajar ambos brazos simultáneamente con buena carga.',
+    tips: ['Codos pegados al cuerpo durante todo el movimiento','Sube de forma controlada hasta la contracción máxima','Baja completamente para el rango completo','No usar impulso del cuerpo','Agarre al ancho de hombros o ligeramente más estrecho'],
+    errors: ['Mover los codos hacia adelante (pecho auxiliar)','Usar impulso de la espalda','No bajar completamente','Bloquear las muñecas hacia atrás'],
+    yt: 'curl barra biceps tecnica correcta'
+  },
+  'Curl con mancuernas': {
+    muscles: ['Bíceps braquial','Braquial'],
+    desc: 'Versión unilateral del curl que permite supinar la muñeca durante el movimiento para mayor activación del bíceps. Corrige desequilibrios entre brazos.',
+    tips: ['Rota la muñeca al subir (supinación para mayor activación)','Alterna entre brazos o hazlo simultáneo','Codos pegados al cuerpo','Contracción completa arriba y extensión abajo'],
+    errors: ['No supinar la muñeca','Impulso del cuerpo','No completar el rango de movimiento'],
+    yt: 'curl mancuernas biceps tecnica supinacion'
+  },
+  'Curl martillo': {
+    muscles: ['Braquiorradial','Bíceps','Braquial'],
+    desc: 'Variante del curl con agarre neutro (palmas mirándose). Trabaja más el braquiorradial y el bíceps braquial largo. Da grosor al brazo.',
+    tips: ['Agarre neutro (palmas mirándose entre sí) en todo momento','Misma técnica que el curl regular','Codos pegados al cuerpo','Movimiento controlado arriba y abajo'],
+    errors: ['Rotar la muñeca (se convierte en curl regular)','Impulso del cuerpo','No bajar completamente'],
+    yt: 'curl martillo biceps braquioradial tecnica'
+  },
+  'Curl concentrado': {
+    muscles: ['Bíceps braquial'],
+    desc: 'Ejercicio de aislamiento máximo para el bíceps. Sentado con el codo apoyado en el muslo, elimina cualquier compensación del cuerpo.',
+    tips: ['Apoya el codo contra el interior del muslo','No dejes que el codo se mueva','Contracción máxima arriba (aprieta el bíceps)','Extensión completa abajo','Movimiento lento y controlado'],
+    errors: ['Mover el codo del muslo','Usar impulso del cuerpo','Bajar demasiado rápido'],
+    yt: 'curl concentrado biceps tecnica'
+  },
+  'Curl en polea': {
+    muscles: ['Bíceps braquial','Braquial'],
+    desc: 'Curl con polea baja que mantiene tensión constante en el bíceps durante todo el rango de movimiento, a diferencia del curl con mancuernas que pierde tensión al inicio.',
+    tips: ['La tensión constante maximiza el tiempo bajo tensión','Codos pegados al cuerpo','Posición de pie firme, sin impulso','Contracción máxima arriba'],
+    errors: ['Alejarse demasiado de la polea','Impulso del cuerpo','No mantener los codos fijos'],
+    yt: 'curl polea biceps tecnica'
+  },
+  'Extension en polea alta': {
+    muscles: ['Tríceps (cabeza lateral y media)'],
+    desc: 'Ejercicio de aislamiento para el tríceps en polea alta. Permite trabajar con tensión constante y es ideal para definir las tres cabezas del tríceps.',
+    tips: ['Torso ligeramente inclinado hacia adelante','Codos pegados al cuerpo y sin moverse','Extiende completamente los brazos abajo','Contrae al máximo al final del movimiento','Controla el retorno'],
+    errors: ['Mover los codos hacia adelante y atrás','No extender completamente','Usar el cuerpo para ayudar'],
+    yt: 'extension polea alta triceps tecnica'
+  },
+  'Press frances': {
+    muscles: ['Tríceps (cabeza larga)'],
+    desc: 'También conocido como skull crusher. Trabaja principalmente la cabeza larga del tríceps. Se puede hacer con barra EZ, mancuernas o barra recta.',
+    tips: ['Acuesta en el banco y sujeta la barra sobre el pecho','Dobla los codos llevando la barra a la frente (no al cuello)','Mantén los codos apuntando al techo','Extiende completamente arriba','Movimiento lento y controlado'],
+    errors: ['Bajar la barra al cuello (lesión)','Mover los codos lateralmente','Peso excesivo sin control'],
+    yt: 'press frances skull crusher triceps tecnica'
+  },
+  'Patada de triceps': {
+    muscles: ['Tríceps (cabeza lateral)'],
+    desc: 'Ejercicio de aislamiento para el tríceps. Inclinado hacia adelante con el codo a 90°, se extiende el brazo completamente atrás.',
+    tips: ['Torso paralelo al suelo','Codo fijo pegado al cuerpo','Extiende completamente el brazo','Contrae el tríceps al final','Movimiento controlado, sin impulso'],
+    errors: ['No extender completamente','Mover el codo durante el movimiento','Torso no suficientemente inclinado'],
+    yt: 'patada triceps tecnica correcta'
+  },
+  'Fondos de triceps': {
+    muscles: ['Tríceps','Pectoral inferior','Deltoides ant.'],
+    desc: 'Ejercicio de peso corporal para tríceps con los pies en el suelo y las manos en un banco. Efectivo para todos los niveles.',
+    tips: ['Manos al ancho de hombros en el banco','Baja hasta que los codos estén a 90°','Mantén el cuerpo pegado al banco para énfasis en tríceps','Extiende completamente los brazos arriba'],
+    errors: ['Alejarse demasiado del banco (trabaja pecho)','No bajar suficiente','Codos que se abren lateralmente'],
+    yt: 'fondos triceps banco tecnica'
+  },
+  'Extension con mancuerna': {
+    muscles: ['Tríceps (cabeza larga)'],
+    desc: 'Extensión de tríceps sobre la cabeza con una mancuerna. Se puede hacer con ambas manos o unilateral. Trabaja la cabeza larga del tríceps.',
+    tips: ['Mantén los codos apuntando hacia arriba (no se abren)','Baja la mancuerna detrás de la cabeza de forma controlada','Extiende completamente arriba','Activa el core para estabilizar'],
+    errors: ['Abrir los codos lateralmente','Peso excesivo','No controlar la bajada'],
+    yt: 'extension triceps mancuerna cabeza tecnica'
+  },
+  'Sentadilla': {
+    muscles: ['Cuádriceps','Glúteos','Isquiotibiales','Core'],
+    desc: 'La reina de los ejercicios de piernas. Trabaja prácticamente todos los músculos del tren inferior y requiere coordinación de todo el cuerpo. Técnica es esencial.',
+    tips: ['Pies al ancho de hombros o ligeramente más','Punta de los pies ligeramente hacia afuera','Baja manteniendo el pecho arriba y la espalda recta','Las rodillas siguen la dirección de los pies','Sube empujando desde los talones','Las caderas deben bajar al nivel de las rodillas (o más)'],
+    errors: ['Rodillas que colapsan hacia adentro (valgo)','Levantar los talones del suelo','Inclinar demasiado el torso hacia adelante','No bajar lo suficiente (media sentadilla)'],
+    yt: 'sentadilla con barra tecnica correcta principiantes'
+  },
+  'Prensa de piernas': {
+    muscles: ['Cuádriceps','Glúteos','Isquiotibiales'],
+    desc: 'Máquina para piernas que permite trabajar con mayor carga que la sentadilla con menor estrés en la espalda. La posición de los pies determina el músculo enfatizado.',
+    tips: ['Pies al centro o arriba de la plataforma para glúteos','Pies abajo de la plataforma para cuádriceps','No bloquees completamente las rodillas arriba','Espalda pegada al respaldo en todo momento','No dejes que las rodillas se colapsen'],
+    errors: ['Levantar la espalda del respaldo','Bloquear completamente las rodillas (articulación en riesgo)','Rodillas que se cierran'],
+    yt: 'prensa piernas maquina tecnica posicion pies'
+  },
+  'Extension de cuadriceps': {
+    muscles: ['Cuádriceps'],
+    desc: 'Ejercicio de aislamiento para el cuádriceps en máquina. Excelente para el calentamiento, la rehabilitación y el trabajo de definición del cuádriceps.',
+    tips: ['Ajusta el rodillo al nivel de los tobillos','Extiende completamente las piernas arriba','Contrae el cuádriceps al final','Baja de forma controlada (3-4 segundos)','No uses velocidad, usa control'],
+    errors: ['No extender completamente','Bajar demasiado rápido','Arquear la espalda baja al subir'],
+    yt: 'extension cuadriceps maquina tecnica'
+  },
+  'Curl de femoral': {
+    muscles: ['Isquiotibiales','Glúteos'],
+    desc: 'Ejercicio de aislamiento para los isquiotibiales en máquina. Complementa el trabajo de cuádriceps y es esencial para el equilibrio muscular del tren inferior.',
+    tips: ['El rodillo debe quedar sobre los tobillos','Contrae los glúteos durante el movimiento','Baja de forma completamente controlada','Rango completo de movimiento','No dejes que las caderas se levanten'],
+    errors: ['Levantar las caderas del banco (compensación)','Bajar demasiado rápido','No usar el rango completo'],
+    yt: 'curl femoral maquina isquiotibiales tecnica'
+  },
+  'Peso muerto rumano': {
+    muscles: ['Isquiotibiales','Glúteos','Erector espinal'],
+    desc: 'Variante del peso muerto que pone énfasis en los isquiotibiales y los glúteos. Las piernas están casi rectas y se siente estiramiento intenso en los isquios al bajar.',
+    tips: ['Piernas casi rectas (ligera flexión en rodillas)','Baja la barra deslizándola por las piernas','Siente el estiramiento máximo en los isquiotibiales','Caderas hacia atrás (no doblar la espalda)','Espalda recta y neutral durante todo el movimiento'],
+    errors: ['Redondear la espalda (lesión grave)','Bajar demasiado bajo perdiendo la espalda neutra','Doblar las rodillas (se convierte en peso muerto convencional)'],
+    yt: 'peso muerto rumano isquiotibiales tecnica'
+  },
+  'Zancadas': {
+    muscles: ['Cuádriceps','Glúteos','Isquiotibiales'],
+    desc: 'Ejercicio unilateral para el tren inferior que trabaja cuádriceps, glúteos e isquiotibiales. Además mejora el equilibrio y corrige desequilibrios entre piernas.',
+    tips: ['Paso largo hacia adelante','La rodilla trasera baja casi al suelo sin tocarlo','La rodilla delantera no pasa la punta del pie (si es posible)','Mantén el torso erguido','Empuja desde el talón delantero para subir'],
+    errors: ['Paso demasiado corto','La rodilla delantera colapsa adentro','Inclinar el torso hacia adelante','Rodilla trasera golpea el suelo con fuerza'],
+    yt: 'zancadas lunges tecnica correcta'
+  },
+  'Elevacion de gemelos': {
+    muscles: ['Gastrocnemio','Sóleo'],
+    desc: 'Ejercicio de aislamiento para los gemelos. Con la pierna recta trabaja más el gastrocnemio; con la rodilla flexionada trabaja más el sóleo.',
+    tips: ['Sube completamente en punta de pies','Aguanta 1-2 segundos arriba','Baja lentamente sintiendo el estiramiento','Rango de movimiento completo (estiramiento total abajo)','Varía la posición de los pies para trabajar distintas partes'],
+    errors: ['Rango de movimiento incompleto (no subir del todo)','Bajar demasiado rápido','No sentir el estiramiento en la bajada'],
+    yt: 'elevacion gemelos pantorrillas tecnica'
+  },
+  'Plancha': {
+    muscles: ['Core','Recto abdominal','Transverso','Glúteos'],
+    desc: 'Ejercicio isométrico fundamental para el core. Activa profundamente los músculos estabilizadores del abdomen, la espalda baja y los glúteos.',
+    tips: ['Cuerpo en línea recta de la cabeza a los talones','Codos directamente bajo los hombros','Activa los glúteos y el abdomen al mismo tiempo','No dejes que las caderas suban o bajen','Respira de forma controlada'],
+    errors: ['Caderas demasiado altas (tienda de campaña)','Caderas que caen (arco lumbar)','Cuello en hiperextensión','Contener la respiración'],
+    yt: 'plancha abdominal correcta tecnica'
+  },
+  'Crunch': {
+    muscles: ['Recto abdominal'],
+    desc: 'Ejercicio clásico para el abdomen. El rango de movimiento es pequeño (no es un abdominal completo). Se contrae el recto abdominal levantando los hombros del suelo.',
+    tips: ['Manos detrás de la cabeza sin jalar el cuello','Levanta solo los hombros del suelo (no el torso completo)','Exhala al contraer, inhala al bajar','Contrae el abdomen al subir','Movimiento lento y controlado'],
+    errors: ['Jalar el cuello con las manos','Subir el torso completo (lesión lumbar)','Usar impulso para subir','Bajar demasiado rápido'],
+    yt: 'crunch abdominal correcto tecnica'
+  },
+  'Elevacion de piernas': {
+    muscles: ['Recto abdominal inferior','Flexores de cadera'],
+    desc: 'Ejercicio para la parte inferior del abdomen. Acostado boca arriba, se levantan las piernas juntas hasta la vertical. Exigente y efectivo.',
+    tips: ['Espalda baja pegada al suelo en todo momento','Piernas juntas y ligeramente flexionadas','Sube lentamente hasta los 90°','Baja de forma controlada sin tocar el suelo','Activa el abdomen antes de comenzar'],
+    errors: ['La espalda baja se despega del suelo (lesión)','Bajar las piernas demasiado (lumbar)','Usar impulso','Piernas demasiado rectas si hay tensión lumbar'],
+    yt: 'elevacion piernas abdominal inferior tecnica'
+  },
+  'Rueda abdominal': {
+    muscles: ['Core completo','Dorsal','Hombros'],
+    desc: 'Uno de los ejercicios más exigentes para el core. Con la rueda abdominal, se extiende el cuerpo desde rodillas o de pie, trabajando todo el núcleo.',
+    tips: ['Comienza desde rodillas si eres principiante','Mantén la espalda recta durante toda la extensión','Activa el core para evitar que la espalda se doble','Vuelve de forma controlada usando el abdomen','Extiende solo hasta donde puedas mantener la espalda recta'],
+    errors: ['Dejar que la espalda se doble (lesión grave)','Ir demasiado lejos sin control','Usar los brazos en lugar del core para volver'],
+    yt: 'rueda abdominal tecnica correcta principiantes'
+  },
+  'Russian twist': {
+    muscles: ['Oblicuos','Recto abdominal'],
+    desc: 'Ejercicio rotacional para los oblicuos y el core. Sentado con el torso inclinado, se gira de lado a lado. Se puede hacer con o sin peso.',
+    tips: ['Torso inclinado ~45° hacia atrás','Pies en el suelo (principiante) o elevados (avanzado)','Giro viene del torso, no de los brazos','Mantén el abdomen activado','Movimiento controlado, sin impulso'],
+    errors: ['Girar solo los brazos sin girar el torso','No mantener el torso inclinado','Movimiento demasiado rápido (pierde efectividad)'],
+    yt: 'russian twist oblicuos abdomen tecnica'
+  },
+};
+
+// ─── Routine Templates ────────────────────────────────────────
+const ROUTINE_TEMPLATES = {
+  beginner: {
+    label: 'Principiante',
+    color: 'var(--success)',
+    colorLight: 'var(--success-light)',
+    freq: '3 días/semana',
+    desc: 'Cuerpo completo, 3 días alternos (Lun/Mié/Vie)',
+    routines: [
+      { name: 'Día A — Cuerpo completo', exercises: [
+        {name:'Sentadilla',equipment:''},{name:'Press de banca',equipment:''},{name:'Remo con barra',equipment:''},
+        {name:'Press militar',equipment:''},{name:'Curl con barra',equipment:''},{name:'Extension en polea alta',equipment:''},
+        {name:'Plancha',equipment:''}
+      ]},
+      { name: 'Día B — Cuerpo completo', exercises: [
+        {name:'Peso muerto rumano',equipment:''},{name:'Press con mancuernas',equipment:''},{name:'Jalones al pecho',equipment:''},
+        {name:'Elevaciones laterales',equipment:''},{name:'Curl con mancuernas',equipment:''},{name:'Fondos de triceps',equipment:''},
+        {name:'Crunch',equipment:''}
+      ]},
+    ]
+  },
+  intermediate: {
+    label: 'Intermedio',
+    color: 'var(--primary)',
+    colorLight: 'var(--primary-light)',
+    freq: '4 días/semana',
+    desc: 'Push / Pull / Legs / Upper (Lun/Mar/Jue/Vie)',
+    routines: [
+      { name: 'Push — Empuje', exercises: [
+        {name:'Press de banca',equipment:''},{name:'Press inclinado',equipment:''},{name:'Press militar',equipment:''},
+        {name:'Elevaciones laterales',equipment:''},{name:'Extension en polea alta',equipment:''},{name:'Press frances',equipment:''}
+      ]},
+      { name: 'Pull — Jalón', exercises: [
+        {name:'Peso muerto',equipment:''},{name:'Dominadas',equipment:''},{name:'Remo con barra',equipment:''},
+        {name:'Jalones al pecho',equipment:''},{name:'Curl con barra',equipment:''},{name:'Curl martillo',equipment:''}
+      ]},
+      { name: 'Legs — Piernas', exercises: [
+        {name:'Sentadilla',equipment:''},{name:'Prensa de piernas',equipment:''},{name:'Peso muerto rumano',equipment:''},
+        {name:'Extension de cuadriceps',equipment:''},{name:'Curl de femoral',equipment:''},{name:'Elevacion de gemelos',equipment:''}
+      ]},
+      { name: 'Upper — Tren superior', exercises: [
+        {name:'Press de banca',equipment:''},{name:'Remo con mancuerna',equipment:''},{name:'Press militar',equipment:''},
+        {name:'Dominadas',equipment:''},{name:'Arnold press',equipment:''},{name:'Curl con mancuernas',equipment:''},
+        {name:'Extension en polea alta',equipment:''}
+      ]},
+    ]
+  },
+  advanced: {
+    label: 'Avanzado',
+    color: 'var(--danger)',
+    colorLight: 'var(--danger-light)',
+    freq: '5 días/semana',
+    desc: 'Por grupo muscular (Lun-Vie)',
+    routines: [
+      { name: 'Pecho', exercises: [
+        {name:'Press de banca',equipment:''},{name:'Press inclinado',equipment:''},{name:'Press con mancuernas',equipment:''},
+        {name:'Aperturas',equipment:''},{name:'Fondos en paralelas',equipment:''},{name:'Crossover en polea',equipment:''}
+      ]},
+      { name: 'Espalda', exercises: [
+        {name:'Peso muerto',equipment:''},{name:'Dominadas',equipment:''},{name:'Remo con barra',equipment:''},
+        {name:'Jalones al pecho',equipment:''},{name:'Remo con mancuerna',equipment:''},{name:'Remo en maquina',equipment:''}
+      ]},
+      { name: 'Hombros y Brazos', exercises: [
+        {name:'Press militar',equipment:''},{name:'Elevaciones laterales',equipment:''},{name:'Arnold press',equipment:''},
+        {name:'Pajaros',equipment:''},{name:'Curl con barra',equipment:''},{name:'Extension en polea alta',equipment:''},
+        {name:'Press frances',equipment:''}
+      ]},
+      { name: 'Piernas', exercises: [
+        {name:'Sentadilla',equipment:''},{name:'Prensa de piernas',equipment:''},{name:'Peso muerto rumano',equipment:''},
+        {name:'Extension de cuadriceps',equipment:''},{name:'Curl de femoral',equipment:''},{name:'Zancadas',equipment:''},
+        {name:'Elevacion de gemelos',equipment:''}
+      ]},
+      { name: 'Full body / Funcional', exercises: [
+        {name:'Peso muerto',equipment:''},{name:'Press de banca',equipment:''},{name:'Dominadas',equipment:''},
+        {name:'Sentadilla',equipment:''},{name:'Press militar',equipment:''},{name:'Remo con barra',equipment:''}
+      ]},
+    ]
+  }
+};
+
 // ─── Full mode state ─────────────────────────────────────────
 let currentExerciseName = '';
 let currentExerciseSets = [];
@@ -2107,9 +2537,11 @@ function exerciseRowHtml(item, equips) {
   const chips = equips.map(e =>
     `<button class="equip-chip" data-exercise="${attr(item)}" data-equip="${attr(e)}" onclick="catalogSelectEquip(this)">${equipChipLabel(e)}</button>`
   ).join('');
+  const hasInfo = !!EXERCISE_INFO[item];
+  const infoBtn = hasInfo ? `<button class="ex-info-btn" onclick="event.stopPropagation();showExerciseInfo('${attr(item)}')" title="Info del ejercicio">ℹ</button>` : '';
   return `<div class="exercise-row">
     <div class="exercise-row-header">
-      <span class="exercise-row-name">${item}</span>${lwStr}
+      <span class="exercise-row-name">${item}</span>${infoBtn}${lwStr}
     </div>
     <div class="equip-chips">${chips}</div>
   </div>`;
@@ -2388,6 +2820,87 @@ function dismissRoutineSuggest() {
   const b = document.getElementById('routineSuggestBanner');
   if (b) b.style.display = 'none';
   suggestedRoutine = null;
+}
+
+// ─── Exercise Info Modal ──────────────────────────────────────
+let _currentExInfoYT = '';
+
+function showExerciseInfo(name) {
+  const info = EXERCISE_INFO[name];
+  if (!info) return;
+  document.getElementById('exInfoName').textContent = name;
+  document.getElementById('exInfoMuscles').innerHTML = (info.muscles || []).map(m => `<span class="ex-info-muscle-chip">${m}</span>`).join('');
+  document.getElementById('exInfoDesc').textContent = info.desc || '';
+  document.getElementById('exInfoTips').innerHTML = (info.tips || []).map(t => `<li><span class="ex-tip-icon">✓</span>${t}</li>`).join('');
+  document.getElementById('exInfoErrors').innerHTML = (info.errors || []).map(e => `<li><span class="ex-tip-icon">✗</span>${e}</li>`).join('');
+  _currentExInfoYT = encodeURIComponent(info.yt || name + ' correcto');
+  document.getElementById('exInfoOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('exInfoSheet').classList.add('active'), 10);
+}
+
+function closeExerciseInfo() {
+  document.getElementById('exInfoSheet').classList.remove('active');
+  setTimeout(() => document.getElementById('exInfoOverlay').classList.remove('active'), 350);
+}
+
+function openExerciseYT() {
+  window.open('https://www.youtube.com/results?search_query=' + _currentExInfoYT, '_blank');
+}
+
+// ─── Routines Sheet ───────────────────────────────────────────
+let _currentRoutineLevel = 'beginner';
+
+function showRoutinesSheet() {
+  // Default to user's experience level
+  const exp = userProfile?.experience;
+  _currentRoutineLevel = exp === 'advanced' ? 'advanced' : exp === 'intermediate' ? 'intermediate' : 'beginner';
+  // Update tab active state
+  document.querySelectorAll('.routine-level-tab').forEach((t, i) => {
+    const levels = ['beginner','intermediate','advanced'];
+    t.classList.toggle('active', levels[i] === _currentRoutineLevel);
+  });
+  renderRoutines(_currentRoutineLevel);
+  document.getElementById('routinesOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('routinesSheet').classList.add('active'), 10);
+}
+
+function closeRoutinesSheet() {
+  document.getElementById('routinesSheet').classList.remove('active');
+  setTimeout(() => document.getElementById('routinesOverlay').classList.remove('active'), 350);
+}
+
+function switchRoutineLevel(level, btn) {
+  _currentRoutineLevel = level;
+  document.querySelectorAll('.routine-level-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderRoutines(level);
+}
+
+function renderRoutines(level) {
+  const tmpl = ROUTINE_TEMPLATES[level];
+  if (!tmpl) return;
+  document.getElementById('routinesLevelInfo').textContent = tmpl.freq + ' · ' + tmpl.desc;
+  const list = document.getElementById('routinesList');
+  list.innerHTML = tmpl.routines.map((r, idx) => `
+    <div class="routine-card">
+      <div class="routine-card-header">
+        <div class="routine-card-name">${r.name}</div>
+        <div class="routine-card-count">${r.exercises.length} ejercicios</div>
+      </div>
+      <div class="routine-card-exercises">${r.exercises.map(e => e.name).join(' · ')}</div>
+      <button class="routine-card-start-btn" onclick="startRoutineTemplate('${level}',${idx})">&#9654; Usar esta rutina</button>
+    </div>
+  `).join('');
+}
+
+function startRoutineTemplate(level, routineIdx) {
+  const tmpl = ROUTINE_TEMPLATES[level];
+  if (!tmpl) return;
+  const routine = tmpl.routines[routineIdx];
+  if (!routine) return;
+  pendingExercises = routine.exercises.map(e => ({ name: e.name, equipment: e.equipment || '' }));
+  closeRoutinesSheet();
+  setTimeout(() => openConfig(), 400);
 }
 
 function changeExercise() {
