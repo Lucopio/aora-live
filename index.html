@@ -1291,7 +1291,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.14.1</span>
+        <span class="app-version">v1.15.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1893,32 +1893,21 @@ body {
   </div>
 </div>
 
-<!-- WARMUP VIDEO MODAL (in-app embed, never leaves the app) -->
-<div id="wuVideoOverlay" onclick="closeWarmupVideo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:400;align-items:flex-end;justify-content:center"></div>
-<div id="wuVideoSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#111;border-radius:20px 20px 0 0;z-index:401;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)">
+<!-- WARMUP GIF MODAL -->
+<div id="wuGifOverlay" onclick="closeWarmupGif()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400"></div>
+<div id="wuGifSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#111;border-radius:20px 20px 0 0;z-index:401;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)">
   <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:#1a1a1a">
-    <span id="wuVideoTitle" style="font-size:13px;font-weight:700;color:#fff;flex:1;margin-right:8px;line-height:1.3"></span>
-    <button onclick="closeWarmupVideo()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+    <span id="wuGifTitle" style="font-size:13px;font-weight:700;color:#fff;flex:1;margin-right:8px;line-height:1.3"></span>
+    <button onclick="closeWarmupGif()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
   </div>
-  <!-- 16:9 iframe container -->
-  <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000">
-    <iframe id="wuVideoFrame"
-      style="position:absolute;top:0;left:0;width:100%;height:100%;border:none"
-      allowfullscreen
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      loading="lazy">
-    </iframe>
-    <!-- Fallback shown if iframe blocked (hidden by default, display:flex only when needed) -->
-    <div id="wuVideoFallback" style="display:none;position:absolute;inset:0;background:#111;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px">
-      <div style="font-size:32px">📺</div>
-      <p style="color:#aaa;font-size:13px;text-align:center">El video no pudo cargarse aquí.</p>
-      <button id="wuVideoFallbackBtn" style="padding:10px 20px;background:#FF0000;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">Ver en YouTube</button>
-    </div>
+  <!-- GIF container -->
+  <div style="background:#000;text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center">
+    <img id="wuGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
   </div>
   <!-- Footer hint -->
   <div style="padding:10px 16px;text-align:center">
-    <p style="font-size:11px;color:#666;margin:0">Toca fuera para cerrar &nbsp;·&nbsp; El video se pausa al cerrar</p>
+    <p style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
   </div>
 </div>
 
@@ -2146,32 +2135,13 @@ function renderGroupPicker() {
     </button>`).join('');
 }
 
-function openWarmupVideo(videoId, name) {
-  document.getElementById('wuVideoTitle').textContent = name;
-
-  // Always hide fallback and show iframe first
-  const fallback = document.getElementById('wuVideoFallback');
-  const iframe   = document.getElementById('wuVideoFrame');
-  fallback.style.display = 'none';
-  iframe.style.display   = 'block';
-
-  // Direct embed with real video ID — no search, loads instantly
-  const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
-  iframe.src = src;
-
-  // If iframe fails to load (e.g. embedding disabled), show fallback
-  iframe.onerror = () => {
-    iframe.style.display   = 'none';
-    fallback.style.display = 'flex';
-  };
-
-  // Fallback button opens the exact video on YouTube
-  const fallbackBtn = document.getElementById('wuVideoFallbackBtn');
-  fallbackBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+function openWarmupGif(gifUrl, name) {
+  document.getElementById('wuGifTitle').textContent = name;
+  document.getElementById('wuGifImg').src = gifUrl;
 
   // Show overlay + sheet
-  const overlay = document.getElementById('wuVideoOverlay');
-  const sheet   = document.getElementById('wuVideoSheet');
+  const overlay = document.getElementById('wuGifOverlay');
+  const sheet   = document.getElementById('wuGifSheet');
   overlay.style.display = 'block';
   sheet.style.display   = 'block';
   // Animate up
@@ -2183,13 +2153,13 @@ function openWarmupVideo(videoId, name) {
   document.body.style.overflow = 'hidden';
 }
 
-function closeWarmupVideo() {
-  const sheet = document.getElementById('wuVideoSheet');
+function closeWarmupGif() {
+  const sheet = document.getElementById('wuGifSheet');
   sheet.style.transform = 'translateX(-50%) translateY(100%)';
   setTimeout(() => {
-    document.getElementById('wuVideoFrame').src = ''; // stop playback
+    document.getElementById('wuGifImg').src = ''; // free memory
     sheet.style.display = 'none';
-    document.getElementById('wuVideoOverlay').style.display = 'none';
+    document.getElementById('wuGifOverlay').style.display = 'none';
     document.body.style.overflow = '';
   }, 280);
 }
@@ -2246,10 +2216,10 @@ function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupExercisesList').innerHTML = data.exercises.map((ex, i) => {
     const animCls = getAnim(ex.name);
     const icon    = iconMap[animCls];
-    const safeId   = (ex.ytId || '').replace(/'/g, "\\'");
+    const safeGif  = (ex.gif || '').replace(/'/g, "\\'");
     const safeName = ex.name.replace(/'/g, "\\'");
-    const ytBtn = safeId ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupVideo('${safeId}','${safeName}')">
-        <svg viewBox="0 0 24 24" width="11" height="11" fill="#FF0000"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-2.75 12.58 12.58 0 0 0-8.65 5.31A4.83 4.83 0 0 1 4.35 12a4.83 4.83 0 0 1 2.82 2.75A12.58 12.58 0 0 0 15.82 20a4.83 4.83 0 0 1 3.77-2.75A12.58 12.58 0 0 0 22 12a12.58 12.58 0 0 0-2.41-5.31z"/><polygon points="10 15 15.19 12 10 9 10 15" fill="white"/></svg>
+    const ytBtn = safeGif ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupGif('${safeGif}','${safeName}')">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
         Ver cómo hacerlo
       </button>` : '';
     return `
@@ -2701,6 +2671,7 @@ const EXERCISE_INFO = {
 };
 
 // ─── Warmup Database (calentamientos por grupo muscular) ─────
+const W = 'https://upload.wikimedia.org/wikipedia/commons/';
 const warmupDatabase = {
   'Pecho': {
     duration: '5-8 minutos',
@@ -2710,10 +2681,10 @@ const warmupDatabase = {
       { text: 'Elevar la temperatura muscular' }
     ],
     exercises: [
-      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', ytId: 'sytmEGA0HKU' },
-      { name: 'Stretch de pecho en pared', reps: '2×30 seg', duration: '1 min', why: 'Estira el pectoral y mejora cuánto puedes abrir los brazos durante el press', ytId: 'TufwPKlp31w' },
-      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', ytId: 'sytmEGA0HKU' },
-      { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', ytId: 'H6r0fh2-YNU' }
+      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Stretch de pecho en pared', reps: '2×30 seg', duration: '1 min', why: 'Estira el pectoral y mejora cuánto puedes abrir los brazos durante el press', gif: W+'4/41/Chest_stretch-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', gif: W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', gif: W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif' }
     ],
     injuries: ['Impingement de hombro (pellizco de tendón)', 'Tendinitis del pectoral', 'Dolor en codo']
   },
@@ -2725,10 +2696,10 @@ const warmupDatabase = {
       { text: 'Elevar la temperatura muscular' }
     ],
     exercises: [
-      { name: 'Cat-Cow (movimiento de columna)', reps: '10 reps', duration: '2 min', why: 'Mueve toda la columna suavemente — reduce el riesgo de hernias discales durante peso muerto o remo', ytId: 'J99uL4J5khE' },
-      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core sin comprimir la espalda baja — estabiliza antes de cargar', ytId: '4XLEnwUr1d8' },
-      { name: 'Jalón al pecho muy ligero', reps: '15 reps', duration: '2 min', why: 'Despierta el dorsal con poco peso para preparar el movimiento de tirón', ytId: '72q0tKij5uU' },
-      { name: 'Band pull-aparts (banda elástica)', reps: '15 reps', duration: '1 min', why: 'Activa los músculos entre los omóplatos — mejora la postura y previene lesiones de hombro', ytId: 'brWneMgR-7k' }
+      { name: 'Cat-Cow (movimiento de columna)', reps: '10 reps', duration: '2 min', why: 'Mueve toda la columna suavemente — reduce el riesgo de hernias discales durante peso muerto o remo', gif: W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core sin comprimir la espalda baja — estabiliza antes de cargar', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Jalón al pecho muy ligero', reps: '15 reps', duration: '2 min', why: 'Despierta el dorsal con poco peso para preparar el movimiento de tirón', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Band pull-aparts (banda elástica)', reps: '15 reps', duration: '1 min', why: 'Activa los músculos entre los omóplatos — mejora la postura y previene lesiones de hombro', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' }
     ],
     injuries: ['Hernia discal', 'Contractura lumbar', 'Tendinitis dorsal']
   },
@@ -2740,10 +2711,10 @@ const warmupDatabase = {
       { text: 'Preparar el cuerpo para levantar sobre la cabeza' }
     ],
     exercises: [
-      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Recorre todo el rango del hombro — el calentamiento más completo para esta articulación', ytId: 'sytmEGA0HKU' },
-      { name: 'Scapular push-ups (en pared o suelo)', reps: '12 reps', duration: '1 min', why: 'Activa los músculos que estabilizan el hombro — previene lesiones al hacer press', ytId: '8ncZ22u33bY' },
-      { name: 'Press militar con barra vacía', reps: '10 reps', duration: '2 min', why: 'Práctica del movimiento sin carga — prepara la articulación para el peso real', ytId: 'GELRUlUSxeI' },
-      { name: 'Elevaciones laterales muy ligeras', reps: '12 reps', duration: '2 min', why: 'Activa el deltoides medio con poco peso antes de las series pesadas', ytId: 'hgLpdwMtEEs' }
+      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Recorre todo el rango del hombro — el calentamiento más completo para esta articulación', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Scapular push-ups (en pared o suelo)', reps: '12 reps', duration: '1 min', why: 'Activa los músculos que estabilizan el hombro — previene lesiones al hacer press', gif: W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Press militar con barra vacía', reps: '10 reps', duration: '2 min', why: 'Práctica del movimiento sin carga — prepara la articulación para el peso real', gif: W+'b/b2/Overhead_press-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Elevaciones laterales muy ligeras', reps: '12 reps', duration: '2 min', why: 'Activa el deltoides medio con poco peso antes de las series pesadas', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' }
     ],
     injuries: ['Impingement (pellizco de tendón en el hombro)', 'Desgarro del manguito rotador', 'Tendinitis bicipital']
   },
@@ -2755,9 +2726,9 @@ const warmupDatabase = {
       { text: 'Calentar los antebrazos' }
     ],
     exercises: [
-      { name: 'Extensiones de codo sin peso', reps: '15 reps', duration: '1 min', why: 'Lleva el codo a todo su rango — lo lubrica antes de cargar', ytId: 'PY9QylAMtyE' },
-      { name: 'Curl con barra vacía o banda', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps sin fatigarlo — prepara el movimiento de curl', ytId: 'PY9QylAMtyE' },
-      { name: 'Plancha sobre antebrazos', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo, muñeca y core — base de estabilidad', ytId: 'd0atctiI7Vw' }
+      { name: 'Extensiones de codo sin peso', reps: '15 reps', duration: '1 min', why: 'Lleva el codo a todo su rango — lo lubrica antes de cargar', gif: W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Curl con barra vacía o banda', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps sin fatigarlo — prepara el movimiento de curl', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Plancha sobre antebrazos', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo, muñeca y core — base de estabilidad', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' }
     ],
     injuries: ['Tendinitis de codo (codo de tenista)', 'Dolor de antebrazo al rotar', 'Síndrome del pronador']
   },
@@ -2769,9 +2740,9 @@ const warmupDatabase = {
       { text: 'Preparar articulaciones para movimientos de empuje' }
     ],
     exercises: [
-      { name: 'Flexiones (o en rodillas)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps, pecho y core al mismo tiempo — calentamiento completo', ytId: '9684eElbYzI' },
-      { name: 'Dips en banco sin peso', reps: '8-10 reps', duration: '1 min', why: 'Replica el movimiento de los fondos de tríceps con solo el peso corporal', ytId: 'H6r0fh2-YNU' },
-      { name: 'Extensión de tríceps muy ligera', reps: '12 reps', duration: '2 min', why: 'Activa específicamente el tríceps antes de las series pesadas', ytId: 'HAS8uy73HqM' }
+      { name: 'Flexiones (o en rodillas)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps, pecho y core al mismo tiempo — calentamiento completo', gif: W+'8/8f/Pushups.gif' },
+      { name: 'Dips en banco sin peso', reps: '8-10 reps', duration: '1 min', why: 'Replica el movimiento de los fondos de tríceps con solo el peso corporal', gif: W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Extensión de tríceps muy ligera', reps: '12 reps', duration: '2 min', why: 'Activa específicamente el tríceps antes de las series pesadas', gif: W+'3/32/One-arm-tricep-extension-1.gif' }
     ],
     injuries: ['Tendinitis de codo', 'Dolor en la punta del codo (olécranon)', 'Pellizco de codo']
   },
@@ -2783,11 +2754,11 @@ const warmupDatabase = {
       { text: 'Preparar los ligamentos de rodilla' }
     ],
     exercises: [
-      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Lubrica la articulación de la cadera antes de cargar en sentadilla o peso muerto', ytId: 'TcM8ups8GtA' },
-      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Calienta isquiotibiales, cuádriceps y cadera con movimiento dinámico', ytId: 'naW8u72lOzI' },
-      { name: 'Glute bridges (puente de glúteos)', reps: '15 reps', duration: '2 min', why: '"Enciende" los glúteos — si no están activos, las rodillas y la espalda baja compensan el trabajo', ytId: 'OUgsJ8-Vi0E' },
-      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Practica el patrón de la sentadilla sin peso — activa todo el tren inferior', ytId: 'qsAkuNORgmk' },
-      { name: 'Elevación de talones (gemelos)', reps: '15 reps', duration: '1 min', why: 'Activa el tobillo y la pantorrilla — apoyo en toda sentadilla y zancada', ytId: 'IGwjFUhDbv0' }
+      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Lubrica la articulación de la cadera antes de cargar en sentadilla o peso muerto', gif: W+'a/af/Lunge-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Calienta isquiotibiales, cuádriceps y cadera con movimiento dinámico', gif: W+'3/32/Hamstring_stretch-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Glute bridges (puente de glúteos)', reps: '15 reps', duration: '2 min', why: '"Enciende" los glúteos — si no están activos, las rodillas y la espalda baja compensan el trabajo', gif: W+'0/05/Pelvic_tilt-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Practica el patrón de la sentadilla sin peso — activa todo el tren inferior', gif: W+'e/e6/Squats.gif' },
+      { name: 'Elevación de talones (gemelos)', reps: '15 reps', duration: '1 min', why: 'Activa el tobillo y la pantorrilla — apoyo en toda sentadilla y zancada', gif: W+'1/10/Toe_stand-CDC_strength_training_for_older_adults.gif' }
     ],
     injuries: ['Lesión de rodilla (LCA o menisco)', 'Desgarro de isquiotibial', 'Dolor lumbar al agacharse']
   },
@@ -2799,9 +2770,9 @@ const warmupDatabase = {
       { text: 'Elevar temperatura del tronco' }
     ],
     exercises: [
-      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core profundo sin comprimir la espalda — el mejor ejercicio previo a abdominales', ytId: '4XLEnwUr1d8' },
-      { name: 'Bird dogs (cuatro patas)', reps: '10 reps cada lado', duration: '1 min', why: 'Trabaja la estabilidad del tronco sin movimiento de columna — previene lesiones', ytId: 'L0UMTpI1xWI' },
-      { name: 'Plancha frontal (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa todo el core antes de series más intensas de abdomen', ytId: 'd0atctiI7Vw' }
+      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core profundo sin comprimir la espalda — el mejor ejercicio previo a abdominales', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Bird dogs (cuatro patas)', reps: '10 reps cada lado', duration: '1 min', why: 'Trabaja la estabilidad del tronco sin movimiento de columna — previene lesiones', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Plancha frontal (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa todo el core antes de series más intensas de abdomen', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' }
     ],
     injuries: ['Contractura lumbar', 'Hernia discal lumbar', 'Distensión del oblicuo']
   },
@@ -2813,9 +2784,9 @@ const warmupDatabase = {
       { text: 'Elevar temperatura corporal general' }
     ],
     exercises: [
-      { name: 'Jumping jacks suaves', reps: '30 reps', duration: '2 min', why: 'Moviliza todo el cuerpo y eleva el ritmo cardíaco al mismo tiempo', ytId: 'iO8srE_cz3s' },
-      { name: 'Trote en el lugar', reps: 'Baja intensidad', duration: '2 min', why: 'Eleva la frecuencia cardíaca de forma gradual y segura', ytId: 'jSACK-0lKi4' },
-      { name: 'Aceleración progresiva', reps: '50-70% de intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo sin sobrecargar el corazón', ytId: 'jSACK-0lKi4' }
+      { name: 'Jumping jacks suaves', reps: '30 reps', duration: '2 min', why: 'Moviliza todo el cuerpo y eleva el ritmo cardíaco al mismo tiempo', gif: W+'0/02/Jumping_jack_Animation.gif' },
+      { name: 'Trote en el lugar', reps: 'Baja intensidad', duration: '2 min', why: 'Eleva la frecuencia cardíaca de forma gradual y segura', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Aceleración progresiva', reps: '50-70% de intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo sin sobrecargar el corazón', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' }
     ],
     injuries: ['Lesión muscular por arrancar en frío', 'Dolor articular por impacto sin calentar']
   }
