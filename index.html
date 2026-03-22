@@ -969,6 +969,29 @@ body {
 .wu-ex-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
 .wu-ex-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
 .wu-ex-why { font-size: 11px; color: var(--text-tertiary); line-height: 1.4; font-style: italic; }
+/* Warmup group picker */
+.wu-group-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 6px; border: 2px solid var(--border); border-radius: 12px;
+  background: var(--bg); cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.wu-group-btn:active, .wu-group-btn.active { transform: scale(0.95); filter: brightness(0.95); }
+.wu-group-icon { font-size: 22px; line-height: 1; }
+.wu-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+/* Warmup animations */
+@keyframes wu-spin   { from { transform: rotate(0deg);    } to   { transform: rotate(360deg); } }
+@keyframes wu-push   { 0%,100% { transform: translateX(0);  } 50% { transform: translateX(-7px); } }
+@keyframes wu-swing  { 0%,100% { transform: rotate(-25deg); } 50% { transform: rotate(25deg);  } }
+@keyframes wu-bounce { 0%,100% { transform: translateY(0);  } 50% { transform: translateY(-7px); } }
+@keyframes wu-pulse  { 0%,100% { transform: scale(1);       } 50% { transform: scale(1.25); } }
+@keyframes wu-wave   { 0%,100% { transform: scaleX(1);      } 50% { transform: scaleX(0.7) skewX(-10deg); } }
+.anim-spin   { animation: wu-spin   2s linear        infinite; display:inline-block; }
+.anim-push   { animation: wu-push   1.4s ease-in-out infinite; display:inline-block; }
+.anim-swing  { animation: wu-swing  1.4s ease-in-out infinite; display:inline-block; transform-origin: top center; }
+.anim-bounce { animation: wu-bounce 1s   ease-in-out infinite; display:inline-block; }
+.anim-pulse  { animation: wu-pulse  1.8s ease-in-out infinite; display:inline-block; }
+.anim-wave   { animation: wu-wave   1.6s ease-in-out infinite; display:inline-block; }
 /* Warmup stat row in summary */
 .summary-warmup-row {
   background: var(--warning-light); border-radius: var(--radius-sm);
@@ -1259,7 +1282,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.10.0</span>
+        <span class="app-version">v1.11.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1809,7 +1832,7 @@ body {
 
 <!-- WARMUP -->
 <div class="screen fullscreen" id="warmupScreen" style="overflow-y:auto">
-  <div class="warmup-screen" style="justify-content:flex-start;padding-bottom:120px">
+  <div class="warmup-screen" style="justify-content:flex-start;padding-bottom:140px">
 
     <!-- Badge + timer -->
     <div class="warmup-badge">
@@ -1819,7 +1842,13 @@ body {
     <div class="warmup-timer-label">Tiempo acumulado</div>
     <div class="warmup-timer-display" id="warmupDisplay">00:00:00</div>
 
-    <!-- Recomendación dinámica (visible solo cuando hay ejercicio detectado) -->
+    <!-- Group Picker (shown when no auto-detection) -->
+    <div id="warmupGroupPicker" style="display:none;width:100%;margin-top:4px;text-align:left">
+      <p style="font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:16px">¿Qué grupo vas a entrenar hoy?</p>
+      <div id="warmupGroupGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+    </div>
+
+    <!-- Recomendación dinámica -->
     <div id="warmupRecommendation" style="display:none;width:100%;text-align:left;margin-top:8px">
 
       <!-- Duración recomendada -->
@@ -1842,9 +1871,6 @@ body {
         <ul id="warmupWarningsText" style="margin:0;padding-left:16px;font-size:12px;color:#92400E;line-height:1.6"></ul>
       </div>
     </div>
-
-    <!-- Mensaje genérico cuando no hay ejercicio detectado -->
-    <p class="warmup-subtitle" id="warmupDefaultMsg">Prepara tu cuerpo antes de empezar.<br>Presiona cuando estés listo.</p>
 
   </div>
 
@@ -2020,9 +2046,21 @@ function startWorkout() {
 // ─── Warmup ──────────────────────────────────────────────────
 // ─── Dynamic Warmup ──────────────────────────────────────────
 function detectPrimaryMuscleGroup() {
-  if (!currentExerciseName) return null;
-  const found = exerciseDB.find(g => g.items.includes(currentExerciseName));
+  // Check current exercise first, then first in pending queue (pre-loaded routines)
+  const name = currentExerciseName || pendingExercises[0]?.name || null;
+  if (!name) return null;
+  const found = exerciseDB.find(g => g.items.includes(name));
   return found ? found.group : null;
+}
+
+// Called from group picker buttons on warmup screen
+function selectWarmupGroup(group) {
+  // Highlight selected button
+  document.querySelectorAll('.wu-group-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.wu-group-btn[data-group="${group}"]`)?.classList.add('active');
+  // Show recommendations for chosen group
+  const data = getWarmupForMuscleGroup(group);
+  if (data) renderWarmupContent(group, data);
 }
 
 function getWarmupForMuscleGroup(muscleGroup) {
@@ -2034,46 +2072,100 @@ function renderWarmupRecommendations() {
   const data = muscleGroup ? getWarmupForMuscleGroup(muscleGroup) : null;
 
   const recEl   = document.getElementById('warmupRecommendation');
-  const defMsg  = document.getElementById('warmupDefaultMsg');
+  const picker  = document.getElementById('warmupGroupPicker');
   const titleEl = document.getElementById('warmupTitle');
 
-  if (!data) {
+  if (data) {
+    // Auto-detected (routine or exercise already set)
+    recEl.style.display  = 'block';
+    picker.style.display = 'none';
+    titleEl.textContent  = `Calentamiento · ${muscleGroup}`;
+    renderWarmupContent(muscleGroup, data);
+  } else {
+    // Show group picker for manual selection
     recEl.style.display  = 'none';
-    defMsg.style.display = 'block';
+    picker.style.display = 'block';
     titleEl.textContent  = 'Calentamiento';
-    return;
+    renderGroupPicker();
+  }
+}
+
+function renderGroupPicker() {
+  const groups = [
+    { key: 'Pecho',    icon: '💪', color: '#EF4444' },
+    { key: 'Espalda',  icon: '🔙', color: '#3B82F6' },
+    { key: 'Hombros',  icon: '🔝', color: '#8B5CF6' },
+    { key: 'Biceps',   icon: '💪', color: '#F59E0B' },
+    { key: 'Triceps',  icon: '🤜', color: '#10B981' },
+    { key: 'Piernas',  icon: '🦵', color: '#EC4899' },
+    { key: 'Abdomen',  icon: '⚡', color: '#F97316' },
+    { key: 'Cardio',   icon: '🏃', color: '#06B6D4' },
+  ];
+  document.getElementById('warmupGroupGrid').innerHTML = groups.map(g => `
+    <button class="wu-group-btn" data-group="${g.key}" onclick="selectWarmupGroup('${g.key}')" style="border-color:${g.color}20;background:${g.color}10">
+      <span class="wu-group-icon">${g.icon}</span>
+      <span class="wu-group-label" style="color:${g.color}">${g.key}</span>
+    </button>`).join('');
+}
+
+function renderWarmupContent(muscleGroup, data) {
+  document.getElementById('warmupDuration').textContent = data.duration;
+  document.getElementById('warmupGoals').innerHTML = data.goals.map(g => `<li>${g}</li>`).join('');
+
+  // Animation map per exercise keyword
+  const animMap = {
+    'rotaci': 'anim-spin', 'circle': 'anim-spin', 'arm circle': 'anim-spin',
+    'press': 'anim-push', 'curl': 'anim-push', 'jalón': 'anim-push', 'extension': 'anim-push', 'dip': 'anim-push',
+    'swing': 'anim-swing', 'leg swing': 'anim-swing', 'cat': 'anim-wave', 'wave': 'anim-wave',
+    'plank': 'anim-pulse', 'plancha': 'anim-pulse', 'bridge': 'anim-pulse', 'dead bug': 'anim-pulse', 'bird': 'anim-pulse',
+    'jumping': 'anim-bounce', 'trote': 'anim-bounce', 'jump': 'anim-bounce', 'sentadilla': 'anim-bounce', 'calf': 'anim-bounce', 'gemelo': 'anim-bounce',
+    'stretch': 'anim-wave', 'band': 'anim-push', 'scapular': 'anim-push', 'pull': 'anim-push',
+  };
+
+  const iconMap = {
+    'anim-spin':   '🔄',
+    'anim-push':   '↔️',
+    'anim-swing':  '🔀',
+    'anim-pulse':  '🫁',
+    'anim-bounce': '⬆️',
+    'anim-wave':   '🌊',
+  };
+
+  function getAnim(name) {
+    const lc = name.toLowerCase();
+    for (const [kw, cls] of Object.entries(animMap)) {
+      if (lc.includes(kw)) return cls;
+    }
+    return 'anim-pulse';
   }
 
-  recEl.style.display  = 'block';
-  defMsg.style.display = 'none';
-  titleEl.textContent  = `Calentamiento · ${muscleGroup}`;
-
-  document.getElementById('warmupDuration').textContent = data.duration;
-
-  document.getElementById('warmupGoals').innerHTML = data.goals
-    .map(g => `<li>${g}</li>`).join('');
-
-  document.getElementById('warmupExercisesList').innerHTML = data.exercises
-    .map((ex, i) => `
-      <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
-        <div class="wu-ex-check" id="wuCheck${i}">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <div class="wu-ex-body">
-          <div class="wu-ex-name">${ex.name}</div>
-          <div class="wu-ex-meta">${ex.duration} &nbsp;·&nbsp; ${ex.reps}</div>
-          <div class="wu-ex-why">${ex.why}</div>
-        </div>
-      </div>`).join('');
+  document.getElementById('warmupExercisesList').innerHTML = data.exercises.map((ex, i) => {
+    const animCls = getAnim(ex.name);
+    const icon    = iconMap[animCls];
+    return `
+    <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
+      <div class="wu-ex-check" id="wuCheck${i}">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="wu-ex-body">
+        <div class="wu-ex-name">${ex.name} <span class="${animCls}" style="font-size:14px;margin-left:4px">${icon}</span></div>
+        <div class="wu-ex-meta">${ex.duration} &nbsp;·&nbsp; ${ex.reps}</div>
+        <div class="wu-ex-why">${ex.why}</div>
+      </div>
+    </div>`;
+  }).join('');
 
   const warningsEl = document.getElementById('warmupWarnings');
   if (data.injuries && data.injuries.length) {
-    document.getElementById('warmupWarningsText').innerHTML = data.injuries
-      .map(inj => `<li>${inj}</li>`).join('');
+    document.getElementById('warmupWarningsText').innerHTML = data.injuries.map(inj => `<li>${inj}</li>`).join('');
     warningsEl.style.display = 'block';
   } else {
     warningsEl.style.display = 'none';
   }
+
+  // Reveal content panel
+  document.getElementById('warmupRecommendation').style.display = 'block';
+  document.getElementById('warmupGroupPicker').style.display = 'none';
 }
 
 function toggleWarmupExercise(idx) {
