@@ -1291,7 +1291,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.12.0</span>
+        <span class="app-version">v1.13.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1893,6 +1893,35 @@ body {
   </div>
 </div>
 
+<!-- WARMUP VIDEO MODAL (in-app embed, never leaves the app) -->
+<div id="wuVideoOverlay" onclick="closeWarmupVideo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:400;align-items:flex-end;justify-content:center"></div>
+<div id="wuVideoSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#111;border-radius:20px 20px 0 0;z-index:401;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:#1a1a1a">
+    <span id="wuVideoTitle" style="font-size:13px;font-weight:700;color:#fff;flex:1;margin-right:8px;line-height:1.3"></span>
+    <button onclick="closeWarmupVideo()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+  </div>
+  <!-- 16:9 iframe container -->
+  <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000">
+    <iframe id="wuVideoFrame"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;border:none"
+      allowfullscreen
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      loading="lazy">
+    </iframe>
+    <!-- Fallback shown if iframe blocked -->
+    <div id="wuVideoFallback" style="display:none;position:absolute;inset:0;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px">
+      <div style="font-size:32px">📺</div>
+      <p style="color:#aaa;font-size:13px;text-align:center">El video no pudo cargarse aquí.</p>
+      <button id="wuVideoFallbackBtn" style="padding:10px 20px;background:#FF0000;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">Ver en YouTube</button>
+    </div>
+  </div>
+  <!-- Footer hint -->
+  <div style="padding:10px 16px;text-align:center">
+    <p style="font-size:11px;color:#666;margin:0">Toca fuera para cerrar &nbsp;·&nbsp; El video se pausa al cerrar</p>
+  </div>
+</div>
+
 <!-- EXERCISE CATALOG -->
 <div class="screen fullscreen" id="catalogScreen">
   <div class="catalog-screen">
@@ -2117,8 +2146,41 @@ function renderGroupPicker() {
     </button>`).join('');
 }
 
-function openWarmupYT(query) {
-  window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(query), '_blank');
+function openWarmupVideo(query, name) {
+  document.getElementById('wuVideoTitle').textContent = name;
+  // Use YouTube search-list embed — plays the top result inline, never leaves the app
+  const encoded = encodeURIComponent(query);
+  const src = `https://www.youtube-nocookie.com/embed?listType=search&list=${encoded}&autoplay=1&rel=0&modestbranding=1`;
+  const iframe = document.getElementById('wuVideoFrame');
+  iframe.src = src;
+
+  // Fallback button opens YouTube search if embed is blocked
+  const fallbackBtn = document.getElementById('wuVideoFallbackBtn');
+  fallbackBtn.onclick = () => window.open('https://www.youtube.com/results?search_query=' + encoded, '_blank');
+
+  // Show overlay + sheet
+  const overlay = document.getElementById('wuVideoOverlay');
+  const sheet   = document.getElementById('wuVideoSheet');
+  overlay.style.display = 'block';
+  sheet.style.display   = 'block';
+  // Animate up
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheet.style.transform  = 'translateX(-50%) translateY(0)';
+  });
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWarmupVideo() {
+  const sheet = document.getElementById('wuVideoSheet');
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  setTimeout(() => {
+    document.getElementById('wuVideoFrame').src = ''; // stop playback
+    sheet.style.display = 'none';
+    document.getElementById('wuVideoOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }, 280);
 }
 function toggleGoalTip(idx) {
   const el = document.getElementById(`goalTip${idx}`);
@@ -2173,12 +2235,12 @@ function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupExercisesList').innerHTML = data.exercises.map((ex, i) => {
     const animCls = getAnim(ex.name);
     const icon    = iconMap[animCls];
-    const ytBtn   = ex.yt
-      ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupYT('${ex.yt}')">
-           <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 1.99-.14 3.47-.44 4.44-.27.97-.9 1.6-1.87 1.87-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.14-7.76-.44-.97-.27-1.6-.9-1.87-1.87-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-1.99.14-3.47.44-4.44.27-.97.9-1.6 1.87-1.87.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.14 7.76.44.97.27 1.6.9 1.87 1.87z"/></svg>
-           Ver cómo
-         </button>`
-      : '';
+    const safeQuery = (ex.yt || ex.name).replace(/'/g, "\\'");
+    const safeName  = ex.name.replace(/'/g, "\\'");
+    const ytBtn = `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupVideo('${safeQuery}','${safeName}')">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="#FF0000"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-2.75 12.58 12.58 0 0 0-8.65 5.31A4.83 4.83 0 0 1 4.35 12a4.83 4.83 0 0 1 2.82 2.75A12.58 12.58 0 0 0 15.82 20a4.83 4.83 0 0 1 3.77-2.75A12.58 12.58 0 0 0 22 12a12.58 12.58 0 0 0-2.41-5.31z"/><polygon points="10 15 15.19 12 10 9 10 15" fill="white"/></svg>
+        Ver cómo hacerlo
+      </button>`;
     return `
     <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
       <div class="wu-ex-check" id="wuCheck${i}">
