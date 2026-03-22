@@ -946,6 +946,29 @@ body {
   border-radius: var(--radius-sm); transition: all 0.15s;
 }
 .warmup-skip-btn:active { background: var(--bg); color: var(--text-secondary); }
+/* Dynamic warmup recommendations */
+.wu-rec-header { background: var(--primary-light); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.wu-rec-label { font-size: 11px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+.wu-rec-value { font-size: 15px; font-weight: 700; color: var(--primary); }
+.wu-section-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.wu-goals-list { margin: 0 0 0 16px; padding: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.wu-ex-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 12px; margin-bottom: 8px;
+  cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.wu-ex-item.done { background: var(--success-light); border-color: var(--success); }
+.wu-ex-check {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; color: transparent;
+}
+.wu-ex-check.checked { background: var(--success); border-color: var(--success); color: white; }
+.wu-ex-body { flex: 1; min-width: 0; }
+.wu-ex-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+.wu-ex-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
+.wu-ex-why { font-size: 11px; color: var(--text-tertiary); line-height: 1.4; font-style: italic; }
 /* Warmup stat row in summary */
 .summary-warmup-row {
   background: var(--warning-light); border-radius: var(--radius-sm);
@@ -1236,7 +1259,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.9.0</span>
+        <span class="app-version">v1.10.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1785,20 +1808,53 @@ body {
 </div>
 
 <!-- WARMUP -->
-<div class="screen fullscreen" id="warmupScreen">
-  <div class="warmup-screen">
+<div class="screen fullscreen" id="warmupScreen" style="overflow-y:auto">
+  <div class="warmup-screen" style="justify-content:flex-start;padding-bottom:120px">
+
+    <!-- Badge + timer -->
     <div class="warmup-badge">
       <div class="warmup-badge-dot"></div>
-      <span>Calentamiento</span>
+      <span id="warmupTitle">Calentamiento</span>
     </div>
-    <div class="warmup-timer-label">Tiempo de calentamiento</div>
+    <div class="warmup-timer-label">Tiempo acumulado</div>
     <div class="warmup-timer-display" id="warmupDisplay">00:00:00</div>
-    <p class="warmup-subtitle">Prepara tu cuerpo antes de empezar.<br>Presiona cuando estés listo.</p>
-    <button class="warmup-go-btn" onclick="finishWarmup()">
+
+    <!-- Recomendación dinámica (visible solo cuando hay ejercicio detectado) -->
+    <div id="warmupRecommendation" style="display:none;width:100%;text-align:left;margin-top:8px">
+
+      <!-- Duración recomendada -->
+      <div class="wu-rec-header">
+        <div class="wu-rec-label">Duración recomendada</div>
+        <div class="wu-rec-value" id="warmupDuration">5-8 min</div>
+      </div>
+
+      <!-- Objetivos -->
+      <div class="wu-section-title">Objetivos</div>
+      <ul id="warmupGoals" class="wu-goals-list"></ul>
+
+      <!-- Ejercicios -->
+      <div class="wu-section-title" style="margin-top:16px">Ejercicios sugeridos</div>
+      <div id="warmupExercisesList"></div>
+
+      <!-- Advertencias -->
+      <div id="warmupWarnings" style="display:none;margin-top:12px;padding:12px;background:#FEF3C7;border-radius:10px;border:1px solid #FCD34D">
+        <div style="font-size:11px;font-weight:700;color:#78350F;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">⚠️ Evitar</div>
+        <ul id="warmupWarningsText" style="margin:0;padding-left:16px;font-size:12px;color:#92400E;line-height:1.6"></ul>
+      </div>
+    </div>
+
+    <!-- Mensaje genérico cuando no hay ejercicio detectado -->
+    <p class="warmup-subtitle" id="warmupDefaultMsg">Prepara tu cuerpo antes de empezar.<br>Presiona cuando estés listo.</p>
+
+  </div>
+
+  <!-- Botones fijos en la base -->
+  <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:16px 20px 28px;background:linear-gradient(to top,var(--surface) 80%,transparent);z-index:20">
+    <button class="warmup-go-btn" onclick="finishWarmup()" style="width:100%;margin-bottom:10px">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Listo, empezar entrenamiento
     </button>
-    <button class="warmup-skip-btn" onclick="skipWarmup()">Saltar calentamiento</button>
+    <button class="warmup-skip-btn" onclick="skipWarmup()" style="width:100%">Saltar calentamiento</button>
   </div>
 </div>
 
@@ -1962,11 +2018,78 @@ function startWorkout() {
 }
 
 // ─── Warmup ──────────────────────────────────────────────────
+// ─── Dynamic Warmup ──────────────────────────────────────────
+function detectPrimaryMuscleGroup() {
+  if (!currentExerciseName) return null;
+  const found = exerciseDB.find(g => g.items.includes(currentExerciseName));
+  return found ? found.group : null;
+}
+
+function getWarmupForMuscleGroup(muscleGroup) {
+  return warmupDatabase[muscleGroup] || null;
+}
+
+function renderWarmupRecommendations() {
+  const muscleGroup = detectPrimaryMuscleGroup();
+  const data = muscleGroup ? getWarmupForMuscleGroup(muscleGroup) : null;
+
+  const recEl   = document.getElementById('warmupRecommendation');
+  const defMsg  = document.getElementById('warmupDefaultMsg');
+  const titleEl = document.getElementById('warmupTitle');
+
+  if (!data) {
+    recEl.style.display  = 'none';
+    defMsg.style.display = 'block';
+    titleEl.textContent  = 'Calentamiento';
+    return;
+  }
+
+  recEl.style.display  = 'block';
+  defMsg.style.display = 'none';
+  titleEl.textContent  = `Calentamiento · ${muscleGroup}`;
+
+  document.getElementById('warmupDuration').textContent = data.duration;
+
+  document.getElementById('warmupGoals').innerHTML = data.goals
+    .map(g => `<li>${g}</li>`).join('');
+
+  document.getElementById('warmupExercisesList').innerHTML = data.exercises
+    .map((ex, i) => `
+      <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
+        <div class="wu-ex-check" id="wuCheck${i}">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="wu-ex-body">
+          <div class="wu-ex-name">${ex.name}</div>
+          <div class="wu-ex-meta">${ex.duration} &nbsp;·&nbsp; ${ex.reps}</div>
+          <div class="wu-ex-why">${ex.why}</div>
+        </div>
+      </div>`).join('');
+
+  const warningsEl = document.getElementById('warmupWarnings');
+  if (data.injuries && data.injuries.length) {
+    document.getElementById('warmupWarningsText').innerHTML = data.injuries
+      .map(inj => `<li>${inj}</li>`).join('');
+    warningsEl.style.display = 'block';
+  } else {
+    warningsEl.style.display = 'none';
+  }
+}
+
+function toggleWarmupExercise(idx) {
+  const item  = document.getElementById(`wuEx${idx}`);
+  const check = document.getElementById(`wuCheck${idx}`);
+  const done  = item.classList.toggle('done');
+  check.classList.toggle('checked', done);
+}
+
 function showWarmup() {
   warmupDuration = 0;
   warmupStartTime = Date.now();
   document.getElementById('warmupDisplay').textContent = '00:00:00';
   clearInterval(warmupInterval);
+  // ← Render recomendaciones dinámicas ANTES de mostrar la pantalla
+  renderWarmupRecommendations();
   warmupInterval = setInterval(() => {
     document.getElementById('warmupDisplay').textContent = formatTime(Date.now() - warmupStartTime);
   }, 1000);
@@ -2369,6 +2492,95 @@ const EXERCISE_INFO = {
     errors: ['Girar solo los brazos sin girar el torso','No mantener el torso inclinado','Movimiento demasiado rápido (pierde efectividad)'],
     yt: 'russian twist oblicuos abdomen tecnica'
   },
+};
+
+// ─── Warmup Database (calentamientos por grupo muscular) ─────
+const warmupDatabase = {
+  'Pecho': {
+    duration: '5-8 minutos',
+    goals: ['Movilizar articulación glenohumeral', 'Activar pectoral', 'Elevar temperatura corporal'],
+    exercises: [
+      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Moviliza los hombros y evita impingement' },
+      { name: 'Stretch de pecho (en pared)', reps: '2×30 seg', duration: '1 min', why: 'Aumenta ROM y prepara el pectoral' },
+      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Activa pectoral sin fatiga, prepara el movimiento' },
+      { name: 'Fondos en paralelas (asistidos)', reps: '10 reps', duration: '2 min', why: 'Familiariza el cuerpo con el patrón de empuje' }
+    ],
+    injuries: ['Impingement subacromial', 'Tendinitis pectoral', 'Dolor en codo']
+  },
+  'Espalda': {
+    duration: '5-8 minutos',
+    goals: ['Movilizar columna torácica', 'Activar dorsal y escápulas', 'Elevar temperatura'],
+    exercises: [
+      { name: 'Cat-Cow (yoga)', reps: '10 reps', duration: '2 min', why: 'Moviliza toda la columna, previene hernias discales' },
+      { name: 'Dead bugs', reps: '10 reps cada lado', duration: '1 min', why: 'Activa core y estabiliza la espalda baja' },
+      { name: 'Jalón al pecho (muy ligero)', reps: '15 reps', duration: '2 min', why: 'Activa dorsal y prepara el movimiento de tirón' },
+      { name: 'Band pull-aparts', reps: '15 reps', duration: '1 min', why: 'Activa escápulas y mejora postura' }
+    ],
+    injuries: ['Hernia discal', 'Tensión lumbar', 'Tendinitis dorsal']
+  },
+  'Hombros': {
+    duration: '5-8 minutos',
+    goals: ['Movilizar articulación glenohumeral', 'Activar manguito rotador', 'Preparar para movimientos overhead'],
+    exercises: [
+      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Movilidad completa del hombro' },
+      { name: 'Scapular push-ups', reps: '12 reps', duration: '1 min', why: 'Activa manguito rotador y escápula' },
+      { name: 'Press militar (barra vacía)', reps: '10 reps', duration: '2 min', why: 'Prepara articulación para movimiento overhead' },
+      { name: 'Elevaciones laterales (muy ligero)', reps: '12 reps', duration: '2 min', why: 'Activa deltoides medio' }
+    ],
+    injuries: ['Impingement subacromial', 'Lesión manguito rotador', 'Tendinitis del bíceps']
+  },
+  'Biceps': {
+    duration: '3-5 minutos',
+    goals: ['Movilizar codo y antebrazo', 'Activar bíceps', 'Elevar temperatura'],
+    exercises: [
+      { name: 'Extensiones de brazo sin peso', reps: '15 reps', duration: '1 min', why: 'Moviliza el codo en todo el rango' },
+      { name: 'Curl (barra vacía o banda)', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps y prepara el movimiento' },
+      { name: 'Forearm plank', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo y core' }
+    ],
+    injuries: ['Tendinitis en codo', 'Dolor de antebrazo', 'Síndrome del pronador']
+  },
+  'Triceps': {
+    duration: '3-5 minutos',
+    goals: ['Movilizar codo', 'Activar tríceps', 'Preparar para movimientos de empuje'],
+    exercises: [
+      { name: 'Flexiones (modificadas si es necesario)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps y cuerpo completo' },
+      { name: 'Dips en banco (sin peso)', reps: '8-10 reps', duration: '1 min', why: 'Prepara articulación para movimientos de empuje' },
+      { name: 'Extensión de tríceps (muy ligero)', reps: '12 reps', duration: '2 min', why: 'Activa tríceps específicamente' }
+    ],
+    injuries: ['Tendinitis en codo', 'Dolor en el olécranon', 'Impingement de codo']
+  },
+  'Piernas': {
+    duration: '8-12 minutos',
+    goals: ['Movilizar cadera y rodilla', 'Activar glúteos y cuádriceps', 'Elevar temperatura'],
+    exercises: [
+      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Moviliza cadera completamente' },
+      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Prepara la movilidad dinámica de la pierna' },
+      { name: 'Glute bridges', reps: '15 reps', duration: '2 min', why: 'Activa glúteos — clave para la sentadilla' },
+      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Prepara el patrón de movimiento' },
+      { name: 'Elevación de gemelos', reps: '15 reps', duration: '1 min', why: 'Activa pantorrilla y tobillo' }
+    ],
+    injuries: ['Lesión de rodilla (LCA/menisco)', 'Desgarro de isquiotibial', 'Dolor lumbar']
+  },
+  'Abdomen': {
+    duration: '3-5 minutos',
+    goals: ['Activar core profundo', 'Movilizar columna', 'Elevar temperatura'],
+    exercises: [
+      { name: 'Dead bugs', reps: '10 reps cada lado', duration: '1 min', why: 'Activa core sin tensión lumbar' },
+      { name: 'Bird dogs', reps: '10 reps cada lado', duration: '1 min', why: 'Estabilidad anti-rotacional' },
+      { name: 'Plancha (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa core completo antes de series pesadas' }
+    ],
+    injuries: ['Tensión lumbar', 'Hernia discal', 'Distensión de oblicuo']
+  },
+  'Cardio': {
+    duration: '5-10 minutos',
+    goals: ['Elevar frecuencia cardíaca gradualmente', 'Lubricar articulaciones', 'Elevar temperatura corporal'],
+    exercises: [
+      { name: 'Jumping jacks (suave)', reps: '30 reps', duration: '2 min', why: 'Eleva el HR y moviliza todo el cuerpo' },
+      { name: 'Trote en el lugar', reps: 'Low intensity', duration: '2 min', why: 'Eleva HR gradualmente' },
+      { name: 'Aceleración progresiva', reps: '50-70% intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo' }
+    ],
+    injuries: ['Lesión muscular por frío', 'Dolor articular']
+  }
 };
 
 // ─── Routine Templates ────────────────────────────────────────
