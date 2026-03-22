@@ -204,6 +204,26 @@ body {
 .routine-card-count { font-size:12px;color:var(--text-tertiary);font-weight:600; }
 .routine-card-exercises { font-size:12px;color:var(--text-secondary);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .routine-card-start-btn { margin-top:10px;width:100%;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer; }
+.routines-section-label { font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;margin-top:4px; }
+.routine-time-tabs { display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px; }
+.routine-time-tab { padding:6px 14px;border-radius:var(--radius-full);border:1.5px solid var(--border);background:transparent;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;transition:all .2s;color:var(--text-secondary);min-width:52px;text-align:center; }
+.routine-time-tab.active { border-color:var(--success);background:var(--success-light);color:var(--success); }
+.routine-science-note { font-size:12px;color:var(--text-secondary);background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.55;border-left:3px solid var(--primary); }
+.routine-rest-info { display:flex;align-items:center;gap:10px;background:var(--warning-light);border-radius:10px;padding:10px 14px;margin-bottom:14px; }
+.routine-rest-icon { font-size:20px;flex-shrink:0; }
+.routine-rest-text { font-size:12px;color:#92400E;line-height:1.5; }
+.routine-rest-text b { display:block;font-size:14px;color:#78350F; }
+.routine-day-card { background:var(--surface);border-radius:var(--radius-sm);margin-bottom:12px;box-shadow:var(--shadow-sm);overflow:hidden; }
+.routine-day-header { padding:12px 14px 10px;border-bottom:1px solid var(--border); }
+.routine-day-name { font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:2px; }
+.routine-day-meta { font-size:11px;color:var(--text-tertiary);font-weight:600; }
+.routine-ex-list { padding:10px 14px; }
+.routine-ex-item { display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bg); }
+.routine-ex-item:last-child { border-bottom:none; }
+.routine-ex-name { font-size:13px;font-weight:600;color:var(--text-primary); }
+.routine-ex-sets { font-size:12px;color:var(--text-tertiary);font-family:var(--mono);white-space:nowrap;margin-left:8px;flex-shrink:0; }
+.routine-start-day-btn { width:calc(100% - 28px);margin:0 14px 14px;padding:11px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px; }
+.routine-no-time { text-align:center;padding:32px 16px;color:var(--text-tertiary);font-size:13px; }
 .routines-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s; }
 .routines-overlay.active { opacity:1;pointer-events:all; }
 .routines-sheet { position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 50px;z-index:151;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:85vh;overflow-y:auto; }
@@ -1208,7 +1228,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.7.0</span>
+        <span class="app-version">v1.8.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1672,14 +1692,23 @@ body {
 <div class="routines-overlay" id="routinesOverlay" onclick="closeRoutinesSheet()"></div>
 <div class="routines-sheet" id="routinesSheet">
   <div class="sheet-handle" style="margin-bottom:16px"></div>
-  <div style="font-size:18px;font-weight:700;margin-bottom:4px">Rutinas sugeridas</div>
-  <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Selecciona tu nivel y el día de entrenamiento</div>
+  <div style="font-size:18px;font-weight:700;margin-bottom:2px">Rutinas por ciencia</div>
+  <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Personalizada según tu nivel, objetivo y tiempo disponible</div>
+  <!-- Nivel -->
+  <div class="routines-section-label">Nivel</div>
   <div class="routine-level-tabs" id="routineLevelTabs">
     <button class="routine-level-tab active" onclick="switchRoutineLevel('beginner',this)">🌱 Principiante</button>
     <button class="routine-level-tab" onclick="switchRoutineLevel('intermediate',this)">⚡ Intermedio</button>
     <button class="routine-level-tab" onclick="switchRoutineLevel('advanced',this)">🔥 Avanzado</button>
   </div>
-  <div id="routinesLevelInfo" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:8px"></div>
+  <!-- Tiempo disponible -->
+  <div class="routines-section-label">¿Cuánto tiempo tienes hoy?</div>
+  <div class="routine-time-tabs" id="routineTimeTabs"></div>
+  <!-- Nota científica -->
+  <div id="routineScienceNote" class="routine-science-note"></div>
+  <!-- Descanso recomendado -->
+  <div id="routineRestInfo" class="routine-rest-info" style="display:none"></div>
+  <!-- Lista de días -->
   <div id="routinesList"></div>
 </div>
 
@@ -2314,83 +2343,444 @@ const EXERCISE_INFO = {
 };
 
 // ─── Routine Templates ────────────────────────────────────────
-const ROUTINE_TEMPLATES = {
+const SCIENCE_ROUTINES = {
   beginner: {
-    label: 'Principiante',
-    color: 'var(--success)',
-    colorLight: 'var(--success-light)',
-    freq: '3 días/semana',
-    desc: 'Cuerpo completo, 3 días alternos (Lun/Mié/Vie)',
-    routines: [
-      { name: 'Día A — Cuerpo completo', exercises: [
-        {name:'Sentadilla',equipment:''},{name:'Press de banca',equipment:''},{name:'Remo con barra',equipment:''},
-        {name:'Press militar',equipment:''},{name:'Curl con barra',equipment:''},{name:'Extension en polea alta',equipment:''},
-        {name:'Plancha',equipment:''}
-      ]},
-      { name: 'Día B — Cuerpo completo', exercises: [
-        {name:'Peso muerto rumano',equipment:''},{name:'Press con mancuernas',equipment:''},{name:'Jalones al pecho',equipment:''},
-        {name:'Elevaciones laterales',equipment:''},{name:'Curl con mancuernas',equipment:''},{name:'Fondos de triceps',equipment:''},
-        {name:'Crunch',equipment:''}
-      ]},
-    ]
+    available: [30, 45, 60, 90],
+    30: {
+      split: 'Cuerpo completo', freq: '3 días/semana (Lun · Mié · Vie)',
+      scienceNote: '⚗️ Con 30 min, 3–4 ejercicios compuestos dan el máximo estímulo. Los compuestos activan más unidades motoras y hormonas anabólicas por minuto que cualquier aislamiento.',
+      goalRest: { muscle_gain: 90, fat_loss: 60, strength: 150, maintenance: 75 },
+      goalReps: { muscle_gain: '10-12', fat_loss: '13-15', strength: '5-6', maintenance: '12-14' },
+      days: [
+        { name: 'Día A — Express completo', totalSets: 12, exercises: [
+          {name:'Sentadilla',sets:3,reps:'10-12',note:'Piernas + glúteos + core'},
+          {name:'Press de banca',sets:3,reps:'10-12',note:'Pecho + tríceps'},
+          {name:'Remo con barra',sets:3,reps:'10-12',note:'Espalda + bíceps'},
+          {name:'Plancha',sets:3,reps:'30-40s',note:'Core'},
+        ]},
+        { name: 'Día B — Express completo', totalSets: 12, exercises: [
+          {name:'Peso muerto rumano',sets:3,reps:'10-12',note:'Isquios + glúteos + espalda'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros + tríceps'},
+          {name:'Dominadas',sets:3,reps:'6-10',note:'Dorsal + bíceps'},
+          {name:'Crunch',sets:3,reps:'15-20',note:'Abdomen'},
+        ]},
+      ]
+    },
+    45: {
+      split: 'Cuerpo completo A/B', freq: '3 días/semana (Lun · Mié · Vie)',
+      scienceNote: '⚗️ Frecuencia 2–3×/semana por músculo = máxima síntesis proteica para principiantes. 2 ejercicios por grupo muscular cumple el Volumen Mínimo Efectivo. Descanso 90s = balance óptimo entre recuperación y eficiencia.',
+      goalRest: { muscle_gain: 90, fat_loss: 60, strength: 150, maintenance: 75 },
+      goalReps: { muscle_gain: '10-12', fat_loss: '13-15', strength: '5-6', maintenance: '12-14' },
+      days: [
+        { name: 'Día A — Cuerpo completo', totalSets: 18, exercises: [
+          {name:'Sentadilla',sets:3,reps:'10-12',note:'Cuádriceps + glúteos'},
+          {name:'Zancadas',sets:3,reps:'10 c/lado',note:'Glúteos + equilibrio'},
+          {name:'Press de banca',sets:3,reps:'10-12',note:'Pecho'},
+          {name:'Press con mancuernas',sets:3,reps:'12-14',note:'Pecho + control'},
+          {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal'},
+          {name:'Curl con barra',sets:3,reps:'10-12',note:'Bíceps'},
+        ]},
+        { name: 'Día B — Cuerpo completo', totalSets: 18, exercises: [
+          {name:'Peso muerto rumano',sets:3,reps:'10-12',note:'Isquios + glúteos'},
+          {name:'Prensa de piernas',sets:3,reps:'12-14',note:'Cuádriceps'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:3,reps:'12-15',note:'Deltoides medio'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Espalda + bíceps'},
+          {name:'Extension en polea alta',sets:3,reps:'12-14',note:'Tríceps'},
+        ]},
+      ]
+    },
+    60: {
+      split: 'Cuerpo completo A/B', freq: '3 días/semana (Lun · Mié · Vie)',
+      scienceNote: '⚗️ 60 min permite 8 ejercicios con 3–4 series cada uno: ~24 series totales. Con 120s de descanso el volumen efectivo por serie aumenta (más peso = más estímulo). Investigación de Schoenfeld (2016) confirma que descansos >90s producen más hipertrofia.',
+      goalRest: { muscle_gain: 120, fat_loss: 75, strength: 180, maintenance: 90 },
+      goalReps: { muscle_gain: '8-12', fat_loss: '12-15', strength: '4-6', maintenance: '10-15' },
+      days: [
+        { name: 'Día A — Cuerpo completo', totalSets: 24, exercises: [
+          {name:'Sentadilla',sets:4,reps:'8-12',note:'Cuádriceps + glúteos'},
+          {name:'Zancadas',sets:3,reps:'10 c/lado',note:'Glúteos + unilateral'},
+          {name:'Press de banca',sets:4,reps:'8-12',note:'Pecho'},
+          {name:'Press inclinado',sets:3,reps:'10-12',note:'Pecho superior'},
+          {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Grosor de espalda'},
+          {name:'Curl con barra',sets:2,reps:'10-12',note:'Bíceps'},
+          {name:'Extension en polea alta',sets:2,reps:'12-14',note:'Tríceps'},
+        ]},
+        { name: 'Día B — Cuerpo completo', totalSets: 24, exercises: [
+          {name:'Peso muerto rumano',sets:4,reps:'8-12',note:'Cadena posterior'},
+          {name:'Prensa de piernas',sets:3,reps:'12-14',note:'Cuádriceps'},
+          {name:'Press militar',sets:4,reps:'8-12',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:3,reps:'12-15',note:'Deltoides medio'},
+          {name:'Dominadas',sets:3,reps:'6-10',note:'Dorsal + bíceps'},
+          {name:'Remo con barra',sets:3,reps:'10-12',note:'Espalda alta'},
+          {name:'Curl con mancuernas',sets:2,reps:'10-12',note:'Bíceps'},
+          {name:'Fondos de triceps',sets:2,reps:'12-15',note:'Tríceps'},
+        ]},
+      ]
+    },
+    90: {
+      split: 'Cuerpo completo A/B', freq: '3 días/semana (Lun · Mié · Vie)',
+      scienceNote: '⚗️ 90 min con 4 series por ejercicio maximiza el volumen semanal. Ideal cuando la recuperación lo permite. Mantenerse en RIR 1-2 (1-2 reps antes del fallo) en cada serie.',
+      goalRest: { muscle_gain: 120, fat_loss: 90, strength: 180, maintenance: 120 },
+      goalReps: { muscle_gain: '8-12', fat_loss: '12-15', strength: '4-6', maintenance: '10-15' },
+      days: [
+        { name: 'Día A — Cuerpo completo', totalSets: 36, exercises: [
+          {name:'Sentadilla',sets:4,reps:'8-10',note:'Piernas'},
+          {name:'Peso muerto rumano',sets:4,reps:'10-12',note:'Cadena posterior'},
+          {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
+          {name:'Press inclinado',sets:3,reps:'10-12',note:'Pecho superior'},
+          {name:'Jalones al pecho',sets:4,reps:'10-12',note:'Dorsal'},
+          {name:'Remo con barra',sets:3,reps:'10-12',note:'Espalda'},
+          {name:'Curl con barra',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Extension en polea alta',sets:3,reps:'12-14',note:'Tríceps'},
+          {name:'Plancha',sets:3,reps:'40s',note:'Core'},
+        ]},
+        { name: 'Día B — Cuerpo completo', totalSets: 36, exercises: [
+          {name:'Peso muerto',sets:4,reps:'5-7',note:'Cuerpo completo'},
+          {name:'Prensa de piernas',sets:4,reps:'12-14',note:'Cuádriceps'},
+          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Pecho'},
+          {name:'Aperturas',sets:3,reps:'12-15',note:'Aislamiento pecho'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Espalda'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:3,reps:'12-15',note:'Deltoides medio'},
+          {name:'Curl con mancuernas',sets:3,reps:'10-12',note:'Bíceps'},
+        ]},
+      ]
+    },
   },
   intermediate: {
-    label: 'Intermedio',
-    color: 'var(--primary)',
-    colorLight: 'var(--primary-light)',
-    freq: '4 días/semana',
-    desc: 'Push / Pull / Legs / Upper (Lun/Mar/Jue/Vie)',
-    routines: [
-      { name: 'Push — Empuje', exercises: [
-        {name:'Press de banca',equipment:''},{name:'Press inclinado',equipment:''},{name:'Press militar',equipment:''},
-        {name:'Elevaciones laterales',equipment:''},{name:'Extension en polea alta',equipment:''},{name:'Press frances',equipment:''}
-      ]},
-      { name: 'Pull — Jalón', exercises: [
-        {name:'Peso muerto',equipment:''},{name:'Dominadas',equipment:''},{name:'Remo con barra',equipment:''},
-        {name:'Jalones al pecho',equipment:''},{name:'Curl con barra',equipment:''},{name:'Curl martillo',equipment:''}
-      ]},
-      { name: 'Legs — Piernas', exercises: [
-        {name:'Sentadilla',equipment:''},{name:'Prensa de piernas',equipment:''},{name:'Peso muerto rumano',equipment:''},
-        {name:'Extension de cuadriceps',equipment:''},{name:'Curl de femoral',equipment:''},{name:'Elevacion de gemelos',equipment:''}
-      ]},
-      { name: 'Upper — Tren superior', exercises: [
-        {name:'Press de banca',equipment:''},{name:'Remo con mancuerna',equipment:''},{name:'Press militar',equipment:''},
-        {name:'Dominadas',equipment:''},{name:'Arnold press',equipment:''},{name:'Curl con mancuernas',equipment:''},
-        {name:'Extension en polea alta',equipment:''}
-      ]},
-    ]
+    available: [45, 60, 75, 90],
+    45: {
+      split: 'Push / Pull / Legs', freq: '4 días/semana (Lun · Mar · Jue · Vie)',
+      scienceNote: '⚗️ El split Push/Pull/Legs permite mayor volumen por grupo muscular (10–15 series/músculo/semana) que el full body en 45 min. Alta especificidad = más adaptación por sesión.',
+      goalRest: { muscle_gain: 90, fat_loss: 60, strength: 150, maintenance: 75 },
+      goalReps: { muscle_gain: '8-12', fat_loss: '12-15', strength: '4-6', maintenance: '10-15' },
+      days: [
+        { name: 'Push — Empuje (Lun)', totalSets: 15, exercises: [
+          {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
+          {name:'Press inclinado',sets:3,reps:'10-12',note:'Pecho superior'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:3,reps:'12-15',note:'Deltoides medio'},
+          {name:'Extension en polea alta',sets:2,reps:'12-15',note:'Tríceps'},
+        ]},
+        { name: 'Pull — Jalón (Mar)', totalSets: 15, exercises: [
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
+          {name:'Remo con barra',sets:4,reps:'8-10',note:'Espalda gruesa'},
+          {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal amplitud'},
+          {name:'Curl con barra',sets:2,reps:'10-12',note:'Bíceps'},
+          {name:'Curl martillo',sets:2,reps:'10-12',note:'Bíceps largo'},
+        ]},
+        { name: 'Legs — Piernas (Jue)', totalSets: 15, exercises: [
+          {name:'Sentadilla',sets:4,reps:'8-10',note:'Cuádriceps + glúteos'},
+          {name:'Peso muerto rumano',sets:4,reps:'10-12',note:'Isquios + glúteos'},
+          {name:'Prensa de piernas',sets:3,reps:'12-14',note:'Cuádriceps'},
+          {name:'Curl de femoral',sets:2,reps:'12-14',note:'Isquiotibiales'},
+          {name:'Elevacion de gemelos',sets:2,reps:'15-20',note:'Gemelos'},
+        ]},
+        { name: 'Upper — Tren superior (Vie)', totalSets: 15, exercises: [
+          {name:'Press de banca',sets:3,reps:'10-12',note:'Pecho'},
+          {name:'Dominadas',sets:3,reps:'6-10',note:'Dorsal'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Espalda'},
+          {name:'Curl con mancuernas',sets:2,reps:'10-12',note:'Bíceps'},
+          {name:'Press frances',sets:1,reps:'12-14',note:'Tríceps'},
+        ]},
+      ]
+    },
+    60: {
+      split: 'Push / Pull / Legs', freq: '4 días/semana (Lun · Mar · Jue · Vie)',
+      scienceNote: '⚗️ 60 min con split PPL: 18–20 series por sesión, 2 ejercicios por grupo muscular. Volumen semanal: 12–16 series/músculo/semana = zona óptima de hipertrofia según meta-análisis de Krieger (2010).',
+      goalRest: { muscle_gain: 90, fat_loss: 60, strength: 150, maintenance: 75 },
+      goalReps: { muscle_gain: '8-12', fat_loss: '12-15', strength: '4-6', maintenance: '10-15' },
+      days: [
+        { name: 'Push — Empuje', totalSets: 20, exercises: [
+          {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
+          {name:'Press inclinado',sets:4,reps:'10-12',note:'Pecho superior'},
+          {name:'Press con mancuernas',sets:3,reps:'10-12',note:'Pecho estabilidad'},
+          {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:3,reps:'12-15',note:'Deltoides medio'},
+          {name:'Extension en polea alta',sets:2,reps:'12-15',note:'Tríceps'},
+        ]},
+        { name: 'Pull — Jalón', totalSets: 20, exercises: [
+          {name:'Peso muerto',sets:4,reps:'5-6',note:'Cadena posterior total'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
+          {name:'Remo con barra',sets:4,reps:'8-10',note:'Grosor espalda'},
+          {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal amplitud'},
+          {name:'Curl con barra',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Curl martillo',sets:2,reps:'10-12',note:'Bíceps largo'},
+        ]},
+        { name: 'Legs — Piernas', totalSets: 20, exercises: [
+          {name:'Sentadilla',sets:4,reps:'8-10',note:'Cuádriceps'},
+          {name:'Zancadas',sets:4,reps:'10 c/lado',note:'Glúteos unilateral'},
+          {name:'Peso muerto rumano',sets:4,reps:'10-12',note:'Isquios'},
+          {name:'Prensa de piernas',sets:3,reps:'12-14',note:'Cuádriceps'},
+          {name:'Curl de femoral',sets:3,reps:'12-14',note:'Isquiotibiales'},
+          {name:'Elevacion de gemelos',sets:2,reps:'15-20',note:'Gemelos'},
+        ]},
+        { name: 'Upper — Tren superior', totalSets: 20, exercises: [
+          {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
+          {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
+          {name:'Remo con mancuerna',sets:4,reps:'10-12',note:'Espalda'},
+          {name:'Curl con mancuernas',sets:2,reps:'10-12',note:'Bíceps'},
+          {name:'Press frances',sets:2,reps:'10-12',note:'Tríceps'},
+        ]},
+      ]
+    },
+    75: {
+      split: 'Push / Pull / Legs', freq: '4–5 días/semana',
+      scienceNote: '⚗️ Con 75 min puedes añadir más volumen de aislamiento tras los compuestos. La evidencia muestra que los ejercicios de aislamiento al final de la sesión añaden hipertrofia sin comprometer la recuperación.',
+      goalRest: { muscle_gain: 120, fat_loss: 75, strength: 180, maintenance: 90 },
+      goalReps: { muscle_gain: '8-12', fat_loss: '12-15', strength: '4-6', maintenance: '10-15' },
+      days: [
+        { name: 'Push — Empuje', totalSets: 24, exercises: [
+          {name:'Press de banca',sets:4,reps:'6-10',note:'Pecho'},
+          {name:'Press inclinado',sets:4,reps:'10-12',note:'Pecho superior'},
+          {name:'Aperturas',sets:3,reps:'12-15',note:'Aislamiento pecho'},
+          {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Deltoides medio'},
+          {name:'Arnold press',sets:3,reps:'10-12',note:'Hombro completo'},
+          {name:'Extension en polea alta',sets:2,reps:'12-15',note:'Tríceps'},
+        ]},
+        { name: 'Pull — Jalón', totalSets: 24, exercises: [
+          {name:'Peso muerto',sets:4,reps:'4-6',note:'Fuerza posterior'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
+          {name:'Remo con barra',sets:4,reps:'8-10',note:'Grosor espalda'},
+          {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal amplitud'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Unilateral espalda'},
+          {name:'Curl con barra',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Curl concentrado',sets:3,reps:'10-12',note:'Pico bíceps'},
+        ]},
+        { name: 'Legs — Piernas', totalSets: 24, exercises: [
+          {name:'Sentadilla',sets:4,reps:'6-10',note:'Cuádriceps'},
+          {name:'Prensa de piernas',sets:4,reps:'10-12',note:'Cuádriceps volumen'},
+          {name:'Peso muerto rumano',sets:4,reps:'10-12',note:'Isquios'},
+          {name:'Curl de femoral',sets:3,reps:'12-14',note:'Isquiotibiales'},
+          {name:'Extension de cuadriceps',sets:3,reps:'12-15',note:'Cuádriceps aislamiento'},
+          {name:'Elevacion de gemelos',sets:3,reps:'15-20',note:'Gemelos'},
+          {name:'Zancadas',sets:3,reps:'10 c/lado',note:'Glúteos'},
+        ]},
+        { name: 'Upper — Tren superior', totalSets: 24, exercises: [
+          {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Espalda'},
+          {name:'Pajaros',sets:3,reps:'12-15',note:'Deltoides post.'},
+          {name:'Curl con mancuernas',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Press frances',sets:2,reps:'10-12',note:'Tríceps'},
+          {name:'Curl martillo',sets:2,reps:'10-12',note:'Antebrazo'},
+        ]},
+      ]
+    },
+    90: {
+      split: 'Push / Pull / Legs / Upper / Lower', freq: '5 días/semana',
+      scienceNote: '⚗️ 90 min con 5 días = máxima frecuencia + volumen. 4 series × 9 ejercicios = 36 series/sesión. Se acerca al límite superior del MEV. Requiere sueño de calidad y nutrición apropiada.',
+      goalRest: { muscle_gain: 120, fat_loss: 90, strength: 180, maintenance: 120 },
+      goalReps: { muscle_gain: '6-12', fat_loss: '12-15', strength: '3-6', maintenance: '10-15' },
+      days: [
+        { name: 'Push — Empuje (Lun)', totalSets: 28, exercises: [
+          {name:'Press de banca',sets:5,reps:'6-8',note:'Pecho fuerza'},
+          {name:'Press inclinado',sets:4,reps:'10-12',note:'Pecho superior'},
+          {name:'Aperturas',sets:3,reps:'12-15',note:'Pecho aislamiento'},
+          {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
+          {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Deltoides medio'},
+          {name:'Arnold press',sets:3,reps:'10-12',note:'Hombro completo'},
+          {name:'Extension en polea alta',sets:3,reps:'12-15',note:'Tríceps'},
+          {name:'Press frances',sets:2,reps:'10-12',note:'Cabeza larga tríceps'},
+        ]},
+        { name: 'Pull — Jalón (Mar)', totalSets: 28, exercises: [
+          {name:'Peso muerto',sets:4,reps:'4-6',note:'Fuerza total'},
+          {name:'Dominadas',sets:5,reps:'6-10',note:'Dorsal'},
+          {name:'Remo con barra',sets:4,reps:'8-10',note:'Espalda gruesa'},
+          {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal amplitud'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Unilateral'},
+          {name:'Curl con barra',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Curl concentrado',sets:3,reps:'10-12',note:'Pico bíceps'},
+          {name:'Curl martillo',sets:3,reps:'10-12',note:'Braquiorradial'},
+        ]},
+        { name: 'Legs — Piernas (Mié)', totalSets: 28, exercises: [
+          {name:'Sentadilla',sets:5,reps:'6-8',note:'Cuádriceps'},
+          {name:'Prensa de piernas',sets:4,reps:'10-12',note:'Cuádriceps volumen'},
+          {name:'Peso muerto rumano',sets:4,reps:'10-12',note:'Isquios'},
+          {name:'Zancadas',sets:3,reps:'10 c/lado',note:'Glúteos'},
+          {name:'Curl de femoral',sets:3,reps:'12-14',note:'Isquiotibiales'},
+          {name:'Extension de cuadriceps',sets:3,reps:'12-15',note:'Aislamiento'},
+          {name:'Elevacion de gemelos',sets:3,reps:'15-20',note:'Gemelos'},
+          {name:'Plancha',sets:3,reps:'45s',note:'Core'},
+        ]},
+        { name: 'Upper+ — Hombros/Brazos (Jue)', totalSets: 28, exercises: [
+          {name:'Press militar',sets:5,reps:'6-8',note:'Fuerza hombros'},
+          {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Deltoides medio'},
+          {name:'Pajaros',sets:4,reps:'12-15',note:'Deltoides posterior'},
+          {name:'Arnold press',sets:3,reps:'10-12',note:'Hombro 360°'},
+          {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
+          {name:'Curl con mancuernas',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Extension en polea alta',sets:3,reps:'12-15',note:'Tríceps'},
+          {name:'Press frances',sets:2,reps:'10-12',note:'Cabeza larga'},
+        ]},
+        { name: 'Full body / Funcional (Vie)', totalSets: 24, exercises: [
+          {name:'Peso muerto',sets:3,reps:'5-6',note:'Potencia'},
+          {name:'Press de banca',sets:3,reps:'8-10',note:'Pecho'},
+          {name:'Dominadas',sets:3,reps:'8-10',note:'Espalda'},
+          {name:'Sentadilla',sets:3,reps:'10-12',note:'Piernas'},
+          {name:'Press militar',sets:3,reps:'10-12',note:'Hombros'},
+          {name:'Remo con barra',sets:3,reps:'10-12',note:'Espalda'},
+          {name:'Curl con barra',sets:2,reps:'10-12',note:'Bíceps'},
+          {name:'Extension en polea alta',sets:1,reps:'12-15',note:'Tríceps'},
+        ]},
+      ]
+    },
   },
   advanced: {
-    label: 'Avanzado',
-    color: 'var(--danger)',
-    colorLight: 'var(--danger-light)',
-    freq: '5 días/semana',
-    desc: 'Por grupo muscular (Lun-Vie)',
-    routines: [
-      { name: 'Pecho', exercises: [
-        {name:'Press de banca',equipment:''},{name:'Press inclinado',equipment:''},{name:'Press con mancuernas',equipment:''},
-        {name:'Aperturas',equipment:''},{name:'Fondos en paralelas',equipment:''},{name:'Crossover en polea',equipment:''}
-      ]},
-      { name: 'Espalda', exercises: [
-        {name:'Peso muerto',equipment:''},{name:'Dominadas',equipment:''},{name:'Remo con barra',equipment:''},
-        {name:'Jalones al pecho',equipment:''},{name:'Remo con mancuerna',equipment:''},{name:'Remo en maquina',equipment:''}
-      ]},
-      { name: 'Hombros y Brazos', exercises: [
-        {name:'Press militar',equipment:''},{name:'Elevaciones laterales',equipment:''},{name:'Arnold press',equipment:''},
-        {name:'Pajaros',equipment:''},{name:'Curl con barra',equipment:''},{name:'Extension en polea alta',equipment:''},
-        {name:'Press frances',equipment:''}
-      ]},
-      { name: 'Piernas', exercises: [
-        {name:'Sentadilla',equipment:''},{name:'Prensa de piernas',equipment:''},{name:'Peso muerto rumano',equipment:''},
-        {name:'Extension de cuadriceps',equipment:''},{name:'Curl de femoral',equipment:''},{name:'Zancadas',equipment:''},
-        {name:'Elevacion de gemelos',equipment:''}
-      ]},
-      { name: 'Full body / Funcional', exercises: [
-        {name:'Peso muerto',equipment:''},{name:'Press de banca',equipment:''},{name:'Dominadas',equipment:''},
-        {name:'Sentadilla',equipment:''},{name:'Press militar',equipment:''},{name:'Remo con barra',equipment:''}
-      ]},
-    ]
-  }
+    available: [60, 75, 90],
+    60: {
+      split: 'Split muscular específico', freq: '5 días/semana',
+      scienceNote: '⚗️ Avanzados requieren mayor especificidad. Un día por grupo muscular permite 15–25 series directas/semana por músculo — zona máxima de adaptación. Con 60 min, 5–6 ejercicios × 4 series con 120s de descanso.',
+      goalRest: { muscle_gain: 120, fat_loss: 75, strength: 180, maintenance: 90 },
+      goalReps: { muscle_gain: '6-12', fat_loss: '12-15', strength: '3-6', maintenance: '10-15' },
+      days: [
+        { name: 'Pecho (Lun)', totalSets: 20, exercises: [
+          {name:'Press de banca',sets:4,reps:'6-8',note:'Fuerza base'},
+          {name:'Press inclinado',sets:4,reps:'8-10',note:'Pecho superior'},
+          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Rango completo'},
+          {name:'Aperturas',sets:4,reps:'12-15',note:'Aislamiento'},
+          {name:'Crossover en polea',sets:4,reps:'12-15',note:'Definición'},
+        ]},
+        { name: 'Espalda (Mar)', totalSets: 20, exercises: [
+          {name:'Peso muerto',sets:4,reps:'4-6',note:'Fuerza posterior'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Amplitud dorsal'},
+          {name:'Remo con barra',sets:4,reps:'6-8',note:'Grosor espalda'},
+          {name:'Jalones al pecho',sets:4,reps:'10-12',note:'Dorsal inferior'},
+          {name:'Remo en maquina',sets:4,reps:'10-12',note:'Retracción escapular'},
+        ]},
+        { name: 'Hombros y Brazos (Mié)', totalSets: 20, exercises: [
+          {name:'Press militar',sets:4,reps:'6-8',note:'Hombros fuerza'},
+          {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Amplitud'},
+          {name:'Pajaros',sets:4,reps:'12-15',note:'Deltoides post.'},
+          {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
+          {name:'Extension en polea alta',sets:4,reps:'12-15',note:'Tríceps'},
+        ]},
+        { name: 'Piernas (Jue)', totalSets: 20, exercises: [
+          {name:'Sentadilla',sets:4,reps:'6-8',note:'Cuádriceps'},
+          {name:'Prensa de piernas',sets:4,reps:'10-12',note:'Volumen cuádriceps'},
+          {name:'Peso muerto rumano',sets:4,reps:'8-10',note:'Isquios'},
+          {name:'Curl de femoral',sets:4,reps:'10-12',note:'Isquiotibiales'},
+          {name:'Elevacion de gemelos',sets:4,reps:'15-20',note:'Gemelos'},
+        ]},
+        { name: 'Full body / Funcional (Vie)', totalSets: 20, exercises: [
+          {name:'Peso muerto',sets:3,reps:'4-6',note:'Potencia'},
+          {name:'Press de banca',sets:3,reps:'8-10',note:'Pecho'},
+          {name:'Dominadas',sets:3,reps:'8-10',note:'Espalda'},
+          {name:'Sentadilla',sets:3,reps:'8-10',note:'Piernas'},
+          {name:'Press militar',sets:4,reps:'10-12',note:'Hombros'},
+          {name:'Remo con barra',sets:4,reps:'10-12',note:'Espalda'},
+        ]},
+      ]
+    },
+    75: {
+      split: 'Split muscular extendido', freq: '5 días/semana',
+      scienceNote: '⚗️ 75 min permite añadir 1–2 ejercicios de aislamiento por sesión sin comprometer la recuperación. El volumen adicional aumenta el tiempo bajo tensión total: clave para hipertrofia avanzada.',
+      goalRest: { muscle_gain: 120, fat_loss: 90, strength: 180, maintenance: 90 },
+      goalReps: { muscle_gain: '6-12', fat_loss: '12-15', strength: '3-6', maintenance: '10-15' },
+      days: [
+        { name: 'Pecho (Lun)', totalSets: 24, exercises: [
+          {name:'Press de banca',sets:5,reps:'5-7',note:'Fuerza'},
+          {name:'Press inclinado',sets:4,reps:'8-10',note:'Pecho superior'},
+          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Rango completo'},
+          {name:'Aperturas',sets:4,reps:'12-15',note:'Estiramiento'},
+          {name:'Fondos en paralelas',sets:4,reps:'10-15',note:'Pecho inferior'},
+          {name:'Crossover en polea',sets:3,reps:'12-15',note:'Definición'},
+        ]},
+        { name: 'Espalda (Mar)', totalSets: 24, exercises: [
+          {name:'Peso muerto',sets:5,reps:'4-5',note:'Fuerza máxima'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Amplitud dorsal'},
+          {name:'Remo con barra',sets:4,reps:'6-8',note:'Grosor'},
+          {name:'Jalones al pecho',sets:4,reps:'10-12',note:'Dorsal'},
+          {name:'Remo en maquina',sets:4,reps:'10-12',note:'Retracción'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Unilateral'},
+        ]},
+        { name: 'Hombros y Brazos (Mié)', totalSets: 24, exercises: [
+          {name:'Press militar',sets:5,reps:'5-7',note:'Fuerza hombros'},
+          {name:'Arnold press',sets:4,reps:'8-10',note:'Hombro 360°'},
+          {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Amplitud'},
+          {name:'Pajaros',sets:3,reps:'12-15',note:'Post. hombro'},
+          {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
+          {name:'Curl concentrado',sets:2,reps:'10-12',note:'Pico'},
+          {name:'Extension en polea alta',sets:4,reps:'12-15',note:'Tríceps'},
+        ]},
+        { name: 'Piernas (Jue)', totalSets: 24, exercises: [
+          {name:'Sentadilla',sets:5,reps:'5-7',note:'Cuádriceps fuerza'},
+          {name:'Prensa de piernas',sets:4,reps:'10-12',note:'Volumen'},
+          {name:'Zancadas',sets:4,reps:'10 c/lado',note:'Glúteos'},
+          {name:'Peso muerto rumano',sets:4,reps:'8-10',note:'Isquios'},
+          {name:'Curl de femoral',sets:3,reps:'12-14',note:'Aislamiento'},
+          {name:'Elevacion de gemelos',sets:4,reps:'15-20',note:'Gemelos'},
+        ]},
+        { name: 'Full body + Core (Vie)', totalSets: 24, exercises: [
+          {name:'Peso muerto',sets:4,reps:'4-5',note:'Potencia'},
+          {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
+          {name:'Dominadas',sets:4,reps:'8-10',note:'Espalda'},
+          {name:'Sentadilla',sets:4,reps:'8-10',note:'Piernas'},
+          {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
+          {name:'Plancha',sets:4,reps:'50s',note:'Core'},
+        ]},
+      ]
+    },
+    90: {
+      split: 'Split muscular máximo volumen', freq: '5–6 días/semana',
+      scienceNote: '⚗️ 90 min × 5 días = máximo volumen sostenible. 5 series × compuestos más 3 × aislamientos. Importante: RIR 1-2 en cada serie (nunca al fallo total en compuestos). Prioriza la recuperación: 8h sueño y proteína 2g/kg peso.',
+      goalRest: { muscle_gain: 150, fat_loss: 90, strength: 210, maintenance: 120 },
+      goalReps: { muscle_gain: '5-12', fat_loss: '12-15', strength: '2-5', maintenance: '10-15' },
+      days: [
+        { name: 'Pecho (Lun)', totalSets: 28, exercises: [
+          {name:'Press de banca',sets:5,reps:'4-6',note:'Fuerza máxima'},
+          {name:'Press inclinado',sets:4,reps:'8-10',note:'Pecho superior'},
+          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Rango'},
+          {name:'Aperturas',sets:4,reps:'12-15',note:'Estiramiento'},
+          {name:'Fondos en paralelas',sets:4,reps:'10-15',note:'Inferior'},
+          {name:'Crossover en polea',sets:4,reps:'12-15',note:'Definición'},
+          {name:'Fondos de triceps',sets:3,reps:'12-15',note:'Tríceps'},
+        ]},
+        { name: 'Espalda (Mar)', totalSets: 28, exercises: [
+          {name:'Peso muerto',sets:5,reps:'3-5',note:'Fuerza máxima'},
+          {name:'Dominadas',sets:5,reps:'6-10',note:'Amplitud'},
+          {name:'Remo con barra',sets:4,reps:'6-8',note:'Grosor'},
+          {name:'Jalones al pecho',sets:4,reps:'10-12',note:'Dorsal'},
+          {name:'Remo en maquina',sets:4,reps:'10-12',note:'Retracción'},
+          {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Unilateral'},
+          {name:'Curl con barra',sets:3,reps:'8-10',note:'Bíceps'},
+        ]},
+        { name: 'Hombros y Brazos (Mié)', totalSets: 28, exercises: [
+          {name:'Press militar',sets:5,reps:'4-6',note:'Fuerza'},
+          {name:'Arnold press',sets:4,reps:'8-10',note:'Hombro completo'},
+          {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Amplitud'},
+          {name:'Pajaros',sets:3,reps:'12-15',note:'Post. hombro'},
+          {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
+          {name:'Curl con mancuernas',sets:3,reps:'10-12',note:'Bíceps'},
+          {name:'Extension en polea alta',sets:4,reps:'12-15',note:'Tríceps'},
+          {name:'Press frances',sets:1,reps:'10-12',note:'Cabeza larga'},
+        ]},
+        { name: 'Piernas (Jue)', totalSets: 28, exercises: [
+          {name:'Sentadilla',sets:5,reps:'4-6',note:'Cuádriceps fuerza'},
+          {name:'Prensa de piernas',sets:5,reps:'10-12',note:'Volumen'},
+          {name:'Zancadas',sets:4,reps:'10 c/lado',note:'Glúteos'},
+          {name:'Peso muerto rumano',sets:4,reps:'8-10',note:'Isquios'},
+          {name:'Curl de femoral',sets:4,reps:'12-14',note:'Aislamiento'},
+          {name:'Extension de cuadriceps',sets:3,reps:'12-15',note:'Cuádriceps'},
+          {name:'Elevacion de gemelos',sets:3,reps:'15-20',note:'Gemelos'},
+        ]},
+        { name: 'Full body / Potencia (Vie)', totalSets: 24, exercises: [
+          {name:'Peso muerto',sets:4,reps:'3-5',note:'Potencia'},
+          {name:'Press de banca',sets:4,reps:'6-8',note:'Pecho'},
+          {name:'Dominadas',sets:4,reps:'6-10',note:'Espalda'},
+          {name:'Sentadilla',sets:4,reps:'6-8',note:'Piernas'},
+          {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
+          {name:'Remo con barra',sets:4,reps:'8-10',note:'Espalda'},
+        ]},
+      ]
+    },
+  },
 };
 
 // ─── Full mode state ─────────────────────────────────────────
@@ -2849,17 +3239,20 @@ function openExerciseYT() {
 
 // ─── Routines Sheet ───────────────────────────────────────────
 let _currentRoutineLevel = 'beginner';
+let _currentRoutineTime = 45;
 
 function showRoutinesSheet() {
-  // Default to user's experience level
   const exp = userProfile?.experience;
   _currentRoutineLevel = exp === 'advanced' ? 'advanced' : exp === 'intermediate' ? 'intermediate' : 'beginner';
-  // Update tab active state
   document.querySelectorAll('.routine-level-tab').forEach((t, i) => {
     const levels = ['beginner','intermediate','advanced'];
     t.classList.toggle('active', levels[i] === _currentRoutineLevel);
   });
-  renderRoutines(_currentRoutineLevel);
+  // Default time from available options
+  const avail = SCIENCE_ROUTINES[_currentRoutineLevel]?.available || [45];
+  _currentRoutineTime = avail.includes(45) ? 45 : avail[0];
+  renderTimeTabs();
+  renderRoutines(_currentRoutineLevel, _currentRoutineTime);
   document.getElementById('routinesOverlay').classList.add('active');
   setTimeout(() => document.getElementById('routinesSheet').classList.add('active'), 10);
 }
@@ -2873,32 +3266,99 @@ function switchRoutineLevel(level, btn) {
   _currentRoutineLevel = level;
   document.querySelectorAll('.routine-level-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  renderRoutines(level);
+  const avail = SCIENCE_ROUTINES[level]?.available || [45];
+  if (!avail.includes(_currentRoutineTime)) _currentRoutineTime = avail[0];
+  renderTimeTabs();
+  renderRoutines(level, _currentRoutineTime);
 }
 
-function renderRoutines(level) {
-  const tmpl = ROUTINE_TEMPLATES[level];
-  if (!tmpl) return;
-  document.getElementById('routinesLevelInfo').textContent = tmpl.freq + ' · ' + tmpl.desc;
-  const list = document.getElementById('routinesList');
-  list.innerHTML = tmpl.routines.map((r, idx) => `
-    <div class="routine-card">
-      <div class="routine-card-header">
-        <div class="routine-card-name">${r.name}</div>
-        <div class="routine-card-count">${r.exercises.length} ejercicios</div>
+function renderTimeTabs() {
+  const avail = SCIENCE_ROUTINES[_currentRoutineLevel]?.available || [45];
+  const container = document.getElementById('routineTimeTabs');
+  container.innerHTML = avail.map(t =>
+    `<button class="routine-time-tab${t === _currentRoutineTime ? ' active' : ''}" onclick="switchRoutineTime(${t},this)">${t} min</button>`
+  ).join('');
+}
+
+function switchRoutineTime(time, btn) {
+  _currentRoutineTime = time;
+  document.querySelectorAll('.routine-time-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderRoutines(_currentRoutineLevel, time);
+}
+
+function renderRoutines(level, time) {
+  const levelData = SCIENCE_ROUTINES[level];
+  const data = levelData?.[time];
+  const goal = userProfile?.training_goal || 'muscle_gain';
+
+  const noteEl = document.getElementById('routineScienceNote');
+  const restEl = document.getElementById('routineRestInfo');
+  const listEl = document.getElementById('routinesList');
+
+  if (!data) {
+    noteEl.textContent = '';
+    restEl.style.display = 'none';
+    listEl.innerHTML = `<div class="routine-no-time">No hay rutina para esta combinación. Prueba otra duración.</div>`;
+    return;
+  }
+
+  // Science note
+  noteEl.textContent = data.scienceNote;
+
+  // Rest info based on goal
+  const restSec = (data.goalRest?.[goal] ?? data.goalRest?.muscle_gain ?? 90);
+  const repsRange = data.goalReps?.[goal] ?? '8-12';
+  const goalLabels = { muscle_gain: 'Ganancia muscular', fat_loss: 'Pérdida de grasa', strength: 'Fuerza', maintenance: 'Mantenimiento' };
+  const goalLabel = goalLabels[goal] || goal;
+  restEl.style.display = 'flex';
+  restEl.innerHTML = `
+    <div class="routine-rest-icon">⏱️</div>
+    <div class="routine-rest-text">
+      <b>${restSec}s descanso · ${repsRange} reps</b>
+      Ajustado para tu objetivo: ${goalLabel} · ${data.split}
+    </div>`;
+
+  // Render days
+  listEl.innerHTML = data.days.map((day, idx) => {
+    const exRows = day.exercises.map(ex =>
+      `<div class="routine-ex-item">
+        <span class="routine-ex-name">${ex.name}</span>
+        <span class="routine-ex-sets">${ex.sets}×${ex.reps}</span>
+      </div>`
+    ).join('');
+    return `<div class="routine-day-card">
+      <div class="routine-day-header">
+        <div class="routine-day-name">${day.name}</div>
+        <div class="routine-day-meta">${day.exercises.length} ejercicios · ~${day.totalSets} series totales</div>
       </div>
-      <div class="routine-card-exercises">${r.exercises.map(e => e.name).join(' · ')}</div>
-      <button class="routine-card-start-btn" onclick="startRoutineTemplate('${level}',${idx})">&#9654; Usar esta rutina</button>
-    </div>
-  `).join('');
+      <div class="routine-ex-list">${exRows}</div>
+      <button class="routine-start-day-btn" onclick="startScienceRoutine('${level}',${time},${idx})">
+        ▶ Usar este día
+      </button>
+    </div>`;
+  }).join('');
 }
 
-function startRoutineTemplate(level, routineIdx) {
-  const tmpl = ROUTINE_TEMPLATES[level];
-  if (!tmpl) return;
-  const routine = tmpl.routines[routineIdx];
-  if (!routine) return;
-  pendingExercises = routine.exercises.map(e => ({ name: e.name, equipment: e.equipment || '' }));
+function startScienceRoutine(level, time, dayIdx) {
+  const data = SCIENCE_ROUTINES[level]?.[time];
+  if (!data) return;
+  const day = data.days[dayIdx];
+  if (!day) return;
+
+  // Set recommended rest time based on goal
+  const goal = userProfile?.training_goal || 'muscle_gain';
+  const recommendedRest = data.goalRest?.[goal] ?? 90;
+  restSeconds = recommendedRest;
+  document.getElementById('customRestInput').value = recommendedRest;
+  document.getElementById('restIdleSeconds').textContent = recommendedRest;
+  document.getElementById('settingsRestInput').value = recommendedRest;
+  // Sync preset buttons
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.val || b.textContent) === recommendedRest);
+  });
+
+  pendingExercises = day.exercises.map(e => ({ name: e.name, equipment: e.equipment || '' }));
   closeRoutinesSheet();
   setTimeout(() => openConfig(), 400);
 }
