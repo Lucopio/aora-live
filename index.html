@@ -1291,7 +1291,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.13.0</span>
+        <span class="app-version">v1.14.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -2146,17 +2146,16 @@ function renderGroupPicker() {
     </button>`).join('');
 }
 
-function openWarmupVideo(query, name) {
+function openWarmupVideo(videoId, name) {
   document.getElementById('wuVideoTitle').textContent = name;
-  // Use YouTube search-list embed — plays the top result inline, never leaves the app
-  const encoded = encodeURIComponent(query);
-  const src = `https://www.youtube-nocookie.com/embed?listType=search&list=${encoded}&autoplay=1&rel=0&modestbranding=1`;
+  // Direct embed with real video ID — no search, loads instantly
+  const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
   const iframe = document.getElementById('wuVideoFrame');
   iframe.src = src;
 
-  // Fallback button opens YouTube search if embed is blocked
+  // Fallback button opens the exact video on YouTube
   const fallbackBtn = document.getElementById('wuVideoFallbackBtn');
-  fallbackBtn.onclick = () => window.open('https://www.youtube.com/results?search_query=' + encoded, '_blank');
+  fallbackBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
 
   // Show overlay + sheet
   const overlay = document.getElementById('wuVideoOverlay');
@@ -2235,12 +2234,12 @@ function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupExercisesList').innerHTML = data.exercises.map((ex, i) => {
     const animCls = getAnim(ex.name);
     const icon    = iconMap[animCls];
-    const safeQuery = (ex.yt || ex.name).replace(/'/g, "\\'");
-    const safeName  = ex.name.replace(/'/g, "\\'");
-    const ytBtn = `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupVideo('${safeQuery}','${safeName}')">
+    const safeId   = (ex.ytId || '').replace(/'/g, "\\'");
+    const safeName = ex.name.replace(/'/g, "\\'");
+    const ytBtn = safeId ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupVideo('${safeId}','${safeName}')">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="#FF0000"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-2.75 12.58 12.58 0 0 0-8.65 5.31A4.83 4.83 0 0 1 4.35 12a4.83 4.83 0 0 1 2.82 2.75A12.58 12.58 0 0 0 15.82 20a4.83 4.83 0 0 1 3.77-2.75A12.58 12.58 0 0 0 22 12a12.58 12.58 0 0 0-2.41-5.31z"/><polygon points="10 15 15.19 12 10 9 10 15" fill="white"/></svg>
         Ver cómo hacerlo
-      </button>`;
+      </button>` : '';
     return `
     <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
       <div class="wu-ex-check" id="wuCheck${i}">
@@ -2699,10 +2698,10 @@ const warmupDatabase = {
       { text: 'Elevar la temperatura muscular' }
     ],
     exercises: [
-      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', yt: 'rotaciones de brazos calentamiento hombros como hacer' },
-      { name: 'Stretch de pecho en pared', reps: '2×30 seg', duration: '1 min', why: 'Estira el pectoral y mejora cuánto puedes abrir los brazos durante el press', yt: 'stretch pecho en pared como hacer estiramiento' },
-      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', yt: 'press banca barra vacia calentamiento como hacer' },
-      { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', yt: 'fondos en banco triceps calentamiento como hacer' }
+      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', ytId: 'sytmEGA0HKU' },
+      { name: 'Stretch de pecho en pared', reps: '2×30 seg', duration: '1 min', why: 'Estira el pectoral y mejora cuánto puedes abrir los brazos durante el press', ytId: 'TufwPKlp31w' },
+      { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', ytId: 'sytmEGA0HKU' },
+      { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', ytId: 'H6r0fh2-YNU' }
     ],
     injuries: ['Impingement de hombro (pellizco de tendón)', 'Tendinitis del pectoral', 'Dolor en codo']
   },
@@ -2714,10 +2713,10 @@ const warmupDatabase = {
       { text: 'Elevar la temperatura muscular' }
     ],
     exercises: [
-      { name: 'Cat-Cow (movimiento de columna)', reps: '10 reps', duration: '2 min', why: 'Mueve toda la columna suavemente — reduce el riesgo de hernias discales durante peso muerto o remo', yt: 'cat cow ejercicio columna como hacer yoga' },
-      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core sin comprimir la espalda baja — estabiliza antes de cargar', yt: 'dead bugs ejercicio core espalda como hacer' },
-      { name: 'Jalón al pecho muy ligero', reps: '15 reps', duration: '2 min', why: 'Despierta el dorsal con poco peso para preparar el movimiento de tirón', yt: 'jalones al pecho calentamiento espalda como hacer' },
-      { name: 'Band pull-aparts (banda elástica)', reps: '15 reps', duration: '1 min', why: 'Activa los músculos entre los omóplatos — mejora la postura y previene lesiones de hombro', yt: 'band pull aparts calentamiento espalda omoplatos como hacer' }
+      { name: 'Cat-Cow (movimiento de columna)', reps: '10 reps', duration: '2 min', why: 'Mueve toda la columna suavemente — reduce el riesgo de hernias discales durante peso muerto o remo', ytId: 'J99uL4J5khE' },
+      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core sin comprimir la espalda baja — estabiliza antes de cargar', ytId: '4XLEnwUr1d8' },
+      { name: 'Jalón al pecho muy ligero', reps: '15 reps', duration: '2 min', why: 'Despierta el dorsal con poco peso para preparar el movimiento de tirón', ytId: '72q0tKij5uU' },
+      { name: 'Band pull-aparts (banda elástica)', reps: '15 reps', duration: '1 min', why: 'Activa los músculos entre los omóplatos — mejora la postura y previene lesiones de hombro', ytId: 'brWneMgR-7k' }
     ],
     injuries: ['Hernia discal', 'Contractura lumbar', 'Tendinitis dorsal']
   },
@@ -2729,10 +2728,10 @@ const warmupDatabase = {
       { text: 'Preparar el cuerpo para levantar sobre la cabeza' }
     ],
     exercises: [
-      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Recorre todo el rango del hombro — el calentamiento más completo para esta articulación', yt: 'arm circles calentamiento hombros como hacer' },
-      { name: 'Scapular push-ups (en pared o suelo)', reps: '12 reps', duration: '1 min', why: 'Activa los músculos que estabilizan el hombro — previene lesiones al hacer press', yt: 'scapular push ups calentamiento hombros como hacer' },
-      { name: 'Press militar con barra vacía', reps: '10 reps', duration: '2 min', why: 'Práctica del movimiento sin carga — prepara la articulación para el peso real', yt: 'press militar barra vacia calentamiento hombros como hacer' },
-      { name: 'Elevaciones laterales muy ligeras', reps: '12 reps', duration: '2 min', why: 'Activa el deltoides medio con poco peso antes de las series pesadas', yt: 'elevaciones laterales calentamiento hombros como hacer' }
+      { name: 'Arm circles (ambas direcciones)', reps: '20 reps', duration: '2 min', why: 'Recorre todo el rango del hombro — el calentamiento más completo para esta articulación', ytId: 'sytmEGA0HKU' },
+      { name: 'Scapular push-ups (en pared o suelo)', reps: '12 reps', duration: '1 min', why: 'Activa los músculos que estabilizan el hombro — previene lesiones al hacer press', ytId: '8ncZ22u33bY' },
+      { name: 'Press militar con barra vacía', reps: '10 reps', duration: '2 min', why: 'Práctica del movimiento sin carga — prepara la articulación para el peso real', ytId: 'GELRUlUSxeI' },
+      { name: 'Elevaciones laterales muy ligeras', reps: '12 reps', duration: '2 min', why: 'Activa el deltoides medio con poco peso antes de las series pesadas', ytId: 'hgLpdwMtEEs' }
     ],
     injuries: ['Impingement (pellizco de tendón en el hombro)', 'Desgarro del manguito rotador', 'Tendinitis bicipital']
   },
@@ -2744,9 +2743,9 @@ const warmupDatabase = {
       { text: 'Calentar los antebrazos' }
     ],
     exercises: [
-      { name: 'Extensiones de codo sin peso', reps: '15 reps', duration: '1 min', why: 'Lleva el codo a todo su rango — lo lubrica antes de cargar', yt: 'extensiones codo calentamiento biceps como hacer' },
-      { name: 'Curl con barra vacía o banda', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps sin fatigarlo — prepara el movimiento de curl', yt: 'curl barra vacia calentamiento biceps como hacer' },
-      { name: 'Plancha sobre antebrazos', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo, muñeca y core — base de estabilidad', yt: 'plancha antebrazos como hacer ejercicio core' }
+      { name: 'Extensiones de codo sin peso', reps: '15 reps', duration: '1 min', why: 'Lleva el codo a todo su rango — lo lubrica antes de cargar', ytId: 'PY9QylAMtyE' },
+      { name: 'Curl con barra vacía o banda', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps sin fatigarlo — prepara el movimiento de curl', ytId: 'PY9QylAMtyE' },
+      { name: 'Plancha sobre antebrazos', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo, muñeca y core — base de estabilidad', ytId: 'd0atctiI7Vw' }
     ],
     injuries: ['Tendinitis de codo (codo de tenista)', 'Dolor de antebrazo al rotar', 'Síndrome del pronador']
   },
@@ -2758,9 +2757,9 @@ const warmupDatabase = {
       { text: 'Preparar articulaciones para movimientos de empuje' }
     ],
     exercises: [
-      { name: 'Flexiones (o en rodillas)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps, pecho y core al mismo tiempo — calentamiento completo', yt: 'flexiones push ups como hacer bien tecnica' },
-      { name: 'Dips en banco sin peso', reps: '8-10 reps', duration: '1 min', why: 'Replica el movimiento de los fondos de tríceps con solo el peso corporal', yt: 'dips banco triceps calentamiento como hacer' },
-      { name: 'Extensión de tríceps muy ligera', reps: '12 reps', duration: '2 min', why: 'Activa específicamente el tríceps antes de las series pesadas', yt: 'extension triceps calentamiento ligero como hacer' }
+      { name: 'Flexiones (o en rodillas)', reps: '10-12 reps', duration: '2 min', why: 'Activa tríceps, pecho y core al mismo tiempo — calentamiento completo', ytId: '9684eElbYzI' },
+      { name: 'Dips en banco sin peso', reps: '8-10 reps', duration: '1 min', why: 'Replica el movimiento de los fondos de tríceps con solo el peso corporal', ytId: 'H6r0fh2-YNU' },
+      { name: 'Extensión de tríceps muy ligera', reps: '12 reps', duration: '2 min', why: 'Activa específicamente el tríceps antes de las series pesadas', ytId: 'HAS8uy73HqM' }
     ],
     injuries: ['Tendinitis de codo', 'Dolor en la punta del codo (olécranon)', 'Pellizco de codo']
   },
@@ -2772,11 +2771,11 @@ const warmupDatabase = {
       { text: 'Preparar los ligamentos de rodilla' }
     ],
     exercises: [
-      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Lubrica la articulación de la cadera antes de cargar en sentadilla o peso muerto', yt: 'circulos cadera movilidad calentamiento piernas como hacer' },
-      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Calienta isquiotibiales, cuádriceps y cadera con movimiento dinámico', yt: 'leg swings balanceo piernas calentamiento como hacer' },
-      { name: 'Glute bridges (puente de glúteos)', reps: '15 reps', duration: '2 min', why: '"Enciende" los glúteos — si no están activos, las rodillas y la espalda baja compensan el trabajo', yt: 'glute bridges puente gluteos calentamiento como hacer' },
-      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Practica el patrón de la sentadilla sin peso — activa todo el tren inferior', yt: 'sentadilla peso corporal calentamiento como hacer bien' },
-      { name: 'Elevación de talones (gemelos)', reps: '15 reps', duration: '1 min', why: 'Activa el tobillo y la pantorrilla — apoyo en toda sentadilla y zancada', yt: 'elevacion talones gemelos calentamiento como hacer' }
+      { name: 'Círculos de cadera (ambas direcciones)', reps: '15 reps', duration: '2 min', why: 'Lubrica la articulación de la cadera antes de cargar en sentadilla o peso muerto', ytId: 'TcM8ups8GtA' },
+      { name: 'Leg swings (adelante-atrás y lateral)', reps: '10 cada dirección', duration: '2 min', why: 'Calienta isquiotibiales, cuádriceps y cadera con movimiento dinámico', ytId: 'naW8u72lOzI' },
+      { name: 'Glute bridges (puente de glúteos)', reps: '15 reps', duration: '2 min', why: '"Enciende" los glúteos — si no están activos, las rodillas y la espalda baja compensan el trabajo', ytId: 'OUgsJ8-Vi0E' },
+      { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Practica el patrón de la sentadilla sin peso — activa todo el tren inferior', ytId: 'qsAkuNORgmk' },
+      { name: 'Elevación de talones (gemelos)', reps: '15 reps', duration: '1 min', why: 'Activa el tobillo y la pantorrilla — apoyo en toda sentadilla y zancada', ytId: 'IGwjFUhDbv0' }
     ],
     injuries: ['Lesión de rodilla (LCA o menisco)', 'Desgarro de isquiotibial', 'Dolor lumbar al agacharse']
   },
@@ -2788,9 +2787,9 @@ const warmupDatabase = {
       { text: 'Elevar temperatura del tronco' }
     ],
     exercises: [
-      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core profundo sin comprimir la espalda — el mejor ejercicio previo a abdominales', yt: 'dead bugs ejercicio core abdomen como hacer' },
-      { name: 'Bird dogs (cuatro patas)', reps: '10 reps cada lado', duration: '1 min', why: 'Trabaja la estabilidad del tronco sin movimiento de columna — previene lesiones', yt: 'bird dog ejercicio core espalda como hacer' },
-      { name: 'Plancha frontal (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa todo el core antes de series más intensas de abdomen', yt: 'plancha abdominal como hacer bien tecnica' }
+      { name: 'Dead bugs (boca arriba, brazos y piernas)', reps: '10 reps cada lado', duration: '1 min', why: 'Activa el core profundo sin comprimir la espalda — el mejor ejercicio previo a abdominales', ytId: '4XLEnwUr1d8' },
+      { name: 'Bird dogs (cuatro patas)', reps: '10 reps cada lado', duration: '1 min', why: 'Trabaja la estabilidad del tronco sin movimiento de columna — previene lesiones', ytId: 'L0UMTpI1xWI' },
+      { name: 'Plancha frontal (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa todo el core antes de series más intensas de abdomen', ytId: 'd0atctiI7Vw' }
     ],
     injuries: ['Contractura lumbar', 'Hernia discal lumbar', 'Distensión del oblicuo']
   },
@@ -2802,9 +2801,9 @@ const warmupDatabase = {
       { text: 'Elevar temperatura corporal general' }
     ],
     exercises: [
-      { name: 'Jumping jacks suaves', reps: '30 reps', duration: '2 min', why: 'Moviliza todo el cuerpo y eleva el ritmo cardíaco al mismo tiempo', yt: 'jumping jacks calentamiento como hacer bien' },
-      { name: 'Trote en el lugar', reps: 'Baja intensidad', duration: '2 min', why: 'Eleva la frecuencia cardíaca de forma gradual y segura', yt: 'trote en el lugar calentamiento cardio como hacer' },
-      { name: 'Aceleración progresiva', reps: '50-70% de intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo sin sobrecargar el corazón', yt: 'calentamiento cardio progresivo como hacer' }
+      { name: 'Jumping jacks suaves', reps: '30 reps', duration: '2 min', why: 'Moviliza todo el cuerpo y eleva el ritmo cardíaco al mismo tiempo', ytId: 'iO8srE_cz3s' },
+      { name: 'Trote en el lugar', reps: 'Baja intensidad', duration: '2 min', why: 'Eleva la frecuencia cardíaca de forma gradual y segura', ytId: 'jSACK-0lKi4' },
+      { name: 'Aceleración progresiva', reps: '50-70% de intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo sin sobrecargar el corazón', ytId: 'jSACK-0lKi4' }
     ],
     injuries: ['Lesión muscular por arrancar en frío', 'Dolor articular por impacto sin calentar']
   }
