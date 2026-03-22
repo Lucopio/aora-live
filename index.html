@@ -157,6 +157,23 @@ body {
 .preset-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
 .preset-btn span { display: block; font-family: var(--font); font-size: 10px; color: var(--text-tertiary); font-weight: 500; margin-top: 2px; }
 
+/* ─── Routine suggestion ─────────────────── */
+.routine-suggest { background: var(--primary-light); border-radius: var(--radius-sm); padding: 12px 14px; margin: 0 0 16px; }
+.routine-suggest-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+.routine-suggest-exercises { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.6; }
+.routine-suggest-actions { display: flex; gap: 8px; }
+.routine-use-btn { flex: 1; background: var(--primary); color: white; border: none; border-radius: 10px; padding: 9px 0; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
+.routine-skip-btn { background: transparent; color: var(--text-secondary); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+/* ─── Superset ────────────────────────────── */
+.superset-btn { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: 1.5px solid var(--border); border-radius: var(--radius-full); padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; font-family: var(--font); }
+.superset-btn.active { border-color: var(--warning); background: var(--warning-light); color: #92400E; }
+/* ─── Pending exercises ───────────────────── */
+.pending-pill { display: none; align-items: center; gap: 4px; background: var(--success-light); border-radius: var(--radius-full); padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--success); }
+.pending-pill.show { display: flex; }
+.superset-actions-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+/* ─── History superset ───────────────────── */
+.h-superset-badge { display: inline-block; background: var(--warning-light); color: #92400E; border-radius: 6px; padding: 1px 7px; font-size: 10px; font-weight: 700; margin-left: 6px; }
+
 .custom-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
 .custom-input-row label { font-size: 14px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
 .custom-input {
@@ -1156,7 +1173,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.5.0</span>
+        <span class="app-version">v1.6.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1279,6 +1296,13 @@ body {
     </div>
 
     <div class="workout-actions">
+      <div class="superset-actions-row">
+        <button class="superset-btn" id="supersetBtn" onclick="toggleSuperset()">🔗 Superserie</button>
+        <div class="pending-pill" id="pendingPill">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <span id="pendingCount">0</span> en cola
+        </div>
+      </div>
       <button class="finish-exercise-btn" id="nextExerciseBtn" onclick="nextExercise()">Siguiente Ejercicio</button>
       <button class="end-workout-btn" onclick="endWorkout()">Finalizar Entrenamiento</button>
     </div>
@@ -1603,6 +1627,17 @@ body {
     <input class="custom-input" id="customRestInput" type="number" value="60" min="10" max="600">
     <label>seg</label>
   </div>
+  <!-- Sugerencia de rutina del mismo día de la semana -->
+  <div id="routineSuggestBanner" style="display:none">
+    <div class="routine-suggest">
+      <div class="routine-suggest-title" id="routineSuggestTitle">📅 Tu rutina del lunes pasado</div>
+      <div class="routine-suggest-exercises" id="routineSuggestList"></div>
+      <div class="routine-suggest-actions">
+        <button class="routine-use-btn" onclick="loadSuggestedRoutine()">Usar esta rutina</button>
+        <button class="routine-skip-btn" onclick="dismissRoutineSuggest()">Desde cero</button>
+      </div>
+    </div>
+  </div>
   <button class="sheet-cta" onclick="startWorkout()">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     Comenzar Entrenamiento
@@ -1773,6 +1808,7 @@ function showScreen(name) {
 function openConfig() {
   document.getElementById('configOverlay').classList.add('active');
   setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
+  suggestRoutineForToday();
 }
 function closeConfig() {
   document.getElementById('configSheet').classList.remove('active');
@@ -1826,7 +1862,13 @@ function launchWorkout() {
   history.pushState({ gym: 'active' }, ''); // mantiene el back button dentro de la app
   if (workoutMode === 'full') {
     document.getElementById('catalogExCount').textContent = '0 ejercicios completados';
-    openCatalog();
+    if (pendingExercises.length > 0) {
+      const first = pendingExercises.shift();
+      updatePendingPill();
+      selectExercise(first.name, first.equipment);
+    } else {
+      openCatalog();
+    }
   } else {
     showScreen('workout');
   }
@@ -1883,6 +1925,9 @@ function selectMode(mode) {
   const nextBtn = document.getElementById('nextExerciseBtn');
   const exerciseCard = document.getElementById('exerciseCard');
 
+  supersetActive = false; supersetGroupCounter = 0;
+  const supersetBtn = document.getElementById('supersetBtn');
+  if (supersetBtn) { supersetBtn.classList.remove('active'); supersetBtn.textContent = '🔗 Superserie'; }
   if (mode === 'full') {
     completedExercises = [];
     currentExerciseName = '';
@@ -1927,8 +1972,12 @@ let currentEquipment = '';
 let pendingExerciseName = '';
 let isUnilateral = false;
 let activeSide = 'left';
-let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit } }
+let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit, reps } }
 let customExercises = []; // ejercicios personalizados guardados entre sesiones
+let supersetActive = false;
+let supersetGroupCounter = 0;
+let pendingExercises = []; // cola de ejercicios para rutina sugerida
+let suggestedRoutine = null;
 let catalogGroup = null;  // null = lista de grupos, string = ejercicios de ese grupo
 
 const EQUIPMENT_OPTIONS = [
@@ -2212,10 +2261,11 @@ function selectExercise(name, equip) {
     // Cambiar unidad PRIMERO (mientras el input aún vale 0) para evitar conversión incorrecta
     if (lw.unit && lw.unit !== weightUnit) setWeightUnit(lw.unit);
     document.getElementById('weightInput').value = lw.weight;
+    document.getElementById('repsInput').value = lw.reps || 10;
   } else {
     document.getElementById('weightInput').value = '0';
+    document.getElementById('repsInput').value = '10';
   }
-  document.getElementById('repsInput').value = '10';
   renderSets();
   showScreen('workout');
 }
@@ -2229,10 +2279,10 @@ function addSet() {
   if (reps <= 0) return;
   const side = isUnilateral ? activeSide : null;
   currentExerciseSets.push({ weight, reps, unit: weightUnit, side });
-  // Guardar último peso para este ejercicio+equipo
-  if (weight > 0) {
-    const key = exKey(currentExerciseName, currentEquipment);
-    lastWeights[key] = { weight, unit: weightUnit, ts: Date.now() };
+  // Guardar último peso + reps para este ejercicio+equipo
+  const key = exKey(currentExerciseName, currentEquipment);
+  if (weight > 0 || lastWeights[key]) {
+    lastWeights[key] = { weight: weight || (lastWeights[key]?.weight || 0), unit: weightUnit, reps, ts: Date.now() };
   }
   renderSets();
   // Solo reinicia el timer si NO estamos reemplazando una serie borrada
@@ -2269,9 +2319,10 @@ function deleteSet(index) {
 }
 
 function nextExercise() {
-  skipRest(); // Capturar descanso antes de limpiar sets
+  skipRest();
   if (currentExerciseName && currentExerciseSets.length > 0) {
-    completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+    const ssGroup = supersetActive ? (supersetGroupCounter || (supersetGroupCounter = 1)) : null;
+    completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets], superset_group: ssGroup });
   }
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
@@ -2279,7 +2330,64 @@ function nextExercise() {
   document.getElementById('exBadge').textContent = exerciseCount;
   const count = exerciseCount;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
-  openCatalog();
+  if (pendingExercises.length > 0) {
+    const next = pendingExercises.shift();
+    updatePendingPill();
+    selectExercise(next.name, next.equipment);
+  } else {
+    if (!supersetActive) supersetGroupCounter = 0;
+    openCatalog();
+  }
+}
+
+function updatePendingPill() {
+  const pill = document.getElementById('pendingPill');
+  if (!pill) return;
+  if (pendingExercises.length > 0) {
+    pill.classList.add('show');
+    document.getElementById('pendingCount').textContent = pendingExercises.length;
+  } else {
+    pill.classList.remove('show');
+  }
+}
+
+function toggleSuperset() {
+  supersetActive = !supersetActive;
+  const btn = document.getElementById('supersetBtn');
+  btn.classList.toggle('active', supersetActive);
+  btn.textContent = supersetActive ? '🔗 Superserie ON' : '🔗 Superserie';
+  if (supersetActive && supersetGroupCounter === 0) supersetGroupCounter = 1;
+  if (!supersetActive) supersetGroupCounter = 0;
+}
+
+function suggestRoutineForToday() {
+  const today = new Date().getDay();
+  const dayNames = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const sameDay = savedWorkouts.find(w => {
+    const d = w.date instanceof Date ? w.date : new Date(w.date);
+    return d.getDay() === today && w.exercises_detail && w.exercises_detail.length > 0;
+  });
+  const banner = document.getElementById('routineSuggestBanner');
+  if (!sameDay) { banner.style.display = 'none'; return; }
+  suggestedRoutine = sameDay;
+  const daysAgo = Math.round((Date.now() - new Date(sameDay.date)) / 86400000);
+  const weeksAgo = Math.max(1, Math.round(daysAgo / 7));
+  const timeLabel = weeksAgo === 1 ? 'la semana pasada' : `hace ${weeksAgo} semanas`;
+  document.getElementById('routineSuggestTitle').textContent = `📅 Tu ${dayNames[today]} (${timeLabel})`;
+  document.getElementById('routineSuggestList').textContent = sameDay.exercises_detail.map(e => e.name + (e.equipment ? ` (${EQUIP_LABEL[e.equipment] || e.equipment})` : '')).join(' · ');
+  banner.style.display = 'block';
+}
+
+function loadSuggestedRoutine() {
+  if (!suggestedRoutine) return;
+  pendingExercises = suggestedRoutine.exercises_detail.map(e => ({ name: e.name, equipment: e.equipment || '' }));
+  dismissRoutineSuggest();
+}
+
+function dismissRoutineSuggest() {
+  const b = document.getElementById('routineSuggestBanner');
+  if (b) b.style.display = 'none';
+  suggestedRoutine = null;
 }
 
 function changeExercise() {
@@ -3067,7 +3175,7 @@ function renderHistory() {
           </div>`;
         }).join('');
         return `<div class="h-ex-row">
-          <div class="h-ex-name">${ex.name}${ex.equipment ? `<span class="h-ex-equip">${ex.equipment}</span>` : ''}</div>
+          <div class="h-ex-name">${ex.name}${ex.equipment ? `<span class="h-ex-equip">${ex.equipment}</span>` : ''}${ex.superset_group ? `<span class="h-superset-badge">SS${ex.superset_group}</span>` : ''}</div>
           <div class="h-sets-grid">${setsHtml || '<div class="h-detail-empty">Sin series registradas</div>'}</div>
         </div>`;
       }).join('');

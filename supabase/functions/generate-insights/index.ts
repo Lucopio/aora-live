@@ -162,21 +162,34 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
           .in("workout_exercise_id", exIds)
       : { data: [] };
 
-    // Exercise frequency map
-    const exFrequency: Record<string, { count: number; totalSets: number; weights: number[] }> = {};
-    (exercises || []).forEach((ex: { id: string; exercise_name: string; equipment: string }) => {
+    // Exercise frequency + progression (week 1 vs week 2 avg weight)
+    const now2 = Date.now();
+    const week1Start = now2 - 14 * 86400000; const week1End = now2 - 7 * 86400000;
+    const week2Start = now2 - 7 * 86400000;
+    const exFrequency: Record<string, { count: number; totalSets: number; w1Weights: number[]; w2Weights: number[] }> = {};
+    const workoutDateMap: Record<string, number> = {};
+    workouts.forEach((w: { id: string; started_at: string }) => { workoutDateMap[w.id] = new Date(w.started_at).getTime(); });
+    (exercises || []).forEach((ex: { id: string; workout_id: string; exercise_name: string; equipment: string }) => {
       const key = ex.exercise_name + (ex.equipment ? ` (${ex.equipment})` : "");
-      if (!exFrequency[key]) exFrequency[key] = { count: 0, totalSets: 0, weights: [] };
+      if (!exFrequency[key]) exFrequency[key] = { count: 0, totalSets: 0, w1Weights: [], w2Weights: [] };
       exFrequency[key].count++;
       const exSets = (sets || []).filter((s: { workout_exercise_id: string }) => s.workout_exercise_id === ex.id);
       exFrequency[key].totalSets += exSets.length;
-      exSets.forEach((s: { weight: number }) => { if (s.weight > 0) exFrequency[key].weights.push(s.weight); });
+      const wDate = workoutDateMap[ex.workout_id] || 0;
+      exSets.forEach((s: { weight: number }) => {
+        if (s.weight > 0) {
+          if (wDate >= week1Start && wDate < week1End) exFrequency[key].w1Weights.push(s.weight);
+          else if (wDate >= week2Start) exFrequency[key].w2Weights.push(s.weight);
+        }
+      });
     });
+    const avg = (arr: number[]) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length * 10) / 10 : null;
     const topExercises = Object.entries(exFrequency).sort((a, b) => b[1].count - a[1].count).slice(0, 8)
-      .map(([name, stats]) => ({
-        name, sessions: stats.count, totalSets: stats.totalSets,
-        avgWeight: stats.weights.length ? Math.round(stats.weights.reduce((a, b) => a + b, 0) / stats.weights.length * 10) / 10 : null,
-      }));
+      .map(([name, stats]) => {
+        const w1 = avg(stats.w1Weights); const w2 = avg(stats.w2Weights);
+        const progression = w1 != null && w2 != null ? (w2 - w1) : null;
+        return { name, sessions: stats.count, totalSets: stats.totalSets, w1AvgWeight: w1, w2AvgWeight: w2, progression };
+      });
 
     // Rest aggregates
     const restWorkouts = workouts.filter((w: { avg_rest_ms: number | null; rest_adherence: number | null }) => w.avg_rest_ms != null && w.rest_adherence != null);
@@ -187,36 +200,48 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
     const restStr = avgRestMs != null
       ? `Descanso promedio real: ${Math.round(avgRestMs / 1000)}s, Adherencia promedio: ${Math.round((avgAdherence || 0) * 100)}%, Descansos analizados: ${totalRestsTracked}`
       : "Sin datos de descanso aún";
-    const exercisesStr = topExercises.map(ex =>
-      `${ex.name}: ${ex.sessions} sesiones, ${ex.totalSets} series${ex.avgWeight ? `, peso promedio ${ex.avgWeight}` : ""}`
-    ).join("; ");
+    const exercisesStr = topExercises.map(ex => {
+      let s = `${ex.name}: ${ex.sessions} sesiones, ${ex.totalSets} series`;
+      if (ex.w2AvgWeight != null) s += `, peso esta semana: ${ex.w2AvgWeight}kg`;
+      if (ex.progression != null) s += ` (${ex.progression > 0 ? '+' : ''}${ex.progression}kg vs sem. anterior)`;
+      return s;
+    }).join("; ");
 
-    const prompt = `Eres un entrenador personal experto con 15+ años de experiencia. Analiza los datos de entrenamiento del usuario y genera recomendaciones personalizadas, específicas y accionables.
+    // Workout frequency per weekday (to detect missing rest days)
+    const dayCount = new Array(7).fill(0);
+    workouts.forEach((w: { started_at: string }) => { dayCount[new Date(w.started_at).getDay()]++; });
+    const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const freqStr = dayCount.map((c, d) => c > 0 ? `${dayNames[d]}(${c})` : '').filter(Boolean).join(', ');
+    const consecutiveDays = Math.max(...dayCount);
 
-PERFIL DEL USUARIO: ${profileStr}
+    const prompt = `Eres un entrenador personal experto con 15+ años de experiencia. Analiza los datos REALES de entrenamiento y genera recomendaciones específicas, numéricas y accionables.
+
+PERFIL: ${profileStr}
 
 DATOS ÚLTIMOS 30 DÍAS:
-- Entrenamientos completados: ${workouts.length}
+- Entrenamientos: ${workouts.length} (días activos: ${freqStr})
 - ${restStr}
-- Ejercicios frecuentes: ${exercisesStr || "Sin datos"}
+- Progresión semanal por ejercicio: ${exercisesStr || "Sin datos suficientes"}
+- Racha máxima de días por semana: ${consecutiveDays}
 
-INSTRUCCIONES:
-- Sé específico y directo, no genérico. Menciona números concretos.
-- Si datos de descanso disponibles, úsalos como eje central
-- Incluye recomendaciones de bienestar (sueño, hidratación, suplementos si aplica)
-- Máximo 3 recomendaciones accionables
+INSTRUCCIONES CRÍTICAS:
+1. Analiza la PROGRESIÓN DE CARGA: ejercicios que mejoraron peso, estancados o que bajaron. Sé específico (ej: "Press banca subió +5kg").
+2. Analiza el DESCANSO como factor de rendimiento: si adherencia < 70%, explica que no descansar bien limita la carga en siguientes series.
+3. Si el usuario entrena muchos días seguidos, recomienda un día de descanso.
+4. Incluye 1 tip de bienestar (sueño 8h, hidratación, o suplemento relevante para su objetivo).
+5. Máximo 3 recomendaciones. NO repitas lo que ya hace bien.
 
 Responde ÚNICAMENTE con JSON válido:
 {
-  "summary": "1-2 oraciones resumiendo el estado general",
-  "rest_analysis": { "status": "good|needs_work|critical|no_data", "message": "análisis específico del patrón de descanso" },
+  "summary": "2 oraciones máximo, menciona datos reales (número de kg, porcentaje, etc.)",
+  "rest_analysis": { "status": "good|needs_work|critical|no_data", "message": "análisis específico con números" },
   "recommendations": [
-    { "type": "rest|volume|frequency|progression|recovery|sleep|hydration|supplement", "title": "título corto (máx 40 chars)", "body": "descripción accionable (máx 120 chars)", "priority": "high|medium|low" }
+    { "type": "rest|volume|frequency|progression|recovery|sleep|hydration|supplement", "title": "título (máx 40 chars)", "body": "acción concreta con números (máx 120 chars)", "priority": "high|medium|low" }
   ],
   "rest_suggestion_seconds": null
 }
 
-Si adherencia < 70%, sugiere rest_suggestion_seconds (entero).`;
+Si adherencia < 70%, calcula rest_suggestion_seconds = Math.round(descanso_promedio_real_ms / 1000 * 1.3) como sugerencia.`;
 
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
