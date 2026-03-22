@@ -1291,7 +1291,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.14.0</span>
+        <span class="app-version">v1.14.1</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1909,8 +1909,8 @@ body {
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       loading="lazy">
     </iframe>
-    <!-- Fallback shown if iframe blocked -->
-    <div id="wuVideoFallback" style="display:none;position:absolute;inset:0;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px">
+    <!-- Fallback shown if iframe blocked (hidden by default, display:flex only when needed) -->
+    <div id="wuVideoFallback" style="display:none;position:absolute;inset:0;background:#111;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px">
       <div style="font-size:32px">📺</div>
       <p style="color:#aaa;font-size:13px;text-align:center">El video no pudo cargarse aquí.</p>
       <button id="wuVideoFallbackBtn" style="padding:10px 20px;background:#FF0000;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">Ver en YouTube</button>
@@ -2148,10 +2148,22 @@ function renderGroupPicker() {
 
 function openWarmupVideo(videoId, name) {
   document.getElementById('wuVideoTitle').textContent = name;
+
+  // Always hide fallback and show iframe first
+  const fallback = document.getElementById('wuVideoFallback');
+  const iframe   = document.getElementById('wuVideoFrame');
+  fallback.style.display = 'none';
+  iframe.style.display   = 'block';
+
   // Direct embed with real video ID — no search, loads instantly
   const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
-  const iframe = document.getElementById('wuVideoFrame');
   iframe.src = src;
+
+  // If iframe fails to load (e.g. embedding disabled), show fallback
+  iframe.onerror = () => {
+    iframe.style.display   = 'none';
+    fallback.style.display = 'flex';
+  };
 
   // Fallback button opens the exact video on YouTube
   const fallbackBtn = document.getElementById('wuVideoFallbackBtn');
