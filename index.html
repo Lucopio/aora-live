@@ -1133,9 +1133,15 @@ body {
 </head>
 <body>
 
+<!-- LOADING OVERLAY (se oculta una vez resuelta la sesión) -->
+<div id="appLoadingOverlay" style="position:fixed;inset:0;background:#F8F9FA;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:9999">
+  <h2 style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#1A73E8">GymTracker</h2>
+  <div style="width:36px;height:36px;border:3px solid #E8EAED;border-top-color:#1A73E8;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <!-- AUTH SCREEN -->
-<div class="screen active" id="authScreen">
+<div class="screen" id="authScreen">
   <div class="auth-wrap">
     <div class="auth-logo">
       <h1>GymTracker</h1>
@@ -1291,7 +1297,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.16.0</span>
+        <span class="app-version">v1.17.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1354,8 +1360,14 @@ body {
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0">Ejercicio</div>
-        <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
+        <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0;flex:1">Ejercicio</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button id="wkGifBtn" onclick="openWorkoutExerciseGif()" style="display:none;align-items:center;gap:4px;background:var(--primary-light);border:none;font-family:var(--font);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;padding:5px 9px;border-radius:8px;white-space:nowrap">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            Ver forma
+          </button>
+          <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
+        </div>
       </div>
       <div class="sets-list" id="setsList"></div>
       <!-- Unilateral toggle -->
@@ -1385,6 +1397,13 @@ body {
           <input type="number" id="repsInput" value="10" min="1" inputmode="numeric">
         </div>
         <button class="add-set-btn" onclick="addSet()">+ Serie</button>
+      </div>
+      <!-- Toggle aproximación -->
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <button id="warmupSetToggle" onclick="toggleWarmupSet()" style="display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all 0.15s">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);display:inline-block" id="warmupSetDot"></span>
+          Serie de aproximación
+        </button>
       </div>
     </div>
 
@@ -1479,6 +1498,15 @@ body {
       <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">RPE Promedio</div>
       <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--text-primary)"><span id="sumRPEAvg">—</span><span style="font-size:13px;color:var(--text-secondary);font-weight:500"> / 10</span></div>
     </div>
+  </div>
+
+  <!-- Feedback semanal (#10) -->
+  <div id="summaryWeeklyFeedback" style="display:none;margin:0 20px 12px;border-radius:16px;overflow:hidden;border:1.5px solid var(--border)">
+    <div style="background:var(--primary);padding:12px 16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">📊</span>
+      <span style="font-size:13px;font-weight:700;color:white">Análisis Semanal</span>
+    </div>
+    <div id="summaryWeeklyContent" style="padding:14px 16px;background:var(--surface)"></div>
   </div>
 
   <!-- AI tip post-entrenamiento -->
@@ -1667,10 +1695,11 @@ body {
         <div class="clear-confirm-icon">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         </div>
-        <p class="clear-confirm-text">Se eliminaran todos los entrenamientos guardados. Esta accion no se puede deshacer.</p>
+        <p class="clear-confirm-text">Se eliminaran todos los datos: historial, pesos, ejercicios personalizados y cache. Esta accion no se puede deshacer.</p>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);margin-bottom:12px;cursor:pointer"><input type="checkbox" id="clearConfirmCheck" onchange="document.getElementById('clearDeleteBtn').disabled=!this.checked" style="width:16px;height:16px;accent-color:var(--danger)"> Entiendo que esto es permanente</label>
         <div class="clear-confirm-actions">
           <button class="clear-cancel" onclick="hideClearConfirm()">Cancelar</button>
-          <button class="clear-delete" onclick="clearAllHistory()">Si, borrar todo</button>
+          <button class="clear-delete" id="clearDeleteBtn" onclick="clearAllData()" disabled style="opacity:0.5" onmouseenter="this.style.opacity=this.disabled?'0.5':'1'" >Si, borrar todo</button>
         </div>
       </div>
       <div class="clear-done" id="clearDone">
@@ -1770,6 +1799,31 @@ body {
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
     Ver forma correcta
   </button>
+</div>
+
+<!-- EDIT SET MODAL (#8) -->
+<div id="editSetOverlay" onclick="closeEditSet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600"></div>
+<div id="editSetSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 32px;z-index:601;box-shadow:0 -4px 20px rgba(0,0,0,0.15)">
+  <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
+  <h3 id="editSetTitle" style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text-primary)">Editar Serie</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div>
+      <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Peso</label>
+      <input id="editSetWeight" type="number" min="0" step="2.5" inputmode="decimal" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
+    </div>
+    <div>
+      <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Reps</label>
+      <input id="editSetReps" type="number" min="1" inputmode="numeric" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
+    </div>
+  </div>
+  <div style="margin-bottom:20px">
+    <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">RPE (1-10, opcional)</label>
+    <input id="editSetRPE" type="number" min="1" max="10" inputmode="numeric" placeholder="—" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <button onclick="closeEditSet()" style="padding:14px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancelar</button>
+    <button onclick="saveEditedSet()" style="padding:14px;background:var(--primary);border:none;border-radius:14px;font-family:var(--font);font-size:14px;font-weight:700;color:white;cursor:pointer">Guardar</button>
+  </div>
 </div>
 
 <!-- EXERCISE GIF MODAL -->
@@ -2256,7 +2310,12 @@ function renderWarmupContent(muscleGroup, data) {
 
   const warningsEl = document.getElementById('warmupWarnings');
   if (data.injuries && data.injuries.length) {
-    document.getElementById('warmupWarningsText').innerHTML = data.injuries.map(inj => `<li>${inj}</li>`).join('');
+    document.getElementById('warmupWarningsText').innerHTML = data.injuries.map(inj => {
+      if (typeof inj === 'object' && inj.simple) {
+        return `<li style="margin-bottom:8px"><span style="font-weight:700">${inj.simple}</span><br><span style="font-size:12px;color:var(--text-secondary);font-style:normal">→ ${inj.action}</span></li>`;
+      }
+      return `<li>${inj}</li>`;
+    }).join('');
     warningsEl.style.display = 'block';
   } else {
     warningsEl.style.display = 'none';
@@ -2751,7 +2810,11 @@ const warmupDatabase = {
       { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', gif: W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif' },
       { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', gif: W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif' }
     ],
-    injuries: ['Impingement de hombro (pellizco de tendón)', 'Tendinitis del pectoral', 'Dolor en codo']
+    injuries: [
+      { simple: '❌ Dolor en hombro', action: 'No levantes los codos por encima del hombro durante el press' },
+      { simple: '❌ Dolor en pecho', action: 'Baja la barra solo hasta el pecho, nunca al cuello' },
+      { simple: '❌ Dolor en codo', action: 'Mantén las muñecas rectas, sin doblarlas hacia atrás' }
+    ]
   },
   'Espalda': {
     duration: '5-8 minutos',
@@ -2766,7 +2829,11 @@ const warmupDatabase = {
       { name: 'Jalón al pecho muy ligero', reps: '15 reps', duration: '2 min', why: 'Despierta el dorsal con poco peso para preparar el movimiento de tirón', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' },
       { name: 'Band pull-aparts (banda elástica)', reps: '15 reps', duration: '1 min', why: 'Activa los músculos entre los omóplatos — mejora la postura y previene lesiones de hombro', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' }
     ],
-    injuries: ['Hernia discal', 'Contractura lumbar', 'Tendinitis dorsal']
+    injuries: [
+      { simple: '❌ Dolor en la espalda baja', action: 'Nunca redondees la espalda al hacer peso muerto o remo' },
+      { simple: '❌ Dolor en la zona lumbar', action: 'Activa el core y mantén la espalda recta antes de jalar' },
+      { simple: '❌ Tirón muscular en espalda', action: 'Evita movimientos bruscos — sube y baja siempre con control' }
+    ]
   },
   'Hombros': {
     duration: '5-8 minutos',
@@ -2781,7 +2848,11 @@ const warmupDatabase = {
       { name: 'Press militar con barra vacía', reps: '10 reps', duration: '2 min', why: 'Práctica del movimiento sin carga — prepara la articulación para el peso real', gif: W+'b/b2/Overhead_press-CDC_strength_training_for_older_adults.gif' },
       { name: 'Elevaciones laterales muy ligeras', reps: '12 reps', duration: '2 min', why: 'Activa el deltoides medio con poco peso antes de las series pesadas', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' }
     ],
-    injuries: ['Impingement (pellizco de tendón en el hombro)', 'Desgarro del manguito rotador', 'Tendinitis bicipital']
+    injuries: [
+      { simple: '❌ Dolor agudo en hombro al levantar', action: 'No subas el peso por encima de la cabeza sin calentar el manguito rotador' },
+      { simple: '❌ Chasquido o dolor en el hombro', action: 'Evita cargar demasiado peso en el press militar desde el inicio' },
+      { simple: '❌ Dolor en la parte delantera del hombro', action: 'No hagas elevaciones frontales con los brazos completamente extendidos y rígidos' }
+    ]
   },
   'Biceps': {
     duration: '3-5 minutos',
@@ -2795,7 +2866,11 @@ const warmupDatabase = {
       { name: 'Curl con barra vacía o banda', reps: '12 reps', duration: '2 min', why: 'Activa el bíceps sin fatigarlo — prepara el movimiento de curl', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' },
       { name: 'Plancha sobre antebrazos', reps: '1×30 seg', duration: '1 min', why: 'Activa antebrazo, muñeca y core — base de estabilidad', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' }
     ],
-    injuries: ['Tendinitis de codo (codo de tenista)', 'Dolor de antebrazo al rotar', 'Síndrome del pronador']
+    injuries: [
+      { simple: '❌ Dolor en el codo al doblar el brazo', action: 'Calienta con peso muy ligero antes de subir la carga en curl' },
+      { simple: '❌ Ardor en el antebrazo', action: 'No dobles la muñeca hacia atrás — mantenla neutra durante todo el curl' },
+      { simple: '❌ Dolor al rotar la muñeca', action: 'Evita pesos excesivos que te fuercen a compensar con el codo' }
+    ]
   },
   'Triceps': {
     duration: '3-5 minutos',
@@ -2809,7 +2884,11 @@ const warmupDatabase = {
       { name: 'Dips en banco sin peso', reps: '8-10 reps', duration: '1 min', why: 'Replica el movimiento de los fondos de tríceps con solo el peso corporal', gif: W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif' },
       { name: 'Extensión de tríceps muy ligera', reps: '12 reps', duration: '2 min', why: 'Activa específicamente el tríceps antes de las series pesadas', gif: W+'3/32/One-arm-tricep-extension-1.gif' }
     ],
-    injuries: ['Tendinitis de codo', 'Dolor en la punta del codo (olécranon)', 'Pellizco de codo']
+    injuries: [
+      { simple: '❌ Dolor en el codo al extender el brazo', action: 'No bloquees el codo al final de la extensión — mantén una pequeña flexión' },
+      { simple: '❌ Dolor en la punta del codo', action: 'Evita el press francés con demasiado peso — baja el codo despacio' },
+      { simple: '❌ Codo que "tronea" con dolor', action: 'Calienta girando el antebrazo lentamente antes de cargar el tríceps' }
+    ]
   },
   'Piernas': {
     duration: '8-12 minutos',
@@ -2825,7 +2904,11 @@ const warmupDatabase = {
       { name: 'Sentadilla con peso corporal', reps: '12 reps', duration: '2 min', why: 'Practica el patrón de la sentadilla sin peso — activa todo el tren inferior', gif: W+'e/e6/Squats.gif' },
       { name: 'Elevación de talones (gemelos)', reps: '15 reps', duration: '1 min', why: 'Activa el tobillo y la pantorrilla — apoyo en toda sentadilla y zancada', gif: W+'1/10/Toe_stand-CDC_strength_training_for_older_adults.gif' }
     ],
-    injuries: ['Lesión de rodilla (LCA o menisco)', 'Desgarro de isquiotibial', 'Dolor lumbar al agacharse']
+    injuries: [
+      { simple: '❌ Dolor o crujido en la rodilla', action: 'No dejes que la rodilla caiga hacia adentro — sigue la dirección de los pies' },
+      { simple: '❌ Tirón en la parte trasera del muslo', action: 'Calienta los isquiotibiales con estiramientos dinámicos antes de sentadilla o peso muerto' },
+      { simple: '❌ Dolor en la espalda baja al agacharte', action: 'Nunca redondees la espalda — mira al frente y mantén el pecho arriba' }
+    ]
   },
   'Abdomen': {
     duration: '3-5 minutos',
@@ -2839,7 +2922,11 @@ const warmupDatabase = {
       { name: 'Bird dogs (cuatro patas)', reps: '10 reps cada lado', duration: '1 min', why: 'Trabaja la estabilidad del tronco sin movimiento de columna — previene lesiones', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
       { name: 'Plancha frontal (progresiva)', reps: '2×30 seg', duration: '2 min', why: 'Activa todo el core antes de series más intensas de abdomen', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' }
     ],
-    injuries: ['Contractura lumbar', 'Hernia discal lumbar', 'Distensión del oblicuo']
+    injuries: [
+      { simple: '❌ Dolor en la espalda baja al hacer abdominales', action: 'Mantén la espalda baja pegada al suelo — no la arquees al subir' },
+      { simple: '❌ Dolor en el cuello al hacer crunch', action: 'No jales la cabeza con las manos — solo guía suavemente' },
+      { simple: '❌ Tirón en el costado', action: 'No hagas rotaciones bruscas — gira despacio y con control' }
+    ]
   },
   'Cardio': {
     duration: '5-10 minutos',
@@ -2853,7 +2940,10 @@ const warmupDatabase = {
       { name: 'Trote en el lugar', reps: 'Baja intensidad', duration: '2 min', why: 'Eleva la frecuencia cardíaca de forma gradual y segura', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
       { name: 'Aceleración progresiva', reps: '50-70% de intensidad', duration: '3 min', why: 'Prepara el sistema cardiovascular para el esfuerzo máximo sin sobrecargar el corazón', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' }
     ],
-    injuries: ['Lesión muscular por arrancar en frío', 'Dolor articular por impacto sin calentar']
+    injuries: [
+      { simple: '❌ Tirón muscular al empezar fuerte', action: 'Empieza siempre al 50% de intensidad y sube gradualmente' },
+      { simple: '❌ Dolor en rodillas o tobillos al correr', action: 'Aterriza suavemente y no des zancadas demasiado largas' }
+    ]
   }
 };
 
@@ -3568,8 +3658,53 @@ function setWeightUnit(unit) {
 }
 
 function selectExercise(name, equip) {
-  // Save previous exercise if it had sets
-  if (currentExerciseName && currentExerciseSets.length > 0) {
+  // #9 — Si hay series del ejercicio ACTUAL y el usuario elige uno DIFERENTE, preguntar qué hacer
+  if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
+    showChangeExerciseDialog(name, equip || '');
+    return;
+  }
+  _doSelectExercise(name, equip);
+}
+
+// #9 — diálogo de cambio de ejercicio con series pendientes
+function showChangeExerciseDialog(newName, newEquip) {
+  const count = currentExerciseSets.filter(s => !s.is_warmup_set).length;
+  const totalCount = currentExerciseSets.length;
+  const overlay = document.createElement('div');
+  overlay.id = 'changeExOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:700;display:flex;align-items:flex-end;justify-content:center';
+  overlay.innerHTML = `<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;max-width:480px;box-shadow:0 -4px 20px rgba(0,0,0,0.15)">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+    <h3 style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px">⚠️ Tienes ${totalCount} serie${totalCount!==1?'s':''} en <em>${currentExerciseName}</em></h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">¿Qué quieres hacer con esas series?</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="keepAndChangeExercise('${newName.replace(/'/g,"\\'")}','${newEquip.replace(/'/g,"\\'")}',this)" style="padding:14px 16px;background:var(--success-light);border:1.5px solid #34A853;border-radius:14px;font-family:var(--font);font-size:13px;font-weight:700;color:#1E6830;cursor:pointer;text-align:left">✅ Guardar las ${totalCount} series y cambiar a "${newName}"</button>
+      <button onclick="discardAndChangeExercise('${newName.replace(/'/g,"\\'")}','${newEquip.replace(/'/g,"\\'")}',this)" style="padding:14px 16px;background:var(--danger-light);border:1.5px solid #EA4335;border-radius:14px;font-family:var(--font);font-size:13px;font-weight:700;color:#B31412;cursor:pointer;text-align:left">🗑️ Descartar las ${totalCount} series y empezar "${newName}"</button>
+      <button onclick="document.getElementById('changeExOverlay').remove()" style="padding:14px 16px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer">❌ Cancelar — seguir con "${currentExerciseName}"</button>
+    </div>
+  </div>`;
+  overlay.id = 'changeExOverlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function keepAndChangeExercise(newName, newEquip) {
+  completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+  exerciseCount = completedExercises.length;
+  currentExerciseSets = [];
+  document.getElementById('changeExOverlay')?.remove();
+  _doSelectExercise(newName, newEquip);
+}
+
+function discardAndChangeExercise(newName, newEquip) {
+  currentExerciseSets = [];
+  document.getElementById('changeExOverlay')?.remove();
+  _doSelectExercise(newName, newEquip);
+}
+
+function _doSelectExercise(name, equip) {
+  // Save previous exercise if it had sets (normal flow — same exercise kept adding)
+  if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
@@ -3590,6 +3725,9 @@ function selectExercise(name, equip) {
   // Show name + equipment in card header
   const equipLabel = equip ? EQUIP_LABEL[equip] : '';
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
+  // #5 — mostrar/ocultar botón de GIF
+  const wkGifBtn = document.getElementById('wkGifBtn');
+  if (wkGifBtn) wkGifBtn.style.display = exerciseGIFs[name] ? 'flex' : 'none';
 
   // Pre-fill last weight for this exercise+equipment combination
   const key = exKey(name, currentEquipment);
@@ -3607,6 +3745,25 @@ function selectExercise(name, equip) {
   showScreen('workout');
 }
 
+let isWarmupSet = false; // true = próxima serie es de aproximación (#3)
+
+function toggleWarmupSet() {
+  isWarmupSet = !isWarmupSet;
+  const btn = document.getElementById('warmupSetToggle');
+  const dot = document.getElementById('warmupSetDot');
+  if (isWarmupSet) {
+    btn.style.borderColor = '#FBBC04';
+    btn.style.background = '#FEF7E0';
+    btn.style.color = '#B45309';
+    dot.style.background = '#FBBC04';
+  } else {
+    btn.style.borderColor = 'var(--border)';
+    btn.style.background = 'var(--bg)';
+    btn.style.color = 'var(--text-secondary)';
+    dot.style.background = 'var(--text-tertiary)';
+  }
+}
+
 let setJustDeleted = false; // true cuando se borró una serie; inhibe el reinicio del timer
 let restStartedAt = null;   // timestamp de inicio del descanso actual
 
@@ -3615,16 +3772,28 @@ function addSet() {
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
   if (reps <= 0) return;
   const side = isUnilateral ? activeSide : null;
-  currentExerciseSets.push({ weight, reps, unit: weightUnit, side, rpe: null });
-  // Guardar último peso + reps para este ejercicio+equipo
-  const key = exKey(currentExerciseName, currentEquipment);
-  if (weight > 0 || lastWeights[key]) {
-    lastWeights[key] = { weight: weight || (lastWeights[key]?.weight || 0), unit: weightUnit, reps, ts: Date.now() };
+  const thisIsWarmup = isWarmupSet;
+  currentExerciseSets.push({ weight, reps, unit: weightUnit, side, rpe: null, is_warmup_set: thisIsWarmup });
+  // Guardar último peso + reps solo de series de trabajo
+  if (!thisIsWarmup) {
+    const key = exKey(currentExerciseName, currentEquipment);
+    if (weight > 0 || lastWeights[key]) {
+      lastWeights[key] = { weight: weight || (lastWeights[key]?.weight || 0), unit: weightUnit, reps, ts: Date.now() };
+    }
   }
+  // Reset toggle — cada serie decide si es aproximación
+  if (isWarmupSet) { isWarmupSet = false; toggleWarmupSet(); toggleWarmupSet(); /* dos calls para reset clean */ }
+  isWarmupSet = false;
+  const btn = document.getElementById('warmupSetToggle');
+  const dot = document.getElementById('warmupSetDot');
+  if (btn) { btn.style.borderColor='var(--border)'; btn.style.background='var(--bg)'; btn.style.color='var(--text-secondary)'; }
+  if (dot) dot.style.background = 'var(--text-tertiary)';
   renderSets();
   // Auto-cambiar lado en ejercicios unilaterales
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
-  // Mostrar selector RPE → luego el RPE flow inicia el timer
+  // Series de aproximación: skip RPE, iniciar descanso directamente (más corto)
+  if (thisIsWarmup) { startRestTimer(); return; }
+  // Series de trabajo: mostrar selector RPE → luego el RPE flow inicia el timer
   showRPESelection();
 }
 
@@ -3634,14 +3803,21 @@ function renderSets() {
     list.innerHTML = '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Registra tu primera serie</p>';
     return;
   }
+  // Contador de series de trabajo (no aproximación)
+  let workSetNum = 0;
   list.innerHTML = currentExerciseSets.map((s, i) => {
+    const isApprox = s.is_warmup_set;
+    if (!isApprox) workSetNum++;
     const sideLabel = s.side ? ` · ${s.side === 'left' ? 'Izq' : 'Der'}` : '';
     const weightStr = s.weight > 0 ? `${s.weight}\u00a0${s.unit || 'kg'}` : 'Sin peso';
     const rpeTag = s.rpe != null ? `<span style="font-size:10px;font-weight:700;font-family:var(--mono);color:white;background:${s.rpe>=9?'#EA4335':s.rpe>=7?'#E8710A':s.rpe>=4?'#FBBC04':'#34A853'};padding:2px 6px;border-radius:6px;margin-left:6px">RPE ${s.rpe}</span>` : '';
-    return `<div class="set-chip">
-      <span class="set-chip-num">Serie ${i + 1}${sideLabel}</span>
-      <span>${weightStr} &times; ${s.reps} reps${rpeTag}</span>
-      <button onclick="deleteSet(${i})" style="background:none;border:none;color:var(--text-tertiary);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;margin-left:4px" title="Eliminar">&times;</button>
+    const approxBadge = isApprox ? `<span style="font-size:9px;font-weight:700;background:#FEF7E0;color:#B45309;border:1px solid #FBBC04;padding:1px 5px;border-radius:5px;margin-left:4px">APROX</span>` : '';
+    const label = isApprox ? `Aprox${sideLabel}` : `Serie ${workSetNum}${sideLabel}`;
+    const chipStyle = isApprox ? 'opacity:0.75;background:#FAFAFA;border-color:#E8EAED;' : '';
+    return `<div class="set-chip" style="${chipStyle}cursor:pointer" onclick="editSet(${i})" title="Toca para editar">
+      <span class="set-chip-num" style="${isApprox?'color:var(--text-tertiary)':''}">${label}</span>
+      <span style="${isApprox?'color:var(--text-tertiary)':''}">${weightStr} &times; ${s.reps} reps${rpeTag}${approxBadge}</span>
+      <button onclick="event.stopPropagation();deleteSet(${i})" style="background:none;border:none;color:var(--text-tertiary);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;margin-left:4px" title="Eliminar">&times;</button>
     </div>`;
   }).join('');
 }
@@ -3650,6 +3826,55 @@ function deleteSet(index) {
   currentExerciseSets.splice(index, 1);
   setJustDeleted = true;
   renderSets();
+}
+
+// ─── Edit Set (#8) ───────────────────────────────────────────
+let _editSetIndex = -1;
+
+function editSet(index) {
+  const s = currentExerciseSets[index];
+  if (!s) return;
+  _editSetIndex = index;
+  const isApprox = s.is_warmup_set;
+  const workNum = currentExerciseSets.slice(0, index + 1).filter(x => !x.is_warmup_set).length;
+  document.getElementById('editSetTitle').textContent = isApprox ? `Editar Aproximación` : `Editar Serie ${workNum}`;
+  document.getElementById('editSetWeight').value = s.weight || 0;
+  document.getElementById('editSetReps').value = s.reps || 0;
+  document.getElementById('editSetRPE').value = s.rpe != null ? s.rpe : '';
+  const overlay = document.getElementById('editSetOverlay');
+  const sheet   = document.getElementById('editSetSheet');
+  overlay.style.display = 'block';
+  sheet.style.display   = 'block';
+  sheet.style.transition = 'none';
+  sheet.style.transform  = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.25s ease';
+    sheet.style.transform  = 'translateX(-50%) translateY(0)';
+  });
+}
+
+function saveEditedSet() {
+  if (_editSetIndex < 0) return;
+  const weight = parseFloat(document.getElementById('editSetWeight').value) || 0;
+  const reps   = parseInt(document.getElementById('editSetReps').value) || 0;
+  if (reps <= 0) return;
+  const rpeVal = document.getElementById('editSetRPE').value;
+  const rpe    = rpeVal !== '' ? parseInt(rpeVal) : null;
+  currentExerciseSets[_editSetIndex].weight = weight;
+  currentExerciseSets[_editSetIndex].reps   = reps;
+  currentExerciseSets[_editSetIndex].rpe    = rpe;
+  closeEditSet();
+  renderSets();
+}
+
+function closeEditSet() {
+  const sheet = document.getElementById('editSetSheet');
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  setTimeout(() => {
+    sheet.style.display = 'none';
+    document.getElementById('editSetOverlay').style.display = 'none';
+  }, 220);
+  _editSetIndex = -1;
 }
 
 function nextExercise() {
@@ -3773,6 +3998,25 @@ function closeExerciseGif() {
     document.getElementById('exGifOverlay').style.display = 'none';
     document.body.style.overflow = '';
   }, 280);
+}
+
+// #5 — Ver GIF desde pantalla de entrenamiento activo
+function openWorkoutExerciseGif() {
+  const gif = exerciseGIFs[currentExerciseName];
+  if (!gif) return;
+  document.getElementById('exGifTitle').textContent = currentExerciseName + ' — Forma correcta';
+  document.getElementById('exGifImg').src = gif;
+  const overlay = document.getElementById('exGifOverlay');
+  const sheet   = document.getElementById('exGifSheet');
+  overlay.style.display = 'block';
+  sheet.style.display   = 'block';
+  sheet.style.transition = 'none';
+  sheet.style.transform  = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheet.style.transform  = 'translateX(-50%) translateY(0)';
+  });
+  document.body.style.overflow = 'hidden';
 }
 
 // ─── Routines Sheet ───────────────────────────────────────────
@@ -4153,7 +4397,8 @@ function endWorkout() {
 
   // Calcular agregados de descanso
   const allExDetail = workoutMode === 'full' ? completedExercises.map(e => ({ name: e.name, equipment: e.equipment, sets: e.sets.map(s => ({...s})) })) : [];
-  const allRests = allExDetail.flatMap(ex => ex.sets.filter(s => s.rest_after_ms != null));
+  // #3 — excluir series de aproximación de los descansos analizados
+  const allRests = allExDetail.flatMap(ex => ex.sets.filter(s => s.rest_after_ms != null && !s.is_warmup_set));
   const avgRestMs = allRests.length ? Math.round(allRests.reduce((sum, s) => sum + s.rest_after_ms, 0) / allRests.length) : null;
   // Adherencia = promedio de (descanso real / descanso configurado), máx 1.0 por serie
   // Así: 0s descansados = 0%, 30s de 60s = 50%, 60s de 60s = 100%, 90s de 60s = 100%
@@ -4173,12 +4418,91 @@ function endWorkout() {
   }
 
   savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked, avg_rpe: sessionRPE });
+  clearSessionState(); // #7 — entrenamiento terminado, limpiar estado guardado
+  // #10 — feedback semanal (solo viernes/lunes con ≥2 sesiones)
+  const weeklyFB = generateWeeklyFeedback();
+  renderWeeklyFeedback(weeklyFB);
   showScreen('summary');
+}
+
+// ─── Weekly Feedback (#10) ──────────────────────────────────
+const WEEKLY_FB_KEY = 'gymtracker_lastWeeklyFeedback';
+
+function generateWeeklyFeedback() {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=dom, 1=lun, 5=vie
+  const isWeeklyDay = dayOfWeek === 5 || dayOfWeek === 1;
+
+  // Límite: no generar más de una vez por día
+  const lastFB = localStorage.getItem(WEEKLY_FB_KEY);
+  if (lastFB === today.toDateString()) return null;
+
+  if (!isWeeklyDay) return null; // solo viernes y lunes
+
+  // Necesitamos al menos 2 entrenamientos esta semana
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  weekStart.setHours(0, 0, 0, 0);
+  const weekWorkouts = savedWorkouts.filter(w => new Date(w.date) >= weekStart);
+  if (weekWorkouts.length < 2) return null;
+
+  localStorage.setItem(WEEKLY_FB_KEY, today.toDateString());
+
+  // Métricas
+  const withAdherence = weekWorkouts.filter(w => w.rest_adherence != null);
+  const avgAdherence = withAdherence.length
+    ? withAdherence.reduce((s, w) => s + w.rest_adherence, 0) / withAdherence.length : null;
+  const allSets = weekWorkouts.flatMap(w => (w.exercises_detail || []).flatMap(e => e.sets || []).filter(s => !s.is_warmup_set));
+  const setsWithRPE = allSets.filter(s => s.rpe != null);
+  const avgRPE = setsWithRPE.length ? setsWithRPE.reduce((s, r) => s + r.rpe, 0) / setsWithRPE.length : null;
+
+  const strengths = [];
+  const improvements = [];
+
+  if (avgAdherence != null) {
+    if (avgAdherence >= 0.75) strengths.push(`Excelente adherencia al descanso (${Math.round(avgAdherence*100)}%)`);
+    else if (avgAdherence < 0.6) improvements.push(`Considera respetar más los tiempos de descanso (${Math.round(avgAdherence*100)}% actual)`);
+  }
+  if (weekWorkouts.length >= 4) strengths.push(`Consistencia notable: ${weekWorkouts.length} sesiones esta semana`);
+  else if (weekWorkouts.length < 3) improvements.push(`Intenta llegar a 3-4 entrenamientos la próxima semana`);
+
+  if (avgRPE != null) {
+    if (avgRPE >= 6 && avgRPE <= 8) strengths.push(`Intensidad óptima — RPE promedio ${avgRPE.toFixed(1)}/10`);
+    else if (avgRPE > 8.5) improvements.push(`RPE muy alto (${avgRPE.toFixed(1)}) — considera bajar el volumen o aumentar el descanso`);
+    else if (avgRPE < 5) improvements.push(`RPE bajo (${avgRPE.toFixed(1)}) — puedes aumentar la intensidad`);
+  }
+
+  return { strengths, improvements, sessions: weekWorkouts.length };
+}
+
+function renderWeeklyFeedback(feedback) {
+  const wrap = document.getElementById('summaryWeeklyFeedback');
+  const content = document.getElementById('summaryWeeklyContent');
+  if (!feedback) { if (wrap) wrap.style.display = 'none'; return; }
+
+  let html = `<p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">${feedback.sessions} sesiones esta semana</p>`;
+  if (feedback.strengths.length) {
+    html += `<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:#1E6830;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Puntos fuertes</div>`;
+    html += feedback.strengths.map(s => `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px"><span style="color:#34A853;font-size:14px;flex-shrink:0">✓</span><span style="font-size:13px;color:var(--text-primary)">${s}</span></div>`).join('');
+    html += `</div>`;
+  }
+  if (feedback.improvements.length) {
+    html += `<div><div style="font-size:11px;font-weight:700;color:#B45309;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Para mejorar</div>`;
+    html += feedback.improvements.map(i => `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px"><span style="color:#FBBC04;font-size:14px;flex-shrink:0">⚠</span><span style="font-size:13px;color:var(--text-primary)">${i}</span></div>`).join('');
+    html += `</div>`;
+  }
+  if (!feedback.strengths.length && !feedback.improvements.length) {
+    html += `<p style="font-size:13px;color:var(--text-secondary)">Sigue así — la constancia es lo que construye resultados.</p>`;
+  }
+
+  content.innerHTML = html;
+  wrap.style.display = 'block';
 }
 
 function calculateSessionRPE(exDetail) {
   const allSets = (exDetail || []).flatMap(ex => ex.sets);
-  const setsWithRPE = allSets.filter(s => s.rpe != null);
+  // #3 — excluir series de aproximación del RPE promedio
+  const setsWithRPE = allSets.filter(s => s.rpe != null && !s.is_warmup_set);
   if (!setsWithRPE.length) return null;
   return Math.round(setsWithRPE.reduce((sum, s) => sum + s.rpe, 0) / setsWithRPE.length * 10) / 10;
 }
@@ -4280,6 +4604,8 @@ function showClearConfirm() {
 
 function hideClearConfirm() {
   document.getElementById('clearConfirm').classList.remove('show');
+  const cb = document.getElementById('clearConfirmCheck');
+  if (cb) { cb.checked = false; document.getElementById('clearDeleteBtn').disabled = true; document.getElementById('clearDeleteBtn').style.opacity = '0.5'; }
 }
 
 function clearAllHistory() {
@@ -5025,8 +5351,9 @@ function initSupabase() {
           await migrateLocalData(currentUser.id);
           await syncFromCloud();
         }
-        if (document.getElementById('authScreen').classList.contains('active')) {
-          userProfile.onboarding_done ? showScreen('home') : showOnboarding(false);
+        hideLoadingOverlay();
+        if (document.getElementById('authScreen').classList.contains('active') || !document.querySelector('.screen.active')) {
+          if (userProfile.onboarding_done) { showScreen('home'); restoreSessionState(); } else { showOnboarding(false); }
         }
       } else if (event !== 'INITIAL_SESSION') {
         updateAccountUI();
@@ -5034,10 +5361,12 @@ function initSupabase() {
       }
     });
     sb.auth.getSession().then(({ data: { session } }) => {
+      hideLoadingOverlay();
       if (!session && !localStorage.getItem('gymtracker_skip_auth')) {
         showScreen('auth');
       } else if (!session) {
         showScreen('home');
+        restoreSessionState();
       }
     });
   } catch(e) {
@@ -5424,15 +5753,129 @@ function updateProfileUI() {
   }
 }
 
-// ─── Init ───────────────────────────────────────────────────
-history.pushState({ screen: 'home' }, '');
-loadFromStorage();
-// Arrancar auth: si el usuario eligio "sin cuenta" antes, ir directo al home
-if (localStorage.getItem('gymtracker_skip_auth')) {
-  showScreen('home');
-} else {
-  initSupabase();
+// ─── Persistencia de sesión activa (#7) ─────────────────────
+const ACTIVE_SESSION_KEY = 'gymtracker_activeSession';
+
+function saveCurrentSessionState() {
+  if (!workoutStartTime) return; // sin entrenamiento activo, nada que guardar
+  try {
+    localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify({
+      workoutStartTime,
+      currentExerciseName,
+      currentExerciseSets: JSON.stringify(currentExerciseSets),
+      completedExercises: JSON.stringify(completedExercises),
+      workoutMode,
+      restCount,
+      lastSaved: Date.now()
+    }));
+  } catch(e) {}
 }
+
+function clearSessionState() {
+  localStorage.removeItem(ACTIVE_SESSION_KEY);
+}
+
+function restoreSessionState() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    // Solo restaurar si el entrenamiento fue hace menos de 12 horas
+    if (!state.workoutStartTime || (Date.now() - state.lastSaved) > 12 * 3600000) {
+      clearSessionState(); return;
+    }
+    // Mostrar banner de recuperación en lugar de restaurar automáticamente
+    const banner = document.createElement('div');
+    banner.id = 'recoverBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#1A73E8;color:white;padding:14px 16px;z-index:800;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font);box-shadow:0 2px 8px rgba(0,0,0,0.2)';
+    banner.innerHTML = `<span style="font-size:13px;font-weight:600">⚡ Tienes un entrenamiento en progreso</span><div style="display:flex;gap:8px"><button onclick="recoverSession()" style="background:white;color:#1A73E8;border:none;border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer">Continuar</button><button onclick="discardSession()" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px;cursor:pointer">Descartar</button></div>`;
+    document.body.appendChild(banner);
+    banner._state = state;
+  } catch(e) {}
+}
+
+function recoverSession() {
+  const banner = document.getElementById('recoverBanner');
+  if (!banner?._state) return;
+  const state = banner._state;
+  try {
+    workoutStartTime = state.workoutStartTime;
+    workoutMode = state.workoutMode || 'full';
+    restCount = state.restCount || 0;
+    currentExerciseName = state.currentExerciseName || '';
+    currentExerciseSets = JSON.parse(state.currentExerciseSets || '[]');
+    completedExercises = JSON.parse(state.completedExercises || '[]');
+    exerciseCount = completedExercises.length;
+    selectMode(workoutMode); // reinicia el timer
+    if (currentExerciseName) {
+      document.getElementById('exerciseCardName').textContent = currentExerciseName;
+      document.getElementById('exerciseCard').style.display = '';
+      renderSets();
+    }
+    if (exerciseCount > 0) document.getElementById('exBadge').textContent = exerciseCount;
+  } catch(e) { console.error('Recover session error:', e); }
+  banner.remove();
+}
+
+function discardSession() {
+  clearSessionState();
+  const banner = document.getElementById('recoverBanner');
+  if (banner) banner.remove();
+}
+
+// Guardar estado cada 10 segundos cuando hay entrenamiento activo
+setInterval(saveCurrentSessionState, 10000);
+
+// ─── Limpiar TODOS los datos (#4) ────────────────────────────
+function clearAllData() {
+  // 1. Limpiar variables en memoria
+  savedWorkouts = [];
+  currentExerciseName = '';
+  currentExerciseSets = [];
+  completedExercises = [];
+  workoutStartTime = null;
+  lastWeights = {};
+  customExercises = [];
+  historyCleared = true;
+
+  // 2. Limpiar localStorage y sessionStorage
+  const skipAuth = localStorage.getItem('gymtracker_skip_auth');
+  localStorage.clear();
+  sessionStorage.clear();
+  if (skipAuth) localStorage.setItem('gymtracker_skip_auth', skipAuth); // preservar sesión auth
+
+  // 3. Limpiar caché del Service Worker
+  if ('caches' in window) {
+    caches.keys().then(names => names.forEach(n => caches.delete(n)));
+  }
+
+  // 4. Limpiar UI
+  document.getElementById('weekSessions').textContent = '0';
+  document.getElementById('weekTime').textContent = '0:00';
+  document.getElementById('homeRecents').innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Sin entrenamientos registrados</p></div>';
+  document.getElementById('clearConfirm').classList.remove('show');
+  document.getElementById('clearDone').classList.add('show');
+  setTimeout(() => document.getElementById('clearDone').classList.remove('show'), 3000);
+}
+
+// ─── Init ───────────────────────────────────────────────────
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('appLoadingOverlay');
+  if (overlay) { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.25s'; setTimeout(() => overlay.remove(), 260); }
+}
+
+function initializeApp() {
+  history.pushState({ screen: 'home' }, '');
+  loadFromStorage();
+  if (localStorage.getItem('gymtracker_skip_auth')) {
+    hideLoadingOverlay();
+    showScreen('home');
+    restoreSessionState(); // #7 — restaurar entrenamiento activo si lo hay
+  } else {
+    initSupabase(); // hideLoadingOverlay() se llama dentro de initSupabase
+  }
+}
+initializeApp();
 
 </script>
 </body>
