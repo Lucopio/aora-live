@@ -1291,7 +1291,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.15.0</span>
+        <span class="app-version">v1.16.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -1766,10 +1766,25 @@ body {
   <ul class="ex-info-list" id="exInfoTips"></ul>
   <div class="ex-info-section-title">Errores comunes</div>
   <ul class="ex-info-list" id="exInfoErrors"></ul>
-  <button class="ex-info-yt-btn" id="exInfoYtBtn" onclick="openExerciseYT()">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#FF0000" style="fill:white"/></svg>
-    Ver demostración en YouTube
+  <button class="ex-info-yt-btn" id="exInfoGifBtn" onclick="openExerciseGif()" style="display:none">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+    Ver forma correcta
   </button>
+</div>
+
+<!-- EXERCISE GIF MODAL -->
+<div id="exGifOverlay" onclick="closeExerciseGif()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500"></div>
+<div id="exGifSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#111;border-radius:20px 20px 0 0;z-index:501;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:#1a1a1a">
+    <span id="exGifTitle" style="font-size:13px;font-weight:700;color:#fff;flex:1;margin-right:8px;line-height:1.3"></span>
+    <button onclick="closeExerciseGif()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+  </div>
+  <div style="background:#000;text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center">
+    <img id="exGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
+  </div>
+  <div style="padding:10px 16px;text-align:center">
+    <p style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
+  </div>
 </div>
 
 <!-- ROUTINES SHEET -->
@@ -2670,8 +2685,58 @@ const EXERCISE_INFO = {
   },
 };
 
-// ─── Warmup Database (calentamientos por grupo muscular) ─────
+// ─── Exercise GIF Database ───────────────────────────────────
 const W = 'https://upload.wikimedia.org/wikipedia/commons/';
+const exerciseGIFs = {
+  // PECHO
+  'Press de banca':          W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif',
+  'Press inclinado':         W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif',
+  'Press con mancuernas':    W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif',
+  'Aperturas':               W+'4/41/Chest_stretch-CDC_strength_training_for_older_adults.gif',
+  'Fondos en paralelas':     W+'8/8f/Pushups.gif',
+  'Crossover en polea':      W+'4/41/Chest_stretch-CDC_strength_training_for_older_adults.gif',
+  // ESPALDA
+  'Dominadas':               W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif',
+  'Remo con barra':          W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Remo con mancuerna':      W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Jalones al pecho':        W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Remo en maquina':         W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Peso muerto':             W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif',
+  // HOMBROS
+  'Press militar':           W+'b/b2/Overhead_press-CDC_strength_training_for_older_adults.gif',
+  'Elevaciones laterales':   W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Elevaciones frontales':   W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Pajaros':                 W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif',
+  'Arnold press':            W+'b/b2/Overhead_press-CDC_strength_training_for_older_adults.gif',
+  // BÍCEPS
+  'Curl con barra':          W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Curl con mancuernas':     W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Curl martillo':           W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Curl concentrado':        W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Curl en polea':           W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  // TRÍCEPS
+  'Extension en polea alta': W+'3/32/One-arm-tricep-extension-1.gif',
+  'Press frances':           W+'3/32/One-arm-tricep-extension-1.gif',
+  'Patada de triceps':       W+'3/32/One-arm-tricep-extension-1.gif',
+  'Fondos de triceps':       W+'8/8f/Pushups.gif',
+  'Extension con mancuerna': W+'3/32/One-arm-tricep-extension-1.gif',
+  // PIERNAS
+  'Sentadilla':              W+'e/e6/Squats.gif',
+  'Prensa de piernas':       W+'e/e6/Squats.gif',
+  'Extension de cuadriceps': W+'e/e6/Squats.gif',
+  'Curl de femoral':         W+'3/32/Hamstring_stretch-CDC_strength_training_for_older_adults.gif',
+  'Peso muerto rumano':      W+'3/32/Hamstring_stretch-CDC_strength_training_for_older_adults.gif',
+  'Zancadas':                W+'a/af/Lunge-CDC_strength_training_for_older_adults.gif',
+  'Elevacion de gemelos':    W+'1/10/Toe_stand-CDC_strength_training_for_older_adults.gif',
+  // ABDOMEN
+  'Plancha':                 W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
+  'Crunch':                  W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
+  'Elevacion de piernas':    W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
+  'Rueda abdominal':         W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
+  'Russian twist':           W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
+};
+
+// ─── Warmup Database (calentamientos por grupo muscular) ─────
 const warmupDatabase = {
   'Pecho': {
     duration: '5-8 minutos',
@@ -3660,7 +3725,7 @@ function dismissRoutineSuggest() {
 }
 
 // ─── Exercise Info Modal ──────────────────────────────────────
-let _currentExInfoYT = '';
+let _currentExInfoGif = '';
 
 function showExerciseInfo(name) {
   const info = EXERCISE_INFO[name];
@@ -3670,7 +3735,9 @@ function showExerciseInfo(name) {
   document.getElementById('exInfoDesc').textContent = info.desc || '';
   document.getElementById('exInfoTips').innerHTML = (info.tips || []).map(t => `<li><span class="ex-tip-icon">✓</span>${t}</li>`).join('');
   document.getElementById('exInfoErrors').innerHTML = (info.errors || []).map(e => `<li><span class="ex-tip-icon">✗</span>${e}</li>`).join('');
-  _currentExInfoYT = encodeURIComponent(info.yt || name + ' correcto');
+  _currentExInfoGif = exerciseGIFs[name] || '';
+  const gifBtn = document.getElementById('exInfoGifBtn');
+  if (gifBtn) gifBtn.style.display = _currentExInfoGif ? 'flex' : 'none';
   document.getElementById('exInfoOverlay').classList.add('active');
   setTimeout(() => document.getElementById('exInfoSheet').classList.add('active'), 10);
 }
@@ -3680,8 +3747,32 @@ function closeExerciseInfo() {
   setTimeout(() => document.getElementById('exInfoOverlay').classList.remove('active'), 350);
 }
 
-function openExerciseYT() {
-  window.open('https://www.youtube.com/results?search_query=' + _currentExInfoYT, '_blank');
+function openExerciseGif() {
+  if (!_currentExInfoGif) return;
+  const name = document.getElementById('exInfoName').textContent;
+  document.getElementById('exGifTitle').textContent = name + ' — Forma correcta';
+  document.getElementById('exGifImg').src = _currentExInfoGif;
+  const overlay = document.getElementById('exGifOverlay');
+  const sheet   = document.getElementById('exGifSheet');
+  overlay.style.display = 'block';
+  sheet.style.display   = 'block';
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheet.style.transform  = 'translateX(-50%) translateY(0)';
+  });
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExerciseGif() {
+  const sheet = document.getElementById('exGifSheet');
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  setTimeout(() => {
+    document.getElementById('exGifImg').src = '';
+    sheet.style.display = 'none';
+    document.getElementById('exGifOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }, 280);
 }
 
 // ─── Routines Sheet ───────────────────────────────────────────
