@@ -6372,7 +6372,7 @@ async function handleAuthSubmit() {
   try {
     const fn = authMode === 'login'
       ? sb.auth.signInWithPassword({ email, password })
-      : sb.auth.signUp({ email, password });
+      : sb.auth.signUp({ email, password, options: { emailRedirectTo: 'https://lucopio.github.io/gymtracker/' } });
     const { data, error } = await fn;
     if (error) {
       showAuthError(translateAuthError(error.message));
