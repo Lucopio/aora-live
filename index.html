@@ -1396,6 +1396,55 @@ body {
       </div>
     </div>
 
+    <!-- Paso 4: Elige tu rutina de inicio -->
+    <div class="ob-body" id="obStep4" style="display:none">
+      <div class="ob-title">Elige tu rutina de inicio</div>
+      <div class="ob-subtitle">Encuentra entrenamientos que se adapten a ti</div>
+
+      <!-- Modo de selección de tipo -->
+      <div id="obStep4Selection" style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px">
+        <!-- Por Nivel -->
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.2s;hover:{background:rgba(59, 130, 246, 0.05)}" onclick="selectRoutineType('level')" id="routineTypeLevel">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:18px">🌱</span>
+            <div style="font-weight:700;font-size:15px;color:var(--text-primary)">POR NIVEL</div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-left:26px">
+            Selecciona según tu experiencia (Principiante, Intermedio, Avanzado). Ideal si eres nuevo y quieres empezar con lo básico.
+          </div>
+        </div>
+
+        <!-- Por Objetivo -->
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.2s" onclick="selectRoutineType('goal')" id="routineTypeGoal">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:18px">🎯</span>
+            <div style="font-weight:700;font-size:15px;color:var(--text-primary)">POR OBJETIVO</div>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-left:26px">
+            Selecciona según tu meta (Perder peso, Ganar músculo, etc). Cada rutina está diseñada para un objetivo específico.
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo de acciones después de seleccionar -->
+      <div id="obStep4Actions" style="display:none;flex-direction:column;gap:12px">
+        <div style="background:rgba(59, 130, 246, 0.1);border-left:3px solid var(--primary);padding:12px 16px;border-radius:6px;font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:8px">
+          <strong style="color:var(--text-primary);display:block;margin-bottom:4px" id="routineTypeLabel">Rutinas por nivel</strong>
+          Seleccionaste explorar entrenamientos según tu experiencia. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.
+        </div>
+        <button class="ob-action-btn" onclick="obExploreRoutines()" style="background:var(--primary);color:white;padding:12px 16px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+          <span>🔍</span> Explorar rutinas
+        </button>
+        <button class="ob-action-btn" onclick="obSkipRoutines()" style="background:var(--surface);color:var(--text-primary);padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">
+          Saltear por ahora
+        </button>
+      </div>
+
+      <div style="background:rgba(59, 130, 246, 0.1);border-left:3px solid var(--primary);padding:12px 16px;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:16px;display:none" id="obStep4Tip">
+        <strong style="color:var(--text-primary)">Tip:</strong> Puedes cambiar de rutina en cualquier momento desde Inicio. Elige la que mejor se adapte a ti ahora.
+      </div>
+    </div>
+
     <div class="ob-footer">
       <button class="ob-btn-back" id="obBtnBack" onclick="obBack()" style="display:none">← Atrás</button>
       <button class="ob-btn-next" id="obBtnNext" onclick="obNext()">Siguiente →</button>
@@ -1409,7 +1458,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.18.0</span>
+        <span class="app-version">v1.19.0</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -6399,18 +6448,95 @@ function _obRestoreSelections() {
 }
 
 function _obUpdateStep() {
-  [1,2,3].forEach(s => { document.getElementById(`obStep${s}`).style.display = s === _obStep ? 'flex' : 'none'; });
+  [1,2,3,4].forEach(s => { document.getElementById(`obStep${s}`).style.display = s === _obStep ? 'flex' : 'none'; });
   document.getElementById('obStepNum').textContent = _obStep;
-  document.getElementById('obProgressFill').style.width = `${(_obStep/3)*100}%`;
-  document.getElementById('obBtnBack').style.display = _obStep > 1 ? 'block' : 'none';
-  document.getElementById('obBtnNext').textContent = _obStep === 3 ? '¡Listo!' : 'Siguiente →';
+  document.getElementById('obProgressFill').style.width = `${(_obStep/4)*100}%`;
+  document.getElementById('obBtnBack').style.display = _obStep > 1 && _obStep < 4 ? 'block' : 'none';
+  // Step 4 has its own buttons, so hide the footer navigation
+  document.getElementById('obBtnNext').style.display = _obStep === 4 ? 'none' : 'block';
+  document.getElementById('obBtnNext').textContent = _obStep === 3 ? 'Siguiente →' : 'Siguiente →';
 }
 
 function obNext() {
-  if (_obStep < 3) { _obStep++; _obUpdateStep(); }
+  if (_obStep < 4) { _obStep++; _obUpdateStep(); }
   else obSave();
 }
-function obBack() { if (_obStep > 1) { _obStep--; _obUpdateStep(); } }
+function obBack() {
+  // If in Step 4 actions view, go back to selection
+  if (_obStep === 4) {
+    const selectionDiv = document.getElementById('obStep4Selection');
+    const actionsDiv = document.getElementById('obStep4Actions');
+    if (actionsDiv.style.display === 'flex') {
+      selectionDiv.style.display = 'flex';
+      actionsDiv.style.display = 'none';
+      // Reset selections
+      document.getElementById('routineTypeLevel').style.background = 'var(--surface)';
+      document.getElementById('routineTypeLevel').style.borderColor = 'var(--border)';
+      document.getElementById('routineTypeLevel').style.color = 'inherit';
+      document.getElementById('routineTypeGoal').style.background = 'var(--surface)';
+      document.getElementById('routineTypeGoal').style.borderColor = 'var(--border)';
+      document.getElementById('routineTypeGoal').style.color = 'inherit';
+      document.getElementById('routineTypeLevel').querySelectorAll('div').forEach(el => el.style.color = '');
+      document.getElementById('routineTypeGoal').querySelectorAll('div').forEach(el => el.style.color = '');
+      return;
+    }
+  }
+  // Otherwise, go to previous step
+  if (_obStep > 1) { _obStep--; _obUpdateStep(); }
+}
+
+// Step 4: Routine Type Selection
+function selectRoutineType(type) {
+  _obSel.routine_type = type;
+
+  // Visual feedback: highlight the selected option
+  const levelBox = document.getElementById('routineTypeLevel');
+  const goalBox = document.getElementById('routineTypeGoal');
+  const typeLabel = document.getElementById('routineTypeLabel');
+  const selectionDiv = document.getElementById('obStep4Selection');
+  const actionsDiv = document.getElementById('obStep4Actions');
+
+  // Reset both to default
+  levelBox.style.background = 'var(--surface)';
+  levelBox.style.borderColor = 'var(--border)';
+  levelBox.style.color = 'inherit';
+  goalBox.style.background = 'var(--surface)';
+  goalBox.style.borderColor = 'var(--border)';
+  goalBox.style.color = 'inherit';
+
+  if (type === 'level') {
+    levelBox.style.background = 'var(--primary)';
+    levelBox.style.borderColor = 'var(--primary)';
+    levelBox.style.color = 'white';
+    // Make all child text white
+    const levelTexts = levelBox.querySelectorAll('div');
+    levelTexts.forEach(el => el.style.color = 'white');
+    typeLabel.textContent = 'Rutinas por nivel';
+  } else {
+    goalBox.style.background = 'var(--primary)';
+    goalBox.style.borderColor = 'var(--primary)';
+    goalBox.style.color = 'white';
+    // Make all child text white
+    const goalTexts = goalBox.querySelectorAll('div');
+    goalTexts.forEach(el => el.style.color = 'white');
+    typeLabel.textContent = 'Rutinas por objetivo';
+  }
+
+  // Hide selection, show actions
+  selectionDiv.style.display = 'none';
+  actionsDiv.style.display = 'flex';
+}
+
+// Step 4: Explore Routines
+function obExploreRoutines() {
+  obSave(); // First save onboarding
+  setTimeout(() => showRoutinesSheet(), 300); // Then show routines
+}
+
+// Step 4: Skip Routine Selection
+function obSkipRoutines() {
+  obSave(); // Just save and go to home
+}
 
 // Selección de pill genérica: field = 'sex'|'days'|'activity'
 function obPill(el, field, val) {
