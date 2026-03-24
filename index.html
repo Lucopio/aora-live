@@ -1174,6 +1174,20 @@ body {
 .welcome-btn-next { flex: 1; padding: 14px 16px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
 .welcome-btn-next:active { opacity: 0.85; }
 
+/* E4: Tutorial Hints System */
+.tutorial-hint-overlay { position: fixed; inset: 0; z-index: 999; }
+.tutorial-hint { position: fixed; background: var(--primary); color: white; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-width: 240px; line-height: 1.4; animation: hintSlideIn 0.3s ease-out; }
+@keyframes hintSlideIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.tutorial-hint-arrow { position: absolute; width: 8px; height: 8px; background: var(--primary); clip-path: polygon(0 0, 100% 100%, 0 100%); }
+.tutorial-hint-arrow.below { bottom: -4px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+.tutorial-hint-arrow.above { top: -4px; left: 50%; transform: translateX(-50%) rotate(225deg); }
+.tutorial-hint-arrow.right { right: -4px; top: 50%; transform: translateY(-50%) rotate(135deg); }
+.tutorial-hint-close { position: absolute; top: 4px; right: 4px; width: 16px; height: 16px; background: none; border: none; color: white; cursor: pointer; font-size: 14px; font-weight: 700; padding: 0; display: flex; align-items: center; justify-content: center; opacity: 0.8; transition: opacity 0.2s; }
+.tutorial-hint-close:hover { opacity: 1; }
+.tutorial-hint.below-position { transform: translateY(12px); }
+.tutorial-hint.above-position { transform: translateY(-12px); }
+.tutorial-hint.right-position { transform: translateX(12px); }
+
 </style>
 </head>
 <body>
@@ -3195,6 +3209,136 @@ const warmupDatabase = {
     ]
   }
 };
+
+// ─── Tutorial Hints System (E4) ────────────────────────────────
+let _tutorialActive = false;
+let _currentHintId = null;
+
+const TUTORIAL_HINTS = {
+  'home-new-workout': {
+    text: 'Toca aquí para comenzar tu primer entrenamiento',
+    position: 'below',
+    dismissible: true,
+    delay: 500
+  },
+  'home-weekly-stats': {
+    text: 'Tu progreso esta semana. ¡Mejora cada día!',
+    position: 'below',
+    dismissible: true,
+    delay: 2000
+  },
+  'routine-level-tab': {
+    text: 'Por tu nivel de experiencia (Principiante, Intermedio, Avanzado)',
+    position: 'below',
+    dismissible: true,
+    delay: 1000
+  },
+  'workout-timer-btn': {
+    text: 'Presiona aquí cuando termines la serie. Se registrará tu tiempo de descanso.',
+    position: 'above',
+    dismissible: true,
+    delay: 1500
+  },
+  'insights-tab': {
+    text: 'Aquí verás tus estadísticas y recomendaciones personalizadas basadas en tu entrenamiento',
+    position: 'above',
+    dismissible: true,
+    delay: 2500
+  }
+};
+
+function showHint(hintId) {
+  if (!_tutorialActive) return;
+  const hint = TUTORIAL_HINTS[hintId];
+  if (!hint) return;
+
+  // Find the target element
+  const targetEl = document.getElementById(hintId) || document.querySelector(`[data-hint="${hintId}"]`);
+  if (!targetEl) return;
+
+  // Clear previous hint
+  if (_currentHintId) hideHint();
+  _currentHintId = hintId;
+
+  // Get target position
+  const rect = targetEl.getBoundingClientRect();
+  const hintEl = document.createElement('div');
+  hintEl.className = `tutorial-hint ${hint.position}-position`;
+  hintEl.id = `hint-${hintId}`;
+
+  let closeBtn = '';
+  if (hint.dismissible) {
+    closeBtn = `<button class="tutorial-hint-close" onclick="dismissHint('${hintId}')">×</button>`;
+  }
+
+  hintEl.innerHTML = `${hint.text}${closeBtn}`;
+
+  // Position the hint
+  const hintHeight = 50; // Approximate
+  const hintWidth = 240;
+  const padding = 12;
+
+  if (hint.position === 'below') {
+    hintEl.style.top = (rect.bottom + padding) + 'px';
+    hintEl.style.left = Math.max(16, Math.min(window.innerWidth - hintWidth - 16, rect.left + rect.width / 2 - hintWidth / 2)) + 'px';
+  } else if (hint.position === 'above') {
+    hintEl.style.bottom = (window.innerHeight - rect.top + padding) + 'px';
+    hintEl.style.left = Math.max(16, Math.min(window.innerWidth - hintWidth - 16, rect.left + rect.width / 2 - hintWidth / 2)) + 'px';
+  } else if (hint.position === 'right') {
+    hintEl.style.top = (rect.top + rect.height / 2 - hintHeight / 2) + 'px';
+    hintEl.style.left = (rect.right + padding) + 'px';
+  }
+
+  document.body.appendChild(hintEl);
+}
+
+function hideHint(hintId = null) {
+  if (hintId) {
+    const el = document.getElementById(`hint-${hintId}`);
+    if (el) el.remove();
+  } else if (_currentHintId) {
+    const el = document.getElementById(`hint-${_currentHintId}`);
+    if (el) el.remove();
+    _currentHintId = null;
+  }
+}
+
+function hideAllHints() {
+  document.querySelectorAll('.tutorial-hint').forEach(el => el.remove());
+  _currentHintId = null;
+}
+
+function dismissHint(hintId) {
+  hideHint(hintId);
+  // Mark hint as dismissed in localStorage
+  const dismissed = JSON.parse(localStorage.getItem('tutorial_hints_dismissed') || '[]');
+  if (!dismissed.includes(hintId)) dismissed.push(hintId);
+  localStorage.setItem('tutorial_hints_dismissed', JSON.stringify(dismissed));
+}
+
+function activateTutorialMode() {
+  _tutorialActive = true;
+  const dismissed = JSON.parse(localStorage.getItem('tutorial_hints_dismissed') || '[]');
+
+  // Show hints in sequence
+  const hintOrder = ['home-new-workout', 'home-weekly-stats', 'routine-level-tab'];
+  let delay = 0;
+
+  hintOrder.forEach(hintId => {
+    if (!dismissed.includes(hintId)) {
+      const hint = TUTORIAL_HINTS[hintId];
+      const hintDelay = (hint?.delay || 500) + delay;
+      setTimeout(() => showHint(hintId), hintDelay);
+      delay += hintDelay + 500;
+    }
+  });
+}
+
+function dismissTutorial() {
+  _tutorialActive = false;
+  hideAllHints();
+  localStorage.setItem('tutorial_dismissed', 'true');
+}
 
 // ─── Routine Templates ────────────────────────────────────────
 const SCIENCE_ROUTINES = {
