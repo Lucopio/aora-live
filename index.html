@@ -3210,9 +3210,11 @@ const warmupDatabase = {
   }
 };
 
-// ─── Tutorial Hints System (E4) ────────────────────────────────
+// ─── Tutorial Hints System (E4-E5) ────────────────────────────────
+let _isFirstTimeUser = false; // Set in initSupabase() based on onboarding_done
 let _tutorialActive = false;
 let _currentHintId = null;
+const TUTORIAL_DISMISSED_KEY = 'gymtracker_tutorial_dismissed';
 
 const TUTORIAL_HINTS = {
   'home-new-workout': {
@@ -3337,7 +3339,7 @@ function activateTutorialMode() {
 function dismissTutorial() {
   _tutorialActive = false;
   hideAllHints();
-  localStorage.setItem('tutorial_dismissed', 'true');
+  localStorage.setItem(TUTORIAL_DISMISSED_KEY, 'true');
 }
 
 // ─── Routine Templates ────────────────────────────────────────
@@ -6829,11 +6831,21 @@ async function obSave() {
     // Navigate to home or settings
     try {
       clearTimeout(timeoutId); // Cancel timeout since we're navigating
-      _obIsEdit ? showScreen('settings') : showScreen('home');
+      const targetScreen = _obIsEdit ? 'settings' : 'home';
+      showScreen(targetScreen);
+
+      // E5: Activate tutorial mode for first-time users
+      if (!_obIsEdit && _isFirstTimeUser && !localStorage.getItem(TUTORIAL_DISMISSED_KEY)) {
+        setTimeout(() => activateTutorialMode(), 500);
+      }
     } catch(e) {
       console.error('Navigation failed:', e);
       clearTimeout(timeoutId);
       showScreen('home');
+      // Still try to activate tutorial on error
+      if (_isFirstTimeUser && !localStorage.getItem(TUTORIAL_DISMISSED_KEY)) {
+        setTimeout(() => activateTutorialMode(), 500);
+      }
     }
 
   } catch(e) {
@@ -6849,6 +6861,11 @@ function skipOnboarding() {
   if (currentUser && sb) sb.from('profiles').upsert({ id: currentUser.id, onboarding_done: true });
   userProfile.onboarding_done = true;
   showScreen('home');
+
+  // E5: Activate tutorial mode for first-time users
+  if (_isFirstTimeUser && !localStorage.getItem(TUTORIAL_DISMISSED_KEY)) {
+    setTimeout(() => activateTutorialMode(), 500);
+  }
 }
 
 // Actualiza la tarjeta de perfil en Ajustes y el saludo en Home
