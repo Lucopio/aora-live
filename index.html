@@ -213,17 +213,37 @@ body {
 .routine-rest-icon { font-size:20px;flex-shrink:0; }
 .routine-rest-text { font-size:12px;color:#92400E;line-height:1.5; }
 .routine-rest-text b { display:block;font-size:14px;color:#78350F; }
-.routine-day-card { background:var(--surface);border-radius:var(--radius-sm);margin-bottom:12px;box-shadow:var(--shadow-sm);overflow:hidden; }
-.routine-day-header { padding:12px 14px 10px;border-bottom:1px solid var(--border); }
-.routine-day-name { font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:2px; }
-.routine-day-meta { font-size:11px;color:var(--text-tertiary);font-weight:600; }
-.routine-ex-list { padding:10px 14px; }
-.routine-ex-item { display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bg); }
+.routine-day-card { background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px;box-shadow:var(--shadow-sm);overflow:hidden;transition:all 0.2s; }
+.routine-day-card:hover { border-color:var(--primary);box-shadow:var(--shadow-md); }
+.routine-day-header { padding:14px 16px 12px;border-bottom:1.5px solid var(--border);background:linear-gradient(135deg,var(--bg),rgba(59, 130, 246, 0.05)); }
+.routine-day-name { font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px; }
+.routine-day-meta { font-size:12px;color:var(--text-secondary);font-weight:600; }
+.routine-ex-list { padding:12px 16px; }
+.routine-ex-item { display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bg); }
 .routine-ex-item:last-child { border-bottom:none; }
 .routine-ex-name { font-size:13px;font-weight:600;color:var(--text-primary); }
-.routine-ex-sets { font-size:12px;color:var(--text-tertiary);font-family:var(--mono);white-space:nowrap;margin-left:8px;flex-shrink:0; }
-.routine-start-day-btn { width:calc(100% - 28px);margin:0 14px 14px;padding:11px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px; }
+.routine-ex-sets { font-size:12px;color:var(--text-tertiary);font-family:var(--mono);white-space:nowrap;margin-left:8px;flex-shrink:0;background:var(--bg);padding:2px 8px;border-radius:4px; }
+.routine-start-day-btn { width:calc(100% - 32px);margin:0 16px 16px;padding:13px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s; }
+.routine-start-day-btn:active { transform:scale(0.97);box-shadow:0 2px 8px rgba(59, 130, 246, 0.3); }
 .routine-no-time { text-align:center;padding:32px 16px;color:var(--text-tertiary);font-size:13px; }
+
+/* E3: Routine Overview Card */
+.routine-overview-card { background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px;box-shadow:var(--shadow-sm); }
+.routine-overview-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
+.routine-overview-title { font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:2px; }
+.routine-overview-subtitle { font-size:12px;color:var(--text-secondary); }
+.routine-overview-badge { background:var(--success-light);color:var(--success);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap; }
+.routine-overview-meta { display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px;background:var(--bg);border-radius:8px; }
+.routine-meta-item { display:flex;justify-content:space-between;align-items:center;font-size:13px; }
+.routine-meta-label { color:var(--text-secondary);font-weight:600; }
+.routine-meta-value { color:var(--text-primary);font-weight:700; }
+.routine-overview-objectives { margin-bottom:14px; }
+.routine-objective-item { font-size:12px;color:var(--text-secondary);line-height:1.4; }
+.routine-days-selector { margin-top:14px;padding-top:14px;border-top:1px solid var(--border); }
+.routine-days-buttons { display:flex;flex-wrap:wrap;gap:8px; }
+.routine-day-button { padding:8px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--text-primary);cursor:pointer;transition:all 0.2s;font-family:var(--font); }
+.routine-day-button:active { transform:scale(0.95);background:var(--primary);border-color:var(--primary);color:white; }
+
 .routines-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s; }
 .routines-overlay.active { opacity:1;pointer-events:all; }
 .routines-sheet { position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 50px;z-index:151;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:85vh;overflow-y:auto; }
@@ -4358,6 +4378,21 @@ function renderRoutines(level, time) {
     return;
   }
 
+  // Level labels and emojis
+  const levelEmojis = { beginner: '🌱', intermediate: '⚡', advanced: '🔥' };
+  const levelLabels = { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' };
+  const levelEmoji = levelEmojis[level];
+  const levelLabel = levelLabels[level];
+
+  // Goal objectives mapping for display
+  const objectivesByGoal = {
+    muscle_gain: ['Aumentar masa muscular', 'Mejorar definición', 'Ganar volumen'],
+    fat_loss: ['Quemar calorías', 'Definición muscular', 'Mejorar resistencia'],
+    strength: ['Aumentar fuerza máxima', 'Ganar potencia', 'Mejorar técnica'],
+    maintenance: ['Mantener músculo', 'Mejorar resistencia', 'Conservar salud']
+  };
+  const objectives = objectivesByGoal[goal] || objectivesByGoal.muscle_gain;
+
   // Science note
   noteEl.textContent = data.scienceNote;
 
@@ -4374,8 +4409,49 @@ function renderRoutines(level, time) {
       Ajustado para tu objetivo: ${goalLabel} · ${data.split}
     </div>`;
 
-  // Render days
-  listEl.innerHTML = data.days.map((day, idx) => {
+  // Render routine overview card + days
+  const daysButtonsHtml = data.days.map((day, idx) =>
+    `<button class="routine-day-button" onclick="startScienceRoutine('${level}',${time},${idx})">${day.name.split('—')[0].trim()}</button>`
+  ).join('');
+
+  const overviewCard = `
+    <div class="routine-overview-card">
+      <div class="routine-overview-header">
+        <div style="display:flex;align-items:center;gap:12px;flex:1">
+          <span style="font-size:28px">${levelEmoji}</span>
+          <div>
+            <div class="routine-overview-title">${levelLabel} - ${time} min</div>
+            <div class="routine-overview-subtitle">${data.split}</div>
+          </div>
+        </div>
+        <div class="routine-overview-badge">✅ Recomendado</div>
+      </div>
+
+      <div class="routine-overview-meta">
+        <div class="routine-meta-item">
+          <span class="routine-meta-label">Frecuencia:</span>
+          <span class="routine-meta-value">${data.freq}</span>
+        </div>
+        <div class="routine-meta-item">
+          <span class="routine-meta-label">Días:</span>
+          <span class="routine-meta-value">${data.days.length} entrenamientos</span>
+        </div>
+      </div>
+
+      <div class="routine-overview-objectives">
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--text-primary)">Enfocado en:</div>
+        ${objectives.map(obj => `<div class="routine-objective-item">• ${obj}</div>`).join('')}
+      </div>
+
+      <div class="routine-days-selector">
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--text-primary)">Elige tu día:</div>
+        <div class="routine-days-buttons">${daysButtonsHtml}</div>
+      </div>
+    </div>
+  `;
+
+  // Render individual day cards
+  const dayCardsHtml = data.days.map((day, idx) => {
     const exRows = day.exercises.map(ex =>
       `<div class="routine-ex-item">
         <span class="routine-ex-name">${ex.name}</span>
@@ -4393,6 +4469,8 @@ function renderRoutines(level, time) {
       </button>
     </div>`;
   }).join('');
+
+  listEl.innerHTML = overviewCard + dayCardsHtml;
 }
 
 function startScienceRoutine(level, time, dayIdx) {
