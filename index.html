@@ -1297,7 +1297,7 @@ body {
     <div class="home-header">
       <div class="home-header-row">
         <h1>GymTracker</h1>
-        <span class="app-version">v1.17.0</span>
+        <span class="app-version">v1.17.1</span>
       </div>
       <p id="homeGreeting">Listo para entrenar?</p>
     </div>
@@ -5349,30 +5349,55 @@ function initSupabase() {
         updateAccountUI();
         if (!prevUser) {
           await migrateLocalData(currentUser.id);
-          await syncFromCloud();
+          // Solo traer el perfil (para saber si mostrar onboarding) — lo demás va en background
+          try {
+            const { data: p } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+            if (p) {
+              userProfile = {
+                full_name: p.full_name||null, age: p.age||null, sex: p.sex||null,
+                body_weight: p.body_weight||null, body_weight_unit: p.body_weight_unit||'kg',
+                height_cm: p.height_cm||null, training_days: p.training_days||null,
+                experience: p.experience||null, training_goal: p.training_goal||null,
+                activity_level: p.activity_level||null, onboarding_done: p.onboarding_done||false
+              };
+              updateProfileUI();
+            }
+          } catch(e) { /* si falla, se usa el valor local (onboarding_done: false) */ }
         }
         hideLoadingOverlay();
         if (document.getElementById('authScreen').classList.contains('active') || !document.querySelector('.screen.active')) {
           if (userProfile.onboarding_done) { showScreen('home'); restoreSessionState(); } else { showOnboarding(false); }
         }
+        // Sync completo en background (workouts, pesos, ejercicios) — sin bloquear la UI
+        if (!prevUser) syncFromCloud().catch(() => {});
       } else if (event !== 'INITIAL_SESSION') {
         updateAccountUI();
+        hideLoadingOverlay();
         showScreen('auth');
       }
     });
     sb.auth.getSession().then(({ data: { session } }) => {
-      hideLoadingOverlay();
-      if (!session && !localStorage.getItem('gymtracker_skip_auth')) {
-        showScreen('auth');
-      } else if (!session) {
-        showScreen('home');
-        restoreSessionState();
+      // Solo ocultar overlay cuando NO hay sesión — si hay sesión, onAuthStateChange lo maneja
+      if (!session) {
+        hideLoadingOverlay();
+        if (!localStorage.getItem('gymtracker_skip_auth')) {
+          showScreen('auth');
+        } else {
+          showScreen('home');
+          restoreSessionState();
+        }
       }
     });
   } catch(e) {
     console.error('Supabase init failed:', e);
+    hideLoadingOverlay();
     showScreen('home');
   }
+  // Fallback de seguridad: si en 8s nada resolvió, mostrar home y quitar overlay
+  setTimeout(() => {
+    hideLoadingOverlay();
+    if (!document.querySelector('.screen.active')) showScreen('home');
+  }, 8000);
 }
 
 // ─── Auth Mode ─────────────────────────────────────────────
