@@ -1129,6 +1129,31 @@ body {
 .ob-btn-next { flex: 1; padding: 15px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
 .ob-btn-next:active { opacity: 0.85; }
 
+/* Welcome Screen Styles */
+.welcome-wrap { display: flex; flex-direction: column; height: 100%; justify-content: space-between; padding: 40px 24px 24px; }
+.welcome-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.welcome-slide { display: none; }
+.welcome-slide.active { display: flex; }
+.welcome-logo { font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 16px; letter-spacing: -0.5px; }
+.welcome-tagline { font-size: 18px; color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
+.welcome-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; }
+.welcome-subtitle { font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; }
+.welcome-icon { width: 80px; height: 80px; color: var(--primary); margin: 32px 0 0; }
+.welcome-icon-large { width: 100px; height: 100px; color: var(--success); margin: 24px 0 0; }
+.welcome-features { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; width: 100%; }
+.welcome-feature { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-primary); line-height: 1.4; }
+.welcome-feature-icon { font-size: 24px; flex-shrink: 0; }
+.welcome-nav { display: flex; flex-direction: column; gap: 16px; }
+.welcome-progress { display: flex; align-items: center; gap: 12px; }
+.welcome-progress-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.welcome-progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
+.welcome-progress-text { font-size: 12px; color: var(--text-tertiary); font-weight: 600; white-space: nowrap; }
+.welcome-buttons { display: flex; gap: 12px; }
+.welcome-btn-skip { flex: 1; padding: 14px 16px; background: var(--surface-raised); color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.welcome-btn-skip:active { opacity: 0.7; }
+.welcome-btn-next { flex: 1; padding: 14px 16px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+.welcome-btn-next:active { opacity: 0.85; }
+
 </style>
 </head>
 <body>
@@ -1166,6 +1191,93 @@ body {
       </div>
     </div>
     <span class="auth-skip" onclick="continueWithoutAccount()">Continuar sin cuenta →</span>
+  </div>
+</div>
+
+<!-- WELCOME SCREENS (First-time UX) -->
+<div class="screen fullscreen" id="welcomeScreen">
+  <div class="welcome-wrap">
+    <!-- Slide 1: Welcome -->
+    <div class="welcome-slide" id="welcomeSlide1">
+      <div class="welcome-content">
+        <div class="welcome-logo">GymTracker</div>
+        <div class="welcome-tagline">Tu asistente inteligente de entrenamientos</div>
+        <svg class="welcome-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9c0-1 1-2 3-2s4 1 4 3v2M6 15c0-1 1-2 3-2s4 1 4 3v2M18 5c0-1 .5-2 2-2s3 1 3 3v4M18 13c0-1 .5-2 2-2s3 1 3 3v4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Slide 2: What is GymTracker -->
+    <div class="welcome-slide" id="welcomeSlide2" style="display:none">
+      <div class="welcome-content">
+        <div class="welcome-title">¿Qué es GymTracker?</div>
+        <div class="welcome-features">
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">📝</span>
+            <span>Registra tus entrenamientos con detalle</span>
+          </div>
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">⏱️</span>
+            <span>Analiza tus tiempos de descanso</span>
+          </div>
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">📊</span>
+            <span>Obtén recomendaciones inteligentes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3: How it works -->
+    <div class="welcome-slide" id="welcomeSlide3" style="display:none">
+      <div class="welcome-content">
+        <div class="welcome-title">Cómo funciona</div>
+        <div class="welcome-features">
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">📱</span>
+            <span>Comienza un entrenamiento</span>
+          </div>
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">🏋️</span>
+            <span>Selecciona ejercicios y registra descansos</span>
+          </div>
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">📊</span>
+            <span>Ve tu progreso en Insights</span>
+          </div>
+          <div class="welcome-feature">
+            <span class="welcome-feature-icon">🤖</span>
+            <span>Recibe recomendaciones semanales</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Ready to start -->
+    <div class="welcome-slide" id="welcomeSlide4" style="display:none">
+      <div class="welcome-content">
+        <div class="welcome-title">¿Listo para empezar?</div>
+        <div class="welcome-subtitle">Personalicemos tu experiencia</div>
+        <svg class="welcome-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="welcome-nav">
+      <div class="welcome-progress">
+        <div class="welcome-progress-bar">
+          <div class="welcome-progress-fill" id="welcomeProgressFill" style="width:25%"></div>
+        </div>
+        <span class="welcome-progress-text"><span id="welcomeSlideNum">1</span> de 4</span>
+      </div>
+      <div class="welcome-buttons">
+        <button class="welcome-btn-skip" onclick="skipWelcome()">Saltar</button>
+        <button class="welcome-btn-next" id="welcomeBtnNext" onclick="nextWelcomeSlide()">Siguiente →</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2169,11 +2281,11 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, insights: 1, history: 2, settings: 3 };
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen' };
+  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['workout','summary','catalog','warmup','auth','onboarding'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['workout','summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); }
@@ -5922,7 +6034,13 @@ function initSupabase() {
         }
         hideLoadingOverlay();
         if (document.getElementById('authScreen').classList.contains('active') || !document.querySelector('.screen.active')) {
-          if (userProfile.onboarding_done) { showScreen('home'); restoreSessionState(); } else { showOnboarding(false); }
+          if (userProfile.onboarding_done) {
+            showScreen('home');
+            restoreSessionState();
+          } else {
+            _isFirstTimeUser = true;
+            showWelcomeScreens();
+          }
         }
         // Sync completo en background (workouts, pesos, ejercicios) — sin bloquear la UI
         if (!prevUser) syncFromCloud().catch(() => {});
@@ -6187,6 +6305,50 @@ let _obWeightUnit = 'kg';
 const OB_GOAL_LABELS = { muscle:'Ganar músculo', fat_loss:'Perder grasa', strength:'Ganar fuerza', maintenance:'Mantenimiento' };
 const OB_EXP_LABELS  = { beginner:'Principiante', intermediate:'Intermedio', advanced:'Avanzado' };
 const OB_ACT_LABELS  = { sedentary:'Sedentario', light:'Poco activo', moderate:'Moderado', active:'Muy activo' };
+
+// ─── Welcome Screens (First-Time User Experience) ─────────────────
+let _welcomeStep = 1;
+const WELCOME_DISMISSED_KEY = 'gymtracker_welcome_dismissed';
+
+function showWelcomeScreens() {
+  const dismissed = localStorage.getItem(WELCOME_DISMISSED_KEY);
+  if (dismissed) {
+    showOnboarding(false);
+    return;
+  }
+  _welcomeStep = 1;
+  showScreen('welcome');
+  updateWelcomeSlide();
+}
+
+function updateWelcomeSlide() {
+  document.querySelectorAll('.welcome-slide').forEach(s => s.classList.remove('active'));
+  document.getElementById(`welcomeSlide${_welcomeStep}`).classList.add('active');
+  document.getElementById('welcomeSlideNum').textContent = _welcomeStep;
+  document.getElementById('welcomeProgressFill').style.width = (_welcomeStep * 25) + '%';
+
+  const nextBtn = document.getElementById('welcomeBtnNext');
+  if (_welcomeStep === 4) {
+    nextBtn.textContent = '¡Listo! →';
+  } else {
+    nextBtn.textContent = 'Siguiente →';
+  }
+}
+
+function nextWelcomeSlide() {
+  if (_welcomeStep < 4) {
+    _welcomeStep++;
+    updateWelcomeSlide();
+  } else {
+    localStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
+    showOnboarding(false);
+  }
+}
+
+function skipWelcome() {
+  localStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
+  showOnboarding(false);
+}
 
 function showOnboarding(editMode) {
   _obIsEdit = editMode;
