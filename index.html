@@ -6270,27 +6270,69 @@ function obSetWeightUnit(unit) {
 
 async function obSave() {
   const btn = document.getElementById('obBtnNext');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  userProfile = {
-    full_name:        document.getElementById('obName').value.trim()          || null,
-    age:              parseInt(document.getElementById('obAge').value)         || null,
-    sex:              _obSel.sex,
-    body_weight:      parseFloat(document.getElementById('obWeight').value)   || null,
-    body_weight_unit: _obWeightUnit,
-    height_cm:        parseInt(document.getElementById('obHeight').value)     || null,
-    training_days:    _obSel.days,
-    experience:       _obSel.exp,
-    training_goal:    _obSel.goal,
-    activity_level:   _obSel.activity,
-    onboarding_done:  true
-  };
-  if (currentUser && sb) {
-    try { await sb.from('profiles').upsert({ id: currentUser.id, ...userProfile }); } catch(e) { console.error('Profile save:', e); }
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  // Safety timeout: if we don't navigate within 5s, re-enable button
+  const timeoutId = setTimeout(() => {
+    if (btn.disabled) {
+      console.warn('Onboarding save timeout - enabling button');
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+      showToast('Guardado pero navegación lenta. Recarga si es necesario.', 'warning');
+    }
+  }, 5000);
+
+  try {
+    // Build profile object
+    userProfile = {
+      full_name:        document.getElementById('obName').value.trim()          || null,
+      age:              parseInt(document.getElementById('obAge').value)         || null,
+      sex:              _obSel.sex,
+      body_weight:      parseFloat(document.getElementById('obWeight').value)   || null,
+      body_weight_unit: _obWeightUnit,
+      height_cm:        parseInt(document.getElementById('obHeight').value)     || null,
+      training_days:    _obSel.days,
+      experience:       _obSel.exp,
+      training_goal:    _obSel.goal,
+      activity_level:   _obSel.activity,
+      onboarding_done:  true
+    };
+
+    // Save to Supabase if user is logged in
+    if (currentUser && sb) {
+      try {
+        await sb.from('profiles').upsert({ id: currentUser.id, ...userProfile });
+      } catch(e) {
+        console.error('Profile save to Supabase:', e);
+      }
+    }
+
+    // Update UI (safe operations, but wrapped in try-catch)
+    try {
+      updateProfileUI();
+      updateAccountUI();
+    } catch(e) {
+      console.error('UI update failed:', e);
+    }
+
+    // Navigate to home or settings
+    try {
+      clearTimeout(timeoutId); // Cancel timeout since we're navigating
+      _obIsEdit ? showScreen('settings') : showScreen('home');
+    } catch(e) {
+      console.error('Navigation failed:', e);
+      clearTimeout(timeoutId);
+      showScreen('home');
+    }
+
+  } catch(e) {
+    console.error('Onboarding save failed:', e);
+    clearTimeout(timeoutId);
+    showToast('Error al guardar perfil. Intenta de nuevo.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
   }
-  btn.disabled = false;
-  updateProfileUI();
-  updateAccountUI();
-  _obIsEdit ? showScreen('settings') : showScreen('home');
 }
 
 function skipOnboarding() {
