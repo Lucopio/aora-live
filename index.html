@@ -1149,30 +1149,42 @@ body {
 .ob-btn-next { flex: 1; padding: 15px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
 .ob-btn-next:active { opacity: 0.85; }
 
-/* Welcome Screen Styles */
-.welcome-wrap { display: flex; flex-direction: column; height: 100%; justify-content: space-between; padding: 40px 24px 24px; }
-.welcome-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.welcome-slide { display: none; }
-.welcome-slide.active { display: flex; flex: 1; flex-direction: column; }
-.welcome-logo { font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 16px; letter-spacing: -0.5px; }
-.welcome-tagline { font-size: 18px; color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
-.welcome-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; }
-.welcome-subtitle { font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; }
-.welcome-icon { width: 80px; height: 80px; color: var(--primary); margin: 32px 0 0; }
-.welcome-icon-large { width: 100px; height: 100px; color: var(--success); margin: 24px 0 0; }
-.welcome-features { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; width: 100%; }
-.welcome-feature { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-primary); line-height: 1.4; }
-.welcome-feature-icon { font-size: 24px; flex-shrink: 0; }
-.welcome-nav { display: flex; flex-direction: column; gap: 16px; }
-.welcome-progress { display: flex; align-items: center; gap: 12px; }
-.welcome-progress-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.welcome-progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
-.welcome-progress-text { font-size: 12px; color: var(--text-tertiary); font-weight: 600; white-space: nowrap; }
-.welcome-buttons { display: flex; gap: 12px; }
-.welcome-btn-skip { flex: 1; padding: 14px 16px; background: var(--surface-raised); color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
-.welcome-btn-skip:active { opacity: 0.7; }
-.welcome-btn-next { flex: 1; padding: 14px 16px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
-.welcome-btn-next:active { opacity: 0.85; }
+/* Welcome Screen Redesign */
+#welcomeScreen { background: #F0F4F8; }
+.w-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.welcome-slide { display: none; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.welcome-slide.active { display: flex; animation: wSlideIn 0.3s cubic-bezier(0.4,0,0.2,1); }
+@keyframes wSlideIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+.w-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 44px 24px 20px; }
+.w-hero { font-size: 60px; margin-bottom: 18px; line-height: 1; text-align: center; }
+.w-title { font-size: 24px; font-weight: 800; color: #0F172A; line-height: 1.25; margin-bottom: 10px; text-align: center; letter-spacing: -0.4px; }
+.w-subtitle { font-size: 14px; color: #64748B; line-height: 1.6; text-align: center; margin-bottom: 22px; }
+.w-stats { display: flex; gap: 12px; width: 100%; margin-bottom: 14px; }
+.w-stat-card { flex: 1; background: white; border-radius: 16px; padding: 18px 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.w-stat-num { font-size: 28px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; }
+.w-stat-lbl { font-size: 11px; color: #64748B; font-weight: 500; line-height: 1.4; }
+.w-note { font-size: 11px; color: #94A3B8; text-align: center; line-height: 1.5; padding: 0 8px; }
+.w-items { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.w-item { display: flex; gap: 14px; align-items: flex-start; background: white; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+.w-item-icon { font-size: 26px; flex-shrink: 0; line-height: 1.2; margin-top: 1px; }
+.w-item-title { font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 3px; line-height: 1.3; }
+.w-item-desc { font-size: 12px; color: #64748B; line-height: 1.5; }
+.w-chat { background: white; border-radius: 16px; padding: 16px; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin: 8px 0 14px; border-left: 3px solid var(--primary); }
+.w-chat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.w-chat-av { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.w-chat-nm { font-size: 12px; font-weight: 700; color: var(--primary); }
+.w-chat-msg { font-size: 13px; color: #334155; line-height: 1.6; }
+.w-nav { padding: 14px 24px 30px; background: #F0F4F8; flex-shrink: 0; }
+.w-prog { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.w-prog-bar { flex: 1; height: 5px; background: #DDE4EE; border-radius: 3px; overflow: hidden; }
+.w-prog-fill { height: 100%; background: var(--primary); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); border-radius: 3px; }
+.w-prog-txt { font-size: 12px; color: #94A3B8; font-weight: 700; white-space: nowrap; }
+.w-btns { display: flex; gap: 12px; }
+.w-btn-skip { flex: 1; padding: 13px 16px; background: transparent; color: #94A3B8; border: 1.5px solid #DDE4EE; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.w-btn-skip:active { opacity: 0.7; }
+.w-btn-next { flex: 1.6; padding: 13px 16px; background: var(--primary); color: white; border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(66,133,244,0.3); transition: transform 0.15s, box-shadow 0.15s; }
+.w-btn-next:active { transform: scale(0.97); }
+.w-btn-next.w-final { background: #16A34A; box-shadow: 0 4px 14px rgba(22,163,74,0.3); }
 
 /* E4: Tutorial Hints System */
 .tutorial-hint-overlay { position: fixed; inset: 0; z-index: 999; }
@@ -1230,88 +1242,126 @@ body {
 
 <!-- WELCOME SCREENS (First-time UX) -->
 <div class="screen fullscreen" id="welcomeScreen">
-  <div class="welcome-wrap">
-    <!-- Slide 1: Welcome -->
+  <div class="w-wrap">
+
+    <!-- Slide 1: Bienvenido -->
     <div class="welcome-slide active" id="welcomeSlide1">
-      <div class="welcome-content">
-        <div class="welcome-logo">GymTracker</div>
-        <div class="welcome-tagline">Tu asistente inteligente de entrenamientos</div>
-        <svg class="welcome-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 9c0-1 1-2 3-2s4 1 4 3v2M6 15c0-1 1-2 3-2s4 1 4 3v2M18 5c0-1 .5-2 2-2s3 1 3 3v4M18 13c0-1 .5-2 2-2s3 1 3 3v4"/>
-        </svg>
+      <div class="w-content">
+        <div class="w-hero">⚡</div>
+        <h1 class="w-title">Entrena con intención.<br>Descansa con propósito.</h1>
+        <p class="w-subtitle">La mayoría pierde resultados por ignorar el descanso. GymTracker lo cambia.</p>
+        <div class="w-stats">
+          <div class="w-stat-card">
+            <div class="w-stat-num">+31%</div>
+            <div class="w-stat-lbl">más fuerza<br>en 8 semanas</div>
+          </div>
+          <div class="w-stat-card">
+            <div class="w-stat-num">2×</div>
+            <div class="w-stat-lbl">recuperación<br>óptima</div>
+          </div>
+        </div>
+        <p class="w-note">Basado en usuarios que registran sus descansos consistentemente</p>
       </div>
     </div>
 
-    <!-- Slide 2: What is GymTracker -->
+    <!-- Slide 2: ¿Qué es GymTracker? -->
     <div class="welcome-slide" id="welcomeSlide2">
-      <div class="welcome-content">
-        <div class="welcome-title">¿Qué es GymTracker?</div>
-        <div class="welcome-features">
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">📝</span>
-            <span>Registra tus entrenamientos con detalle</span>
+      <div class="w-content">
+        <h2 class="w-title">¿Qué es GymTracker?</h2>
+        <div class="w-items">
+          <div class="w-item">
+            <span class="w-item-icon">📋</span>
+            <div>
+              <div class="w-item-title">Registra cada serie y repetición</div>
+              <div class="w-item-desc">Con notas de carga y esfuerzo percibido</div>
+            </div>
           </div>
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">⏱️</span>
-            <span>Analiza tus tiempos de descanso</span>
+          <div class="w-item">
+            <span class="w-item-icon">⏱️</span>
+            <div>
+              <div class="w-item-title">El descanso importa más de lo que crees</div>
+              <div class="w-item-desc">Demasiado poco = menos fuerza. Demasiado = sesiones eternas. GymTracker encuentra tu punto exacto.</div>
+            </div>
           </div>
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">📊</span>
-            <span>Obtén recomendaciones inteligentes</span>
+          <div class="w-item">
+            <span class="w-item-icon">📊</span>
+            <div>
+              <div class="w-item-title">Recomendaciones que evolucionan contigo</div>
+              <div class="w-item-desc">La IA analiza tus patrones y te sugiere ajustes reales</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 3: How it works -->
+    <!-- Slide 3: Cómo funciona -->
     <div class="welcome-slide" id="welcomeSlide3">
-      <div class="welcome-content">
-        <div class="welcome-title">Cómo funciona</div>
-        <div class="welcome-features">
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">📱</span>
-            <span>Comienza un entrenamiento</span>
+      <div class="w-content">
+        <h2 class="w-title">Cómo funciona</h2>
+        <div class="w-items">
+          <div class="w-item">
+            <span class="w-item-icon">🏋️</span>
+            <div>
+              <div class="w-item-title">Inicia un entrenamiento</div>
+              <div class="w-item-desc">Elige ejercicios o usa tus rutinas guardadas</div>
+            </div>
           </div>
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">🏋️</span>
-            <span>Selecciona ejercicios y registra descansos</span>
+          <div class="w-item">
+            <span class="w-item-icon">⏸️</span>
+            <div>
+              <div class="w-item-title">Registra el descanso entre series</div>
+              <div class="w-item-desc">El timer corre automático. Tú decides cuándo sigues.</div>
+            </div>
           </div>
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">📊</span>
-            <span>Ve tu progreso en Insights</span>
+          <div class="w-item">
+            <span class="w-item-icon">🤖</span>
+            <div>
+              <div class="w-item-title">Tu asistente analiza todo</div>
+              <div class="w-item-desc">Después de cada sesión, recibe insights y recomendaciones personalizadas</div>
+            </div>
           </div>
-          <div class="welcome-feature">
-            <span class="welcome-feature-icon">🤖</span>
-            <span>Recibe recomendaciones semanales</span>
+          <div class="w-item">
+            <span class="w-item-icon">📈</span>
+            <div>
+              <div class="w-item-title">Ve tu progreso semana a semana</div>
+              <div class="w-item-desc">Gráficas claras de volumen, descanso y mejora real</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 4: Ready to start -->
+    <!-- Slide 4: Tu asistente personal -->
     <div class="welcome-slide" id="welcomeSlide4">
-      <div class="welcome-content">
-        <div class="welcome-title">¿Listo para empezar?</div>
-        <div class="welcome-subtitle">Personalicemos tu experiencia</div>
-        <svg class="welcome-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-        </svg>
+      <div class="w-content">
+        <div class="w-hero">🤖</div>
+        <h2 class="w-title">No entrenas solo.<br>Tienes un coach en el bolsillo.</h2>
+        <p class="w-subtitle">Después de cada entrenamiento, tu asistente IA analiza tus datos y te habla directo:</p>
+        <div class="w-chat">
+          <div class="w-chat-head">
+            <div class="w-chat-av">🤖</div>
+            <span class="w-chat-nm">Asistente GymTracker</span>
+          </div>
+          <p class="w-chat-msg">Descansaste 38s entre series de sentadilla — menos de lo ideal. Esta semana subiste 5kg de volumen. Te sugiero bajar intensidad el jueves.</p>
+        </div>
+        <p class="w-note">Cuanto más registres, más inteligente se vuelve.</p>
       </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="welcome-nav">
-      <div class="welcome-progress">
-        <div class="welcome-progress-bar">
-          <div class="welcome-progress-fill" id="welcomeProgressFill" style="width:25%"></div>
+    <!-- Navegación compartida -->
+    <div class="w-nav">
+      <div class="w-prog">
+        <div class="w-prog-bar">
+          <div class="w-prog-fill" id="welcomeProgressFill" style="width:25%"></div>
         </div>
-        <span class="welcome-progress-text"><span id="welcomeSlideNum">1</span> de 4</span>
+        <span class="w-prog-txt"><span id="welcomeSlideNum">1</span> de 4</span>
       </div>
-      <div class="welcome-buttons">
-        <button class="welcome-btn-skip" onclick="skipWelcome()">Saltar</button>
-        <button class="welcome-btn-next" id="welcomeBtnNext" onclick="nextWelcomeSlide()">Siguiente →</button>
+      <div class="w-btns">
+        <button class="w-btn-skip" onclick="skipWelcome()">Saltar</button>
+        <button class="w-btn-next" id="welcomeBtnNext" onclick="nextWelcomeSlide()">Siguiente →</button>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -6602,9 +6652,11 @@ function updateWelcomeSlide() {
 
   const nextBtn = document.getElementById('welcomeBtnNext');
   if (_welcomeStep === 4) {
-    nextBtn.textContent = '¡Listo! →';
+    nextBtn.textContent = '¡Empecemos! →';
+    nextBtn.classList.add('w-final');
   } else {
     nextBtn.textContent = 'Siguiente →';
+    nextBtn.classList.remove('w-final');
   }
 }
 
