@@ -1153,7 +1153,7 @@ body {
 .welcome-wrap { display: flex; flex-direction: column; height: 100%; justify-content: space-between; padding: 40px 24px 24px; }
 .welcome-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .welcome-slide { display: none; }
-.welcome-slide.active { display: flex; }
+.welcome-slide.active { display: flex; flex: 1; flex-direction: column; }
 .welcome-logo { font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 16px; letter-spacing: -0.5px; }
 .welcome-tagline { font-size: 18px; color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
 .welcome-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; }
@@ -1232,7 +1232,7 @@ body {
 <div class="screen fullscreen" id="welcomeScreen">
   <div class="welcome-wrap">
     <!-- Slide 1: Welcome -->
-    <div class="welcome-slide" id="welcomeSlide1">
+    <div class="welcome-slide active" id="welcomeSlide1">
       <div class="welcome-content">
         <div class="welcome-logo">GymTracker</div>
         <div class="welcome-tagline">Tu asistente inteligente de entrenamientos</div>
@@ -1243,7 +1243,7 @@ body {
     </div>
 
     <!-- Slide 2: What is GymTracker -->
-    <div class="welcome-slide" id="welcomeSlide2" style="display:none">
+    <div class="welcome-slide" id="welcomeSlide2">
       <div class="welcome-content">
         <div class="welcome-title">¿Qué es GymTracker?</div>
         <div class="welcome-features">
@@ -1264,7 +1264,7 @@ body {
     </div>
 
     <!-- Slide 3: How it works -->
-    <div class="welcome-slide" id="welcomeSlide3" style="display:none">
+    <div class="welcome-slide" id="welcomeSlide3">
       <div class="welcome-content">
         <div class="welcome-title">Cómo funciona</div>
         <div class="welcome-features">
@@ -1289,7 +1289,7 @@ body {
     </div>
 
     <!-- Slide 4: Ready to start -->
-    <div class="welcome-slide" id="welcomeSlide4" style="display:none">
+    <div class="welcome-slide" id="welcomeSlide4">
       <div class="welcome-content">
         <div class="welcome-title">¿Listo para empezar?</div>
         <div class="welcome-subtitle">Personalicemos tu experiencia</div>
