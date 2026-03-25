@@ -4142,6 +4142,8 @@ function keepAndChangeExercise(newName, newEquip) {
 }
 
 function discardAndChangeExercise(newName, newEquip) {
+  // Al descartar series, el descanso activo ya no tiene sentido — cancelarlo
+  if (isResting) resetRestZone();
   currentExerciseSets = [];
   document.getElementById('changeExOverlay')?.remove();
   _doSelectExercise(newName, newEquip);
@@ -4166,7 +4168,7 @@ function _doSelectExercise(name, equip) {
   document.getElementById('sideL').classList.add('active');
   document.getElementById('sideR').classList.remove('active');
 
-  skipRest();
+  // No cancelar el timer aquí: el descanso es global a la sesión y persiste al cambiar ejercicio
   // Show name + equipment in card header
   const equipLabel = equip ? EQUIP_LABEL[equip] : '';
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
@@ -4211,6 +4213,7 @@ function toggleWarmupSet() {
 
 let setJustDeleted = false; // true cuando se borró una serie; inhibe el reinicio del timer
 let restStartedAt = null;   // timestamp de inicio del descanso actual
+let _restTargetSet = null;  // referencia al objeto serie que inició el descanso (persiste al cambiar ejercicio)
 
 function addSet() {
   const weight = parseFloat(document.getElementById('weightInput').value) || 0;
@@ -4730,6 +4733,8 @@ function finishExercise() {
 function resetRestZone() {
   clearInterval(countdownInterval);
   isResting = false;
+  restStartedAt = null;
+  _restTargetSet = null;
   document.getElementById('restIdle').style.display = 'flex';
   const a = document.getElementById('restActive');
   a.classList.remove('show', 'alert-mode');
@@ -4748,6 +4753,8 @@ function startRestTimer() {
   isResting = true;
   restCount++;
   restStartedAt = Date.now();
+  // Capturar referencia al set que inició el descanso; persiste aunque el usuario cambie de ejercicio
+  _restTargetSet = currentExerciseSets.length > 0 ? currentExerciseSets[currentExerciseSets.length - 1] : null;
   countdownRemaining = restSeconds;
   const total = restSeconds;
   const circ = 2 * Math.PI * 34;
@@ -4825,49 +4832,41 @@ function startRestTimer() {
 }
 
 function markRestReady() {
-  // Usuario toca "Listo" — captura duración y procede a siguiente serie
-  if (restStartedAt && currentExerciseSets.length > 0) {
+  // Usuario toca "Listo" — captura duración real del descanso
+  if (restStartedAt && _restTargetSet) {
     const restDurationMs = Date.now() - restStartedAt;
-    const restDurationSeconds = Math.floor(restDurationMs / 1000); // Convertir a segundos
+    const restDurationSeconds = Math.floor(restDurationMs / 1000);
 
-    // Validación: rango válido 0-600 segundos (10 minutos max)
     if (restDurationSeconds < 0 || restDurationSeconds > 600) {
       const msg = restDurationSeconds > 600 ? 'Descanso demasiado largo (máx 10 min)' : 'Duración inválida';
       showToast(msg, 'warning');
       return;
     }
 
-    const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
-    lastSet.rest_duration_seconds = restDurationSeconds; // Guardar duración en segundos
-    lastSet.rest_after_ms = restDurationMs; // Mantener para compatibilidad
+    _restTargetSet.rest_duration_seconds = restDurationSeconds;
+    _restTargetSet.rest_after_ms = restDurationMs;
   }
-  restStartedAt = null;
-  clearInterval(countdownInterval);
+  // resetRestZone() limpia restStartedAt, _restTargetSet e isResting
   resetRestZone();
-  // Mostrar formulario para siguiente serie
-  showRPESelection();
-  scrollToId('rpeSection');
+  // NO mostrar RPE aquí — solo aparece al registrar una serie (addSet)
 }
 
 function skipRest() {
   // Capturar duración real del descanso antes de limpiar
-  if (restStartedAt && currentExerciseSets.length > 0) {
+  if (restStartedAt && _restTargetSet) {
     const restDurationMs = Date.now() - restStartedAt;
-    const restDurationSeconds = Math.floor(restDurationMs / 1000); // Convertir a segundos
+    const restDurationSeconds = Math.floor(restDurationMs / 1000);
     const restConfigured = restSeconds * 1000;
-    const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
-    lastSet.rest_duration_seconds = restDurationSeconds; // Usar nuevo campo
-    lastSet.rest_after_ms = restDurationMs; // Mantener para compatibilidad
-    lastSet.rest_configured_ms = restConfigured;
-    // Ratio real: cuánto descansó vs cuánto debía descansar
+    _restTargetSet.rest_duration_seconds = restDurationSeconds;
+    _restTargetSet.rest_after_ms = restDurationMs;
+    _restTargetSet.rest_configured_ms = restConfigured;
     const ratio = restDurationMs / restConfigured;
-    if (ratio >= 1.5) lastSet.rest_status = 'overtime';
-    else if (ratio >= 0.8) lastSet.rest_status = 'on_time';
-    else if (ratio >= 0.3) lastSet.rest_status = 'early';
-    else lastSet.rest_status = 'skipped'; // < 30% del tiempo = prácticamente no descansó
+    if (ratio >= 1.5) _restTargetSet.rest_status = 'overtime';
+    else if (ratio >= 0.8) _restTargetSet.rest_status = 'on_time';
+    else if (ratio >= 0.3) _restTargetSet.rest_status = 'early';
+    else _restTargetSet.rest_status = 'skipped';
   }
-  restStartedAt = null;
-  clearInterval(countdownInterval);
+  // resetRestZone() limpia restStartedAt, _restTargetSet e isResting
   resetRestZone();
 }
 
