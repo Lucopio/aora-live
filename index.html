@@ -2114,6 +2114,14 @@ body {
       <input id="editSetReps" type="number" min="1" inputmode="numeric" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
     </div>
   </div>
+  <!-- Selector de lado (solo visible para series de ejercicios unilaterales) -->
+  <div id="editSetSideRow" style="display:none;margin-bottom:16px">
+    <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Lado</label>
+    <div style="display:flex;gap:8px">
+      <button id="editSideL" onclick="selectEditSide('left')" style="flex:1;padding:11px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;background:var(--bg);color:var(--text-secondary);cursor:pointer;transition:all 0.15s">Izquierdo</button>
+      <button id="editSideR" onclick="selectEditSide('right')" style="flex:1;padding:11px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;background:var(--bg);color:var(--text-secondary);cursor:pointer;transition:all 0.15s">Derecho</button>
+    </div>
+  </div>
   <div style="margin-bottom:20px">
     <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">RPE (1-10, opcional)</label>
     <input id="editSetRPE" type="number" min="1" max="10" inputmode="numeric" placeholder="—" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
@@ -2143,8 +2151,13 @@ body {
 <div class="routines-overlay" id="routinesOverlay" onclick="closeRoutinesSheet()"></div>
 <div class="routines-sheet" id="routinesSheet">
   <div class="sheet-handle" style="margin-bottom:16px"></div>
-  <div style="font-size:18px;font-weight:700;margin-bottom:2px">Rutinas por ciencia</div>
-  <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Personalizada según tu nivel, objetivo y tiempo disponible</div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+    <div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:2px">Rutinas por ciencia</div>
+      <div style="font-size:13px;color:var(--text-secondary)">Personalizada según tu nivel, objetivo y tiempo disponible</div>
+    </div>
+    <button onclick="closeRoutinesSheet()" style="flex-shrink:0;margin-left:12px;margin-top:2px;background:var(--bg);border:1.5px solid var(--border);border-radius:50%;width:32px;height:32px;font-size:18px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1" title="Cerrar">×</button>
+  </div>
   <!-- Nivel -->
   <div class="routines-section-label">Nivel</div>
   <div class="routine-level-tabs" id="routineLevelTabs">
@@ -4303,6 +4316,17 @@ function deleteSet(index) {
 // ─── Edit Set (#8) ───────────────────────────────────────────
 let _editSetIndex = -1;
 
+function selectEditSide(side) {
+  document.getElementById('editSideL').style.cssText += side === 'left'
+    ? ';border-color:var(--primary);background:rgba(26,115,232,0.1);color:var(--primary);font-weight:700'
+    : ';border-color:var(--border);background:var(--bg);color:var(--text-secondary);font-weight:600';
+  document.getElementById('editSideR').style.cssText += side === 'right'
+    ? ';border-color:var(--primary);background:rgba(26,115,232,0.1);color:var(--primary);font-weight:700'
+    : ';border-color:var(--border);background:var(--bg);color:var(--text-secondary);font-weight:600';
+  document.getElementById('editSideL').dataset.selected = side === 'left' ? '1' : '';
+  document.getElementById('editSideR').dataset.selected = side === 'right' ? '1' : '';
+}
+
 function editSet(index) {
   const s = currentExerciseSets[index];
   if (!s) return;
@@ -4313,6 +4337,14 @@ function editSet(index) {
   document.getElementById('editSetWeight').value = s.weight || 0;
   document.getElementById('editSetReps').value = s.reps || 0;
   document.getElementById('editSetRPE').value = s.rpe != null ? s.rpe : '';
+  // Mostrar selector de lado si es ejercicio unilateral o la serie ya tiene lado
+  const sideRow = document.getElementById('editSetSideRow');
+  if (s.side || isUnilateral) {
+    sideRow.style.display = 'block';
+    selectEditSide(s.side || activeSide);
+  } else {
+    sideRow.style.display = 'none';
+  }
   const overlay = document.getElementById('editSetOverlay');
   const sheet   = document.getElementById('editSetSheet');
   overlay.style.display = 'block';
@@ -4335,6 +4367,12 @@ function saveEditedSet() {
   currentExerciseSets[_editSetIndex].weight = weight;
   currentExerciseSets[_editSetIndex].reps   = reps;
   currentExerciseSets[_editSetIndex].rpe    = rpe;
+  // Guardar lado si el selector estaba visible
+  const sideRow = document.getElementById('editSetSideRow');
+  if (sideRow.style.display !== 'none') {
+    const lSelected = document.getElementById('editSideL').dataset.selected === '1';
+    currentExerciseSets[_editSetIndex].side = lSelected ? 'left' : 'right';
+  }
   closeEditSet();
   renderSets();
 }
@@ -4350,7 +4388,9 @@ function closeEditSet() {
 }
 
 function nextExercise() {
-  skipRest();
+  // No cancelar el descanso: el timer es global a la sesión y debe persistir entre ejercicios.
+  // _restTargetSet sigue apuntando al último set del ejercicio anterior (que va a completedExercises),
+  // por lo que markRestReady() guardará la duración correctamente al tocar "Listo".
   if (currentExerciseName && currentExerciseSets.length > 0) {
     const ssGroup = supersetActive ? (supersetGroupCounter || (supersetGroupCounter = 1)) : null;
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets], superset_group: ssGroup });
