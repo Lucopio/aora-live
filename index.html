@@ -998,6 +998,14 @@ body {
   -webkit-tap-highlight-color: transparent; transition: opacity 0.15s;
 }
 .wu-yt-btn:active { opacity: 0.75; }
+.wu-maria-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; background: var(--primary); color: white;
+  border: none; border-radius: 20px; font-family: var(--font);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: opacity 0.15s;
+}
+.wu-maria-btn:active { opacity: 0.75; }
 /* Warmup group picker */
 .wu-group-btn {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -2296,13 +2304,14 @@ body {
     <span id="wuGifTitle" style="font-size:13px;font-weight:700;color:#fff;flex:1;margin-right:8px;line-height:1.3"></span>
     <button onclick="closeWarmupGif()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
   </div>
-  <!-- GIF container -->
+  <!-- Media container: GIF o MP4 -->
   <div style="background:#000;text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center">
     <img id="wuGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
+    <video id="wuGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"></video>
   </div>
   <!-- Footer hint -->
   <div style="padding:10px 16px;text-align:center">
-    <p style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
+    <p id="wuGifHint" style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
   </div>
 </div>
 
@@ -2530,16 +2539,35 @@ function renderGroupPicker() {
     </button>`).join('');
 }
 
-function openWarmupGif(gifUrl, name) {
+function openWarmupGif(url, name) {
   document.getElementById('wuGifTitle').textContent = name;
-  document.getElementById('wuGifImg').src = gifUrl;
 
-  // Show overlay + sheet
+  const img   = document.getElementById('wuGifImg');
+  const video = document.getElementById('wuGifVideo');
+  const hint  = document.getElementById('wuGifHint');
+  const isVideo = url.toLowerCase().endsWith('.mp4');
+
+  if (isVideo) {
+    img.style.display   = 'none';
+    img.src             = '';
+    video.style.display = 'block';
+    video.src           = url;
+    video.load();
+    video.play().catch(() => {});
+    hint.textContent    = '▶ Video en bucle · Toca fuera para cerrar';
+  } else {
+    video.pause();
+    video.src           = '';
+    video.style.display = 'none';
+    img.style.display   = 'block';
+    img.src             = url;
+    hint.textContent    = 'Animación en bucle · Toca fuera para cerrar';
+  }
+
   const overlay = document.getElementById('wuGifOverlay');
   const sheet   = document.getElementById('wuGifSheet');
   overlay.style.display = 'block';
   sheet.style.display   = 'block';
-  // Animate up
   sheet.style.transform = 'translateX(-50%) translateY(100%)';
   requestAnimationFrame(() => {
     sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
@@ -2552,7 +2580,16 @@ function closeWarmupGif() {
   const sheet = document.getElementById('wuGifSheet');
   sheet.style.transform = 'translateX(-50%) translateY(100%)';
   setTimeout(() => {
-    document.getElementById('wuGifImg').src = ''; // free memory
+    // Liberar imagen
+    const img = document.getElementById('wuGifImg');
+    img.src = '';
+    img.style.display = 'block'; // reset para próxima apertura
+    // Liberar video: pausar + vaciar src evita que el navegador siga decodificando
+    const video = document.getElementById('wuGifVideo');
+    video.pause();
+    video.removeAttribute('src');
+    video.load(); // libera buffers del decoder
+    video.style.display = 'none';
     sheet.style.display = 'none';
     document.getElementById('wuGifOverlay').style.display = 'none';
     document.body.style.overflow = '';
@@ -2611,12 +2648,17 @@ function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupExercisesList').innerHTML = data.exercises.map((ex, i) => {
     const animCls = getAnim(ex.name);
     const icon    = iconMap[animCls];
-    const safeGif  = (ex.gif || '').replace(/'/g, "\\'");
-    const safeName = ex.name.replace(/'/g, "\\'");
-    const ytBtn = safeGif ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupGif('${safeGif}','${safeName}')">
+    const safeGif   = (ex.gif   || '').replace(/'/g, "\\'");
+    const safeVideo = (ex.video || '').replace(/'/g, "\\'");
+    const safeName  = ex.name.replace(/'/g, "\\'");
+    const ytBtn = safeVideo
+      ? `<button class="wu-maria-btn" onclick="event.stopPropagation();openWarmupGif('${safeVideo}','${safeName}')">▶ Ver con María</button>`
+      : safeGif
+        ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupGif('${safeGif}','${safeName}')">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
         Ver cómo hacerlo
-      </button>` : '';
+      </button>`
+        : '';
     return `
     <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
       <div class="wu-ex-check" id="wuCheck${i}">
@@ -3134,7 +3176,7 @@ const warmupDatabase = {
       { text: 'Elevar la temperatura muscular' }
     ],
     exercises: [
-      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango de movimiento y reduce el riesgo de lesión al hacer press', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif', video: 'videos/maria_rotaciones_brazos.mp4' },
       { name: 'Stretch de pecho en pared', reps: '2×30 seg', duration: '1 min', why: 'Estira el pectoral y mejora cuánto puedes abrir los brazos durante el press', gif: W+'4/41/Chest_stretch-CDC_strength_training_for_older_adults.gif' },
       { name: 'Press ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Le enseña al cuerpo el movimiento antes de cargar peso — activa pectoral sin cansarlo', gif: W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif' },
       { name: 'Fondos en banco (asistidos)', reps: '10 reps', duration: '2 min', why: 'Prepara las articulaciones del hombro y codo para el esfuerzo de empuje', gif: W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif' }
