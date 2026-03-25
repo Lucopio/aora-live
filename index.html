@@ -2689,6 +2689,9 @@ function launchWorkout() {
   } else {
     showScreen('workout');
   }
+  // Descanso de transición post-calentamiento: el usuario acaba de calentar y necesita
+  // recuperarse antes de la primera serie. El timer corre aunque el catálogo esté abierto.
+  if (warmupDuration > 0) startRestTimer();
 }
 
 function cancelWarmup() {
@@ -4215,6 +4218,13 @@ let setJustDeleted = false; // true cuando se borró una serie; inhibe el reinic
 let restStartedAt = null;   // timestamp de inicio del descanso actual
 let _restTargetSet = null;  // referencia al objeto serie que inició el descanso (persiste al cambiar ejercicio)
 
+// Estima duración de una serie (ms) para descontar del descanso acumulado.
+// Usa 3 s/rep como línea base; en el futuro puede leerse del historial del usuario.
+function _estimateSetMs(reps) {
+  const secPerRep = 3;
+  return Math.max(0, reps * secPerRep * 1000);
+}
+
 function addSet() {
   const weight = parseFloat(document.getElementById('weightInput').value) || 0;
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
@@ -4239,9 +4249,11 @@ function addSet() {
   renderSets();
   // Auto-cambiar lado en ejercicios unilaterales
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
-  // Series de aproximación: skip RPE, iniciar descanso directamente (más corto)
-  if (thisIsWarmup) { startRestTimer(); return; }
-  // Series de trabajo: mostrar selector RPE → luego el RPE flow inicia el timer
+  // Series de aproximación: guardar descanso previo si había uno, luego iniciar nuevo
+  if (thisIsWarmup) { if (isResting) skipRest(); startRestTimer(); return; }
+  // Series de trabajo: ajustar restStartedAt por duración estimada de la serie,
+  // luego mostrar selector RPE (que al resolverse llama skipRest + startRestTimer)
+  if (isResting && restStartedAt) restStartedAt += _estimateSetMs(reps);
   showRPESelection();
 }
 
@@ -4253,7 +4265,8 @@ function renderSets() {
   }
   // Contador de series de trabajo (no aproximación)
   let workSetNum = 0;
-  list.innerHTML = currentExerciseSets.map((s, i) => {
+  const parts = [];
+  currentExerciseSets.forEach((s, i) => {
     const isApprox = s.is_warmup_set;
     if (!isApprox) workSetNum++;
     const sideLabel = s.side ? ` · ${s.side === 'left' ? 'Izq' : 'Der'}` : '';
@@ -4262,12 +4275,23 @@ function renderSets() {
     const approxBadge = isApprox ? `<span style="font-size:9px;font-weight:700;background:#FEF7E0;color:#B45309;border:1px solid #FBBC04;padding:1px 5px;border-radius:5px;margin-left:4px">APROX</span>` : '';
     const label = isApprox ? `Aprox${sideLabel}` : `Serie ${workSetNum}${sideLabel}`;
     const chipStyle = isApprox ? 'opacity:0.75;background:#FAFAFA;border-color:#E8EAED;' : '';
-    return `<div class="set-chip" style="${chipStyle}cursor:pointer" onclick="editSet(${i})" title="Toca para editar">
+    parts.push(`<div class="set-chip" style="${chipStyle}cursor:pointer" onclick="editSet(${i})" title="Toca para editar">
       <span class="set-chip-num" style="${isApprox?'color:var(--text-tertiary)':''}">${label}</span>
       <span style="${isApprox?'color:var(--text-tertiary)':''}">${weightStr} &times; ${s.reps} reps${rpeTag}${approxBadge}</span>
       <button onclick="event.stopPropagation();deleteSet(${i})" style="background:none;border:none;color:var(--text-tertiary);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;margin-left:4px" title="Eliminar">&times;</button>
-    </div>`;
-  }).join('');
+    </div>`);
+    // Separador de descanso entre series (no después de la última)
+    if (i < currentExerciseSets.length - 1 && s.rest_duration_seconds != null) {
+      const rs = s.rest_duration_seconds;
+      const restLabel = rs >= 60 ? `${Math.floor(rs/60)}m ${rs%60}s` : `${rs}s`;
+      parts.push(`<div style="display:flex;align-items:center;gap:6px;padding:2px 4px;margin:-2px 0">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);font-family:var(--mono);font-weight:600;white-space:nowrap">⏱ ${restLabel}</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>`);
+    }
+  });
+  list.innerHTML = parts.join('');
 }
 
 function deleteSet(index) {
@@ -4758,6 +4782,7 @@ function startRestTimer() {
   countdownRemaining = restSeconds;
   const total = restSeconds;
   const circ = 2 * Math.PI * 34;
+  let halfwayAlertFired = false; // se activa una sola vez al llegar al 50%
 
   document.getElementById('restIdle').style.display = 'none';
   const active = document.getElementById('restActive');
@@ -4785,6 +4810,13 @@ function startRestTimer() {
   countdownInterval = setInterval(() => {
     countdownRemaining--;
     if (countdownRemaining > 0) {
+      // Alerta a mitad del descanso: vibración + pitido suave (una sola vez)
+      const halfPoint = Math.round(total / 2);
+      if (countdownRemaining === halfPoint && !halfwayAlertFired) {
+        halfwayAlertFired = true;
+        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([60, 40, 60]);
+        playBeep(440, 80);
+      }
       if (countdownRemaining <= 10) {
         ring.classList.add('alert');
         ringNum.classList.add('alert');
@@ -4921,20 +4953,20 @@ function skipRPESelection() {
 
 // ─── End Workout ────────────────────────────────────────────
 function endWorkout() {
-  // Capturar descanso activo antes de cerrar
-  if (isResting && restStartedAt && currentExerciseSets.length > 0) {
+  // Capturar descanso activo antes de cerrar (usa _restTargetSet para sobrevivir cambios de ejercicio)
+  if (isResting && restStartedAt && _restTargetSet) {
     const restDuration = Date.now() - restStartedAt;
     const restConfigured = restSeconds * 1000;
-    const lastSet = currentExerciseSets[currentExerciseSets.length - 1];
-    lastSet.rest_after_ms = restDuration;
-    lastSet.rest_configured_ms = restConfigured;
+    _restTargetSet.rest_after_ms = restDuration;
+    _restTargetSet.rest_configured_ms = restConfigured;
     const ratio = restDuration / restConfigured;
-    if (ratio >= 1.5) lastSet.rest_status = 'overtime';
-    else if (ratio >= 0.8) lastSet.rest_status = 'on_time';
-    else if (ratio >= 0.3) lastSet.rest_status = 'early';
-    else lastSet.rest_status = 'skipped';
+    if (ratio >= 1.5) _restTargetSet.rest_status = 'overtime';
+    else if (ratio >= 0.8) _restTargetSet.rest_status = 'on_time';
+    else if (ratio >= 0.3) _restTargetSet.rest_status = 'early';
+    else _restTargetSet.rest_status = 'skipped';
   }
   restStartedAt = null;
+  _restTargetSet = null;
   clearInterval(timerInterval);
   clearInterval(countdownInterval);
   clearInterval(motivationInterval);
