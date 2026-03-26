@@ -3,37 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1A73E8">
+<meta name="theme-color" content="#080A0F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GymTracker">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>GymTracker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --primary: #1A73E8;
-  --primary-light: #E8F0FE;
-  --success: #34A853;
-  --success-light: #E6F4EA;
-  --danger: #EA4335;
-  --danger-light: #FCE8E6;
-  --warning: #FBBC04;
-  --warning-light: #FEF7E0;
-  --bg: #F8F9FA;
-  --surface: #FFFFFF;
-  --text-primary: #1F1F1F;
-  --text-secondary: #5F6368;
-  --text-tertiary: #9AA0A6;
-  --border: #E8EAED;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --bg: #080A0F;
+  --surface: #0E1119;
+  --surface2: #151922;
+  --surface-raised: #1C2230;
+  --primary: #00E5FF;
+  --primary-dark: #00B8CC;
+  --primary-light: rgba(0,229,255,0.12);
+  --accent2: #7B61FF;
+  --text-primary: #F0F2F5;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #6B7280;
+  --success: #00C896;
+  --success-light: rgba(0,200,150,0.12);
+  --danger: #FF4D6D;
+  --danger-light: rgba(255,77,109,0.12);
+  --warning: #FFB800;
+  --warning-light: rgba(255,184,0,0.12);
+  --border: rgba(255,255,255,0.07);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --radius: 16px;
   --radius-sm: 12px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
   --font: 'DM Sans', -apple-system, sans-serif;
+  --font-display: 'Syne', -apple-system, sans-serif;
   --mono: 'JetBrains Mono', monospace;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1158,37 +1164,37 @@ body {
 .ob-btn-next:active { opacity: 0.85; }
 
 /* Welcome Screen Redesign */
-#welcomeScreen { background: #F0F4F8; }
+#welcomeScreen { background: var(--bg); }
 .w-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .welcome-slide { display: none; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .welcome-slide.active { display: flex; animation: wSlideIn 0.3s cubic-bezier(0.4,0,0.2,1); }
 @keyframes wSlideIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
 .w-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 44px 24px 20px; }
 .w-hero { font-size: 60px; margin-bottom: 18px; line-height: 1; text-align: center; }
-.w-title { font-size: 24px; font-weight: 800; color: #0F172A; line-height: 1.25; margin-bottom: 10px; text-align: center; letter-spacing: -0.4px; }
-.w-subtitle { font-size: 14px; color: #64748B; line-height: 1.6; text-align: center; margin-bottom: 22px; }
+.w-title { font-size: 24px; font-weight: 800; color: var(--text-primary); line-height: 1.25; margin-bottom: 10px; text-align: center; letter-spacing: -0.4px; }
+.w-subtitle { font-size: 14px; color: var(--text-secondary); line-height: 1.6; text-align: center; margin-bottom: 22px; }
 .w-stats { display: flex; gap: 12px; width: 100%; margin-bottom: 14px; }
-.w-stat-card { flex: 1; background: white; border-radius: 16px; padding: 18px 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.w-stat-card { flex: 1; background: var(--surface2); border-radius: 16px; padding: 18px 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
 .w-stat-num { font-size: 28px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; }
-.w-stat-lbl { font-size: 11px; color: #64748B; font-weight: 500; line-height: 1.4; }
-.w-note { font-size: 11px; color: #94A3B8; text-align: center; line-height: 1.5; padding: 0 8px; }
+.w-stat-lbl { font-size: 11px; color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
+.w-note { font-size: 11px; color: var(--text-tertiary); text-align: center; line-height: 1.5; padding: 0 8px; }
 .w-items { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-.w-item { display: flex; gap: 14px; align-items: flex-start; background: white; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+.w-item { display: flex; gap: 14px; align-items: flex-start; background: var(--surface2); border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
 .w-item-icon { font-size: 26px; flex-shrink: 0; line-height: 1.2; margin-top: 1px; }
-.w-item-title { font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 3px; line-height: 1.3; }
-.w-item-desc { font-size: 12px; color: #64748B; line-height: 1.5; }
-.w-chat { background: white; border-radius: 16px; padding: 16px; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin: 8px 0 14px; border-left: 3px solid var(--primary); }
+.w-item-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; line-height: 1.3; }
+.w-item-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.w-chat { background: var(--surface2); border-radius: 16px; padding: 16px; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin: 8px 0 14px; border-left: 3px solid var(--primary); }
 .w-chat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .w-chat-av { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
 .w-chat-nm { font-size: 12px; font-weight: 700; color: var(--primary); }
-.w-chat-msg { font-size: 13px; color: #334155; line-height: 1.6; }
-.w-nav { padding: 14px 24px 30px; background: #F0F4F8; flex-shrink: 0; }
+.w-chat-msg { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.w-nav { padding: 14px 24px 30px; background: var(--bg); flex-shrink: 0; }
 .w-prog { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.w-prog-bar { flex: 1; height: 5px; background: #DDE4EE; border-radius: 3px; overflow: hidden; }
+.w-prog-bar { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
 .w-prog-fill { height: 100%; background: var(--primary); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); border-radius: 3px; }
-.w-prog-txt { font-size: 12px; color: #94A3B8; font-weight: 700; white-space: nowrap; }
+.w-prog-txt { font-size: 12px; color: var(--text-tertiary); font-weight: 700; white-space: nowrap; }
 .w-btns { display: flex; gap: 12px; }
-.w-btn-skip { flex: 1; padding: 13px 16px; background: transparent; color: #94A3B8; border: 1.5px solid #DDE4EE; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.w-btn-skip { flex: 1; padding: 13px 16px; background: transparent; color: var(--text-tertiary); border: 1.5px solid var(--border); border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
 .w-btn-skip:active { opacity: 0.7; }
 .w-btn-next { flex: 1.6; padding: 13px 16px; background: var(--primary); color: white; border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(66,133,244,0.3); transition: transform 0.15s, box-shadow 0.15s; }
 .w-btn-next:active { transform: scale(0.97); }
@@ -1208,14 +1214,341 @@ body {
 .tutorial-hint.above-position { transform: translateY(-12px); }
 .tutorial-hint.right-position { transform: translateX(12px); }
 
+/* ─── ANIMACIONES GLOBALES ─────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.pulse-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.screen.active { animation: slideUp 0.25s ease; }
+@keyframes coachPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.25); }
+  50% { box-shadow: 0 0 0 8px rgba(0,229,255,0); }
+}
+
+/* ─── BOTTOM NAV (dark premium) ─────────────────────────── */
+.bottom-nav {
+  background: rgba(14,17,25,0.95) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border) !important;
+}
+.nav-item svg { stroke: var(--text-tertiary) !important; }
+.nav-item span { color: var(--text-tertiary) !important; }
+.nav-item.active svg { stroke: var(--primary) !important; }
+.nav-item.active span { color: var(--primary) !important; font-weight: 700; }
+
+/* ─── HOME SCREEN ────────────────────────────────────────── */
+.home-header h1 {
+  font-family: var(--font-display) !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+}
+.home-header p {
+  color: var(--text-secondary) !important;
+}
+.home-greeting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255,184,0,0.12);
+  border: 1px solid rgba(255,184,0,0.25);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--warning);
+}
+
+/* Coach Spotlight Card */
+.coach-spotlight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  position: relative;
+  animation: coachPulse 3s infinite;
+}
+.coach-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.coach-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 2px solid rgba(0,229,255,0.3);
+}
+.coach-online-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--success);
+  border: 2px solid var(--bg);
+  border-radius: 50%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.coach-info { flex: 1; min-width: 0; }
+.coach-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.coach-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.coach-message {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 10px;
+  position: relative;
+}
+.coach-message::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary), var(--accent2));
+  border-radius: 3px 0 0 3px;
+}
+.coach-chat-btn {
+  width: 100%;
+  padding: 13px 16px;
+  background: linear-gradient(135deg, var(--accent2), var(--primary));
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: opacity 0.15s;
+  letter-spacing: 0.2px;
+}
+.coach-chat-btn:active { opacity: 0.85; }
+
+/* Weekly stats grid */
+.weekly-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.wsg-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 10px;
+  text-align: center;
+}
+.wsg-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.wsg-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Start button gradient */
+.start-btn {
+  background: linear-gradient(135deg, var(--accent2), var(--primary)) !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0,229,255,0.25) !important;
+}
+.start-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+/* ─── WORKOUT TIMER ──────────────────────────────────────── */
+.timer-display {
+  font-family: var(--font-display) !important;
+  color: var(--primary) !important;
+  font-size: 32px !important;
+}
+
+/* ─── EXERCISE CARD (dark) ───────────────────────────────── */
+.exercise-card {
+  background: var(--surface2) !important;
+  border-color: var(--border) !important;
+}
+
+/* ─── SET INPUT FIELDS ───────────────────────────────────── */
+.set-input-group input {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+.set-input-group input:focus {
+  border-color: var(--primary) !important;
+}
+
+/* ─── ONBOARDING coach step ─────────────────────────────── */
+.trainer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.trainer-card {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  user-select: none;
+}
+.trainer-card.selected {
+  border-color: var(--primary);
+  background: rgba(0,229,255,0.08);
+}
+.trainer-emoji { font-size: 32px; margin-bottom: 8px; line-height: 1; }
+.trainer-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.trainer-flag { font-size: 16px; margin-bottom: 4px; }
+.trainer-specialty {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.trainer-card.selected .trainer-name { color: var(--primary); }
+
+/* ─── SECTION TITLES ─────────────────────────────────────── */
+.section-title {
+  font-family: var(--font-display) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* ─── COACH SCREEN ───────────────────────────────────────── */
+#coachScreen {
+  background: var(--bg);
+}
+.coach-screen-wrap {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.coach-screen-header {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.coach-screen-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.coach-big-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.coach-big-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border: 2px solid rgba(0,229,255,0.3);
+  flex-shrink: 0;
+}
+.coach-big-info { flex: 1; }
+.coach-big-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.coach-big-flag { font-size: 15px; margin-bottom: 4px; }
+.coach-big-specialty {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.coach-message-full {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  border-left: 3px solid var(--primary);
+}
+
 </style>
 </head>
 <body>
 
 <!-- LOADING OVERLAY (se oculta una vez resuelta la sesión) -->
-<div id="appLoadingOverlay" style="position:fixed;inset:0;background:#F8F9FA;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:9999">
-  <h2 style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#1A73E8">GymTracker</h2>
-  <div style="width:36px;height:36px;border:3px solid #E8EAED;border-top-color:#1A73E8;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+<div id="appLoadingOverlay" style="position:fixed;inset:0;background:#080A0F;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:9999">
+  <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#00E5FF">GymTracker</h2>
+  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#00E5FF;border-radius:50%;animation:spin 0.8s linear infinite"></div>
 </div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
@@ -1377,7 +1710,7 @@ body {
 <div class="screen fullscreen" id="onboardingScreen">
   <div class="ob-wrap">
     <div class="ob-header">
-      <span class="ob-step-label">PASO <span id="obStepNum">1</span> DE 3</span>
+      <span class="ob-step-label">PASO <span id="obStepNum">1</span> DE 4</span>
       <button class="ob-skip-btn" onclick="skipOnboarding()">Saltar</button>
     </div>
     <div class="ob-progress-bar"><div class="ob-progress-fill" id="obProgressFill" style="width:33%"></div></div>
@@ -1488,6 +1821,38 @@ body {
       </div>
     </div>
 
+    <!-- Paso 4 (NUEVO): Elige tu entrenador -->
+    <div class="ob-body" id="obStepCoach" style="display:none">
+      <div class="ob-title">Elige tu entrenador</div>
+      <div class="ob-subtitle">Tu coach IA se adaptará a tu estilo y objetivos</div>
+      <div class="trainer-grid">
+        <div class="trainer-card" onclick="obSelectCoach(this,'maria')" data-coach="maria">
+          <div class="trainer-emoji">👩🏽</div>
+          <div class="trainer-flag">🇨🇴</div>
+          <div class="trainer-name">María</div>
+          <div class="trainer-specialty">HIIT & Funcional</div>
+        </div>
+        <div class="trainer-card" onclick="obSelectCoach(this,'carlos')" data-coach="carlos">
+          <div class="trainer-emoji">👨🏽</div>
+          <div class="trainer-flag">🇲🇽</div>
+          <div class="trainer-name">Carlos</div>
+          <div class="trainer-specialty">Fuerza & Masa</div>
+        </div>
+        <div class="trainer-card" onclick="obSelectCoach(this,'andrea')" data-coach="andrea">
+          <div class="trainer-emoji">👩🏻</div>
+          <div class="trainer-flag">🇦🇷</div>
+          <div class="trainer-name">Andrea</div>
+          <div class="trainer-specialty">Bienestar integral</div>
+        </div>
+        <div class="trainer-card" onclick="obSelectCoach(this,'diego')" data-coach="diego">
+          <div class="trainer-emoji">👨🏾</div>
+          <div class="trainer-flag">🇵🇪</div>
+          <div class="trainer-name">Diego</div>
+          <div class="trainer-specialty">Resiliencia & Calistenia</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Paso 4: Elige tu rutina de inicio -->
     <div class="ob-body" id="obStep4" style="display:none">
       <div class="ob-title">Elige tu rutina de inicio</div>
@@ -1547,27 +1912,56 @@ body {
 <!-- HOME -->
 <div class="screen" id="homeScreen">
   <div class="screen-pad">
-    <div class="home-header">
-      <div class="home-header-row">
-        <h1>GymTracker</h1>
-        <span class="app-version">v1.19.0</span>
-      </div>
-      <p id="homeGreeting">Listo para entrenar?</p>
-    </div>
-    <div class="weekly-card">
-      <h3>Esta semana</h3>
-      <div class="weekly-stats">
-        <div class="stat-item"><div class="stat-value" id="weekSessions">3</div><div class="stat-label">Sesiones</div></div>
-        <div class="stat-item"><div class="stat-value" id="weekTime">4:20</div><div class="stat-label">Horas</div></div>
+    <div class="home-header" style="margin-bottom:16px">
+      <div class="home-greeting-row">
+        <div>
+          <p id="homeGreeting" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px">Buenas tardes</p>
+          <h1 id="homeUserName">GymTracker</h1>
+        </div>
+        <span class="streak-badge" id="homeStreakBadge">🔥 0 semanas</span>
       </div>
     </div>
+
+    <!-- Coach Spotlight -->
+    <div class="coach-spotlight" id="coachSpotlight" style="display:none">
+      <div class="coach-avatar-wrap">
+        <div class="coach-avatar" id="coachAvatarEmoji">🤖</div>
+        <div class="coach-online-dot"></div>
+      </div>
+      <div class="coach-info">
+        <div class="coach-name" id="coachSpotlightName">Tu Coach</div>
+        <div class="coach-status">
+          <div class="pulse-dot"></div>
+          Entrenador IA · Activo ahora
+        </div>
+      </div>
+    </div>
+    <div class="coach-message" id="coachDailyMessage" style="display:none"></div>
+    <button class="coach-chat-btn" id="coachChatBtn" onclick="showScreen('coach')" style="display:none">💬 Responderle a <span id="coachChatBtnName">tu coach</span> →</button>
+
+    <!-- Weekly Stats Grid -->
+    <div class="weekly-stats-grid">
+      <div class="wsg-item">
+        <div class="wsg-value" id="weekStreak">0</div>
+        <div class="wsg-label">Racha sem.</div>
+      </div>
+      <div class="wsg-item">
+        <div class="wsg-value" id="weekSessions">0</div>
+        <div class="wsg-label">Sesiones</div>
+      </div>
+      <div class="wsg-item">
+        <div class="wsg-value" id="weekAdherence">—</div>
+        <div class="wsg-label">Adherencia</div>
+      </div>
+    </div>
+
     <button class="start-btn" onclick="openConfig()">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nuevo Entrenamiento
     </button>
 
     <!-- Rutinas sugeridas -->
-    <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm)">
+    <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       Rutinas por nivel (Principiante · Intermedio · Avanzado)
     </button>
@@ -1579,17 +1973,17 @@ body {
     </div>
 
     <!-- Weekly AI Insight Card -->
-    <div id="homeAIInsightCard" style="display:none;margin-bottom:16px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow-sm)">
-      <div style="background:linear-gradient(135deg,var(--primary),#7c3aed);padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+    <div id="homeAIInsightCard" style="display:none;margin-bottom:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
+      <div style="background:linear-gradient(135deg,var(--accent2),var(--primary));padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:8px">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <span style="color:white;font-size:13px;font-weight:700">Análisis semanal IA</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="#000"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span style="color:#000;font-size:13px;font-weight:700">Análisis semanal IA</span>
         </div>
-        <span id="homeAIInsightDate" style="color:rgba(255,255,255,0.7);font-size:11px"></span>
+        <span id="homeAIInsightDate" style="color:rgba(0,0,0,0.6);font-size:11px"></span>
       </div>
       <div id="homeAIInsightBody" style="padding:12px 16px;font-size:13px;color:var(--text-secondary);line-height:1.6"></div>
       <div style="padding:0 16px 12px;display:flex;gap:8px">
-        <button onclick="showScreen('insights')" style="flex:1;padding:8px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer">Ver análisis completo</button>
+        <button onclick="showScreen('insights')" style="flex:1;padding:8px;background:var(--primary);color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer">Ver análisis completo</button>
       </div>
     </div>
 
@@ -2070,23 +2464,73 @@ body {
   <div style="height:80px"></div>
 </div>
 
+<!-- COACH SCREEN -->
+<div class="screen" id="coachScreen">
+  <div class="coach-screen-wrap">
+    <div class="coach-screen-header" id="coachScreenTitle">Tu Coach</div>
+    <div class="coach-screen-sub">Tu entrenador IA personal, siempre disponible</div>
+
+    <div class="coach-big-card" id="coachBigCard">
+      <div class="coach-big-avatar" id="coachBigEmoji">🤖</div>
+      <div class="coach-big-info">
+        <div class="coach-big-name" id="coachBigName">Coach IA</div>
+        <div class="coach-big-flag" id="coachBigFlag"></div>
+        <div class="coach-big-specialty" id="coachBigSpecialty">Tu entrenador personal</div>
+      </div>
+    </div>
+
+    <div class="coach-message-full" id="coachMessageFull">Selecciona un coach en el onboarding para recibir mensajes personalizados.</div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">Cambiar entrenador</div>
+      <div class="trainer-grid" id="coachScreenGrid">
+        <div class="trainer-card" onclick="selectCoachFromScreen('maria')" id="coachCard_maria">
+          <div class="trainer-emoji">👩🏽</div>
+          <div class="trainer-flag">🇨🇴</div>
+          <div class="trainer-name">María</div>
+          <div class="trainer-specialty">HIIT & Funcional</div>
+        </div>
+        <div class="trainer-card" onclick="selectCoachFromScreen('carlos')" id="coachCard_carlos">
+          <div class="trainer-emoji">👨🏽</div>
+          <div class="trainer-flag">🇲🇽</div>
+          <div class="trainer-name">Carlos</div>
+          <div class="trainer-specialty">Fuerza & Masa</div>
+        </div>
+        <div class="trainer-card" onclick="selectCoachFromScreen('andrea')" id="coachCard_andrea">
+          <div class="trainer-emoji">👩🏻</div>
+          <div class="trainer-flag">🇦🇷</div>
+          <div class="trainer-name">Andrea</div>
+          <div class="trainer-specialty">Bienestar integral</div>
+        </div>
+        <div class="trainer-card" onclick="selectCoachFromScreen('diego')" id="coachCard_diego">
+          <div class="trainer-emoji">👨🏾</div>
+          <div class="trainer-flag">🇵🇪</div>
+          <div class="trainer-name">Diego</div>
+          <div class="trainer-specialty">Resiliencia & Calistenia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="height:80px"></div>
+</div>
+
 <!-- Bottom Nav -->
 <div class="bottom-nav" id="bottomNav">
   <div class="nav-item active" onclick="showScreen('home')">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Inicio</span>
   </div>
+  <div class="nav-item" onclick="showScreen('coach')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M17 11l1.5 1.5L22 9" stroke-width="2"/></svg>
+    <span>Coach</span>
+  </div>
   <div class="nav-item" onclick="showScreen('insights')">
     <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <span>Insights</span>
-  </div>
-  <div class="nav-item" onclick="showScreen('history')">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    <span>Historial</span>
+    <span>Progreso</span>
   </div>
   <div class="nav-item" onclick="showScreen('settings')">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span>Ajustes</span>
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Yo</span>
   </div>
 </div>
 
@@ -2380,6 +2824,202 @@ body {
 </div>
 
 <script>
+// ─── COACHES DATA ────────────────────────────────────────────────────────────
+const COACHES = {
+  maria:  { name: 'María',  emoji: '👩🏽', country: 'Colombia', flag: '🇨🇴', specialty: 'HIIT & Funcional',       tone: 'energética' },
+  carlos: { name: 'Carlos', emoji: '👨🏽', country: 'México',   flag: '🇲🇽', specialty: 'Fuerza & Masa',          tone: 'directo'    },
+  andrea: { name: 'Andrea', emoji: '👩🏻', country: 'Argentina', flag: '🇦🇷', specialty: 'Bienestar integral',     tone: 'empática'   },
+  diego:  { name: 'Diego',  emoji: '👨🏾', country: 'Perú',     flag: '🇵🇪', specialty: 'Resiliencia & Calistenia', tone: 'sereno'   }
+};
+
+function getSelectedCoach() {
+  try {
+    const raw = localStorage.getItem('selectedCoach');
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    return COACHES[c.id] ? { id: c.id, ...COACHES[c.id] } : null;
+  } catch(e) { return null; }
+}
+
+function saveSelectedCoach(id) {
+  const coach = COACHES[id];
+  if (!coach) return;
+  localStorage.setItem('selectedCoach', JSON.stringify({ id, ...coach }));
+}
+
+function getCoachMessage(coachKey, userData) {
+  const coach = COACHES[coachKey];
+  if (!coach) return '¡Listo para entrenar hoy?';
+
+  const saved = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+
+  // Días desde último entrenamiento
+  let daysSinceLast = 99;
+  if (saved.length > 0) {
+    const lastDate = new Date(saved[saved.length - 1].date);
+    daysSinceLast = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+  }
+
+  // Volumen esta semana vs semana pasada
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+  const prevWeekStart = new Date(weekStart); prevWeekStart.setDate(weekStart.getDate() - 7);
+  const thisWeekWorkouts = saved.filter(w => new Date(w.date) >= weekStart);
+  const prevWeekWorkouts = saved.filter(w => new Date(w.date) >= prevWeekStart && new Date(w.date) < weekStart);
+
+  const calcVolume = (workouts) => workouts.reduce((total, w) => {
+    if (!w.exercises) return total;
+    return total + w.exercises.reduce((et, ex) => {
+      if (!ex.sets) return et;
+      return et + ex.sets.reduce((st, s) => st + ((s.weight || 0) * (s.reps || 0)), 0);
+    }, 0);
+  }, 0);
+
+  const thisVol = calcVolume(thisWeekWorkouts);
+  const prevVol = calcVolume(prevWeekWorkouts);
+  const sessions = thisWeekWorkouts.length;
+
+  // Generar mensaje según coach y contexto
+  if (coach.tone === 'energética') { // María
+    if (daysSinceLast >= 3) return `¡Ey! Llevas ${daysSinceLast} días sin verte por aquí. Tu cuerpo ya está listo para moverse. ¡Vamos con todo hoy! 💪🏽`;
+    if (thisVol > prevVol && prevVol > 0) return `¡Brutal! Esta semana ya subiste ${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen vs la semana pasada. Eso es progreso real. ¡Sigamos!`;
+    if (sessions === 0) return `¡Nuevo inicio de semana! Empieza fuerte hoy y el resto de la semana fluirá. ¿Lista? 🚀`;
+    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. ¡Vas por buen camino! Cada entrenamiento cuenta. 🔥`;
+  }
+  if (coach.tone === 'directo') { // Carlos
+    if (daysSinceLast >= 3) return `${daysSinceLast} días sin entrenar. El músculo no espera. Hoy vuelves, sin excusas.`;
+    if (thisVol > prevVol && prevVol > 0) return `Volumen +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% esta semana. Eso es lo que quiero ver. Mantén el nivel.`;
+    if (sessions === 0) return `Semana nueva. Oportunidad nueva. Entra, levanta, supérate.`;
+    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Bien. Pero puedes más. ¿Listo para subir el peso hoy?`;
+  }
+  if (coach.tone === 'empática') { // Andrea
+    if (daysSinceLast >= 3) return `Hola 🌸 Llevas unos días de descanso — y eso también es parte del proceso. Cuando te sientas lista, aquí estoy para acompañarte.`;
+    if (thisVol > prevVol && prevVol > 0) return `¡Qué semana más bonita! Tu volumen creció y eso refleja tu dedicación. Recuerda descansar bien esta noche 💙`;
+    if (sessions === 0) return `Nuevo comienzo de semana. Sin presiones. Muévete hoy a tu ritmo, que eso ya es mucho.`;
+    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Estás construyendo algo sólido, paso a paso. Orgullosa de ti 💪`;
+  }
+  // Diego (sereno)
+  if (daysSinceLast >= 3) return `${daysSinceLast} días de recuperación. Tu cuerpo habló y escuchaste. Ahora, cuando estés listo, el camino sigue.`;
+  if (thisVol > prevVol && prevVol > 0) return `El progreso es silencioso pero constante. Esta semana lo demuestra: +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen. Bien hecho.`;
+  if (sessions === 0) return `La semana es larga. El primer paso, el más importante. Empieza cuando estés listo.`;
+  return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. La consistencia construye cuerpos. Sigue así.`;
+}
+
+function updateCoachSpotlight() {
+  const coach = getSelectedCoach();
+  const spotlight = document.getElementById('coachSpotlight');
+  const msgEl = document.getElementById('coachDailyMessage');
+  const btn = document.getElementById('coachChatBtn');
+  const btnName = document.getElementById('coachChatBtnName');
+
+  if (!coach) {
+    if (spotlight) spotlight.style.display = 'none';
+    if (msgEl) msgEl.style.display = 'none';
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+
+  // Update spotlight
+  const avatarEl = document.getElementById('coachAvatarEmoji');
+  const nameEl = document.getElementById('coachSpotlightName');
+  if (avatarEl) avatarEl.textContent = coach.emoji;
+  if (nameEl) nameEl.textContent = coach.name + ' ' + coach.flag;
+  if (btnName) btnName.textContent = coach.name;
+
+  // Update message
+  const msg = getCoachMessage(coach.id, {});
+  if (msgEl) { msgEl.textContent = msg; msgEl.style.display = 'block'; }
+  if (spotlight) spotlight.style.display = 'flex';
+  if (btn) btn.style.display = 'block';
+
+  // Update coach screen too
+  updateCoachScreen(coach);
+}
+
+function updateCoachScreen(coach) {
+  if (!coach) return;
+  const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  el('coachScreenTitle', coach.name);
+  el('coachBigEmoji', coach.emoji);
+  el('coachBigName', coach.name);
+  el('coachBigFlag', coach.flag + ' ' + coach.country);
+  el('coachBigSpecialty', coach.specialty);
+  el('coachMessageFull', getCoachMessage(coach.id, {}));
+
+  // Highlight selected card
+  Object.keys(COACHES).forEach(key => {
+    const card = document.getElementById('coachCard_' + key);
+    if (card) card.classList.toggle('selected', key === coach.id);
+  });
+}
+
+function obSelectCoach(el, coachId) {
+  document.querySelectorAll('#obStepCoach .trainer-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  saveSelectedCoach(coachId);
+}
+
+function selectCoachFromScreen(coachId) {
+  saveSelectedCoach(coachId);
+  updateCoachSpotlight();
+  const coach = getSelectedCoach();
+  if (coach) updateCoachScreen(coach);
+}
+
+function getWeekStreak() {
+  const saved = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  if (saved.length === 0) return 0;
+  let streak = 0;
+  const now = new Date();
+  // Count consecutive weeks with at least 1 workout
+  for (let w = 0; w < 52; w++) {
+    const weekEnd = new Date(now); weekEnd.setDate(now.getDate() - (w * 7));
+    const weekStart = new Date(weekEnd); weekStart.setDate(weekEnd.getDate() - 7);
+    const hasWorkout = saved.some(s => { const d = new Date(s.date); return d >= weekStart && d < weekEnd; });
+    if (hasWorkout) streak++;
+    else if (w > 0) break;
+  }
+  return streak;
+}
+
+function updateHomeGreeting() {
+  const hour = new Date().getHours();
+  let greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const greetEl = document.getElementById('homeGreeting');
+  if (greetEl) greetEl.textContent = greeting;
+
+  // User name
+  try {
+    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    const nameEl = document.getElementById('homeUserName');
+    if (nameEl && profile.name) {
+      nameEl.textContent = profile.name + ' 💪';
+    }
+  } catch(e) {}
+
+  // Streak badge
+  const streak = getWeekStreak();
+  const badgeEl = document.getElementById('homeStreakBadge');
+  if (badgeEl) badgeEl.textContent = '🔥 ' + streak + ' semana' + (streak !== 1 ? 's' : '');
+
+  // Week adherence placeholder
+  const saved = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const now = new Date();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+  const thisWeek = saved.filter(w => new Date(w.date) >= weekStart).length;
+  const adEl = document.getElementById('weekAdherence');
+  if (adEl) {
+    try {
+      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const target = profile.trainingDays || 3;
+      adEl.textContent = Math.min(100, Math.round((thisWeek / target) * 100)) + '%';
+    } catch(e) { adEl.textContent = '—'; }
+  }
+  const streakValEl = document.getElementById('weekStreak');
+  if (streakValEl) streakValEl.textContent = streak;
+}
+
 // ─── State ──────────────────────────────────────────────────
 let restSeconds = 60;
 let workoutStartTime = null;
@@ -2434,16 +3074,17 @@ function updateMotivation() {
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const map = { home: 0, insights: 1, history: 2, settings: 3 };
+  const map = { home: 0, coach: 1, insights: 2, settings: 3 };
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  const screenMap = { home:'homeScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen' };
+  const screenMap = { home:'homeScreen', coach:'coachScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
   ['workout','summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
-  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); }
+  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); }
+  if (name === 'coach') { const c = getSelectedCoach(); if (c) updateCoachScreen(c); }
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
