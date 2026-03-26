@@ -1710,7 +1710,7 @@ body {
 <div class="screen fullscreen" id="onboardingScreen">
   <div class="ob-wrap">
     <div class="ob-header">
-      <span class="ob-step-label">PASO <span id="obStepNum">1</span> DE 4</span>
+      <span class="ob-step-label">PASO <span id="obStepNum">1</span> DE 5</span>
       <button class="ob-skip-btn" onclick="skipOnboarding()">Saltar</button>
     </div>
     <div class="ob-progress-bar"><div class="ob-progress-fill" id="obProgressFill" style="width:33%"></div></div>
@@ -2722,9 +2722,9 @@ body {
       <div id="warmupExercisesList"></div>
 
       <!-- Advertencias -->
-      <div id="warmupWarnings" style="display:none;margin-top:12px;padding:12px;background:#FEF3C7;border-radius:10px;border:1px solid #FCD34D">
-        <div style="font-size:11px;font-weight:700;color:#78350F;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">⚠️ Evitar</div>
-        <ul id="warmupWarningsText" style="margin:0;padding-left:16px;font-size:12px;color:#92400E;line-height:1.6"></ul>
+      <div id="warmupWarnings" style="display:none;margin-top:12px;padding:12px;background:var(--warning-light);border-radius:10px;border:1px solid rgba(255,184,0,0.3)">
+        <div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">⚠️ Evitar</div>
+        <ul id="warmupWarningsText" style="margin:0;padding-left:16px;font-size:12px;color:var(--text-secondary);line-height:1.6"></ul>
       </div>
     </div>
 
@@ -4968,7 +4968,7 @@ function renderSets() {
     const sideLabel = s.side ? ` · ${s.side === 'left' ? 'Izq' : 'Der'}` : '';
     const weightStr = s.weight > 0 ? `${s.weight}\u00a0${s.unit || 'kg'}` : 'Sin peso';
     const rpeTag = s.rpe != null ? `<span style="font-size:10px;font-weight:700;font-family:var(--mono);color:white;background:${s.rpe>=9?'#EA4335':s.rpe>=7?'#E8710A':s.rpe>=4?'#FBBC04':'#34A853'};padding:2px 6px;border-radius:6px;margin-left:6px">RPE ${s.rpe}</span>` : '';
-    const approxBadge = isApprox ? `<span style="font-size:9px;font-weight:700;background:#FEF7E0;color:#B45309;border:1px solid #FBBC04;padding:1px 5px;border-radius:5px;margin-left:4px">APROX</span>` : '';
+    const approxBadge = isApprox ? `<span style="font-size:9px;font-weight:700;background:rgba(255,184,0,0.15);color:var(--warning);border:1px solid rgba(255,184,0,0.35);padding:1px 5px;border-radius:5px;margin-left:4px">APROX</span>` : '';
     const label = isApprox ? `Aprox${sideLabel}` : `Serie ${workSetNum}${sideLabel}`;
     const chipStyle = isApprox ? 'opacity:0.75;background:#FAFAFA;border-color:#E8EAED;' : '';
     parts.push(`<div class="set-chip" style="${chipStyle}cursor:pointer" onclick="editSet(${i})" title="Toca para editar">
@@ -6172,7 +6172,7 @@ function saveAndExit() {
   const ws = savedWorkouts.length + 3;
   const wt = savedWorkouts.reduce((a,w) => a + w.duration, 0);
   document.getElementById('weekSessions').textContent = ws;
-  document.getElementById('weekTime').textContent = formatTimeMM(wt + 4 * 3600000);
+  const _wtEl = document.getElementById('weekTime'); if (_wtEl) _wtEl.textContent = formatTimeMM(wt + 4 * 3600000);
   showScreen('home');
 }
 
@@ -6360,7 +6360,7 @@ function clearAllHistory() {
   document.getElementById('clearDone').classList.add('show');
   // Reset weekly stats
   document.getElementById('weekSessions').textContent = '0';
-  document.getElementById('weekTime').textContent = '0:00';
+  const _wtEl2 = document.getElementById('weekTime'); if (_wtEl2) _wtEl2.textContent = '0:00';
   // Clear home recents
   document.getElementById('homeRecents').innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--border)" stroke-width="1.5" style="margin-bottom:8px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p style="font-size:14px">Sin entrenamientos registrados</p><p style="font-size:12px;margin-top:4px">Comienza uno nuevo desde Inicio</p></div>';
   // Hide done message after a while
@@ -6965,7 +6965,7 @@ function updateHomeStats() {
 
     document.getElementById('weekSessions').textContent = weekWorkouts.length;
     const totalMs = weekWorkouts.reduce((a, w) => a + w.duration, 0);
-    document.getElementById('weekTime').textContent = formatTimeMM(totalMs);
+    const _wtEl3 = document.getElementById('weekTime'); if (_wtEl3) _wtEl3.textContent = formatTimeMM(totalMs);
 
     // Update recents
     const recents = savedWorkouts.slice(0, 5);
@@ -6981,7 +6981,7 @@ function updateHomeStats() {
     }
   } else if (historyCleared) {
     document.getElementById('weekSessions').textContent = '0';
-    document.getElementById('weekTime').textContent = '0:00';
+    const _wtEl4 = document.getElementById('weekTime'); if (_wtEl4) _wtEl4.textContent = '0:00';
     document.getElementById('homeRecents').innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Sin entrenamientos registrados</p></div>';
   }
 }
@@ -7036,13 +7036,13 @@ function showInstallBanner() {
   if (document.getElementById('installBanner')) return;
   const banner = document.createElement('div');
   banner.id = 'installBanner';
-  banner.style.cssText = 'position:fixed;bottom:72px;left:12px;right:12px;max-width:480px;margin:0 auto;background:#1A73E8;color:white;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;z-index:300;box-shadow:0 6px 24px rgba(26,115,232,0.4);font-family:DM Sans,sans-serif;animation:slideUp .35s ease';
+  banner.style.cssText = 'position:fixed;bottom:72px;left:12px;right:12px;max-width:480px;margin:0 auto;background:linear-gradient(135deg,var(--accent2),var(--primary-dark));color:white;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;z-index:300;box-shadow:0 6px 24px rgba(0,229,255,0.2);font-family:DM Sans,sans-serif;animation:slideUp .35s ease';
   banner.innerHTML = `
     <div style="flex:1">
       <div style="font-size:14px;font-weight:700">Instalar GymTracker</div>
       <div style="font-size:12px;opacity:0.85;margin-top:2px">Agregar a tu pantalla de inicio</div>
     </div>
-    <button onclick="installPWA()" style="padding:8px 18px;background:white;color:#1A73E8;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;margin-left:12px">Instalar</button>
+    <button onclick="installPWA()" style="padding:8px 18px;background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;margin-left:12px">Instalar</button>
     <button onclick="dismissInstall()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;margin-left:8px;padding:4px">&times;</button>
   `;
   document.body.appendChild(banner);
@@ -7477,26 +7477,33 @@ function _obRestoreSelections() {
   });
 }
 
+// Onboarding step IDs in order (5 steps total: datos, cuerpo, metas, coach, rutina)
+const OB_STEP_IDS = ['obStep1','obStep2','obStep3','obStepCoach','obStep4'];
+
 function _obUpdateStep() {
-  [1,2,3,4].forEach(s => { document.getElementById(`obStep${s}`).style.display = s === _obStep ? 'flex' : 'none'; });
+  OB_STEP_IDS.forEach((id, idx) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (idx + 1 === _obStep) ? 'flex' : 'none';
+  });
   document.getElementById('obStepNum').textContent = _obStep;
-  document.getElementById('obProgressFill').style.width = `${(_obStep/4)*100}%`;
-  document.getElementById('obBtnBack').style.display = _obStep > 1 && _obStep < 4 ? 'block' : 'none';
-  // Step 4 has its own buttons, so hide the footer navigation
-  document.getElementById('obBtnNext').style.display = _obStep === 4 ? 'none' : 'block';
-  document.getElementById('obBtnNext').textContent = _obStep === 3 ? 'Siguiente →' : 'Siguiente →';
+  document.getElementById('obProgressFill').style.width = `${(_obStep / OB_STEP_IDS.length) * 100}%`;
+  // Botón Atrás: visible en pasos 2-4 (no en el paso final de rutinas que tiene sus propios botones)
+  document.getElementById('obBtnBack').style.display = _obStep > 1 && _obStep < OB_STEP_IDS.length ? 'block' : 'none';
+  // Paso 5 (obStep4 = rutinas) tiene sus propios botones, ocultar footer nav
+  document.getElementById('obBtnNext').style.display = _obStep === OB_STEP_IDS.length ? 'none' : 'block';
+  document.getElementById('obBtnNext').textContent = 'Siguiente →';
 }
 
 function obNext() {
-  if (_obStep < 4) { _obStep++; _obUpdateStep(); }
+  if (_obStep < OB_STEP_IDS.length) { _obStep++; _obUpdateStep(); }
   else obSave();
 }
 function obBack() {
-  // If in Step 4 actions view, go back to selection
-  if (_obStep === 4) {
+  // Si estamos en el paso de rutinas (paso 5) y en la vista de acciones, volver a selección
+  if (_obStep === OB_STEP_IDS.length) {
     const selectionDiv = document.getElementById('obStep4Selection');
     const actionsDiv = document.getElementById('obStep4Actions');
-    if (actionsDiv.style.display === 'flex') {
+    if (actionsDiv && actionsDiv.style.display === 'flex') {
       selectionDiv.style.display = 'flex';
       actionsDiv.style.display = 'none';
       // Reset selections
@@ -7745,8 +7752,8 @@ function restoreSessionState() {
     // Mostrar banner de recuperación en lugar de restaurar automáticamente
     const banner = document.createElement('div');
     banner.id = 'recoverBanner';
-    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#1A73E8;color:white;padding:14px 16px;z-index:800;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font);box-shadow:0 2px 8px rgba(0,0,0,0.2)';
-    banner.innerHTML = `<span style="font-size:13px;font-weight:600">⚡ Tienes un entrenamiento en progreso</span><div style="display:flex;gap:8px"><button onclick="recoverSession()" style="background:white;color:#1A73E8;border:none;border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer">Continuar</button><button onclick="discardSession()" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px;cursor:pointer">Descartar</button></div>`;
+    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--accent2);color:white;padding:14px 16px;z-index:800;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font);box-shadow:0 2px 8px rgba(0,0,0,0.4)';
+    banner.innerHTML = `<span style="font-size:13px;font-weight:600">⚡ Tienes un entrenamiento en progreso</span><div style="display:flex;gap:8px"><button onclick="recoverSession()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer">Continuar</button><button onclick="discardSession()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:none;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px;cursor:pointer">Descartar</button></div>`;
     document.body.appendChild(banner);
     banner._state = state;
   } catch(e) {}
@@ -7809,7 +7816,7 @@ function clearAllData() {
 
   // 4. Limpiar UI
   document.getElementById('weekSessions').textContent = '0';
-  document.getElementById('weekTime').textContent = '0:00';
+  const _wtEl5 = document.getElementById('weekTime'); if (_wtEl5) _wtEl5.textContent = '0:00';
   document.getElementById('homeRecents').innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Sin entrenamientos registrados</p></div>';
   document.getElementById('clearConfirm').classList.remove('show');
   document.getElementById('clearDone').classList.add('show');
