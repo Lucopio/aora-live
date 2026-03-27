@@ -3216,12 +3216,12 @@ function appendChatBubble(role, text) {
   if (role === 'coach') {
     const coach = getSelectedCoach();
     div.innerHTML = `
-      <div class="chat-avatar">${coach ? coach.emoji : '🤖'}</div>
+      <div class="chat-bubble-avatar">${coach ? coach.emoji : '🤖'}</div>
       <div class="chat-bubble-content">${text.replace(/\n/g, '<br>')}</div>`;
   } else if (role === 'user') {
     div.innerHTML = `<div class="chat-bubble-content">${text.replace(/\n/g, '<br>')}</div>`;
   } else {
-    div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1)">${text}</div>`;
+    div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1);border-radius:10px;font-size:12px;text-align:center">${text}</div>`;
   }
   wrap.appendChild(div);
   wrap.scrollTop = wrap.scrollHeight;
@@ -3231,13 +3231,15 @@ function showTypingIndicator() {
   const wrap = document.getElementById('chatMessages');
   if (!wrap) return;
   const div = document.createElement('div');
-  div.className = 'chat-bubble coach';
+  div.className = 'chat-typing';
   div.id = 'chatTyping';
   const coach = getSelectedCoach();
   div.innerHTML = `
-    <div class="chat-avatar">${coach ? coach.emoji : '🤖'}</div>
-    <div class="chat-bubble-content chat-typing">
-      <span></span><span></span><span></span>
+    <div class="chat-bubble-avatar">${coach ? coach.emoji : '🤖'}</div>
+    <div class="chat-typing-dots">
+      <div class="chat-typing-dot"></div>
+      <div class="chat-typing-dot"></div>
+      <div class="chat-typing-dot"></div>
     </div>`;
   wrap.appendChild(div);
   wrap.scrollTop = wrap.scrollHeight;
@@ -3276,8 +3278,10 @@ async function sendCoachMessage() {
 
   appendChatBubble('user', text);
 
+  // Lee el historial ANTES de añadir el nuevo mensaje —
+  // la Edge Function añade el mensaje nuevo por su cuenta, no hay que duplicarlo.
   const history = getChatHistory(coach.id);
-  history.push({ role: 'user', content: text, ts: new Date().toISOString() });
+  const historyToSend = history.slice(-20).map(m => ({ role: m.role, content: m.content }));
 
   showTypingIndicator();
 
@@ -3295,7 +3299,7 @@ async function sendCoachMessage() {
       body: JSON.stringify({
         coachId: coach.id,
         message: text,
-        history: history.slice(-20).map(m => ({ role: m.role, content: m.content })),
+        history: historyToSend,
         context: buildChatContext()
       })
     });
@@ -3306,6 +3310,9 @@ async function sendCoachMessage() {
     if (!res.ok) throw new Error(data.error || 'Error del coach');
 
     appendChatBubble('coach', data.response);
+
+    // Guarda ambos mensajes en el historial local
+    history.push({ role: 'user',      content: text,          ts: new Date().toISOString() });
     history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
     saveChatHistory(coach.id, history);
     incrementChatCount();
