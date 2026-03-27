@@ -976,39 +976,50 @@ body {
 .wu-rec-header { background: var(--primary-light); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
 .wu-rec-label { font-size: 11px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
 .wu-rec-value { font-size: 15px; font-weight: 700; color: var(--primary); }
-.wu-section-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-.wu-goals-list { margin: 0 0 0 16px; padding: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.wu-section-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+.wu-goals-list { margin: 0 0 0 16px; padding: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.8; }
 .wu-ex-item {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex; align-items: flex-start; gap: 14px;
   background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 12px; margin-bottom: 8px;
+  border-radius: 14px; padding: 16px; margin-bottom: 10px;
   cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
 }
 .wu-ex-item.done { background: var(--success-light); border-color: var(--success); }
 .wu-ex-check {
-  width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; color: transparent;
+  transition: all 0.2s; color: transparent; margin-top: 2px;
 }
 .wu-ex-check.checked { background: var(--success); border-color: var(--success); color: white; }
 .wu-ex-body { flex: 1; min-width: 0; }
-.wu-ex-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-.wu-ex-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.wu-ex-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
-.wu-ex-why { font-size: 11px; color: var(--text-tertiary); line-height: 1.4; font-style: italic; margin-bottom: 8px; }
+.wu-ex-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.wu-ex-name { font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+.wu-ex-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
+.wu-ex-why {
+  font-size: 13px; color: var(--text-tertiary); line-height: 1.5;
+  font-style: normal; margin-bottom: 10px;
+  display: none;
+}
+.wu-ex-why.expanded { display: block; }
+.wu-ex-why-toggle {
+  font-size: 12px; font-weight: 600; color: var(--primary);
+  background: none; border: none; padding: 0 0 10px 0;
+  cursor: pointer; font-family: var(--font); display: block;
+  -webkit-tap-highlight-color: transparent;
+}
 .wu-yt-btn {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 5px 10px; background: #FF0000; color: white;
-  border: none; border-radius: 8px; font-family: var(--font);
-  font-size: 11px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 14px; background: #FF0000; color: white;
+  border: none; border-radius: 10px; font-family: var(--font);
+  font-size: 13px; font-weight: 700; cursor: pointer;
   -webkit-tap-highlight-color: transparent; transition: opacity 0.15s;
 }
 .wu-yt-btn:active { opacity: 0.75; }
 .wu-maria-btn {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 11px; background: var(--primary); color: white;
+  padding: 8px 14px; background: var(--primary); color: #000;
   border: none; border-radius: 20px; font-family: var(--font);
-  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-size: 13px; font-weight: 700; cursor: pointer;
   -webkit-tap-highlight-color: transparent; transition: opacity 0.15s;
 }
 .wu-maria-btn:active { opacity: 0.75; }
@@ -3903,8 +3914,8 @@ function renderWarmupContent(muscleGroup, data) {
           <span class="wu-ex-name">${ex.name}</span>
           <span class="${animCls}" style="font-size:13px">${icon}</span>
         </div>
-        <div class="wu-ex-meta">${ex.duration} &nbsp;·&nbsp; ${ex.reps}</div>
-        <div class="wu-ex-why">${ex.why}</div>
+        <div class="wu-ex-meta">${ex.duration} · ${ex.reps}</div>
+        ${ex.why ? `<button class="wu-ex-why-toggle" onclick="event.stopPropagation();toggleWuWhy(${i})">¿Por qué este ejercicio? ▾</button><div class="wu-ex-why" id="wuWhy${i}">${ex.why}</div>` : ''}
         ${ytBtn}
       </div>
     </div>`;
@@ -3933,6 +3944,14 @@ function toggleWarmupExercise(idx) {
   const check = document.getElementById(`wuCheck${idx}`);
   const done  = item.classList.toggle('done');
   check.classList.toggle('checked', done);
+}
+
+function toggleWuWhy(idx) {
+  const el = document.getElementById(`wuWhy${idx}`);
+  if (!el) return;
+  const btn = el.previousElementSibling;
+  const expanded = el.classList.toggle('expanded');
+  if (btn) btn.textContent = expanded ? '¿Por qué este ejercicio? ▴' : '¿Por qué este ejercicio? ▾';
 }
 
 function showWarmup() {
