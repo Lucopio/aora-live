@@ -3286,8 +3286,15 @@ async function sendCoachMessage() {
   showTypingIndicator();
 
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token;
+    // getSession() puede devolver un token expirado; refreshSession() garantiza uno válido
+    let { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('No session');
+    // Si el token expira en menos de 60 s, forzar refresh
+    if ((session.expires_at ?? 0) - Math.floor(Date.now() / 1000) < 60) {
+      const { data: r } = await sb.auth.refreshSession();
+      if (r?.session) session = r.session;
+    }
+    const token = session.access_token;
     if (!token) throw new Error('No session');
 
     const res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
