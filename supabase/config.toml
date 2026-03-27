@@ -397,7 +397,7 @@ entrypoint = "./functions/generate-insights/index.ts"
 
 [functions.coach-chat]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/coach-chat/deno.json"
 entrypoint = "./functions/coach-chat/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
