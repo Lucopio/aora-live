@@ -3304,10 +3304,15 @@ async function sendCoachMessage() {
       })
     });
 
-    const data = await res.json();
+    let data;
+    const rawText = await res.text();
     hideTypingIndicator();
+    try { data = JSON.parse(rawText); } catch(e) {
+      throw new Error(`HTTP ${res.status} — respuesta no JSON: ${rawText.slice(0, 120)}`);
+    }
 
-    if (!res.ok) throw new Error(data.error || 'Error del coach');
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${data?.error || rawText.slice(0, 120)}`);
+    if (!data.response) throw new Error('La función no devolvió texto');
 
     appendChatBubble('coach', data.response);
 
@@ -3321,7 +3326,7 @@ async function sendCoachMessage() {
   } catch(err) {
     hideTypingIndicator();
     console.error('coach-chat error:', err);
-    appendChatBubble('system', 'No pude conectar con el coach. Revisa tu conexión e intenta de nuevo.');
+    appendChatBubble('system', String(err.message || err));
   }
 }
 
