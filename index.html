@@ -1541,6 +1541,159 @@ body {
   border-left: 3px solid var(--primary);
 }
 
+/* ─── COACH CHAT UI ──────────────────────────────────────────────────────── */
+#coachScreen {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+#coachScreen.active { display: flex; animation: none; }
+
+.coach-chat-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 12px;
+  background: rgba(14,17,25,0.97);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0; z-index: 10;
+}
+.coach-chat-back {
+  background: none; border: none; cursor: pointer; padding: 6px 4px;
+  color: var(--text-secondary); font-size: 20px; line-height: 1;
+  display: flex; align-items: center; flex-shrink: 0;
+}
+.coach-chat-header-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--primary));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; border: 1.5px solid rgba(0,229,255,0.25);
+  flex-shrink: 0; position: relative;
+}
+.coach-chat-header-avatar .coach-online-dot { width: 10px; height: 10px; }
+.coach-chat-header-text { flex: 1; min-width: 0; }
+.coach-chat-header-name {
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  color: var(--text-primary); line-height: 1.2;
+}
+.coach-chat-header-sub { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+.coach-change-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-full); padding: 5px 12px;
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
+  transition: all 0.15s; white-space: nowrap;
+}
+.coach-change-btn:active { background: var(--surface); color: var(--text-primary); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px 16px 8px;
+  scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.chat-messages::-webkit-scrollbar { width: 0; }
+
+.chat-bubble { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 10px; animation: slideUp 0.2s ease; }
+.chat-bubble.user { flex-direction: row-reverse; }
+.chat-bubble.system { justify-content: center; }
+.chat-bubble-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--primary));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+  border: 1.5px solid rgba(0,229,255,0.2);
+}
+.chat-bubble-content {
+  max-width: 78%; padding: 11px 14px; font-size: 14px;
+  line-height: 1.6; color: var(--text-primary); word-break: break-word;
+}
+.chat-bubble.coach .chat-bubble-content {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px 16px 16px 16px;
+}
+.chat-bubble.user .chat-bubble-content {
+  background: linear-gradient(135deg, var(--accent2), var(--primary-dark));
+  color: #fff; border-radius: 16px 4px 16px 16px;
+}
+.chat-bubble.system .chat-bubble-content {
+  background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.2);
+  border-radius: 10px; font-size: 12px; color: var(--danger); text-align: center;
+}
+.chat-bubble-ts { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; padding: 0 4px; }
+.chat-bubble.coach .chat-bubble-ts { text-align: left; }
+.chat-bubble.user .chat-bubble-ts { text-align: right; }
+
+.chat-typing { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
+.chat-typing-dots {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px 16px 16px 16px; padding: 12px 16px;
+}
+.chat-typing-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-tertiary); animation: typingBounce 1.2s infinite;
+}
+.chat-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+.chat-input-area {
+  flex-shrink: 0;
+  background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px calc(20px + env(safe-area-inset-bottom));
+}
+.chat-login-prompt { text-align: center; padding: 12px 0; }
+.chat-login-prompt p { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+.chat-login-btn {
+  padding: 9px 24px; background: var(--primary); color: #000;
+  border: none; border-radius: var(--radius-full);
+  font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.chat-input-row { display: flex; align-items: flex-end; gap: 10px; }
+#chatInput {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 22px; padding: 10px 16px;
+  font-family: var(--font); font-size: 15px; color: var(--text-primary);
+  outline: none; resize: none; min-height: 44px; max-height: 120px;
+  overflow-y: auto; line-height: 1.5; transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+#chatInput:focus { border-color: var(--primary); }
+#chatInput::placeholder { color: var(--text-tertiary); }
+.chat-send-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--primary));
+  border: none; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.chat-send-btn:active { opacity: 0.85; transform: scale(0.94); }
+.chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.chat-send-btn svg { width: 18px; height: 18px; fill: #000; }
+.chat-limit-note { text-align: center; font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+.chat-counter { text-align: right; font-size: 10px; color: var(--text-tertiary); margin-top: 4px; padding-right: 4px; }
+
+/* Coach Change Sheet */
+#coachChangeSheet {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+  width: 100%; max-width: 480px;
+  background: var(--surface); border-radius: 24px 24px 0 0;
+  padding: 20px 20px 40px; z-index: 310;
+  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+}
+#coachChangeSheet.open { transform: translateX(-50%) translateY(0); }
+#coachChangeOverlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 309;
+}
+#coachChangeOverlay.open { display: block; }
+
 </style>
 </head>
 <body>
@@ -2466,52 +2619,75 @@ body {
 
 <!-- COACH SCREEN -->
 <div class="screen" id="coachScreen">
-  <div class="coach-screen-wrap">
-    <div class="coach-screen-header" id="coachScreenTitle">Tu Coach</div>
-    <div class="coach-screen-sub">Tu entrenador IA personal, siempre disponible</div>
-
-    <div class="coach-big-card" id="coachBigCard">
-      <div class="coach-big-avatar" id="coachBigEmoji">🤖</div>
-      <div class="coach-big-info">
-        <div class="coach-big-name" id="coachBigName">Coach IA</div>
-        <div class="coach-big-flag" id="coachBigFlag"></div>
-        <div class="coach-big-specialty" id="coachBigSpecialty">Tu entrenador personal</div>
-      </div>
+  <!-- Header fijo -->
+  <div class="coach-chat-header">
+    <button class="coach-chat-back" onclick="showScreen('home')">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="coach-chat-header-avatar" id="chatHeaderAvatar">
+      <span id="chatCoachEmoji">🤖</span>
+      <div class="coach-online-dot"></div>
     </div>
+    <div class="coach-chat-header-text">
+      <div class="coach-chat-header-name" id="chatCoachName">Coach IA</div>
+      <div class="coach-chat-header-sub" id="chatCoachSub">Entrenador personal</div>
+    </div>
+    <button class="coach-change-btn" onclick="openCoachChangeSheet()">Cambiar</button>
+  </div>
 
-    <div class="coach-message-full" id="coachMessageFull">Selecciona un coach en el onboarding para recibir mensajes personalizados.</div>
+  <!-- Área de mensajes -->
+  <div class="chat-messages" id="chatMessages"></div>
 
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">Cambiar entrenador</div>
-      <div class="trainer-grid" id="coachScreenGrid">
-        <div class="trainer-card" onclick="selectCoachFromScreen('maria')" id="coachCard_maria">
-          <div class="trainer-emoji">👩🏽</div>
-          <div class="trainer-flag">🇨🇴</div>
-          <div class="trainer-name">María</div>
-          <div class="trainer-specialty">HIIT & Funcional</div>
-        </div>
-        <div class="trainer-card" onclick="selectCoachFromScreen('carlos')" id="coachCard_carlos">
-          <div class="trainer-emoji">👨🏽</div>
-          <div class="trainer-flag">🇲🇽</div>
-          <div class="trainer-name">Carlos</div>
-          <div class="trainer-specialty">Fuerza & Masa</div>
-        </div>
-        <div class="trainer-card" onclick="selectCoachFromScreen('andrea')" id="coachCard_andrea">
-          <div class="trainer-emoji">👩🏻</div>
-          <div class="trainer-flag">🇦🇷</div>
-          <div class="trainer-name">Andrea</div>
-          <div class="trainer-specialty">Bienestar integral</div>
-        </div>
-        <div class="trainer-card" onclick="selectCoachFromScreen('diego')" id="coachCard_diego">
-          <div class="trainer-emoji">👨🏾</div>
-          <div class="trainer-flag">🇵🇪</div>
-          <div class="trainer-name">Diego</div>
-          <div class="trainer-specialty">Resiliencia & Calistenia</div>
-        </div>
+  <!-- Input área -->
+  <div class="chat-input-area">
+    <div class="chat-login-prompt" id="chatLoginPrompt" style="display:none">
+      <p>Inicia sesión para chatear con tu coach IA</p>
+      <button class="chat-login-btn" onclick="showScreen('auth')">Iniciar sesión</button>
+    </div>
+    <div id="chatInputWrap">
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="Pregúntale algo a tu coach..." rows="1" oninput="autoResizeChatInput(this)" onkeydown="chatInputKeydown(event)"></textarea>
+        <button class="chat-send-btn" id="chatSendBtn" onclick="sendCoachMessage()">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+        </button>
       </div>
+      <div class="chat-counter" id="chatCounter"></div>
+      <div class="chat-limit-note" id="chatLimitNote" style="display:none">Límite diario de 20 mensajes alcanzado</div>
     </div>
   </div>
-  <div style="height:80px"></div>
+</div>
+
+<!-- Coach Change Sheet -->
+<div id="coachChangeOverlay" onclick="closeCoachChangeSheet()"></div>
+<div id="coachChangeSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:16px;text-align:center">Cambiar entrenador</div>
+  <div class="trainer-grid">
+    <div class="trainer-card" onclick="selectCoachFromChat('maria')" id="changeCard_maria">
+      <div class="trainer-emoji">👩🏽</div>
+      <div class="trainer-flag">🇨🇴</div>
+      <div class="trainer-name">María</div>
+      <div class="trainer-specialty">HIIT & Funcional</div>
+    </div>
+    <div class="trainer-card" onclick="selectCoachFromChat('carlos')" id="changeCard_carlos">
+      <div class="trainer-emoji">👨🏽</div>
+      <div class="trainer-flag">🇲🇽</div>
+      <div class="trainer-name">Carlos</div>
+      <div class="trainer-specialty">Fuerza & Masa</div>
+    </div>
+    <div class="trainer-card" onclick="selectCoachFromChat('andrea')" id="changeCard_andrea">
+      <div class="trainer-emoji">👩🏻</div>
+      <div class="trainer-flag">🇦🇷</div>
+      <div class="trainer-name">Andrea</div>
+      <div class="trainer-specialty">Bienestar integral</div>
+    </div>
+    <div class="trainer-card" onclick="selectCoachFromChat('diego')" id="changeCard_diego">
+      <div class="trainer-emoji">👨🏾</div>
+      <div class="trainer-flag">🇵🇪</div>
+      <div class="trainer-name">Diego</div>
+      <div class="trainer-specialty">Resiliencia & Calistenia</div>
+    </div>
+  </div>
 </div>
 
 <!-- Bottom Nav -->
@@ -2933,25 +3109,10 @@ function updateCoachSpotlight() {
   if (spotlight) spotlight.style.display = 'flex';
   if (btn) btn.style.display = 'block';
 
-  // Update coach screen too
-  updateCoachScreen(coach);
 }
 
 function updateCoachScreen(coach) {
-  if (!coach) return;
-  const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-  el('coachScreenTitle', coach.name);
-  el('coachBigEmoji', coach.emoji);
-  el('coachBigName', coach.name);
-  el('coachBigFlag', coach.flag + ' ' + coach.country);
-  el('coachBigSpecialty', coach.specialty);
-  el('coachMessageFull', getCoachMessage(coach.id, {}));
-
-  // Highlight selected card
-  Object.keys(COACHES).forEach(key => {
-    const card = document.getElementById('coachCard_' + key);
-    if (card) card.classList.toggle('selected', key === coach.id);
-  });
+  // Legacy no-op (coach screen is now a chat UI, header updated in initCoachChat)
 }
 
 function obSelectCoach(el, coachId) {
@@ -2963,8 +3124,245 @@ function obSelectCoach(el, coachId) {
 function selectCoachFromScreen(coachId) {
   saveSelectedCoach(coachId);
   updateCoachSpotlight();
+}
+
+// ─── COACH CHANGE SHEET ────────────────────────────────────────────────────
+function openCoachChangeSheet() {
   const coach = getSelectedCoach();
-  if (coach) updateCoachScreen(coach);
+  Object.keys(COACHES).forEach(key => {
+    const card = document.getElementById('changeCard_' + key);
+    if (card) card.classList.toggle('selected', coach && key === coach.id);
+  });
+  document.getElementById('coachChangeOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('coachChangeSheet').classList.add('open'), 10);
+}
+function closeCoachChangeSheet() {
+  document.getElementById('coachChangeSheet').classList.remove('open');
+  setTimeout(() => document.getElementById('coachChangeOverlay').classList.remove('open'), 350);
+}
+function selectCoachFromChat(coachId) {
+  saveSelectedCoach(coachId);
+  updateCoachSpotlight();
+  closeCoachChangeSheet();
+  // Re-init chat for new coach
+  setTimeout(() => initCoachChat(), 360);
+}
+
+// ─── COACH CHAT ────────────────────────────────────────────────────────────
+const CHAT_DAILY_LIMIT = 20;
+
+function _chatHistoryKey(coachId) { return 'gymtracker_chat_' + coachId; }
+function _chatCountKey()          { return 'gymtracker_chat_count_' + new Date().toISOString().slice(0, 10); }
+
+function getChatHistory(coachId) {
+  try { return JSON.parse(localStorage.getItem(_chatHistoryKey(coachId)) || '[]'); }
+  catch(e) { return []; }
+}
+function saveChatHistory(coachId, messages) {
+  try { localStorage.setItem(_chatHistoryKey(coachId), JSON.stringify(messages.slice(-30))); }
+  catch(e) {}
+}
+function getChatCount() {
+  return parseInt(localStorage.getItem(_chatCountKey()) || '0', 10);
+}
+function incrementChatCount() {
+  localStorage.setItem(_chatCountKey(), String(getChatCount() + 1));
+}
+function canSendMessage() { return getChatCount() < CHAT_DAILY_LIMIT; }
+
+function buildChatContext() {
+  const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+  const workouts = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const sorted = workouts.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const recent = sorted.slice(0, 3).map(w => ({
+    date: w.date,
+    duration: w.duration,
+    exercises: Array.isArray(w.exercises) ? w.exercises.map(e => ({ name: e.name || e.exercise_name || '?' })) : []
+  }));
+  const daysSince = sorted.length > 0
+    ? Math.round((Date.now() - new Date(sorted[0].date).getTime()) / 86400000)
+    : undefined;
+  const now = new Date();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+  const weekSessions = workouts.filter(w => new Date(w.date) >= weekStart).length;
+  return {
+    profile: {
+      name: profile.full_name || null,
+      age: profile.age || null,
+      sex: profile.sex || null,
+      goal: profile.training_goal || null,
+      experience: profile.experience || null,
+      training_days: profile.training_days || null
+    },
+    recentWorkouts: recent,
+    daysSinceLastWorkout: daysSince,
+    weekSessions
+  };
+}
+
+function autoResizeChatInput(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function chatInputKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCoachMessage(); }
+}
+
+function appendChatBubble(role, text) {
+  const wrap = document.getElementById('chatMessages');
+  if (!wrap) return;
+  const div = document.createElement('div');
+  div.className = 'chat-bubble ' + role;
+  if (role === 'coach') {
+    const coach = getSelectedCoach();
+    div.innerHTML = `
+      <div class="chat-avatar">${coach ? coach.emoji : '🤖'}</div>
+      <div class="chat-bubble-content">${text.replace(/\n/g, '<br>')}</div>`;
+  } else if (role === 'user') {
+    div.innerHTML = `<div class="chat-bubble-content">${text.replace(/\n/g, '<br>')}</div>`;
+  } else {
+    div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1)">${text}</div>`;
+  }
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTypingIndicator() {
+  const wrap = document.getElementById('chatMessages');
+  if (!wrap) return;
+  const div = document.createElement('div');
+  div.className = 'chat-bubble coach';
+  div.id = 'chatTyping';
+  const coach = getSelectedCoach();
+  div.innerHTML = `
+    <div class="chat-avatar">${coach ? coach.emoji : '🤖'}</div>
+    <div class="chat-bubble-content chat-typing">
+      <span></span><span></span><span></span>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+function hideTypingIndicator() {
+  const el = document.getElementById('chatTyping');
+  if (el) el.remove();
+}
+
+function updateChatCounter() {
+  const el = document.getElementById('chatCounter');
+  if (!el) return;
+  const remaining = CHAT_DAILY_LIMIT - getChatCount();
+  el.textContent = remaining <= 5 ? `${remaining} mensajes restantes hoy` : '';
+  const limitNote = document.getElementById('chatLimitNote');
+  if (limitNote) limitNote.style.display = remaining <= 0 ? 'block' : 'none';
+  const sendBtn = document.getElementById('chatSendBtn');
+  const input = document.getElementById('chatInput');
+  if (sendBtn) sendBtn.disabled = remaining <= 0;
+  if (input) input.disabled = remaining <= 0;
+}
+
+async function sendCoachMessage() {
+  if (!currentUser) return;
+  if (!canSendMessage()) { updateChatCounter(); return; }
+
+  const input = document.getElementById('chatInput');
+  const text = (input?.value || '').trim();
+  if (!text) return;
+
+  const coach = getSelectedCoach();
+  if (!coach) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  appendChatBubble('user', text);
+
+  const history = getChatHistory(coach.id);
+  history.push({ role: 'user', content: text, ts: new Date().toISOString() });
+
+  showTypingIndicator();
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) throw new Error('No session');
+
+    const res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        coachId: coach.id,
+        message: text,
+        history: history.slice(-20).map(m => ({ role: m.role, content: m.content })),
+        context: buildChatContext()
+      })
+    });
+
+    const data = await res.json();
+    hideTypingIndicator();
+
+    if (!res.ok) throw new Error(data.error || 'Error del coach');
+
+    appendChatBubble('coach', data.response);
+    history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
+    saveChatHistory(coach.id, history);
+    incrementChatCount();
+    updateChatCounter();
+
+  } catch(err) {
+    hideTypingIndicator();
+    console.error('coach-chat error:', err);
+    appendChatBubble('system', 'No pude conectar con el coach. Revisa tu conexión e intenta de nuevo.');
+  }
+}
+
+function initCoachChat() {
+  const coach = getSelectedCoach();
+
+  // Update header
+  const emojiEl = document.getElementById('chatCoachEmoji');
+  const nameEl  = document.getElementById('chatCoachName');
+  const subEl   = document.getElementById('chatCoachSub');
+  if (emojiEl) emojiEl.textContent = coach ? coach.emoji : '🤖';
+  if (nameEl)  nameEl.textContent  = coach ? coach.name  : 'Coach IA';
+  if (subEl)   subEl.textContent   = coach ? (coach.specialty + ' · ' + coach.flag) : 'Entrenador personal';
+
+  // Show/hide login prompt
+  const loginPrompt = document.getElementById('chatLoginPrompt');
+  const inputWrap   = document.getElementById('chatInputWrap');
+  if (loginPrompt) loginPrompt.style.display = currentUser ? 'none' : 'flex';
+  if (inputWrap)   inputWrap.style.display   = currentUser ? 'block' : 'none';
+
+  if (!currentUser) return;
+
+  updateChatCounter();
+
+  // Render history
+  const wrap = document.getElementById('chatMessages');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (coach) {
+    const history = getChatHistory(coach.id);
+    if (history.length === 0) {
+      // Welcome message (no API call)
+      const welcome = getCoachMessage(coach.id, {});
+      appendChatBubble('coach', welcome);
+    } else {
+      history.forEach(m => {
+        if (m.role === 'user' || m.role === 'assistant') {
+          appendChatBubble(m.role === 'assistant' ? 'coach' : 'user', m.content);
+        }
+      });
+    }
+  } else {
+    appendChatBubble('coach', 'Selecciona un entrenador con el botón "Cambiar" para comenzar.');
+  }
+
+  // Scroll to bottom
+  wrap.scrollTop = wrap.scrollHeight;
 }
 
 function getWeekStreak() {
@@ -3084,7 +3482,7 @@ function showScreen(name) {
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); }
-  if (name === 'coach') { const c = getSelectedCoach(); if (c) updateCoachScreen(c); }
+  if (name === 'coach') { initCoachChat(); }
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
