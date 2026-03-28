@@ -304,6 +304,12 @@ body {
   font-family: var(--mono); font-size: 13px; font-weight: 700; color: white;
 }
 .exercise-pill span { font-size: 11px; font-weight: 600; color: var(--primary); }
+.avg-rest-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px; background: rgba(255,255,255,0.06); border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+}
+.avg-rest-pill svg { opacity: 0.7; }
 
 .main-timer-section {
   width: 100%; text-align: center; padding: 16px 0 20px;
@@ -474,9 +480,11 @@ body {
 .h-info { flex: 1; }
 .h-info h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .h-info p { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-.h-meta { text-align: right; }
+.h-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .h-meta .h-duration { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--primary); }
-.h-meta .h-excount { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+.h-meta .h-excount { font-size: 11px; color: var(--text-tertiary); }
+.h-delete-btn { background: none; border: none; padding: 4px; cursor: pointer; color: var(--text-tertiary); opacity: 0.5; transition: opacity 0.15s, color 0.15s; -webkit-tap-highlight-color: transparent; margin-top: 4px; }
+.h-delete-btn:active { opacity: 1; color: var(--danger); }
 
 /* INSIGHTS */
 .insights-card {
@@ -2207,6 +2215,10 @@ body {
     <div class="workout-top-bar">
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
+      <div class="avg-rest-pill" id="avgRestPill" style="display:none">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="avgRestValue">--</span>
+      </div>
     </div>
 
     <div class="main-timer-section">
@@ -2285,6 +2297,19 @@ body {
       <button onclick="skipRPESelection()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Saltar</button>
     </div>
 
+    <!-- ADJUST REST SHEET -->
+    <div id="adjustRestOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140" onclick="closeAdjustRestSheet()"></div>
+    <div id="adjustRestSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 36px;z-index:150">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
+      <p style="font-size:13px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:16px">¿Olvidaste iniciar el timer? Resta segundos al descanso actual.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <button onclick="adjustRest(10)" style="padding:16px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--text-primary);cursor:pointer">−10s</button>
+        <button onclick="adjustRest(20)" style="padding:16px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--text-primary);cursor:pointer">−20s</button>
+        <button onclick="adjustRest(30)" style="padding:16px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--text-primary);cursor:pointer">−30s</button>
+      </div>
+      <button onclick="closeAdjustRestSheet()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancelar</button>
+    </div>
+
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
@@ -2299,6 +2324,7 @@ body {
           <div class="rest-active-label" id="restActiveLabel"><div class="rest-dot"></div>DESCANSO</div>
           <div style="display: flex; gap: 8px;">
             <button class="skip-link" onclick="markRestReady()" style="background: var(--primary); color: white; font-weight: 600;">Listo</button>
+            <button class="skip-link" onclick="openAdjustRestSheet()">−s</button>
             <button class="skip-link" onclick="skipRest()">Saltar</button>
           </div>
         </div>
@@ -2341,7 +2367,7 @@ body {
     <p id="summaryDate"></p>
   </div>
   <div class="summary-grid">
-    <div class="summary-stat"><div class="s-icon" style="background:var(--primary-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumDuration">--</div><div class="s-label">Duracion</div></div>
+    <div class="summary-stat"><div class="s-icon" style="background:var(--primary-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumDuration">--</div><div class="s-label" id="sumDurationLabel">Duracion</div></div>
     <div class="summary-stat"><div class="s-icon" style="background:var(--success-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="s-value" id="sumExercises">--</div><div class="s-label">Ejercicios</div></div>
   </div>
   <!-- Warmup row (shown only when warmupDuration > 0) -->
@@ -6243,6 +6269,7 @@ function markRestReady() {
   }
   // resetRestZone() limpia restStartedAt, _restTargetSet e isResting
   resetRestZone();
+  updateAvgRestPill();
   // NO mostrar RPE aquí — solo aparece al registrar una serie (addSet)
 }
 
@@ -6263,6 +6290,33 @@ function skipRest() {
   }
   // resetRestZone() limpia restStartedAt, _restTargetSet e isResting
   resetRestZone();
+  updateAvgRestPill();
+}
+
+function openAdjustRestSheet() {
+  document.getElementById('adjustRestOverlay').style.display = 'block';
+  document.getElementById('adjustRestSheet').style.display = 'block';
+}
+function closeAdjustRestSheet() {
+  document.getElementById('adjustRestOverlay').style.display = 'none';
+  document.getElementById('adjustRestSheet').style.display = 'none';
+}
+function adjustRest(seconds) {
+  if (!isResting || !restStartedAt) { closeAdjustRestSheet(); return; }
+  restStartedAt -= seconds * 1000; // simula que el descanso empezó antes
+  countdownRemaining = Math.max(0, restSeconds - Math.round((Date.now() - restStartedAt) / 1000));
+  closeAdjustRestSheet();
+}
+
+function updateAvgRestPill() {
+  const allSets = completedExercises.flatMap(ex => ex.sets || []);
+  const rests = allSets.filter(s => s.rest_after_ms != null && !s.is_warmup_set);
+  const pill = document.getElementById('avgRestPill');
+  if (!pill) return;
+  if (rests.length === 0) { pill.style.display = 'none'; return; }
+  const avgSec = Math.round(rests.reduce((sum, s) => sum + s.rest_after_ms, 0) / rests.length / 1000);
+  document.getElementById('avgRestValue').textContent = avgSec + 's prom';
+  pill.style.display = 'flex';
 }
 
 // ─── RPE Selection ───────────────────────────────────────────
@@ -6335,6 +6389,7 @@ function endWorkout() {
   clearInterval(motivationInterval);
   const elapsed = Date.now() - workoutStartTime;
   document.getElementById('sumDuration').textContent = formatTimeMM(elapsed);
+  document.getElementById('sumDurationLabel').textContent = warmupDuration > 0 ? 'Entrenamiento' : 'Duracion';
   if (workoutMode === 'rest-only') {
     document.getElementById('sumExercises').textContent = restCount;
     document.getElementById('sumExercises').nextElementSibling.textContent = 'Descansos';
@@ -7493,10 +7548,12 @@ function renderHistory() {
     const hasDetail = detailHtml.length > 0;
     const toggleIcon = hasDetail ? `<span class="h-toggle-icon" id="hti${i}">▾</span>` : '';
 
+    const isSaved = i < savedWorkouts.length;
+    const deleteBtn = isSaved ? `<button class="h-delete-btn" onclick="event.stopPropagation();deleteWorkout(${i})" title="Eliminar"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : '';
     return `<div class="history-item" ${hasDetail ? `onclick="toggleHistoryDetail(${i})"` : ''} style="${hasDetail ? 'cursor:pointer' : ''}">
       <div class="h-icon" style="background:${colors[c]}">${iconSvg}</div>
       <div class="h-info"><h4>${isRestOnly ? 'Solo descansos' : 'Entrenamiento'}</h4><p>${d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'})} · ${detailLabel}</p>${warmupStr}</div>
-      <div class="h-meta"><div class="h-duration">${formatTimeMM(w.duration)}</div><div class="h-excount">${detailLabel}</div>${toggleIcon}</div>
+      <div class="h-meta"><div class="h-duration">${formatTimeMM(w.duration)}</div><div class="h-excount">${detailLabel}</div>${toggleIcon}${deleteBtn}</div>
       ${detailHtml}
     </div>`;
   }).join('');
@@ -7508,6 +7565,13 @@ function toggleHistoryDetail(i) {
   if (!detail) return;
   detail.classList.toggle('open');
   if (icon) icon.classList.toggle('open');
+}
+
+function deleteWorkout(i) {
+  savedWorkouts.splice(i, 1);
+  try { localStorage.setItem('savedWorkouts', JSON.stringify(savedWorkouts)); } catch(e) {}
+  renderHistory();
+  updateHomeStats();
 }
 
 // ─── PWA: Service Worker ────────────────────────────────────
