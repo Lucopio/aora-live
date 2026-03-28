@@ -986,6 +986,11 @@ body {
 .wu-rec-value { font-size: 15px; font-weight: 700; color: var(--primary); }
 .wu-section-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
 .wu-goals-list { margin: 0 0 0 16px; padding: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.8; }
+.wu-inj-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.wu-inj-chip { padding: 7px 11px; background: var(--warning-light); border-radius: 10px; border: 1px solid rgba(255,184,0,0.25); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s; }
+.wu-inj-chip:active { background: rgba(255,184,0,0.2); }
+.wu-inj-label { font-size: 12px; font-weight: 700; color: var(--warning); display: block; }
+.wu-inj-action { font-size: 12px; color: var(--text-secondary); margin-top: 5px; display: none; line-height: 1.4; }
 .wu-ex-item {
   display: flex; align-items: flex-start; gap: 14px;
   background: var(--surface); border: 1.5px solid var(--border);
@@ -2976,9 +2981,9 @@ body {
       <div id="warmupExercisesList"></div>
 
       <!-- Advertencias -->
-      <div id="warmupWarnings" style="display:none;margin-top:12px;padding:12px;background:var(--warning-light);border-radius:10px;border:1px solid rgba(255,184,0,0.3)">
-        <div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">⚠️ Evitar</div>
-        <ul id="warmupWarningsText" style="margin:0;padding-left:16px;font-size:12px;color:var(--text-secondary);line-height:1.6"></ul>
+      <div id="warmupWarnings" style="display:none;margin-top:12px">
+        <div class="wu-section-title" style="margin-top:0">⚠️ Lesiones — toca para ver cómo evitarlas</div>
+        <div id="warmupWarningsText" class="wu-inj-chips"></div>
       </div>
     </div>
 
@@ -3972,9 +3977,9 @@ function renderWarmupContent(muscleGroup, data) {
   if (data.injuries && data.injuries.length) {
     document.getElementById('warmupWarningsText').innerHTML = data.injuries.map(inj => {
       if (typeof inj === 'object' && inj.simple) {
-        return `<li style="margin-bottom:8px"><span style="font-weight:700">${inj.simple}</span><br><span style="font-size:12px;color:var(--text-secondary);font-style:normal">→ ${inj.action}</span></li>`;
+        return `<div class="wu-inj-chip" onclick="toggleWuInjury(this)"><span class="wu-inj-label">${inj.simple}</span>${inj.action ? `<span class="wu-inj-action">${inj.action}</span>` : ''}</div>`;
       }
-      return `<li>${inj}</li>`;
+      return `<div class="wu-inj-chip"><span class="wu-inj-label">${inj}</span></div>`;
     }).join('');
     warningsEl.style.display = 'block';
   } else {
@@ -3999,6 +4004,14 @@ function toggleWuWhy(idx) {
   const btn = el.previousElementSibling;
   const expanded = el.classList.toggle('expanded');
   if (btn) btn.textContent = expanded ? '¿Por qué este ejercicio? ▴' : '¿Por qué este ejercicio? ▾';
+}
+
+function toggleWuInjury(el) {
+  const action = el.querySelector('.wu-inj-action');
+  if (!action) return;
+  const open = action.style.display === 'block';
+  action.style.display = open ? 'none' : 'block';
+  el.style.background = open ? '' : 'rgba(255,184,0,0.18)';
 }
 
 function showWarmup() {
