@@ -3187,23 +3187,23 @@ const COACH_ALERTS = {
   },
   sessionLength: {
     maria: [
-      "¡Llevas más de 75 minutos! 🔥 Eso es dedicación, pero el cortisol ya empezó a subir. ¿Qué falta? Terminemos fuerte.",
-      "¡Wow, más de una hora y cuarto! 💪 Pero ojo: después de 75 min el cortisol sube y la recuperación baja. Cierra con lo que tienes, que fue mucho.",
+      "¡Llevas más de una hora! 🔥 Eso es dedicación, pero el cortisol ya empezó a subir. ¿Qué falta? Terminemos fuerte.",
+      "¡Wow, ya pasó la hora! 💪 Ojo: el cortisol sube y la recuperación baja. Cierra con lo que tienes, que fue mucho.",
       "¡Parcera, qué entrega! Pero ya es hora de cerrar. Los mejores resultados están en sesiones intensas, no largas."
     ],
     carlos: [
-      "75 minutos. El cortisol empieza a interferir con la síntesis proteica. Considera terminar en los próximos 15 min.",
-      "Dato: después de 75 min la testosterona baja y el cortisol sube. La relación T/C se invierte. Cierra el workout.",
+      "60 minutos. El cortisol empieza a interferir con la síntesis proteica. Considera terminar en los próximos 15 min.",
+      "Dato: después de 60 min la testosterona baja y el cortisol sube. La relación T/C se invierte. Cierra el workout.",
       "Rendimientos decrecientes. Estás pagando tiempo sin retorno. Termina lo que importa y sal — el gym no cierra, tu recuperación sí."
     ],
     andrea: [
-      "Has dado mucho hoy. Llevas más de una hora y cuarto. ¿Tu energía cómo está? A veces parar a tiempo es la decisión más inteligente.",
-      "Más de 75 minutos entrenando. ¿Estás disfrutando o estás forzando? Escuchá tu cuerpo, ya hiciste suficiente.",
+      "Has dado mucho hoy. Ya llevas más de una hora. ¿Tu energía cómo está? A veces parar a tiempo es la decisión más inteligente.",
+      "Más de 60 minutos entrenando. ¿Estás disfrutando o estás forzando? Escuchá tu cuerpo, ya hiciste suficiente.",
       "La constancia que mostrás hoy es real. Y cuidarte también es saber cuándo es suficiente — eso no es rendirse, es inteligencia corporal."
     ],
     diego: [
-      "75 minutos. El cuerpo habló. Los mejores atletas saben cuándo terminar. ¿Qué queda?",
-      "En la montaña, el que no sabe cuándo bajar no llega al siguiente pico. Llevas más de 75 minutos. Cierra.",
+      "Una hora. El cuerpo habló. Los mejores atletas saben cuándo terminar. ¿Qué queda?",
+      "En la montaña, el que no sabe cuándo bajar no llega al siguiente pico. Ya pasó la hora. Cierra.",
       "El que entrena con sabiduría llega más lejos que el que entrena con ego. Ya fue suficiente por hoy."
     ]
   },
@@ -3232,8 +3232,8 @@ let hydrationAlertCount = 0;
 let sessionLongAlertFired = false;
 let warmupAlertFired = false;
 let _lastHydrationAlert = 0;
-const HYDRATION_INTERVAL_MS = 18 * 60 * 1000;
-const SESSION_LONG_MS = 75 * 60 * 1000;
+const HYDRATION_INTERVAL_MS = 20 * 60 * 1000;
+const SESSION_LONG_MS = 60 * 60 * 1000;
 
 function getActiveCoachId() {
   try {
