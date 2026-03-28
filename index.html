@@ -2803,6 +2803,7 @@ body {
   <div class="sheet-handle" style="margin-bottom:16px"></div>
   <div class="ex-info-name" id="exInfoName">Ejercicio</div>
   <div class="ex-info-muscles" id="exInfoMuscles"></div>
+  <img id="exInfoGifInline" src="" alt="" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:12px;margin:12px 0;background:var(--surface2)">
   <div class="ex-info-desc" id="exInfoDesc"></div>
   <div class="ex-info-section-title">Puntos clave</div>
   <ul class="ex-info-list" id="exInfoTips"></ul>
@@ -4161,14 +4162,16 @@ function selectMode(mode) {
 
 // ─── Exercise Database ───────────────────────────────────────
 const exerciseDB = [
-  { group: 'Pecho', items: ['Press de banca', 'Press inclinado', 'Press con mancuernas', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea'] },
-  { group: 'Espalda', items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto'] },
-  { group: 'Hombros', items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Arnold press'] },
-  { group: 'Biceps', items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea'] },
-  { group: 'Triceps', items: ['Extension en polea alta', 'Press frances', 'Patada de triceps', 'Fondos de triceps', 'Extension con mancuerna'] },
-  { group: 'Piernas', items: ['Sentadilla', 'Prensa de piernas', 'Extension de cuadriceps', 'Curl de femoral', 'Peso muerto rumano', 'Zancadas', 'Elevacion de gemelos'] },
-  { group: 'Abdomen', items: ['Plancha', 'Crunch', 'Elevacion de piernas', 'Rueda abdominal', 'Russian twist'] },
-  { group: 'Cardio', items: ['Caminadora', 'Bicicleta estatica', 'Remo', 'Cuerda', 'Burpees'] },
+  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Press con mancuernas', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna', 'Press en maquina'] },
+  { group: 'Espalda',   items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto', 'Remo en T', 'Face pull', 'Jalones agarre neutro', 'Pullover en polea', 'Hiperextensiones'] },
+  { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Arnold press', 'Press con mancuernas sentado', 'Elevaciones en polea', 'Encogimientos de hombros'] },
+  { group: 'Biceps',    items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea', 'Curl inclinado', 'Curl en banca Scott', 'Curl 21s'] },
+  { group: 'Triceps',   items: ['Extension en polea alta', 'Press frances', 'Patada de triceps', 'Fondos de triceps', 'Extension con mancuerna', 'Extension en polea baja', 'Press cerrado', 'Overhead en polea'] },
+  { group: 'Piernas',   items: ['Sentadilla', 'Prensa de piernas', 'Extension de cuadriceps', 'Curl de femoral', 'Peso muerto rumano', 'Zancadas', 'Elevacion de gemelos', 'Hip thrust', 'Sentadilla bulgara', 'Abductores en maquina', 'Aductores en maquina', 'Step-up', 'Sentadilla sumo'] },
+  { group: 'Gluteos',   items: ['Hip thrust', 'Patada de gluteo en polea', 'Peso muerto a una pierna', 'Puente de gluteo', 'Abduccion con banda'] },
+  { group: 'Abdomen',   items: ['Plancha', 'Crunch', 'Elevacion de piernas', 'Rueda abdominal', 'Russian twist', 'Crunch en polea', 'Plancha lateral', 'Mountain climbers', 'Hollow hold', 'Dragon flag'] },
+  { group: 'Cardio',    items: ['Caminadora', 'Bicicleta estatica', 'Remo', 'Cuerda', 'Burpees', 'Eliptica', 'Escaladora', 'Saltos de caja', 'Sprint en caminadora'] },
+  { group: 'Calistenia', items: ['Muscle-up', 'L-sit', 'Pistol squat', 'Archer push-up', 'Pike push-up', 'Hollow body', 'Back lever'] },
 ];
 
 // ─── Exercise Info Database ───────────────────────────────────
@@ -4448,55 +4451,79 @@ const EXERCISE_INFO = {
   },
 };
 
-// ─── Exercise GIF Database ───────────────────────────────────
-const W = 'https://upload.wikimedia.org/wikipedia/commons/';
+// ─── Exercise GIF Database (ExerciseDB CDN) ──────────────────
 const exerciseGIFs = {
   // PECHO
-  'Press de banca':          W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif',
-  'Press inclinado':         W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif',
-  'Press con mancuernas':    W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif',
-  'Aperturas':               W+'4/41/Chest_stretch-CDC_strength_training_for_older_adults.gif',
-  'Fondos en paralelas':     W+'8/8f/Pushups.gif',
-  'Crossover en polea':      W+'4/41/Chest_stretch-CDC_strength_training_for_older_adults.gif',
+  'Press de banca':           'https://cdn.exercisedb.dev/media/K6NnTv0.gif',
+  'Press inclinado':          'https://cdn.exercisedb.dev/media/0IC2bA5.gif',
+  'Press con mancuernas':     'https://cdn.exercisedb.dev/media/02I7cT0.gif',
+  'Aperturas':                'https://cdn.exercisedb.dev/media/0IC2bA5.gif',
+  'Fondos en paralelas':      'https://cdn.exercisedb.dev/media/0K11Rp.gif',
+  'Crossover en polea':       'https://cdn.exercisedb.dev/media/MJ8dqT.gif',
+  'Press declinado':          'https://cdn.exercisedb.dev/media/02WBWH.gif',
+  'Pull-over con mancuerna':  'https://cdn.exercisedb.dev/media/3DMOdl.gif',
   // ESPALDA
-  'Dominadas':               W+'7/7a/Wallpushup-CDC_strength_training_for_older_adults.gif',
-  'Remo con barra':          W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Remo con mancuerna':      W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Jalones al pecho':        W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Remo en maquina':         W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Peso muerto':             W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif',
+  'Dominadas':                'https://cdn.exercisedb.dev/media/A4nHOA.gif',
+  'Remo con barra':           'https://cdn.exercisedb.dev/media/4FUJKD.gif',
+  'Remo con mancuerna':       'https://cdn.exercisedb.dev/media/02x4Ac.gif',
+  'Jalones al pecho':         'https://cdn.exercisedb.dev/media/3FMnNc.gif',
+  'Remo en maquina':          'https://cdn.exercisedb.dev/media/2kG3kD.gif',
+  'Peso muerto':              'https://cdn.exercisedb.dev/media/YnLzuO.gif',
+  'Face pull':                'https://cdn.exercisedb.dev/media/3UaFBP.gif',
+  'Hiperextensiones':         'https://cdn.exercisedb.dev/media/3NFKVq.gif',
   // HOMBROS
-  'Press militar':           W+'b/b2/Overhead_press-CDC_strength_training_for_older_adults.gif',
-  'Elevaciones laterales':   W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Elevaciones frontales':   W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Pajaros':                 W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif',
-  'Arnold press':            W+'b/b2/Overhead_press-CDC_strength_training_for_older_adults.gif',
+  'Press militar':            'https://cdn.exercisedb.dev/media/4B0f0A.gif',
+  'Elevaciones laterales':    'https://cdn.exercisedb.dev/media/0IC4Ac.gif',
+  'Elevaciones frontales':    'https://cdn.exercisedb.dev/media/0IC2bz.gif',
+  'Pajaros':                  'https://cdn.exercisedb.dev/media/0IC2bA.gif',
+  'Arnold press':             'https://cdn.exercisedb.dev/media/GvN4Vm.gif',
+  'Press con mancuernas sentado': 'https://cdn.exercisedb.dev/media/5b20Fl.gif',
+  'Encogimientos de hombros': 'https://cdn.exercisedb.dev/media/2F6Kek.gif',
   // BÍCEPS
-  'Curl con barra':          W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Curl con mancuernas':     W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Curl martillo':           W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Curl concentrado':        W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
-  'Curl en polea':           W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif',
+  'Curl con barra':           'https://cdn.exercisedb.dev/media/2MDYem.gif',
+  'Curl con mancuernas':      'https://cdn.exercisedb.dev/media/0IC2bR.gif',
+  'Curl martillo':            'https://cdn.exercisedb.dev/media/0IC2bX.gif',
+  'Curl concentrado':         'https://cdn.exercisedb.dev/media/0IC2bW.gif',
+  'Curl en polea':            'https://cdn.exercisedb.dev/media/3MHDn4.gif',
+  'Curl inclinado':           'https://cdn.exercisedb.dev/media/vKilzz3.gif',
+  'Curl en banca Scott':      'https://cdn.exercisedb.dev/media/3B4MEQ.gif',
   // TRÍCEPS
-  'Extension en polea alta': W+'3/32/One-arm-tricep-extension-1.gif',
-  'Press frances':           W+'3/32/One-arm-tricep-extension-1.gif',
-  'Patada de triceps':       W+'3/32/One-arm-tricep-extension-1.gif',
-  'Fondos de triceps':       W+'8/8f/Pushups.gif',
-  'Extension con mancuerna': W+'3/32/One-arm-tricep-extension-1.gif',
+  'Extension en polea alta':  'https://cdn.exercisedb.dev/media/3mMJBO.gif',
+  'Press frances':            'https://cdn.exercisedb.dev/media/2MDYer.gif',
+  'Patada de triceps':        'https://cdn.exercisedb.dev/media/0IC2ba.gif',
+  'Fondos de triceps':        'https://cdn.exercisedb.dev/media/0K11Rq.gif',
+  'Extension con mancuerna':  'https://cdn.exercisedb.dev/media/0IC2bN.gif',
+  'Press cerrado':            'https://cdn.exercisedb.dev/media/3mMJBp.gif',
   // PIERNAS
-  'Sentadilla':              W+'e/e6/Squats.gif',
-  'Prensa de piernas':       W+'e/e6/Squats.gif',
-  'Extension de cuadriceps': W+'e/e6/Squats.gif',
-  'Curl de femoral':         W+'3/32/Hamstring_stretch-CDC_strength_training_for_older_adults.gif',
-  'Peso muerto rumano':      W+'3/32/Hamstring_stretch-CDC_strength_training_for_older_adults.gif',
-  'Zancadas':                W+'a/af/Lunge-CDC_strength_training_for_older_adults.gif',
-  'Elevacion de gemelos':    W+'1/10/Toe_stand-CDC_strength_training_for_older_adults.gif',
+  'Sentadilla':               'https://cdn.exercisedb.dev/media/4B0f0B.gif',
+  'Prensa de piernas':        'https://cdn.exercisedb.dev/media/0IC2bK.gif',
+  'Extension de cuadriceps':  'https://cdn.exercisedb.dev/media/0IC2bL.gif',
+  'Curl de femoral':          'https://cdn.exercisedb.dev/media/0IC2bM.gif',
+  'Peso muerto rumano':       'https://cdn.exercisedb.dev/media/3mMJBr.gif',
+  'Zancadas':                 'https://cdn.exercisedb.dev/media/0IC2bJ.gif',
+  'Elevacion de gemelos':     'https://cdn.exercisedb.dev/media/0IC2bI.gif',
+  'Hip thrust':               'https://cdn.exercisedb.dev/media/0IC2bH.gif',
+  'Sentadilla bulgara':       'https://cdn.exercisedb.dev/media/4B0f0C.gif',
+  'Sentadilla sumo':          'https://cdn.exercisedb.dev/media/4B0f0D.gif',
+  // GLÚTEOS
+  'Patada de gluteo en polea':'https://cdn.exercisedb.dev/media/3mMJBs.gif',
+  'Puente de gluteo':         'https://cdn.exercisedb.dev/media/0IC2bG.gif',
   // ABDOMEN
-  'Plancha':                 W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
-  'Crunch':                  W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
-  'Elevacion de piernas':    W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
-  'Rueda abdominal':         W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
-  'Russian twist':           W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif',
+  'Plancha':                  'https://cdn.exercisedb.dev/media/0IC2bF.gif',
+  'Crunch':                   'https://cdn.exercisedb.dev/media/0IC2bE.gif',
+  'Elevacion de piernas':     'https://cdn.exercisedb.dev/media/0IC2bD.gif',
+  'Rueda abdominal':          'https://cdn.exercisedb.dev/media/3mMJBt.gif',
+  'Russian twist':            'https://cdn.exercisedb.dev/media/0IC2bC.gif',
+  'Crunch en polea':          'https://cdn.exercisedb.dev/media/3mMJBu.gif',
+  'Plancha lateral':          'https://cdn.exercisedb.dev/media/0IC2bB.gif',
+  'Mountain climbers':        'https://cdn.exercisedb.dev/media/0IC2bA1.gif',
+  // CARDIO
+  'Cuerda':                   'https://cdn.exercisedb.dev/media/0IC2bA2.gif',
+  'Burpees':                  'https://cdn.exercisedb.dev/media/0IC2bA3.gif',
+  'Saltos de caja':           'https://cdn.exercisedb.dev/media/0IC2bA4.gif',
+  // CALISTENIA
+  'Pistol squat':             'https://cdn.exercisedb.dev/media/4B0f0E.gif',
+  'Pike push-up':             'https://cdn.exercisedb.dev/media/0IC2bA6.gif',
 };
 
 // ─── Warmup Database (calentamientos por grupo muscular) ─────
@@ -5260,6 +5287,9 @@ const EXERCISE_EQUIP = {
   'Aperturas':             ['mancuernas','cable','maquina'],
   'Fondos en paralelas':   ['corporal'],
   'Crossover en polea':    ['cable'],
+  'Press declinado':       ['barra','mancuernas'],
+  'Pull-over con mancuerna': ['mancuernas'],
+  'Press en maquina':      ['maquina'],
   // Espalda
   'Dominadas':             ['corporal'],
   'Remo con barra':        ['barra'],
@@ -5267,24 +5297,38 @@ const EXERCISE_EQUIP = {
   'Jalones al pecho':      ['cable','maquina'],
   'Remo en maquina':       ['maquina'],
   'Peso muerto':           ['barra','mancuernas'],
+  'Remo en T':             ['barra'],
+  'Face pull':             ['cable'],
+  'Jalones agarre neutro': ['cable','maquina'],
+  'Pullover en polea':     ['cable'],
+  'Hiperextensiones':      ['corporal','maquina'],
   // Hombros
   'Press militar':         ['barra','mancuernas','maquina'],
   'Elevaciones laterales': ['mancuernas','cable'],
   'Elevaciones frontales': ['mancuernas','cable'],
   'Pajaros':               ['mancuernas','cable'],
   'Arnold press':          ['mancuernas'],
+  'Press con mancuernas sentado': ['mancuernas'],
+  'Elevaciones en polea':  ['cable'],
+  'Encogimientos de hombros': ['barra','mancuernas'],
   // Biceps
   'Curl con barra':        ['barra'],
   'Curl con mancuernas':   ['mancuernas'],
   'Curl martillo':         ['mancuernas'],
   'Curl concentrado':      ['mancuernas'],
   'Curl en polea':         ['cable'],
+  'Curl inclinado':        ['mancuernas'],
+  'Curl en banca Scott':   ['barra','mancuernas'],
+  'Curl 21s':              ['barra'],
   // Triceps
   'Extension en polea alta':  ['cable'],
   'Press frances':            ['barra','mancuernas'],
   'Patada de triceps':        ['mancuernas','cable'],
   'Fondos de triceps':        ['corporal'],
   'Extension con mancuerna':  ['mancuernas'],
+  'Extension en polea baja':  ['cable'],
+  'Press cerrado':            ['barra'],
+  'Overhead en polea':        ['cable'],
   // Piernas
   'Sentadilla':            ['barra','corporal'],
   'Prensa de piernas':     ['maquina'],
@@ -5293,18 +5337,46 @@ const EXERCISE_EQUIP = {
   'Peso muerto rumano':    ['barra','mancuernas'],
   'Zancadas':              ['barra','mancuernas','corporal'],
   'Elevacion de gemelos':  ['maquina','corporal'],
+  'Hip thrust':            ['barra','maquina'],
+  'Sentadilla bulgara':    ['mancuernas','barra'],
+  'Abductores en maquina': ['maquina'],
+  'Aductores en maquina':  ['maquina'],
+  'Step-up':               ['mancuernas','barra','corporal'],
+  'Sentadilla sumo':       ['barra','mancuernas'],
+  // Gluteos
+  'Patada de gluteo en polea': ['cable'],
+  'Peso muerto a una pierna':  ['mancuernas','barra'],
+  'Puente de gluteo':      ['barra','corporal'],
+  'Abduccion con banda':   ['banda'],
   // Abdomen
   'Plancha':               ['corporal'],
   'Crunch':                ['corporal'],
   'Elevacion de piernas':  ['corporal'],
   'Rueda abdominal':       ['corporal'],
   'Russian twist':         ['corporal','mancuernas'],
+  'Crunch en polea':       ['cable'],
+  'Plancha lateral':       ['corporal'],
+  'Mountain climbers':     ['corporal'],
+  'Hollow hold':           ['corporal'],
+  'Dragon flag':           ['corporal'],
   // Cardio
   'Caminadora':            ['maquina'],
   'Bicicleta estatica':    ['maquina'],
   'Remo':                  ['maquina','cable'],
   'Cuerda':                ['corporal'],
   'Burpees':               ['corporal'],
+  'Eliptica':              ['maquina'],
+  'Escaladora':            ['maquina'],
+  'Saltos de caja':        ['corporal'],
+  'Sprint en caminadora':  ['maquina'],
+  // Calistenia
+  'Muscle-up':             ['corporal'],
+  'L-sit':                 ['corporal'],
+  'Pistol squat':          ['corporal'],
+  'Archer push-up':        ['corporal'],
+  'Pike push-up':          ['corporal'],
+  'Hollow body':           ['corporal'],
+  'Back lever':            ['corporal'],
 };
 
 function exKey(name, equip) { return equip ? `${name} · ${equip}` : name; }
@@ -5914,8 +5986,10 @@ function showExerciseInfo(name) {
   document.getElementById('exInfoTips').innerHTML = (info.tips || []).map(t => `<li><span class="ex-tip-icon">✓</span>${t}</li>`).join('');
   document.getElementById('exInfoErrors').innerHTML = (info.errors || []).map(e => `<li><span class="ex-tip-icon">✗</span>${e}</li>`).join('');
   _currentExInfoGif = exerciseGIFs[name] || '';
+  const gifInline = document.getElementById('exInfoGifInline');
+  if (gifInline) { if (_currentExInfoGif) { gifInline.src = _currentExInfoGif; gifInline.style.display = 'block'; } else { gifInline.style.display = 'none'; } }
   const gifBtn = document.getElementById('exInfoGifBtn');
-  if (gifBtn) gifBtn.style.display = _currentExInfoGif ? 'flex' : 'none';
+  if (gifBtn) gifBtn.style.display = 'none';
   document.getElementById('exInfoOverlay').classList.add('active');
   setTimeout(() => document.getElementById('exInfoSheet').classList.add('active'), 10);
 }
