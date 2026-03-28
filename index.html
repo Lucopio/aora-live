@@ -7858,7 +7858,7 @@ function continueWithoutAccount() {
 
 async function handleLogout() {
   localStorage.removeItem('gymtracker_skip_auth');
-  if (sb) await sb.auth.signOut();
+  try { if (sb) await sb.auth.signOut(); } catch(e) { /* ignorar error de red */ }
   currentUser = null;
   updateAccountUI();
   showScreen('auth');
