@@ -2635,6 +2635,18 @@ body {
       <div class="settings-group-title">Alertas</div>
       <div class="setting-row"><div class="setting-left"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg><span>Sonido de alerta</span></div><div class="toggle on" id="toggleSound" onclick="toggleSetting(this)"></div></div>
       <div class="setting-row"><div class="setting-left"><svg viewBox="0 0 24 24"><path d="M5.5 12h13M12 5.5v13"/></svg><span>Vibracion</span></div><div class="toggle on" id="toggleVibration" onclick="toggleSetting(this)"></div></div>
+      <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <span>Alertas de voz del coach</span>
+        </div>
+        <div style="display:flex;gap:6px;width:100%;flex-wrap:wrap">
+          <button class="voice-opt-btn active" data-val="ambas"   onclick="setVoiceAlertMode('ambas')"   style="flex:1;min-width:70px;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--primary);color:#fff;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer">Ambas</button>
+          <button class="voice-opt-btn"        data-val="mitad"   onclick="setVoiceAlertMode('mitad')"   style="flex:1;min-width:70px;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer">Mitad</button>
+          <button class="voice-opt-btn"        data-val="10s"     onclick="setVoiceAlertMode('10s')"     style="flex:1;min-width:70px;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer">10s</button>
+          <button class="voice-opt-btn"        data-val="ninguna" onclick="setVoiceAlertMode('ninguna')" style="flex:1;min-width:70px;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer">Ninguna</button>
+        </div>
+      </div>
     </div>
 
     <!-- IA & Training Preferences -->
@@ -3711,6 +3723,63 @@ let countdownRemaining = 0;
 let isResting = false;
 let audioCtx = null;
 let soundEnabled = true;
+let voiceAlertMode = 'ambas'; // 'mitad' | '10s' | 'ambas' | 'ninguna'
+
+// ─── Coach Voice Phrases ─────────────────────────────────────
+const COACH_VOICE = {
+  maria: {
+    mid: [
+      '¡Mitad del descanso, parcera! Prepara tu cuerpo.',
+      '¡Vas muy bien! Quedan pocos segundos, enfócate.',
+      '¡Eso es! Respira y mentalízate para la siguiente.',
+      '¡La mitad ya pasó! Tú puedes con esto.',
+    ],
+    ten: [
+      '¡Diez segundos! ¡A ponerse de pie, parcera!',
+      '¡Casi! Diez segundos y entramos fuerte.',
+      '¡Diez! Prepárate que viene la siguiente.',
+    ],
+  },
+  carlos: {
+    mid: [
+      'Mitad del descanso. Mentalízate para la siguiente serie.',
+      'Cincuenta por ciento. Prepara la postura.',
+      'Mitad. Recuperación activa. Respira profundo.',
+      'Ya va la mitad. La siguiente serie te define.',
+    ],
+    ten: [
+      'Diez segundos. Listo.',
+      'Diez. De pie.',
+      'Diez segundos para la siguiente serie.',
+    ],
+  },
+  andrea: {
+    mid: [
+      'Mitad del descanso. Respirá, escuchá a tu cuerpo.',
+      'Aprovechá estos segundos. Tu cuerpo los necesita.',
+      'Ya pasó la mitad. ¿Cómo te sentís? Seguís bien.',
+      'Mitad. Tomá aire. Vos podés con la siguiente.',
+    ],
+    ten: [
+      'Diez segundos. ¿Cómo está tu cuerpo?',
+      'Casi. Diez segundos y volvemos.',
+      'Diez segundos. Preparate con calma.',
+    ],
+  },
+  diego: {
+    mid: [
+      'La calma antes del esfuerzo. Mitad del camino.',
+      'Mitad. El descanso es parte del entrenamiento.',
+      'La mitad ya está. Respira. Enfócate.',
+      'Mitad del descanso. La mente descansa también.',
+    ],
+    ten: [
+      'Diez segundos. Enfócate.',
+      'Diez. El momento llega.',
+      'Diez segundos. Regresa al presente.',
+    ],
+  },
+};
 let vibrationEnabled = true;
 let savedWorkouts = [];
 let motivationInterval = null;
@@ -6387,12 +6456,16 @@ function startRestTimer() {
   countdownInterval = setInterval(() => {
     countdownRemaining--;
     if (countdownRemaining > 0) {
-      // Alerta a mitad del descanso: vibración + pitido suave (una sola vez)
+      // Alerta a mitad del descanso: vibración + pitido + voz (una sola vez)
       const halfPoint = Math.round(total / 2);
-      if (countdownRemaining === halfPoint && !halfwayAlertFired) {
+      if (countdownRemaining === halfPoint && !halfwayAlertFired && total > 15) {
         halfwayAlertFired = true;
         if (vibrationEnabled && navigator.vibrate) navigator.vibrate([60, 40, 60]);
         playBeep(440, 80);
+        speakCoach('mid');
+      }
+      if (countdownRemaining === 10 && total > 15) {
+        speakCoach('ten');
       }
       if (countdownRemaining <= 10) {
         ring.classList.add('alert');
@@ -7103,6 +7176,36 @@ function playFinalBeep() {
     g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + 0.8);
     o.start(c.currentTime); o.stop(c.currentTime + 0.8);
   } catch(e) {}
+}
+
+// ─── Coach Speech Synthesis ─────────────────────────────────
+function speakCoach(type) {
+  if (voiceAlertMode === 'ninguna') return;
+  if (type === 'mid'  && voiceAlertMode === '10s') return;
+  if (type === 'ten'  && voiceAlertMode === 'mitad') return;
+  if (!window.speechSynthesis) return;
+  const coach = getSelectedCoach();
+  const coachId = coach ? coach.id : 'carlos';
+  const pool = COACH_VOICE[coachId]?.[type] || COACH_VOICE.carlos[type];
+  const text = pool[Math.floor(Math.random() * pool.length)];
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'es-MX';
+  utt.rate = 1.05;
+  utt.pitch = coachId === 'maria' ? 1.15 : coachId === 'andrea' ? 1.05 : 0.95;
+  utt.volume = 1;
+  window.speechSynthesis.speak(utt);
+}
+
+function setVoiceAlertMode(mode) {
+  voiceAlertMode = mode;
+  document.querySelectorAll('.voice-opt-btn').forEach(b => {
+    const on = b.dataset.val === mode;
+    b.classList.toggle('active', on);
+    b.style.background = on ? 'var(--primary)' : 'var(--surface2)';
+    b.style.color = on ? '#fff' : 'var(--text-primary)';
+  });
+  saveToStorage();
 }
 
 // ─── Settings ───────────────────────────────────────────────
@@ -7816,6 +7919,7 @@ function saveToStorage() {
     restSeconds,
     soundEnabled,
     vibrationEnabled,
+    voiceAlertMode,
     historyCleared,
     lastWeights,
     customExercises
@@ -7852,6 +7956,11 @@ function loadFromStorage() {
     if (typeof data.vibrationEnabled === 'boolean') {
       vibrationEnabled = data.vibrationEnabled;
       document.getElementById('toggleVibration').classList.toggle('on', vibrationEnabled);
+    }
+    if (data.voiceAlertMode) {
+      voiceAlertMode = data.voiceAlertMode;
+      document.querySelectorAll('.voice-opt-btn').forEach(b => b.classList.toggle('active', b.dataset.val === voiceAlertMode));
+      document.querySelectorAll('.voice-opt-btn').forEach(b => { b.style.background = b.dataset.val === voiceAlertMode ? 'var(--primary)' : 'var(--surface2)'; b.style.color = b.dataset.val === voiceAlertMode ? '#fff' : 'var(--text-primary)'; });
     }
     if (data.historyCleared) historyCleared = true;
     if (data.lastWeights) lastWeights = data.lastWeights;
