@@ -6,24 +6,24 @@
 <meta name="theme-color" content="#080A0F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GymTracker">
+<meta name="apple-mobile-web-app-title" content="AORA LIVE">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>GymTracker</title>
+<title>AORA LIVE</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #080A0F;
-  --surface: #0E1119;
-  --surface2: #151922;
+  --surface: #111318;
+  --surface2: #1A1D24;
   --surface-raised: #1C2230;
   --primary: #00E5FF;
   --primary-dark: #00B8CC;
   --primary-light: rgba(0,229,255,0.12);
   --accent2: #7B61FF;
-  --text-primary: #F0F2F5;
-  --text-secondary: #9CA3AF;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8A8F9E;
   --text-tertiary: #6B7280;
   --success: #00C896;
   --success-light: rgba(0,200,150,0.12);
@@ -31,7 +31,7 @@
   --danger-light: rgba(255,77,109,0.12);
   --warning: #FFB800;
   --warning-light: rgba(255,184,0,0.12);
-  --border: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --radius: 16px;
@@ -1110,7 +1110,7 @@ body {
 /* ─── AUTH SCREEN ────────────────────────────────────────── */
 .auth-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:32px 24px; }
 .auth-logo { text-align:center; margin-bottom:36px; }
-.auth-logo h1 { font-size:34px; font-weight:700; color:var(--text-primary); letter-spacing:-0.5px; }
+.auth-logo h1 { font-family:'Syne',sans-serif; font-size:34px; font-weight:800; color:#00E5FF; letter-spacing:-0.5px; }
 .auth-logo p { font-size:14px; color:var(--text-secondary); margin-top:6px; }
 .auth-card { width:100%; max-width:360px; background:var(--surface); border-radius:var(--radius); border:1.5px solid var(--border); padding:28px 24px; box-shadow:var(--shadow); }
 .auth-card h2 { font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
@@ -1743,18 +1743,25 @@ body {
 <body>
 
 <!-- LOADING OVERLAY (se oculta una vez resuelta la sesión) -->
-<div id="appLoadingOverlay" style="position:fixed;inset:0;background:#080A0F;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:9999">
-  <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#00E5FF">GymTracker</h2>
+<div id="appLoadingOverlay" style="position:fixed;inset:0;background:#080A0F;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9999">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+    <div style="display:flex;align-items:center;gap:4px;font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:#fff;letter-spacing:-0.5px">
+      A<svg viewBox="0 0 28 28" width="28" height="28" style="margin:0 2px;animation:aoraPulse 1.5s ease-in-out infinite"><circle cx="14" cy="14" r="13" fill="none" stroke="#00E5FF" stroke-width="1.5"/><polyline points="5.6,14 8.4,14 11.2,5.6 14,21 16.8,7.7 19.6,14 25.2,14" fill="none" stroke="#00E5FF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>RA
+    </div>
+    <span style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:#00E5FF;letter-spacing:0.3em">L I V E</span>
+  </div>
+  <p style="font-size:12px;color:#8A8F9E;margin-top:4px">Tu entrenador IA, siempre contigo</p>
   <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#00E5FF;border-radius:50%;animation:spin 0.8s linear infinite"></div>
 </div>
+<style>@keyframes aoraPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.08)}}</style>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <!-- AUTH SCREEN -->
 <div class="screen" id="authScreen">
   <div class="auth-wrap">
-    <div class="auth-logo">
-      <h1>GymTracker</h1>
-      <p>Tu entrenamiento, donde quieras</p>
+    <div class="auth-logo" id="authLogoContainer">
+      <h1>AORA LIVE</h1>
+      <p>Tu entrenador IA, siempre contigo</p>
     </div>
     <div class="auth-card">
       <h2 id="authTitle">Iniciar sesion</h2>
@@ -1787,7 +1794,7 @@ body {
       <div class="w-content">
         <div class="w-hero">⚡</div>
         <h1 class="w-title">Entrena con intención.<br>Descansa con propósito.</h1>
-        <p class="w-subtitle">La mayoría pierde resultados por ignorar el descanso. GymTracker lo cambia.</p>
+        <p class="w-subtitle">La mayoría pierde resultados por ignorar el descanso. AORA LIVE lo cambia.</p>
         <div class="w-stats">
           <div class="w-stat-card">
             <div class="w-stat-num">+31%</div>
@@ -1802,10 +1809,10 @@ body {
       </div>
     </div>
 
-    <!-- Slide 2: ¿Qué es GymTracker? -->
+    <!-- Slide 2: ¿Qué es AORA LIVE? -->
     <div class="welcome-slide" id="welcomeSlide2">
       <div class="w-content">
-        <h2 class="w-title">¿Qué es GymTracker?</h2>
+        <h2 class="w-title">¿Qué es AORA LIVE?</h2>
         <div class="w-items">
           <div class="w-item">
             <span class="w-item-icon">📋</span>
@@ -1818,7 +1825,7 @@ body {
             <span class="w-item-icon">⏱️</span>
             <div>
               <div class="w-item-title">El descanso importa más de lo que crees</div>
-              <div class="w-item-desc">Demasiado poco = menos fuerza. Demasiado = sesiones eternas. GymTracker encuentra tu punto exacto.</div>
+              <div class="w-item-desc">Demasiado poco = menos fuerza. Demasiado = sesiones eternas. AORA LIVE encuentra tu punto exacto.</div>
             </div>
           </div>
           <div class="w-item">
@@ -1878,7 +1885,7 @@ body {
         <div class="w-chat">
           <div class="w-chat-head">
             <div class="w-chat-av">🤖</div>
-            <span class="w-chat-nm">Asistente GymTracker</span>
+            <span class="w-chat-nm">Asistente AORA LIVE</span>
           </div>
           <p class="w-chat-msg">Descansaste 38s entre series de sentadilla — menos de lo ideal. Esta semana subiste 5kg de volumen. Te sugiero bajar intensidad el jueves.</p>
         </div>
@@ -2113,7 +2120,7 @@ body {
       <div class="home-greeting-row">
         <div>
           <p id="homeGreeting" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px">Buenas tardes</p>
-          <h1 id="homeUserName">GymTracker</h1>
+          <h1 id="homeUserName">AORA LIVE</h1>
         </div>
         <span class="streak-badge" id="homeStreakBadge">🔥 0 semanas</span>
       </div>
@@ -3044,6 +3051,19 @@ body {
 </div>
 
 <script>
+// ─── AORA LIVE LOGO ─────────────────────────────────────────────────────────
+function aoraLogo(size = 'md') {
+  const sizes = { sm: { font: 18, sub: 8, gap: 2, icon: 18 }, md: { font: 26, sub: 10, gap: 4, icon: 24 }, lg: { font: 36, sub: 13, gap: 6, icon: 32 } };
+  const s = sizes[size] || sizes.md;
+  const r = s.icon / 2;
+  return `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:${s.gap}px;line-height:1">
+    <div style="display:flex;align-items:center;gap:${s.gap}px;font-family:'Syne',sans-serif;font-weight:800;font-size:${s.font}px;color:#fff;letter-spacing:-0.5px">
+      A<svg viewBox="0 0 ${s.icon} ${s.icon}" width="${s.icon}" height="${s.icon}" style="margin:0 ${s.gap/2}px"><circle cx="${r}" cy="${r}" r="${r-1}" fill="none" stroke="#00E5FF" stroke-width="1.5"/><polyline points="${r*0.2},${r} ${r*0.6},${r} ${r*0.8},${r*0.4} ${r},${r*1.5} ${r*1.2},${r*0.55} ${r*1.4},${r} ${r*1.8},${r}" fill="none" stroke="#00E5FF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>RA
+    </div>
+    <span style="font-family:'DM Sans',sans-serif;font-size:${s.sub}px;font-weight:700;color:#00E5FF;letter-spacing:0.3em">L I V E</span>
+  </div>`;
+}
+
 // ─── COACHES DATA ────────────────────────────────────────────────────────────
 const COACHES = {
   maria:  { name: 'María',  emoji: '👩🏽', country: 'Colombia', flag: '🇨🇴', specialty: 'HIIT & Funcional',       tone: 'energética' },
@@ -7665,7 +7685,7 @@ function showInstallBanner() {
   banner.style.cssText = 'position:fixed;bottom:72px;left:12px;right:12px;max-width:480px;margin:0 auto;background:linear-gradient(135deg,var(--accent2),var(--primary-dark));color:white;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;z-index:300;box-shadow:0 6px 24px rgba(0,229,255,0.2);font-family:DM Sans,sans-serif;animation:slideUp .35s ease';
   banner.innerHTML = `
     <div style="flex:1">
-      <div style="font-size:14px;font-weight:700">Instalar GymTracker</div>
+      <div style="font-size:14px;font-weight:700">Instalar AORA LIVE</div>
       <div style="font-size:12px;opacity:0.85;margin-top:2px">Agregar a tu pantalla de inicio</div>
     </div>
     <button onclick="installPWA()" style="padding:8px 18px;background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;margin-left:12px">Instalar</button>

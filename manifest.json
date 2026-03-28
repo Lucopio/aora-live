@@ -1,12 +1,12 @@
 {
-  "name": "GymTracker",
-  "short_name": "GymTracker",
-  "description": "Rastreador de entrenamiento con temporizador de descanso",
+  "name": "AORA LIVE",
+  "short_name": "AORA LIVE",
+  "description": "Tu entrenador IA, siempre contigo",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F8F9FA",
-  "theme_color": "#1A73E8",
+  "background_color": "#080A0F",
+  "theme_color": "#080A0F",
   "icons": [
     {
       "src": "icon-192.png",
