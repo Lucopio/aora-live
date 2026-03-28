@@ -2519,6 +2519,58 @@ body {
   <div class="screen-pad">
     <div class="settings-header"><h1>Ajustes</h1></div>
 
+    <!-- Perfil (visible solo cuando hay sesion) -->
+    <div id="profileGroup" style="display:none">
+      <div class="settings-group-title">Perfil</div>
+      <div class="profile-card">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-info">
+          <div class="profile-info-name" id="profileName">—</div>
+          <div class="profile-stat-row" id="profileStatRow"></div>
+          <div class="profile-info-sub" id="profileGoalLabel"></div>
+        </div>
+        <button class="profile-edit-btn" onclick="showOnboarding(true)">Editar</button>
+      </div>
+    </div>
+
+    <!-- Login (visible solo cuando NO hay sesion) -->
+    <div class="settings-group" id="loginGroup" style="display:none">
+      <div class="settings-group-title">Cuenta</div>
+      <div class="setting-row" style="cursor:pointer" onclick="showScreen('auth')">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Iniciar sesion</span>
+        </div>
+        <div class="setting-value" style="color:var(--primary)">Entrar →</div>
+      </div>
+      <div style="padding:0 0 10px 0;font-size:12px;color:var(--text-tertiary)">Inicia sesión para sincronizar tus datos y acceder al análisis IA.</div>
+    </div>
+
+    <!-- Cuenta (visible solo cuando hay sesion) -->
+    <div class="settings-group" id="accountGroup" style="display:none">
+      <div class="settings-group-title">Cuenta</div>
+      <div class="setting-row">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="account-email" id="accountEmail">—</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <span>Sincronizacion</span>
+        </div>
+        <div class="setting-value" id="syncStatusText">Al dia</div>
+      </div>
+      <div class="setting-row" style="cursor:pointer" onclick="handleLogout()">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Cerrar sesion</span>
+        </div>
+        <div class="setting-value" style="color:var(--danger)">Salir</div>
+      </div>
+    </div>
+
     <!-- Rest time config -->
     <div class="settings-group">
       <div class="settings-group-title">Tiempo de descanso predeterminado</div>
@@ -2604,57 +2656,6 @@ body {
       </div>
     </div>
 
-    <!-- Perfil (visible solo cuando hay sesion) -->
-    <div id="profileGroup" style="display:none">
-      <div class="settings-group-title">Perfil</div>
-      <div class="profile-card">
-        <div class="profile-avatar" id="profileAvatar">?</div>
-        <div class="profile-info">
-          <div class="profile-info-name" id="profileName">—</div>
-          <div class="profile-stat-row" id="profileStatRow"></div>
-          <div class="profile-info-sub" id="profileGoalLabel"></div>
-        </div>
-        <button class="profile-edit-btn" onclick="showOnboarding(true)">Editar</button>
-      </div>
-    </div>
-
-    <!-- Login (visible solo cuando NO hay sesion) -->
-    <div class="settings-group" id="loginGroup" style="display:none">
-      <div class="settings-group-title">Cuenta</div>
-      <div class="setting-row" style="cursor:pointer" onclick="showScreen('auth')">
-        <div class="setting-left">
-          <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          <span>Iniciar sesion</span>
-        </div>
-        <div class="setting-value" style="color:var(--primary)">Entrar →</div>
-      </div>
-      <div style="padding:0 0 10px 0;font-size:12px;color:var(--text-tertiary)">Inicia sesión para sincronizar tus datos y acceder al análisis IA.</div>
-    </div>
-
-    <!-- Cuenta (visible solo cuando hay sesion) -->
-    <div class="settings-group" id="accountGroup" style="display:none">
-      <div class="settings-group-title">Cuenta</div>
-      <div class="setting-row">
-        <div class="setting-left">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="account-email" id="accountEmail">—</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-left">
-          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          <span>Sincronizacion</span>
-        </div>
-        <div class="setting-value" id="syncStatusText">Al dia</div>
-      </div>
-      <div class="setting-row" style="cursor:pointer" onclick="handleLogout()">
-        <div class="setting-left">
-          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span>Cerrar sesion</span>
-        </div>
-        <div class="setting-value" style="color:var(--danger)">Salir</div>
-      </div>
-    </div>
 
     <!-- Debug Section -->
     <div class="settings-group" id="debugGroup" style="display:block;opacity:0.6">
