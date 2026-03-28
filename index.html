@@ -485,6 +485,9 @@ body {
 .h-meta .h-excount { font-size: 11px; color: var(--text-tertiary); }
 .h-delete-btn { background: none; border: none; padding: 4px; cursor: pointer; color: var(--text-tertiary); opacity: 0.5; transition: opacity 0.15s, color 0.15s; -webkit-tap-highlight-color: transparent; margin-top: 4px; }
 .h-delete-btn:active { opacity: 1; color: var(--danger); }
+.rpe-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; background: linear-gradient(to right, #00C896 0%, #FFB800 45%, #FF8C00 70%, #FF4D6D 100%); outline: none; cursor: pointer; }
+.rpe-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.35); cursor: pointer; border: 2px solid rgba(0,0,0,0.1); }
+.rpe-slider::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.35); cursor: pointer; border: 2px solid rgba(0,0,0,0.1); }
 
 /* INSIGHTS */
 .insights-card {
@@ -2273,7 +2276,8 @@ body {
               <button class="unit-btn" id="unitLb" onclick="setWeightUnit('lb')">lb</button>
             </div>
           </div>
-          <input type="number" id="weightInput" value="0" min="0" step="2.5" inputmode="decimal">
+          <input type="text" id="weightInput" value="0" inputmode="decimal" autocomplete="off" oninput="updateWeightPreview()">
+          <div id="weightPreview" style="display:none;font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;font-family:var(--mono)"></div>
         </div>
         <div class="set-input-group">
           <label>REPS</label>
@@ -2818,7 +2822,8 @@ body {
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
     <div>
       <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Peso</label>
-      <input id="editSetWeight" type="number" min="0" step="2.5" inputmode="decimal" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
+      <input id="editSetWeight" type="text" inputmode="decimal" autocomplete="off" oninput="updateEditWeightPreview()" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
+      <div id="editWeightPreview" style="display:none;font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;font-family:var(--mono)"></div>
     </div>
     <div>
       <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Reps</label>
@@ -2834,8 +2839,17 @@ body {
     </div>
   </div>
   <div style="margin-bottom:20px">
-    <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">RPE (1-10, opcional)</label>
-    <input id="editSetRPE" type="number" min="1" max="10" inputmode="numeric" placeholder="—" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;font-family:var(--mono);font-weight:700;background:var(--bg);color:var(--text-primary)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Esfuerzo (RPE)</label>
+      <span id="rpeDisplayVal" style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--text-primary)">—</span>
+    </div>
+    <input id="editSetRPE" type="range" min="1" max="10" step="1" class="rpe-slider" oninput="updateRPESlider(this.value)">
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <span style="font-size:11px;color:var(--success)">Fácil</span>
+      <span style="font-size:11px;color:var(--text-tertiary)">Moderado</span>
+      <span style="font-size:11px;color:var(--danger)">Máximo</span>
+    </div>
+    <button id="rpeSkipBtn" onclick="skipRPEEdit()" style="margin-top:8px;background:none;border:none;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-tertiary);cursor:pointer;padding:0">Sin RPE</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <button onclick="closeEditSet()" style="padding:14px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancelar</button>
@@ -5565,6 +5579,8 @@ function _doSelectExercise(name, equip) {
     document.getElementById('weightInput').value = '0';
     document.getElementById('repsInput').value = '10';
   }
+  const wp = document.getElementById('weightPreview');
+  if (wp) wp.style.display = 'none';
   renderSets();
   showScreen('workout');
 }
@@ -5599,8 +5615,73 @@ function _estimateSetMs(reps) {
   return Math.max(0, reps * secPerRep * 1000);
 }
 
+// ─── Weight expression parser ────────────────────────────────
+function parseWeightExpr(str) {
+  const s = String(str || '0').trim().replace(/[xX]/g, '*').replace(/,/g, '.');
+  if (!/^[\d\s\+\-\*\/\.]+$/.test(s)) return parseFloat(str) || 0;
+  try {
+    const result = new Function('"use strict"; return (' + s + ')')();
+    if (typeof result !== 'number' || !isFinite(result) || result < 0) return 0;
+    return Math.round(result * 100) / 100;
+  } catch(e) { return parseFloat(str) || 0; }
+}
+
+function _showWeightPreview(inputId, previewId) {
+  const val = document.getElementById(inputId).value;
+  const preview = document.getElementById(previewId);
+  if (!preview) return;
+  const hasMath = /[xX\+\-\*\/]/.test(val);
+  if (!hasMath || !val.trim()) { preview.style.display = 'none'; return; }
+  const result = parseWeightExpr(val);
+  preview.textContent = '= ' + result;
+  preview.style.display = 'block';
+}
+
+function updateWeightPreview() { _showWeightPreview('weightInput', 'weightPreview'); }
+function updateEditWeightPreview() { _showWeightPreview('editSetWeight', 'editWeightPreview'); }
+
+// ─── RPE Slider ──────────────────────────────────────────────
+let _editRPEActive = false; // false = sin RPE
+
+function updateRPESlider(val) {
+  _editRPEActive = true;
+  const v = parseInt(val);
+  const colors = ['','#00C896','#00C896','#34D399','#FFB800','#FFB800','#FF8C00','#FF8C00','#FF6B35','#FF4D6D','#FF4D6D'];
+  const labels = ['','1 – Muy fácil','2 – Fácil','3 – Ligero','4 – Moderado','5 – Moderado','6 – Difícil','7 – Difícil','8 – Muy difícil','9 – Extremo','10 – Máximo'];
+  const disp = document.getElementById('rpeDisplayVal');
+  if (disp) { disp.textContent = v; disp.style.color = colors[v] || 'var(--text-primary)'; disp.title = labels[v] || ''; }
+  const btn = document.getElementById('rpeSkipBtn');
+  if (btn) btn.textContent = 'Sin RPE';
+}
+
+function skipRPEEdit() {
+  _editRPEActive = false;
+  const disp = document.getElementById('rpeDisplayVal');
+  if (disp) { disp.textContent = '—'; disp.style.color = 'var(--text-primary)'; }
+  const btn = document.getElementById('rpeSkipBtn');
+  if (btn) btn.textContent = '✓ Sin RPE';
+}
+
+function initRPESlider(rpe) {
+  const slider = document.getElementById('editSetRPE');
+  const disp = document.getElementById('rpeDisplayVal');
+  if (!slider || !disp) return;
+  if (rpe != null && rpe >= 1 && rpe <= 10) {
+    _editRPEActive = true;
+    slider.value = rpe;
+    updateRPESlider(rpe);
+  } else {
+    _editRPEActive = false;
+    slider.value = 5;
+    disp.textContent = '—';
+    disp.style.color = 'var(--text-primary)';
+    const btn = document.getElementById('rpeSkipBtn');
+    if (btn) btn.textContent = 'Sin RPE';
+  }
+}
+
 function addSet() {
-  const weight = parseFloat(document.getElementById('weightInput').value) || 0;
+  const weight = parseWeightExpr(document.getElementById('weightInput').value);
   const reps = parseInt(document.getElementById('repsInput').value) || 0;
   if (reps <= 0) return;
   const side = isUnilateral ? activeSide : null;
@@ -5697,7 +5778,7 @@ function editSet(index) {
   document.getElementById('editSetTitle').textContent = isApprox ? `Editar Aproximación` : `Editar Serie ${workNum}`;
   document.getElementById('editSetWeight').value = s.weight || 0;
   document.getElementById('editSetReps').value = s.reps || 0;
-  document.getElementById('editSetRPE').value = s.rpe != null ? s.rpe : '';
+  initRPESlider(s.rpe);
   // Mostrar selector de lado si es ejercicio unilateral o la serie ya tiene lado
   const sideRow = document.getElementById('editSetSideRow');
   if (s.side || isUnilateral) {
@@ -5720,11 +5801,10 @@ function editSet(index) {
 
 function saveEditedSet() {
   if (_editSetIndex < 0) return;
-  const weight = parseFloat(document.getElementById('editSetWeight').value) || 0;
+  const weight = parseWeightExpr(document.getElementById('editSetWeight').value);
   const reps   = parseInt(document.getElementById('editSetReps').value) || 0;
   if (reps <= 0) return;
-  const rpeVal = document.getElementById('editSetRPE').value;
-  const rpe    = rpeVal !== '' ? parseInt(rpeVal) : null;
+  const rpe = _editRPEActive ? parseInt(document.getElementById('editSetRPE').value) : null;
   currentExerciseSets[_editSetIndex].weight = weight;
   currentExerciseSets[_editSetIndex].reps   = reps;
   currentExerciseSets[_editSetIndex].rpe    = rpe;
