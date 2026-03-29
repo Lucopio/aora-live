@@ -3456,7 +3456,8 @@ function showCoachAlertToast(alertType) {
     </div>
   `;
 
-  requestAnimationFrame(() => { toast.classList.add('visible'); });
+  toast.classList.remove('visible');
+  setTimeout(() => { toast.classList.add('visible'); }, 30);
   clearTimeout(window._coachAlertTimeout);
   window._coachAlertTimeout = setTimeout(dismissCoachAlert, 8000);
 }
@@ -4314,7 +4315,10 @@ function showWarmup() {
   }, 1000);
   // Update button label when returning mid-workout
   const goBtn = document.querySelector('.warmup-go-btn');
-  if (goBtn) goBtn.textContent = fromWorkout ? '✓ Listo, volver al entreno' : '✓ Listo para entrenar';
+  if (goBtn) {
+    const label = goBtn.querySelector('span') || goBtn.lastChild;
+    if (label && label.nodeType === 3) label.textContent = fromWorkout ? ' Listo, volver al entreno' : ' Listo, empezar entrenamiento';
+  }
   showScreen('warmup');
 }
 
