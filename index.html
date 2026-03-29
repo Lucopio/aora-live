@@ -3438,6 +3438,7 @@ function showCoachAlertToast(alertType) {
     toast = document.createElement('div');
     toast.id = 'coachAlertToast';
     toast.className = 'coach-alert-toast';
+    toast.onclick = e => e.stopPropagation();
     document.body.appendChild(toast);
   }
 
@@ -3459,7 +3460,6 @@ function showCoachAlertToast(alertType) {
   toast.classList.remove('visible');
   setTimeout(() => { toast.classList.add('visible'); }, 30);
   clearTimeout(window._coachAlertTimeout);
-  window._coachAlertTimeout = setTimeout(dismissCoachAlert, 8000);
 }
 
 function dismissCoachAlert() {
