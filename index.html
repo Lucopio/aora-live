@@ -3923,6 +3923,51 @@ let isResting = false;
 let audioCtx = null;
 let soundEnabled = true;
 let voiceAlertMode = 'ambas'; // 'mitad' | '10s' | 'ambas' | 'ninguna'
+let _ttsVoices = [];
+function _loadTTSVoices() {
+  const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  if (vs.length) _ttsVoices = vs;
+}
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = _loadTTSVoices;
+  _loadTTSVoices();
+}
+
+// Per-coach TTS params — tuned for personality
+const COACH_TTS = {
+  maria:  { rate: 1.12, pitch: 1.25, female: true  }, // energética, voz alta
+  carlos: { rate: 0.95, pitch: 0.82, female: false }, // analítico, pausado, grave
+  andrea: { rate: 0.88, pitch: 1.08, female: true  }, // calmada, cálida
+  diego:  { rate: 1.02, pitch: 0.75, female: false }, // intenso, bajo
+};
+
+function _pickVoice(coachId) {
+  const all = _ttsVoices.length ? _ttsVoices : (window.speechSynthesis ? window.speechSynthesis.getVoices() : []);
+  const esVoices = all.filter(v => /^es/i.test(v.lang));
+  if (!esVoices.length) return null;
+  const wantFemale = COACH_TTS[coachId]?.female ?? true;
+  const femHints = ['female','femenin','mujer'];
+  const malHints = ['male','masculin','hombre'];
+  function gScore(v) {
+    const n = v.name.toLowerCase();
+    const hasFem = femHints.some(h => n.includes(h));
+    const hasMal = malHints.some(h => n.includes(h));
+    if (wantFemale) return hasFem ? 2 : hasMal ? 0 : 1;
+    return hasMal ? 2 : hasFem ? 0 : 1;
+  }
+  return esVoices.sort((a, b) => {
+    // Prefer Google voices (neural quality on Android Chrome)
+    const ag = a.name.toLowerCase().includes('google') ? 4 : 0;
+    const bg = b.name.toLowerCase().includes('google') ? 4 : 0;
+    if (bg !== ag) return bg - ag;
+    const gd = gScore(b) - gScore(a);
+    if (gd) return gd;
+    // Prefer es-MX / es-US (latin accent matches coaches)
+    const aMX = /es-(MX|US)/i.test(a.lang) ? 1 : 0;
+    const bMX = /es-(MX|US)/i.test(b.lang) ? 1 : 0;
+    return bMX - aMX;
+  })[0] || null;
+}
 let trainingLocation = 'gym'; // 'gym' | 'casa' | 'parque' | 'mixto'
 let cycleEnabled = false;
 let cycleStartDate = null; // ISO date string 'YYYY-MM-DD'
@@ -7679,10 +7724,13 @@ function speakCoach(type) {
   const text = pool[Math.floor(Math.random() * pool.length)];
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'es-MX';
-  utt.rate = 1.05;
-  utt.pitch = coachId === 'maria' ? 1.15 : coachId === 'andrea' ? 1.05 : 0.95;
+  const params = COACH_TTS[coachId] || COACH_TTS.carlos;
+  utt.lang   = 'es-MX';
+  utt.rate   = params.rate;
+  utt.pitch  = params.pitch;
   utt.volume = 1;
+  const voice = _pickVoice(coachId);
+  if (voice) { utt.voice = voice; utt.lang = voice.lang; }
   window.speechSynthesis.speak(utt);
 }
 
