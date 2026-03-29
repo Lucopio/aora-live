@@ -1758,6 +1758,23 @@ body {
 </head>
 <body>
 
+<!-- COACHMARK OVERLAY -->
+<div id="coachmarkOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:9000;align-items:flex-end;justify-content:center;padding:20px" onclick="dismissCoachmark()">
+  <div id="coachmarkBubble" style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px 20px;max-width:420px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="font-size:28px;flex-shrink:0" id="coachmarkEmoji">💡</div>
+      <div style="flex:1">
+        <div id="coachmarkTitle" style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px"></div>
+        <div id="coachmarkText" style="font-size:13px;color:var(--text-secondary);line-height:1.5"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
+      <span id="coachmarkDots" style="font-size:11px;color:var(--text-secondary)"></span>
+      <button onclick="dismissCoachmark()" style="background:var(--primary);border:none;color:#fff;font-size:13px;font-weight:700;padding:8px 18px;border-radius:10px;cursor:pointer;font-family:var(--font)">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOADING OVERLAY (se oculta una vez resuelta la sesión) -->
 <div id="appLoadingOverlay" style="position:fixed;inset:0;background:#080A0F;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9999">
   <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
@@ -1953,6 +1970,60 @@ body {
           <div class="ob-pill" onclick="obPill(this,'sex','male')">Hombre</div>
           <div class="ob-pill" onclick="obPill(this,'sex','female')">Mujer</div>
           <div class="ob-pill" onclick="obPill(this,'sex','other')">Prefiero no decir</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso ciclo menstrual (solo si sexo = femenino) -->
+    <div class="ob-body" id="obStepCycle" style="display:none">
+      <div class="ob-title">Personaliza según tu ciclo</div>
+      <div class="ob-subtitle">Opcional · Puedes cambiarlo después en ajustes</div>
+      <div class="ob-field" style="background:var(--surface2);border-radius:14px;padding:16px;gap:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:15px;font-weight:600;color:var(--text-primary)">Adaptar al ciclo menstrual</div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-top:2px">Fase actual en home · Recomendaciones de intensidad</div>
+          </div>
+          <div class="toggle" id="obCycleToggle" onclick="obToggleCycle(this)" style="flex-shrink:0"></div>
+        </div>
+        <div id="obCycleDateRow" style="display:none;margin-top:12px">
+          <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block">Fecha de inicio de tu último período</label>
+          <input class="ob-input" type="date" id="obCycleDate" style="font-size:15px">
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px 14px;background:rgba(0,229,255,0.06);border-radius:12px;border:1px solid rgba(0,229,255,0.15)">
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+          Esta función calcula tu fase hormonal aproximada y sugiere intensidades de entrenamiento. No es diagnóstico médico.
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso ubicación -->
+    <div class="ob-body" id="obStepLocation" style="display:none">
+      <div class="ob-title">¿Dónde entrenas?</div>
+      <div class="ob-subtitle">Filtramos el catálogo según el equipo disponible</div>
+      <div class="ob-field">
+        <div class="ob-cards" id="obLocationCards" style="grid-template-columns:1fr 1fr">
+          <div class="ob-card" onclick="obCard(this,'location','gym')" style="align-items:center;text-align:center;gap:6px">
+            <span style="font-size:28px">🏋️</span>
+            <div style="font-weight:700">Gym</div>
+            <div style="font-size:11px;color:var(--text-secondary)">Todo el equipo</div>
+          </div>
+          <div class="ob-card" onclick="obCard(this,'location','casa')" style="align-items:center;text-align:center;gap:6px">
+            <span style="font-size:28px">🏠</span>
+            <div style="font-weight:700">Casa</div>
+            <div style="font-size:11px;color:var(--text-secondary)">Corporal + mancuernas</div>
+          </div>
+          <div class="ob-card" onclick="obCard(this,'location','parque')" style="align-items:center;text-align:center;gap:6px">
+            <span style="font-size:28px">🌳</span>
+            <div style="font-weight:700">Parque</div>
+            <div style="font-size:11px;color:var(--text-secondary)">Solo peso corporal</div>
+          </div>
+          <div class="ob-card" onclick="obCard(this,'location','mixto')" style="align-items:center;text-align:center;gap:6px">
+            <span style="font-size:28px">🔀</span>
+            <div style="font-weight:700">Mixto</div>
+            <div style="font-size:11px;color:var(--text-secondary)">Sin filtro</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2175,9 +2246,24 @@ body {
       </div>
     </div>
 
+    <!-- Ciclo menstrual pill -->
+    <div id="cyclePill" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,105,180,0.08);border:1px solid rgba(255,105,180,0.25);border-radius:12px;display:flex;align-items:center;gap:10px">
+      <span id="cyclePillEmoji" style="font-size:20px">🌸</span>
+      <div style="flex:1">
+        <div id="cyclePillPhase" style="font-size:13px;font-weight:700;color:#ff69b4"></div>
+        <div id="cyclePillRec" style="font-size:12px;color:var(--text-secondary);margin-top:1px"></div>
+      </div>
+    </div>
+
     <button class="start-btn" onclick="openConfig()">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nuevo Entrenamiento
+    </button>
+
+    <!-- No tengo tiempo -->
+    <button onclick="openQuickWorkout()" style="width:100%;margin-bottom:10px;padding:13px 16px;background:linear-gradient(135deg,#1a2a1a,#0d1a0d);border:1px solid #2d5a2d;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;color:#4ade80;cursor:pointer;display:flex;align-items:center;gap:10px" id="quickWorkoutBtn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      No tengo tiempo · 15–20 min
     </button>
 
     <!-- Rutinas sugeridas -->
@@ -2894,6 +2980,18 @@ body {
   <div style="padding:10px 16px;text-align:center">
     <p style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
   </div>
+</div>
+
+<!-- QUICK WORKOUT SHEET -->
+<div id="quickWorkoutOverlay" onclick="closeQuickWorkout()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:600"></div>
+<div id="quickWorkoutSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 32px;z-index:601">
+  <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4ade80" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <h3 style="font-size:18px;font-weight:700;color:var(--text-primary);margin:0">No tengo tiempo</h3>
+  </div>
+  <p style="font-size:13px;color:var(--text-secondary);margin:0 0 20px">Elige una rutina rápida · 100% peso corporal</p>
+  <div id="quickWorkoutList" style="display:flex;flex-direction:column;gap:10px"></div>
 </div>
 
 <!-- ROUTINES SHEET -->
@@ -3724,6 +3822,11 @@ let isResting = false;
 let audioCtx = null;
 let soundEnabled = true;
 let voiceAlertMode = 'ambas'; // 'mitad' | '10s' | 'ambas' | 'ninguna'
+let trainingLocation = 'gym'; // 'gym' | 'casa' | 'parque' | 'mixto'
+let cycleEnabled = false;
+let cycleStartDate = null; // ISO date string 'YYYY-MM-DD'
+let workoutSessionCount = 0; // para coachmarks
+let coachmarksSeen = { restTimer: false, coachBtn: false, customExercise: false };
 
 // ─── Coach Voice Phrases ─────────────────────────────────────
 const COACH_VOICE = {
@@ -4202,6 +4305,8 @@ window.addEventListener('popstate', () => {
 
 function selectMode(mode) {
   workoutMode = mode;
+  workoutSessionCount++;
+  saveToStorage();
   document.getElementById('modeModal').classList.remove('active');
   exerciseCount = 0;
   restCount = 0;
@@ -4890,6 +4995,64 @@ function dismissTutorial() {
   hideAllHints();
   localStorage.setItem(TUTORIAL_DISMISSED_KEY, 'true');
 }
+
+// ─── Quick Home Routines ("No tengo tiempo") ─────────────────
+const QUICK_ROUTINES = [
+  {
+    name: 'Full body express',
+    duration: 15,
+    emoji: '⚡',
+    desc: 'Cuerpo completo · Sin equipo',
+    exercises: [
+      { name: 'Sentadilla',          equip: 'corporal' },
+      { name: 'Fondos de triceps',   equip: 'corporal' },
+      { name: 'Plancha',             equip: 'corporal' },
+      { name: 'Mountain climbers',   equip: 'corporal' },
+      { name: 'Crunch',              equip: 'corporal' },
+      { name: 'Burpees',             equip: 'corporal' },
+    ],
+  },
+  {
+    name: 'HIIT cardio',
+    duration: 15,
+    emoji: '🔥',
+    desc: 'Alta intensidad · Sin equipo',
+    exercises: [
+      { name: 'Burpees',             equip: 'corporal' },
+      { name: 'Mountain climbers',   equip: 'corporal' },
+      { name: 'Saltos de caja',      equip: 'corporal' },
+      { name: 'Plancha lateral',     equip: 'corporal' },
+      { name: 'Hollow hold',         equip: 'corporal' },
+    ],
+  },
+  {
+    name: 'Tren superior',
+    duration: 20,
+    emoji: '💪',
+    desc: 'Pecho, espalda, hombros · Sin equipo',
+    exercises: [
+      { name: 'Fondos en paralelas', equip: 'corporal' },
+      { name: 'Pike push-up',        equip: 'corporal' },
+      { name: 'Archer push-up',      equip: 'corporal' },
+      { name: 'Plancha',             equip: 'corporal' },
+      { name: 'Hollow body',         equip: 'corporal' },
+    ],
+  },
+  {
+    name: 'Core + piernas',
+    duration: 20,
+    emoji: '🦵',
+    desc: 'Piernas y abdomen · Sin equipo',
+    exercises: [
+      { name: 'Sentadilla',          equip: 'corporal' },
+      { name: 'Zancadas',            equip: 'corporal' },
+      { name: 'Pistol squat',        equip: 'corporal' },
+      { name: 'Elevacion de piernas',equip: 'corporal' },
+      { name: 'Russian twist',       equip: 'corporal' },
+      { name: 'Plancha lateral',     equip: 'corporal' },
+    ],
+  },
+];
 
 // ─── Routine Templates ────────────────────────────────────────
 const SCIENCE_ROUTINES = {
@@ -5584,9 +5747,13 @@ function renderCatalog(filter) {
     }
   } else {
     const grp = exerciseDB.find(g => g.group === catalogGroup);
+    const locFilter = getLocationEquipFilter();
     if (grp) grp.items.forEach(item => {
-      html += exerciseRowHtml(item, EXERCISE_EQUIP[item] || ['']);
+      const equips = EXERCISE_EQUIP[item] || [''];
+      const filtered = locFilter ? equips.filter(e => locFilter.has(e)) : equips;
+      if (filtered.length > 0) html += exerciseRowHtml(item, filtered);
     });
+    if (!html.includes('exercise-row')) html += `<div style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:14px">Sin ejercicios disponibles para tu ubicación</div>`;
   }
   list.innerHTML = html;
 }
@@ -5596,6 +5763,7 @@ function openCatalog() {
   document.getElementById('catalogSearchInput').value = '';
   renderCatalog();
   showScreen('catalog');
+  checkCoachmarks('customExercise');
 }
 
 function showCatalogGroup(group) {
@@ -6422,6 +6590,7 @@ function startRestTimer() {
   if (isResting) return;
   isResting = true;
   restCount++;
+  if (restCount === 1) checkCoachmarks('restTimer');
   restStartedAt = Date.now();
   // Capturar referencia al set que inició el descanso; persiste aunque el usuario cambie de ejercicio
   _restTargetSet = currentExerciseSets.length > 0 ? currentExerciseSets[currentExerciseSets.length - 1] : null;
@@ -7137,6 +7306,8 @@ function saveAndExit() {
   document.getElementById('weekSessions').textContent = ws;
   const _wtEl = document.getElementById('weekTime'); if (_wtEl) _wtEl.textContent = formatTimeMM(wt + 4 * 3600000);
   showScreen('home');
+  updateCyclePill();
+  setTimeout(() => checkCoachmarks('coachBtn'), 1500);
 }
 
 function discardAndExit() {
@@ -7146,6 +7317,152 @@ function discardAndExit() {
   _lastHydrationAlert = 0;
   dismissCoachAlert();
   showScreen('home');
+}
+
+// ─── #22 Quick Workout ───────────────────────────────────────
+function openQuickWorkout() {
+  const list = document.getElementById('quickWorkoutList');
+  list.innerHTML = QUICK_ROUTINES.map((r, i) => `
+    <button onclick="startQuickRoutine(${i})" style="width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font);transition:border-color 0.15s" onmouseenter="this.style.borderColor='#4ade80'" onmouseleave="this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="font-size:22px">${r.emoji}</span>
+        <span style="font-size:15px;font-weight:700;color:var(--text-primary)">${r.name}</span>
+        <span style="margin-left:auto;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,0.1);padding:3px 8px;border-radius:6px">${r.duration} min</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-left:32px">${r.desc} · ${r.exercises.length} ejercicios</div>
+    </button>
+  `).join('');
+  const overlay = document.getElementById('quickWorkoutOverlay');
+  const sheet = document.getElementById('quickWorkoutSheet');
+  overlay.style.display = 'block';
+  sheet.style.display = 'block';
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheet.style.transform = 'translateX(-50%) translateY(0)';
+  });
+}
+
+function closeQuickWorkout() {
+  const sheet = document.getElementById('quickWorkoutSheet');
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  setTimeout(() => {
+    sheet.style.display = 'none';
+    document.getElementById('quickWorkoutOverlay').style.display = 'none';
+  }, 280);
+}
+
+function startQuickRoutine(idx) {
+  const r = QUICK_ROUTINES[idx];
+  if (!r) return;
+  closeQuickWorkout();
+  pendingExercises = r.exercises.map(e => ({ name: e.name, equipment: e.equip }));
+  restSeconds = 60;
+  selectMode('full');
+}
+
+// ─── #21 Training Location ───────────────────────────────────
+function getLocationEquipFilter() {
+  switch (trainingLocation) {
+    case 'casa':   return new Set(['corporal', 'mancuernas', 'banda']);
+    case 'parque': return new Set(['corporal']);
+    default:       return null; // gym / mixto — sin filtro
+  }
+}
+
+// ─── #17 Ciclo Menstrual ─────────────────────────────────────
+const CYCLE_PHASES = [
+  { name: 'Fase menstrual',  days: [1, 5],   emoji: '🌑', color: '#e57373', rec: 'Intensidad baja · movilidad y descanso activo' },
+  { name: 'Fase folicular',  days: [6, 13],  emoji: '🌒', color: '#81c784', rec: 'Buena energía · ideal para fuerza e intensidad alta' },
+  { name: 'Ovulación',       days: [14, 16], emoji: '🌕', color: '#ffb74d', rec: 'Pico de energía · máximo rendimiento' },
+  { name: 'Fase lútea',      days: [17, 28], emoji: '🌘', color: '#9575cd', rec: 'Reduce intensidad progresivamente · más descanso' },
+];
+
+function calcCyclePhase(startDateStr) {
+  if (!startDateStr) return null;
+  const start = new Date(startDateStr);
+  const today = new Date();
+  const diffDays = Math.floor((today - start) / 86400000) % 28 + 1;
+  const dayInCycle = ((diffDays - 1) % 28) + 1;
+  return CYCLE_PHASES.find(p => dayInCycle >= p.days[0] && dayInCycle <= p.days[1]) || CYCLE_PHASES[3];
+}
+
+function updateCyclePill() {
+  const pill = document.getElementById('cyclePill');
+  if (!pill) return;
+  if (!cycleEnabled || !cycleStartDate) { pill.style.display = 'none'; return; }
+  const phase = calcCyclePhase(cycleStartDate);
+  if (!phase) { pill.style.display = 'none'; return; }
+  document.getElementById('cyclePillEmoji').textContent = phase.emoji;
+  document.getElementById('cyclePillPhase').textContent = phase.name;
+  document.getElementById('cyclePillPhase').style.color = phase.color;
+  document.getElementById('cyclePillRec').textContent = phase.rec;
+  pill.style.display = 'flex';
+}
+
+function obToggleCycle(el) {
+  el.classList.toggle('on');
+  const enabled = el.classList.contains('on');
+  document.getElementById('obCycleDateRow').style.display = enabled ? 'block' : 'none';
+}
+
+// ─── #8 Coachmarks ───────────────────────────────────────────
+const COACHMARKS = [
+  {
+    key: 'restTimer',
+    emoji: '⏱️',
+    title: 'Timer de descanso inteligente',
+    text: 'Cada vez que terminas una serie, el timer arranca solo. Te avisa con sonido y voz del coach cuando es momento de volver.',
+  },
+  {
+    key: 'coachBtn',
+    emoji: '🤖',
+    title: 'Tu coach IA está aquí',
+    text: 'Tu entrenador te envía mensajes personalizados durante el entrenamiento: hidratación, intensidad y motivación según tu perfil.',
+  },
+  {
+    key: 'customExercise',
+    emoji: '➕',
+    title: 'Agrega tus propios ejercicios',
+    text: 'En el catálogo puedes agregar ejercicios personalizados. Aparecerán en la sección "Personalizados" con su historial de pesos.',
+  },
+];
+
+let _coachmarkQueue = [];
+let _coachmarkCurrent = 0;
+
+function checkCoachmarks(context) {
+  if (workoutSessionCount > 3) return;
+  if (coachmarksSeen[context]) return;
+  const mark = COACHMARKS.find(m => m.key === context);
+  if (!mark) return;
+  // pequeño delay para no interrumpir transiciones
+  setTimeout(() => showCoachmark(context), 800);
+}
+
+function showCoachmark(key) {
+  if (coachmarksSeen[key]) return;
+  const mark = COACHMARKS.find(m => m.key === key);
+  if (!mark) return;
+  const seen = Object.values(coachmarksSeen).filter(Boolean).length;
+  const total = COACHMARKS.length;
+  document.getElementById('coachmarkEmoji').textContent = mark.emoji;
+  document.getElementById('coachmarkTitle').textContent = mark.title;
+  document.getElementById('coachmarkText').textContent = mark.text;
+  document.getElementById('coachmarkDots').textContent = `${seen + 1} / ${total}`;
+  const overlay = document.getElementById('coachmarkOverlay');
+  overlay.style.display = 'flex';
+  overlay._currentKey = key;
+}
+
+function dismissCoachmark() {
+  const overlay = document.getElementById('coachmarkOverlay');
+  const key = overlay._currentKey;
+  if (key) {
+    coachmarksSeen[key] = true;
+    saveToStorage();
+  }
+  overlay.style.display = 'none';
 }
 
 // ─── Audio ──────────────────────────────────────────────────
@@ -7920,6 +8237,11 @@ function saveToStorage() {
     soundEnabled,
     vibrationEnabled,
     voiceAlertMode,
+    trainingLocation,
+    cycleEnabled,
+    cycleStartDate,
+    workoutSessionCount,
+    coachmarksSeen,
     historyCleared,
     lastWeights,
     customExercises
@@ -7962,6 +8284,11 @@ function loadFromStorage() {
       document.querySelectorAll('.voice-opt-btn').forEach(b => b.classList.toggle('active', b.dataset.val === voiceAlertMode));
       document.querySelectorAll('.voice-opt-btn').forEach(b => { b.style.background = b.dataset.val === voiceAlertMode ? 'var(--primary)' : 'var(--surface2)'; b.style.color = b.dataset.val === voiceAlertMode ? '#fff' : 'var(--text-primary)'; });
     }
+    if (data.trainingLocation) { trainingLocation = data.trainingLocation; if (userProfile) userProfile.training_location = trainingLocation; }
+    if (typeof data.cycleEnabled === 'boolean') cycleEnabled = data.cycleEnabled;
+    if (data.cycleStartDate) cycleStartDate = data.cycleStartDate;
+    if (typeof data.workoutSessionCount === 'number') workoutSessionCount = data.workoutSessionCount;
+    if (data.coachmarksSeen) coachmarksSeen = { ...coachmarksSeen, ...data.coachmarksSeen };
     if (data.historyCleared) historyCleared = true;
     if (data.lastWeights) lastWeights = data.lastWeights;
     if (Array.isArray(data.customExercises)) customExercises = data.customExercises;
@@ -7972,6 +8299,7 @@ function loadFromStorage() {
 }
 
 function updateHomeStats() {
+  updateCyclePill();
   if (savedWorkouts.length > 0) {
     // Filter workouts from this week
     const now = new Date();
@@ -8393,7 +8721,7 @@ toggleSetting = function(el) { _origToggleSync(el); syncPrefs(); };
 // ═══════════════════════════════════════════════════════════
 let _obStep = 1;
 let _obIsEdit = false;
-const _obSel = { sex: null, days: null, exp: null, goal: null, activity: null };
+const _obSel = { sex: null, days: null, exp: null, goal: null, activity: null, location: null };
 let _obWeightUnit = 'kg';
 
 const OB_GOAL_LABELS = { muscle:'Ganar músculo', fat_loss:'Perder grasa', strength:'Ganar fuerza', maintenance:'Mantenimiento' };
@@ -8452,6 +8780,7 @@ function showOnboarding(editMode) {
   _obSel.sex = userProfile.sex; _obSel.days = userProfile.training_days;
   _obSel.exp = userProfile.experience; _obSel.goal = userProfile.training_goal;
   _obSel.activity = userProfile.activity_level;
+  _obSel.location = userProfile.training_location || 'gym';
   _obWeightUnit = userProfile.body_weight_unit || 'kg';
 
   // Pre-fill inputs
@@ -8495,29 +8824,38 @@ function _obRestoreSelections() {
 }
 
 // Onboarding step IDs in order (5 steps total: datos, cuerpo, metas, coach, rutina)
-const OB_STEP_IDS = ['obStep1','obStep2','obStep3','obStepCoach','obStep4'];
+// obStepCycle y obStepLocation son condicionales — se incluyen según sexo y siempre location
+const OB_STEP_IDS_BASE = ['obStep1','obStepCycle','obStepLocation','obStep2','obStep3','obStepCoach','obStep4'];
+
+function _getObSteps() {
+  // Incluir ciclo solo si sexo = female
+  return OB_STEP_IDS_BASE.filter(id => id !== 'obStepCycle' || _obSel.sex === 'female');
+}
 
 function _obUpdateStep() {
-  OB_STEP_IDS.forEach((id, idx) => {
+  const steps = _getObSteps();
+  OB_STEP_IDS_BASE.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = (idx + 1 === _obStep) ? 'flex' : 'none';
+    if (el) el.style.display = 'none';
   });
+  const currentId = steps[_obStep - 1];
+  const el = document.getElementById(currentId);
+  if (el) el.style.display = 'flex';
   document.getElementById('obStepNum').textContent = _obStep;
-  document.getElementById('obProgressFill').style.width = `${(_obStep / OB_STEP_IDS.length) * 100}%`;
-  // Botón Atrás: visible en pasos 2-4 (no en el paso final de rutinas que tiene sus propios botones)
-  document.getElementById('obBtnBack').style.display = _obStep > 1 && _obStep < OB_STEP_IDS.length ? 'block' : 'none';
-  // Paso 5 (obStep4 = rutinas) tiene sus propios botones, ocultar footer nav
-  document.getElementById('obBtnNext').style.display = _obStep === OB_STEP_IDS.length ? 'none' : 'block';
+  document.getElementById('obProgressFill').style.width = `${(_obStep / steps.length) * 100}%`;
+  document.getElementById('obBtnBack').style.display = _obStep > 1 && _obStep < steps.length ? 'block' : 'none';
+  document.getElementById('obBtnNext').style.display = _obStep === steps.length ? 'none' : 'block';
   document.getElementById('obBtnNext').textContent = 'Siguiente →';
 }
 
 function obNext() {
-  if (_obStep < OB_STEP_IDS.length) { _obStep++; _obUpdateStep(); }
+  const steps = _getObSteps();
+  if (_obStep < steps.length) { _obStep++; _obUpdateStep(); }
   else obSave();
 }
 function obBack() {
   // Si estamos en el paso de rutinas (paso 5) y en la vista de acciones, volver a selección
-  if (_obStep === OB_STEP_IDS.length) {
+  if (_obStep === _getObSteps().length) {
     const selectionDiv = document.getElementById('obStep4Selection');
     const actionsDiv = document.getElementById('obStep4Actions');
     if (actionsDiv && actionsDiv.style.display === 'flex') {
@@ -8537,6 +8875,7 @@ function obBack() {
   }
   // Otherwise, go to previous step
   if (_obStep > 1) { _obStep--; _obUpdateStep(); }
+  // (obBack uses _getObSteps implicitly via _obUpdateStep)
 }
 
 // Step 4: Routine Type Selection
@@ -8634,12 +8973,22 @@ async function obSave() {
       body_weight:      parseFloat(document.getElementById('obWeight').value)   || null,
       body_weight_unit: _obWeightUnit,
       height_cm:        parseInt(document.getElementById('obHeight').value)     || null,
-      training_days:    _obSel.days,
-      experience:       _obSel.exp,
-      training_goal:    _obSel.goal,
-      activity_level:   _obSel.activity,
-      onboarding_done:  true
+      training_days:      _obSel.days,
+      experience:         _obSel.exp,
+      training_goal:      _obSel.goal,
+      activity_level:     _obSel.activity,
+      training_location:  _obSel.location || 'gym',
+      onboarding_done:    true
     };
+
+    // Persist location + cycle globals
+    trainingLocation = userProfile.training_location || 'gym';
+    const _cycleToggle = document.getElementById('obCycleToggle');
+    if (_cycleToggle && _cycleToggle.classList.contains('on')) {
+      cycleEnabled = true;
+      cycleStartDate = document.getElementById('obCycleDate').value || null;
+    }
+    saveToStorage();
 
     // Save to Supabase if user is logged in
     if (currentUser && sb) {
