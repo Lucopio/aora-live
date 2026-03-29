@@ -2278,7 +2278,7 @@ body {
     </div>
 
     <!-- Ciclo menstrual pill -->
-    <div id="cyclePill" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,105,180,0.08);border:1px solid rgba(255,105,180,0.25);border-radius:12px;display:flex;align-items:center;gap:10px">
+    <div id="cyclePill" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,105,180,0.08);border:1px solid rgba(255,105,180,0.25);border-radius:12px;align-items:center;gap:10px">
       <span id="cyclePillEmoji" style="font-size:20px">🌸</span>
       <div style="flex:1">
         <div id="cyclePillPhase" style="font-size:13px;font-weight:700;color:#ff69b4"></div>
@@ -2526,7 +2526,7 @@ body {
   </div>
 
   <!-- RPE Promedio (visible solo si hay datos) -->
-  <div id="summaryRPERow" style="display:none;padding:14px 16px;background:var(--bg);border-radius:12px;margin-bottom:12px;display:none;align-items:center;gap:12px">
+  <div id="summaryRPERow" style="display:none;padding:14px 16px;background:var(--bg);border-radius:12px;margin-bottom:12px;align-items:center;gap:12px">
     <div style="font-size:26px">🔥</div>
     <div>
       <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">RPE Promedio</div>
@@ -3480,6 +3480,28 @@ function dismissCoachAlert() {
   clearTimeout(window._coachAlertTimeout);
 }
 
+// ─── Generic UI toast (non-coach) ────────────────────────────
+function showToast(message, type) {
+  let t = document.getElementById('uiToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'uiToast';
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);max-width:340px;width:calc(100% - 40px);padding:12px 16px;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;text-align:center;z-index:9999;transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+    t.onclick = e => e.stopPropagation();
+    document.body.appendChild(t);
+  }
+  const colors = { success:'#34A853', error:'#EA4335', warning:'#FBBC04', info:'var(--primary)' };
+  const bg = colors[type] || colors.info;
+  t.style.background = bg;
+  t.style.color = (type === 'warning') ? '#1a1a1a' : '#fff';
+  t.textContent = message;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(window._uiToastTimer);
+  window._uiToastTimer = setTimeout(() => {
+    t.style.transform = 'translateX(-50%) translateY(-80px)';
+  }, 2800);
+}
+
 function checkWorkoutAlerts() {
   if (!workoutStartTime) return;
   const elapsed = Date.now() - workoutStartTime;
@@ -4074,7 +4096,7 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, coach: 1, insights: 2, settings: 3 };
-  if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
+  if (map[name] !== undefined) { const ni = document.querySelectorAll('.nav-item')[map[name]]; if (ni) ni.classList.add('active'); }
   const screenMap = { home:'homeScreen', coach:'coachScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
@@ -6648,7 +6670,7 @@ function renderRoutines(level, time) {
 
   // Render routine overview card + days
   const daysButtonsHtml = data.days.map((day, idx) =>
-    `<button class="routine-day-button" onclick="startScienceRoutine('${level}',${time},${idx})">${day.name.split('—')[0].trim()}</button>`
+    `<button class="routine-day-button" onclick="startScienceRoutine('${level}',${time},${idx})">${(day.name.split('—')[0] || day.name).trim()}</button>`
   ).join('');
 
   const overviewCard = `
