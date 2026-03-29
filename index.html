@@ -1768,9 +1768,21 @@ body {
   text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
 }
 .coach-alert-text { font-size: 14px; color: var(--text-primary); line-height: 1.45; }
+.coach-alert-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 .coach-alert-dismiss {
-  margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--primary);
+  font-size: 13px; font-weight: 600; color: var(--primary);
   background: none; border: none; padding: 0; cursor: pointer; font-family: var(--font);
+}
+.coach-alert-warmup-btn {
+  color: var(--success); background: rgba(52,168,83,0.12);
+  padding: 5px 10px; border-radius: 8px;
+}
+.warmup-return-pill {
+  display: none; align-items: center; gap: 5px;
+  background: rgba(52,168,83,0.15); border: 1px solid rgba(52,168,83,0.3);
+  color: var(--success); font-size: 12px; font-weight: 600;
+  padding: 5px 10px; border-radius: 20px; cursor: pointer;
+  font-family: var(--font); white-space: nowrap;
 }
 
 </style>
@@ -2328,6 +2340,7 @@ body {
     <div class="workout-top-bar">
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
+      <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none">🔥 Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="avgRestValue">--</span>
@@ -3428,12 +3441,18 @@ function showCoachAlertToast(alertType) {
     document.body.appendChild(toast);
   }
 
+  const warmupBtn = alertType === 'warmupSkipped'
+    ? `<button class="coach-alert-dismiss coach-alert-warmup-btn" onclick="dismissCoachAlert();showWarmup()">🔥 Ir al calentamiento</button>`
+    : '';
   toast.innerHTML = `
     <div class="coach-alert-avatar">${coach.emoji}</div>
     <div class="coach-alert-body">
       <div class="coach-alert-name">${coach.name}</div>
       <div class="coach-alert-text">${message}</div>
-      <button class="coach-alert-dismiss" onclick="dismissCoachAlert()">Entendido ✓</button>
+      <div class="coach-alert-actions">
+        ${warmupBtn}
+        <button class="coach-alert-dismiss" onclick="dismissCoachAlert()">Entendido ✓</button>
+      </div>
     </div>
   `;
 
@@ -4282,6 +4301,8 @@ function toggleWuInjury(el) {
 }
 
 function showWarmup() {
+  // If returning from active workout, don't reset workout state
+  const fromWorkout = !!workoutStartTime;
   warmupDuration = 0;
   warmupStartTime = Date.now();
   document.getElementById('warmupDisplay').textContent = '00:00:00';
@@ -4291,19 +4312,33 @@ function showWarmup() {
   warmupInterval = setInterval(() => {
     document.getElementById('warmupDisplay').textContent = formatTime(Date.now() - warmupStartTime);
   }, 1000);
+  // Update button label when returning mid-workout
+  const goBtn = document.querySelector('.warmup-go-btn');
+  if (goBtn) goBtn.textContent = fromWorkout ? '✓ Listo, volver al entreno' : '✓ Listo para entrenar';
   showScreen('warmup');
 }
 
 function finishWarmup() {
   clearInterval(warmupInterval);
   warmupDuration = warmupStartTime ? Date.now() - warmupStartTime : 0;
-  launchWorkout();
+  // If workout already started, just return to it
+  if (workoutStartTime) {
+    document.getElementById('warmupReturnPill').style.display = 'none';
+    showScreen('workout');
+  } else {
+    launchWorkout();
+  }
 }
 
 function skipWarmup() {
   clearInterval(warmupInterval);
   warmupDuration = 0;
-  launchWorkout();
+  // If workout already started, just return to it
+  if (workoutStartTime) {
+    showScreen('workout');
+  } else {
+    launchWorkout();
+  }
 }
 
 function launchWorkout() {
@@ -4332,6 +4367,10 @@ function launchWorkout() {
   if (warmupDuration === 0 && !warmupAlertFired) {
     warmupAlertFired = true;
     setTimeout(() => showCoachAlertToast('warmupSkipped'), 2000);
+    setTimeout(() => {
+      const pill = document.getElementById('warmupReturnPill');
+      if (pill) pill.style.display = 'flex';
+    }, 10500); // Show pill after toast auto-dismisses (~10.5s)
   }
 }
 
@@ -4339,7 +4378,11 @@ function cancelWarmup() {
   clearInterval(warmupInterval);
   warmupDuration = 0;
   warmupStartTime = null;
-  showScreen('home');
+  if (workoutStartTime) {
+    showScreen('workout');
+  } else {
+    showScreen('home');
+  }
 }
 
 // Interceptar botón atrás en todas las pantallas
