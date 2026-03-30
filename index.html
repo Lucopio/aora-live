@@ -4570,7 +4570,7 @@ window.addEventListener('popstate', () => {
 
   if (workoutStartTime) {
     // Durante entrenamiento activo
-    if (active === 'workoutScreen') nextExercise();
+    if (active === 'workoutScreen') openCatalog();
     else if (active === 'catalogScreen' && currentExerciseName) showScreen('workout');
     // En catálogo sin ejercicio en curso → no hacer nada
     return;
@@ -7796,6 +7796,9 @@ function saveAndExit() {
 }
 
 function discardAndExit() {
+  if (workoutStartTime && (completedExercises.length > 0 || currentExerciseSets.length > 0)) {
+    if (!confirm('¿Salir sin guardar? Perderás el progreso de esta sesión.')) return;
+  }
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
   warmupAlertFired = false;
