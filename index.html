@@ -80,16 +80,36 @@ body {
 }
 .bottom-nav.hidden { display: none; }
 .nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  cursor: pointer; padding: 6px 20px; border-radius: var(--radius-sm);
-  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; padding: 4px 8px; position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-item svg { width: 24px; height: 24px; stroke: var(--text-tertiary); fill: none; stroke-width: 1.8; transition: all 0.2s; }
-.nav-item span { font-size: 11px; font-weight: 500; color: var(--text-tertiary); transition: all 0.2s; }
-.nav-item.active svg { stroke: var(--primary); }
+.nav-icon-wrap {
+  width: 44px; height: 44px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  background: transparent;
+}
+.nav-item.active .nav-icon-wrap { background: rgba(0, 229, 255, 0.12); }
+.nav-item:active .nav-icon-wrap { transform: scale(0.93); }
+.nav-icon-img {
+  width: 26px; height: 26px; object-fit: contain;
+  filter: grayscale(1) brightness(0.38);
+  transition: filter 0.2s;
+}
+.nav-item.active .nav-icon-img {
+  filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1);
+}
+.nav-active-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: transparent; transition: background 0.2s;
+}
+.nav-item.active .nav-active-dot { background: var(--primary); }
+.nav-item span {
+  font-size: 10px; font-weight: 500; color: var(--text-tertiary);
+  transition: color 0.2s; letter-spacing: 0.2px;
+}
 .nav-item.active span { color: var(--primary); font-weight: 600; }
-.nav-icon-img { width: 28px; height: 28px; object-fit: contain; filter: grayscale(1) brightness(0.55); transition: filter 0.2s; }
-.nav-item.active .nav-icon-img { filter: none; }
 /* Iconos de app sobre fondo oscuro: silueta blanca limpia */
 /* Tile blanco para iconos PNG con fondo blanco */
 .app-icon-tile { background:rgba(255,255,255,0.9);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
@@ -1343,6 +1363,7 @@ body {
 .nav-item span { color: var(--text-tertiary) !important; }
 .nav-item.active svg { stroke: var(--primary) !important; }
 .nav-item.active span { color: var(--primary) !important; font-weight: 700; }
+.nav-item.active .nav-icon-img { filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1) !important; }
 
 /* ─── HOME SCREEN ────────────────────────────────────────── */
 .home-header h1 {
@@ -2979,20 +3000,32 @@ body {
 <!-- Bottom Nav -->
 <div class="bottom-nav" id="bottomNav">
   <div class="nav-item active" onclick="showScreen('home')">
-    <img src="Icons/SVG/Home.svg" class="nav-icon-img" alt="">
+    <div class="nav-icon-wrap">
+      <img src="Icons/SVG/Home.svg" class="nav-icon-img" alt="">
+    </div>
     <span>Inicio</span>
+    <div class="nav-active-dot"></div>
   </div>
   <div class="nav-item" onclick="showScreen('coach')">
-    <img src="Icons/SVG/Coach check.svg" class="nav-icon-img" alt="">
+    <div class="nav-icon-wrap">
+      <img src="Icons/SVG/Coach check.svg" class="nav-icon-img" alt="">
+    </div>
     <span>Coach</span>
+    <div class="nav-active-dot"></div>
   </div>
   <div class="nav-item" onclick="showScreen('insights')">
-    <img src="Icons/SVG/Insigths.svg" class="nav-icon-img" alt="">
+    <div class="nav-icon-wrap">
+      <img src="Icons/SVG/Insigths.svg" class="nav-icon-img" alt="">
+    </div>
     <span>Progreso</span>
+    <div class="nav-active-dot"></div>
   </div>
   <div class="nav-item" onclick="showScreen('settings')">
-    <img src="Icons/SVG/Settings.svg" class="nav-icon-img" alt="">
+    <div class="nav-icon-wrap">
+      <img src="Icons/SVG/Settings.svg" class="nav-icon-img" alt="">
+    </div>
     <span>Yo</span>
+    <div class="nav-active-dot"></div>
   </div>
 </div>
 
@@ -6034,12 +6067,35 @@ function renderCatalog(filter) {
       'Cardio':      'Icons/SVG/Cardio.svg',
       'Calistenia':  'Icons/SVG/Calistenia.svg',
     };
+    const MUSCLE_GROUP_COLORS = {
+      'Pecho':       { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)' },
+      'Espalda':     { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)' },
+      'Piernas':     { color: '#7B61FF', bg: 'rgba(123,97,255,0.10)' },
+      'Glúteos':     { color: '#7B61FF', bg: 'rgba(123,97,255,0.10)' },
+      'Gluteos':     { color: '#7B61FF', bg: 'rgba(123,97,255,0.10)' },
+      'Hombros':     { color: '#FFB800', bg: 'rgba(255,184,0,0.10)' },
+      'Biceps':      { color: '#FFB800', bg: 'rgba(255,184,0,0.10)' },
+      'Triceps':     { color: '#FFB800', bg: 'rgba(255,184,0,0.10)' },
+      'Abdomen':     { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
+      'Cardio':      { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
+      'Calistenia':  { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
+    };
+    function muscleIconFilter(color) {
+      const map = {
+        '#00E5FF': 'brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1)',
+        '#7B61FF': 'brightness(0) saturate(100%) invert(45%) sepia(60%) saturate(600%) hue-rotate(220deg) brightness(1.1)',
+        '#FFB800': 'brightness(0) saturate(100%) invert(75%) sepia(80%) saturate(700%) hue-rotate(10deg) brightness(1.05)',
+        '#00C896': 'brightness(0) saturate(100%) invert(65%) sepia(60%) saturate(500%) hue-rotate(130deg) brightness(1.1)',
+      };
+      return map[color] || 'none';
+    }
     const groups = exerciseDB.map(g => g.group);
     if (customExercises.length) groups.push('Personalizados');
     html = groups.map(g => {
       const iconSrc = GROUP_ICONS[g];
+      const mc = MUSCLE_GROUP_COLORS[g];
       const iconHtml = iconSrc
-        ? `<div class="app-icon-tile" style="width:44px;height:44px;flex-shrink:0"><img src="${iconSrc}" class="app-svg-icon" style="width:34px;height:34px" alt=""></div>`
+        ? `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${mc ? mc.bg : 'rgba(255,255,255,0.08)'}"><img src="${iconSrc}" class="app-svg-icon" style="width:28px;height:28px;filter:${mc ? muscleIconFilter(mc.color) : 'none'}" alt=""></div>`
         : `<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--text-tertiary);fill:none;stroke-width:1.8;flex-shrink:0"><circle cx="12" cy="12" r="9"/></svg>`;
       return `<button class="group-item" data-group="${attr(g)}" onclick="showCatalogGroup(this.dataset.group)">
         <span style="display:flex;align-items:center;gap:12px">${iconHtml}<span>${g}</span></span>
