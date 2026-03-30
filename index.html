@@ -5838,6 +5838,7 @@ let weightUnit = 'kg';
 let currentEquipment = '';
 let pendingExerciseName = '';
 let isUnilateral = false;
+let _unilateralPendingSide = false; // true cuando se registró el primer lado y falta el segundo
 let activeSide = 'left';
 let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit, reps } }
 let customExercises = []; // ejercicios personalizados guardados entre sesiones
@@ -5980,6 +5981,7 @@ function selectEquipAndStart(equip) {
 
 function toggleUnilateral() {
   isUnilateral = !isUnilateral;
+  if (!isUnilateral) _unilateralPendingSide = false;
   document.getElementById('unilateralBtn').classList.toggle('active', isUnilateral);
   document.getElementById('sideSelector').style.display = isUnilateral ? 'flex' : 'none';
 }
@@ -6190,6 +6192,7 @@ function setWeightUnit(unit) {
 }
 
 function selectExercise(name, equip) {
+  _unilateralPendingSide = false;
   // #9 — Si hay series del ejercicio ACTUAL y el usuario elige uno DIFERENTE, preguntar qué hacer
   if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
     showChangeExerciseDialog(name, equip || '');
@@ -6402,8 +6405,22 @@ function addSet() {
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
   // Series de aproximación: guardar descanso previo si había uno, luego iniciar nuevo
   if (thisIsWarmup) { if (isResting) skipRest(); startRestTimer(); return; }
-  // Series de trabajo: ajustar restStartedAt por duración estimada de la serie,
-  // luego mostrar selector RPE (que al resolverse llama skipRest + startRestTimer)
+  // Lógica unilateral: solo descansar después de completar ambos lados
+  if (isUnilateral) {
+    if (_unilateralPendingSide) {
+      // Segundo lado completado → ahora sí mostrar RPE e iniciar descanso
+      _unilateralPendingSide = false;
+      if (isResting && restStartedAt) restStartedAt += _estimateSetMs(reps);
+      showRPESelection();
+    } else {
+      // Primer lado completado → solo cambiar lado, NO descansar
+      _unilateralPendingSide = true;
+      renderSets();
+      return;
+    }
+    return;
+  }
+  // Comportamiento normal (no unilateral)
   if (isResting && restStartedAt) restStartedAt += _estimateSetMs(reps);
   showRPESelection();
 }
@@ -6525,6 +6542,7 @@ function closeEditSet() {
 }
 
 function nextExercise() {
+  _unilateralPendingSide = false;
   // No cancelar el descanso: el timer es global a la sesión y debe persistir entre ejercicios.
   // _restTargetSet sigue apuntando al último set del ejercicio anterior (que va a completedExercises),
   // por lo que markRestReady() guardará la duración correctamente al tocar "Listo".
