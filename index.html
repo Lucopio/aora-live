@@ -7419,33 +7419,33 @@ function generateLocalInsights(workoutsData) {
     const firstVol = calculateVolume([first]).current;
     const lastVol = calculateVolume([last]).current;
     if (lastVol > firstVol) {
-      insights.push('📈 Progressive overload on track');
+      insights.push('📈 Sobrecarga progresiva en marcha');
     } else if (lastVol < firstVol * 0.8) {
-      insights.push('💡 Volume declining; consider increasing weight or reps');
+      insights.push('💡 Volumen bajando — sube peso o repeticiones');
     }
   }
 
   // Rule 2: RPE Pattern
   if (intensity.current > 8.5) {
-    insights.push('⚠️ High RPE detected; add rest day');
+    insights.push('⚠️ RPE alto — considera un día de descanso');
   } else if (intensity.current < 5) {
-    insights.push('💪 RPE low; increase intensity or weight');
+    insights.push('💪 RPE bajo — sube la intensidad o el peso');
   } else {
-    insights.push('✅ Intensity in optimal range');
+    insights.push('✅ Intensidad en rango óptimo');
   }
 
   // Rule 3: Adherence
   if (adherence.current >= 4) {
-    insights.push('🔥 Great consistency!');
+    insights.push('🔥 ¡Consistencia excelente!');
   } else if (adherence.current < 2.5) {
-    insights.push('📅 Aim for 3-4 workouts per week');
+    insights.push('📅 Apunta a 3-4 entrenamientos por semana');
   }
 
   // Rule 4: Rest Duration
   if (recovery.current < 60) {
-    insights.push('⏱️ Short rest periods; watch for fatigue');
+    insights.push('⏱️ Descansos cortos — cuida la fatiga acumulada');
   } else if (recovery.current > 180) {
-    insights.push('⏸️ Long rest periods; consider slightly shorter rest');
+    insights.push('⏸️ Descansos largos — intenta acortarlos un poco');
   }
 
   return insights;
@@ -7456,7 +7456,7 @@ function updateAnalyticsScreen() {
   const weeklyData = getWeeklyData(4); // Last 4 weeks
   if (weeklyData.length === 0) {
     document.getElementById('insWeekWorkouts').innerText = '—';
-    showToast('Complete workouts to see analytics', 'info');
+    showToast('Registra entrenamientos para ver el análisis', 'info');
     return;
   }
 
@@ -7506,7 +7506,7 @@ function updateAnalyticsScreen() {
     const insightsCard = document.getElementById('aiInsightsCard');
     if (insightsCard) {
       const content = insightsCard.querySelector('.insights-card-content') || insightsCard;
-      content.innerHTML = '<div class="insights-card-title">Local Insights</div>';
+      content.innerHTML = '<div class="insights-card-title">Análisis local</div>';
       content.appendChild(insightsList);
     }
   }
