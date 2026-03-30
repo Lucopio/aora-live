@@ -3557,6 +3557,8 @@ function getRandomAlertMessage(alertType) {
 function showCoachAlertToast(alertType) {
   const coach = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽' };
   const message = getRandomAlertMessage(alertType);
+  // Leer la alerta en voz alta si la voz está habilitada
+  speakCoachText(message);
 
   let toast = document.getElementById('coachAlertToast');
   if (!toast) {
@@ -6202,6 +6204,8 @@ function selectExercise(name, equip) {
     return;
   }
   _doSelectExercise(name, equip);
+  // Leer los do's del ejercicio en voz alta
+  _speakExerciseDos(name);
 }
 
 // #9 — diálogo de cambio de ejercicio con series pendientes
@@ -8090,6 +8094,42 @@ function playFinalBeep() {
 }
 
 // ─── Coach Speech Synthesis ─────────────────────────────────
+function speakCoachText(text) {
+  if (voiceAlertMode === 'ninguna') return;
+  if (!window.speechSynthesis) return;
+  const coach = getSelectedCoach();
+  const coachId = coach ? coach.id : 'maria';
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const params = COACH_TTS[coachId] || COACH_TTS.maria;
+  utt.lang = 'es-MX';
+  utt.rate = params.rate;
+  utt.pitch = params.pitch;
+  utt.volume = 1;
+  const voice = _pickVoice(coachId);
+  if (voice) { utt.voice = voice; utt.lang = voice.lang; }
+  window.speechSynthesis.speak(utt);
+}
+
+function _speakExerciseDos(exerciseName) {
+  if (voiceAlertMode === 'ninguna') return;
+  if (!window.speechSynthesis) return;
+  const dosEl = document.getElementById('exInfoDos');
+  if (!dosEl) return;
+  const dosItems = Array.from(dosEl.querySelectorAll('li, div, p')).slice(0, 2).map(el => el.textContent.trim()).filter(Boolean);
+  if (!dosItems.length) return;
+  const coach = getSelectedCoach();
+  const coachId = coach ? coach.id : 'maria';
+  const intro = {
+    maria:  `Oye, para ${exerciseName}, recuerda: `,
+    carlos: `${exerciseName}. Puntos clave: `,
+    andrea: `Antes de empezar ${exerciseName}, ten en cuenta: `,
+    diego:  `${exerciseName}. Enfócate en: `
+  }[coachId] || `Para ${exerciseName}: `;
+  const text = intro + dosItems.join('. ');
+  setTimeout(() => speakCoachText(text), 800);
+}
+
 function speakCoach(type) {
   if (voiceAlertMode === 'ninguna') return;
   if (type === 'mid'  && voiceAlertMode === '10s') return;
