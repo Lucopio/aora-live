@@ -3537,8 +3537,7 @@ const COACH_ALERTS = {
 let hydrationAlertCount = 0;
 let sessionLongAlertFired = false;
 let warmupAlertFired = false;
-let _lastHydrationAlert = 0;
-const HYDRATION_INTERVAL_MS = 20 * 60 * 1000;
+const _hydrationFired = new Set();
 const SESSION_LONG_MS = 75 * 60 * 1000;
 
 function getActiveCoachId() {
@@ -3632,11 +3631,15 @@ function checkWorkoutAlerts() {
   if (!workoutStartTime) return;
   const elapsed = Date.now() - workoutStartTime;
 
-  // Hydration check every ~18 min
-  if (elapsed - _lastHydrationAlert >= HYDRATION_INTERVAL_MS && elapsed > 60000) {
-    _lastHydrationAlert = elapsed;
-    hydrationAlertCount++;
-    showCoachAlertToast('hydration');
+  // Hydration alerts: exactly at 20 min and 40 min
+  const HYDRATION_CHECKPOINTS_MS = [20 * 60 * 1000, 40 * 60 * 1000];
+  for (const checkpoint of HYDRATION_CHECKPOINTS_MS) {
+    if (elapsed >= checkpoint && !_hydrationFired.has(checkpoint)) {
+      _hydrationFired.add(checkpoint);
+      hydrationAlertCount++;
+      showCoachAlertToast('hydration');
+      break;
+    }
   }
 
   // Session length check: once at 75 min
@@ -7886,7 +7889,7 @@ function saveAndExit() {
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
   warmupAlertFired = false;
-  _lastHydrationAlert = 0;
+  _hydrationFired.clear();
   dismissCoachAlert();
 
   const ws = savedWorkouts.length + 3;
@@ -7905,7 +7908,7 @@ function discardAndExit() {
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
   warmupAlertFired = false;
-  _lastHydrationAlert = 0;
+  _hydrationFired.clear();
   dismissCoachAlert();
   showScreen('home');
 }
