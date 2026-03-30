@@ -3541,6 +3541,9 @@ function showCoachAlertToast(alertType) {
     </div>
   `;
 
+  toast.style.height = '';
+  toast.style.padding = '';
+  toast.style.overflow = '';
   toast.classList.remove('visible');
   setTimeout(() => { toast.classList.add('visible'); }, 30);
   clearTimeout(window._coachAlertTimeout);
@@ -3548,8 +3551,17 @@ function showCoachAlertToast(alertType) {
 
 function dismissCoachAlert() {
   const toast = document.getElementById('coachAlertToast');
-  if (toast) toast.classList.remove('visible');
+  if (!toast) return;
+  toast.classList.remove('visible');
   clearTimeout(window._coachAlertTimeout);
+  clearTimeout(window._coachDismissTimer);
+  window._coachDismissTimer = setTimeout(() => {
+    if (!toast.classList.contains('visible')) {
+      toast.style.height = '0';
+      toast.style.padding = '0';
+      toast.style.overflow = 'hidden';
+    }
+  }, 380);
 }
 
 // ─── Generic UI toast (non-coach) ────────────────────────────
