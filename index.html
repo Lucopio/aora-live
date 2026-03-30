@@ -284,6 +284,19 @@ body {
 .routine-start-day-btn:active { transform:scale(0.97);box-shadow:0 2px 8px rgba(59, 130, 246, 0.3); }
 .routine-no-time { text-align:center;padding:32px 16px;color:var(--text-tertiary);font-size:13px; }
 
+/* Routine day selector — new design */
+.rday-chip { background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px; }
+.rday-chip-val { font-family:var(--mono);font-size:20px;font-weight:700;color:var(--primary);line-height:1; }
+.rday-chip-label { font-size:10px;color:var(--text-tertiary);font-weight:600;text-transform:lowercase; }
+.rday-tile { background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .18s;flex:1;min-width:64px; }
+.rday-tile.rday-sel { border-color:var(--primary);background:var(--primary-light); }
+.rday-tile-name { font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:3px;transition:color .18s; }
+.rday-tile.rday-sel .rday-tile-name { color:var(--primary); }
+.rday-tile-count { font-size:9px;color:var(--text-tertiary);font-weight:600; }
+.rday-ex-row { display:flex;align-items:center;justify-content:space-between;padding:8px 0; }
+.rday-ex-name { font-size:13px;font-weight:600;color:var(--text-primary); }
+.rday-ex-sets { font-size:11px;font-family:var(--mono);color:var(--text-tertiary);background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-left:8px; }
+
 /* E3: Routine Overview Card */
 .routine-overview-card { background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px;box-shadow:var(--shadow-sm); }
 .routine-overview-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
@@ -6787,106 +6800,119 @@ function renderRoutines(level, time) {
   const restEl = document.getElementById('routineRestInfo');
   const listEl = document.getElementById('routinesList');
 
+  // Always clear legacy sections
+  noteEl.innerHTML = '';
+  restEl.style.display = 'none';
+
   if (!data) {
-    noteEl.textContent = '';
-    restEl.style.display = 'none';
     listEl.innerHTML = `<div class="routine-no-time">No hay rutina para esta combinación. Prueba otra duración.</div>`;
     return;
   }
 
-  // Level labels and emojis
-  const levelEmojis = { beginner: '🌱', intermediate: '⚡', advanced: '🔥' };
   const levelLabels = { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' };
-  const levelEmoji = levelEmojis[level];
   const levelLabel = levelLabels[level];
+  const restSec = data.goalRest?.[goal] ?? data.goalRest?.muscle_gain ?? 90;
+  const firstDay = data.days[0];
 
-  // Goal objectives mapping for display
-  const objectivesByGoal = {
-    muscle_gain: ['Aumentar masa muscular', 'Mejorar definición', 'Ganar volumen'],
-    fat_loss: ['Quemar calorías', 'Definición muscular', 'Mejorar resistencia'],
-    strength: ['Aumentar fuerza máxima', 'Ganar potencia', 'Mejorar técnica'],
-    maintenance: ['Mantener músculo', 'Mejorar resistencia', 'Conservar salud']
-  };
-  const objectives = objectivesByGoal[goal] || objectivesByGoal.muscle_gain;
+  // Helper: short day name (before "—")
+  const shortName = n => (n.split('—')[0] || n).trim();
 
-  // Science note
-  noteEl.textContent = data.scienceNote;
-
-  // Rest info based on goal
-  const restSec = (data.goalRest?.[goal] ?? data.goalRest?.muscle_gain ?? 90);
-  const repsRange = data.goalReps?.[goal] ?? '8-12';
-  const goalLabels = { muscle_gain: 'Ganancia muscular', fat_loss: 'Pérdida de grasa', strength: 'Fuerza', maintenance: 'Mantenimiento' };
-  const goalLabel = goalLabels[goal] || goal;
-  restEl.style.display = 'flex';
-  restEl.innerHTML = `
-    <div class="routine-rest-icon">⏱️</div>
-    <div class="routine-rest-text">
-      <b>${restSec}s descanso · ${repsRange} reps</b>
-      Ajustado para tu objetivo: ${goalLabel} · ${data.split}
-    </div>`;
-
-  // Render routine overview card + days
-  const daysButtonsHtml = data.days.map((day, idx) =>
-    `<button class="routine-day-button" onclick="startScienceRoutine('${level}',${time},${idx})">${(day.name.split('—')[0] || day.name).trim()}</button>`
+  // Build exercise rows HTML for a given day object
+  const buildExList = day => day.exercises.map((ex, i) =>
+    `<div class="rday-ex-row" style="${i < day.exercises.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+      <span class="rday-ex-name">${ex.name}</span>
+      <span class="rday-ex-sets">${ex.sets}×${ex.reps}</span>
+    </div>`
   ).join('');
 
-  const overviewCard = `
-    <div class="routine-overview-card">
-      <div class="routine-overview-header">
-        <div style="display:flex;align-items:center;gap:12px;flex:1">
-          <span style="font-size:28px">${levelEmoji}</span>
-          <div>
-            <div class="routine-overview-title">${levelLabel} - ${time} min</div>
-            <div class="routine-overview-subtitle">${data.split}</div>
-          </div>
-        </div>
-        <div class="routine-overview-badge">✅ Recomendado</div>
-      </div>
+  // Build day selector tiles
+  const tilesHtml = data.days.map((day, idx) =>
+    `<div class="rday-tile${idx === 0 ? ' rday-sel' : ''}" onclick="selectRoutineDay(${idx})">
+      <div class="rday-tile-name">${shortName(day.name)}</div>
+      <div class="rday-tile-count">${day.exercises.length} ejerc.</div>
+    </div>`
+  ).join('');
 
-      <div class="routine-overview-meta">
-        <div class="routine-meta-item">
-          <span class="routine-meta-label">Frecuencia:</span>
-          <span class="routine-meta-value">${data.freq}</span>
-        </div>
-        <div class="routine-meta-item">
-          <span class="routine-meta-label">Días:</span>
-          <span class="routine-meta-value">${data.days.length} entrenamientos</span>
-        </div>
-      </div>
+  listEl.innerHTML = `
+    <!-- Block 1: Header -->
+    <div style="margin-bottom:16px">
+      <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px">${data.split}</div>
+      <div style="font-size:11px;color:var(--text-secondary)">${levelLabel} · ${time} min · ${data.freq}</div>
+    </div>
 
-      <div class="routine-overview-objectives">
-        <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--text-primary)">Enfocado en:</div>
-        ${objectives.map(obj => `<div class="routine-objective-item">• ${obj}</div>`).join('')}
+    <!-- Block 2: Stat chips -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
+      <div class="rday-chip">
+        <span class="rday-chip-val" id="rday-chip-series">${firstDay.totalSets}</span>
+        <span class="rday-chip-label">series</span>
       </div>
-
-      <div class="routine-days-selector">
-        <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--text-primary)">Elige tu día:</div>
-        <div class="routine-days-buttons">${daysButtonsHtml}</div>
+      <div class="rday-chip">
+        <span class="rday-chip-val">${restSec}s</span>
+        <span class="rday-chip-label">descanso</span>
+      </div>
+      <div class="rday-chip">
+        <span class="rday-chip-val" id="rday-chip-ejerc">${firstDay.exercises.length}</span>
+        <span class="rday-chip-label">ejercicios</span>
       </div>
     </div>
+
+    <!-- Block 3: Day selector -->
+    <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Elige tu día de hoy</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px">${tilesHtml}</div>
+
+    <!-- Block 4: Exercise list -->
+    <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Ejercicios</div>
+    <div id="rday-exlist">${buildExList(firstDay)}</div>
+
+    <!-- Block 5: CTA -->
+    <button id="rday-cta" onclick="startScienceRoutine('${level}',${time},0)" style="width:100%;margin-top:16px;padding:16px;background:var(--primary);color:#080A0F;font-weight:800;font-size:15px;font-family:var(--font);border:none;border-radius:var(--radius);cursor:pointer;transition:opacity .15s">
+      ▶ Empezar ${shortName(firstDay.name)}
+    </button>
+
+    <!-- Block 6: Change routine link -->
+    <a onclick="goToWizardStep(1)" style="display:block;text-align:center;font-size:12px;color:var(--text-tertiary);cursor:pointer;padding:12px 0">← Cambiar rutina</a>
   `;
 
-  // Render individual day cards
-  const dayCardsHtml = data.days.map((day, idx) => {
-    const exRows = day.exercises.map(ex =>
-      `<div class="routine-ex-item">
-        <span class="routine-ex-name">${ex.name}</span>
-        <span class="routine-ex-sets">${ex.sets}×${ex.reps}</span>
-      </div>`
-    ).join('');
-    return `<div class="routine-day-card">
-      <div class="routine-day-header">
-        <div class="routine-day-name">${day.name}</div>
-        <div class="routine-day-meta">${day.exercises.length} ejercicios · ~${day.totalSets} series totales</div>
-      </div>
-      <div class="routine-ex-list">${exRows}</div>
-      <button class="routine-start-day-btn" onclick="startScienceRoutine('${level}',${time},${idx})">
-        ▶ Usar este día
-      </button>
-    </div>`;
-  }).join('');
+  // Store references for selectRoutineDay
+  listEl._routineLevel = level;
+  listEl._routineTime = time;
+  listEl._buildExList = buildExList;
+  listEl._shortName = shortName;
+}
 
-  listEl.innerHTML = overviewCard + dayCardsHtml;
+function selectRoutineDay(dayIdx) {
+  const listEl = document.getElementById('routinesList');
+  const level = listEl._routineLevel;
+  const time = listEl._routineTime;
+  const buildExList = listEl._buildExList;
+  const shortName = listEl._shortName;
+  if (!level || !time) return;
+
+  const data = SCIENCE_ROUTINES[level]?.[time];
+  const day = data?.days[dayIdx];
+  if (!day) return;
+
+  // Update tile active states
+  document.querySelectorAll('.rday-tile').forEach((t, i) => {
+    t.classList.toggle('rday-sel', i === dayIdx);
+  });
+
+  // Update exercise list
+  const exListEl = document.getElementById('rday-exlist');
+  if (exListEl) exListEl.innerHTML = buildExList(day);
+
+  // Update chips
+  const seriesEl = document.getElementById('rday-chip-series');
+  if (seriesEl) seriesEl.textContent = day.totalSets;
+  const ejercEl = document.getElementById('rday-chip-ejerc');
+  if (ejercEl) ejercEl.textContent = day.exercises.length;
+
+  // Update CTA
+  const ctaEl = document.getElementById('rday-cta');
+  if (ctaEl) {
+    ctaEl.textContent = `▶ Empezar ${shortName(day.name)}`;
+    ctaEl.onclick = () => startScienceRoutine(level, time, dayIdx);
+  }
 }
 
 function startScienceRoutine(level, time, dayIdx) {
