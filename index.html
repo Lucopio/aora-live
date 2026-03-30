@@ -1889,6 +1889,20 @@ body {
   </div>
 </div>
 
+<!-- HIGHLIGHT COACHMARK OVERLAY -->
+<div id="highlightCoachmarkOverlay" style="display:none;position:fixed;inset:0;z-index:9200" onclick="dismissHighlightCoachmark()">
+  <div id="highlightCoachmarkBox" style="position:absolute;border:2px solid var(--primary);border-radius:14px;pointer-events:none;transition:all 0.25s;box-shadow:0 0 0 9999px rgba(0,0,0,0.75)"></div>
+  <div id="highlightCoachmarkTooltip" style="position:absolute;background:var(--surface);border:1px solid rgba(0,229,255,0.3);border-radius:14px;padding:16px;width:260px;z-index:9201;pointer-events:all" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px" id="hlCoachmarkTitle">Novedad</div>
+      <span style="margin-left:auto;font-size:10px;font-weight:700;background:var(--accent2);color:#fff;padding:2px 6px;border-radius:5px">NUEVO</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px" id="hlCoachmarkDesc">Descripción del coachmark.</div>
+    <button onclick="dismissHighlightCoachmark()" style="width:100%;padding:10px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Entendido ✓</button>
+  </div>
+</div>
+
 <!-- LOADING OVERLAY (se oculta una vez resuelta la sesión) -->
 <div id="appLoadingOverlay" style="position:fixed;inset:0;background:#080A0F;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9999">
   <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
@@ -4265,6 +4279,7 @@ function showScreen(name) {
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); }
   if (name === 'coach') { initCoachChat(); }
   if (name === 'settings') { updateAccountUI(); }
+  if (name === 'workout') setTimeout(() => checkNewFeatureCoachmarks(), 800);
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
@@ -8130,6 +8145,54 @@ function tourNext() {
 function tourSkip() {
   localStorage.setItem(ONBOARDING_TOUR_KEY, '1');
   document.getElementById('onboardingTourOverlay').style.display = 'none';
+}
+
+// ─── Highlight Coachmarks (contextual tooltip + highlight) ────────────────
+const HL_COACHMARK_KEY_PREFIX = 'aora_hlcm_';
+
+function showHighlightCoachmark({ id, targetId, title, desc, tooltipPosition = 'below' }) {
+  if (localStorage.getItem(HL_COACHMARK_KEY_PREFIX + id)) return;
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  const rect = target.getBoundingClientRect();
+  const padding = 8;
+  const box = document.getElementById('highlightCoachmarkBox');
+  box.style.top    = (rect.top - padding) + 'px';
+  box.style.left   = (rect.left - padding) + 'px';
+  box.style.width  = (rect.width + padding * 2) + 'px';
+  box.style.height = (rect.height + padding * 2) + 'px';
+  document.getElementById('hlCoachmarkTitle').textContent = title;
+  document.getElementById('hlCoachmarkDesc').textContent = desc;
+  const tt = document.getElementById('highlightCoachmarkTooltip');
+  const ttLeft = Math.min(rect.left, window.innerWidth - 280);
+  if (tooltipPosition === 'above') {
+    tt.style.top  = (rect.top - padding - 140) + 'px';
+    tt.style.left = ttLeft + 'px';
+  } else {
+    tt.style.top  = (rect.bottom + padding + 8) + 'px';
+    tt.style.left = ttLeft + 'px';
+  }
+  const overlay = document.getElementById('highlightCoachmarkOverlay');
+  overlay.style.display = 'block';
+  overlay.dataset.activeId = id;
+}
+
+function dismissHighlightCoachmark() {
+  const overlay = document.getElementById('highlightCoachmarkOverlay');
+  const id = overlay.dataset.activeId;
+  if (id) localStorage.setItem(HL_COACHMARK_KEY_PREFIX + id, '1');
+  overlay.style.display = 'none';
+}
+
+function checkNewFeatureCoachmarks() {
+  // Ejemplo de uso:
+  // showHighlightCoachmark({
+  //   id: 'coach_chat_workout',
+  //   targetId: 'coachWorkoutBtn',
+  //   title: 'Habla con tu coach',
+  //   desc: 'Ahora puedes preguntarle a tu coach lo que necesites durante el entrenamiento.',
+  //   tooltipPosition: 'above'
+  // });
 }
 
 function dismissCoachmark() {
