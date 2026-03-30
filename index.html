@@ -5278,7 +5278,7 @@ const QUICK_ROUTINES = [
   {
     name: 'Full body express',
     duration: 15,
-    emoji: '⚡',
+    icon: 'Icons/SVG/Timer.svg',
     desc: 'Cuerpo completo · Sin equipo',
     exercises: [
       { name: 'Sentadilla',          equip: 'corporal' },
@@ -5292,7 +5292,7 @@ const QUICK_ROUTINES = [
   {
     name: 'HIIT cardio',
     duration: 15,
-    emoji: '🔥',
+    icon: 'Icons/SVG/Calentamiento.svg',
     desc: 'Alta intensidad · Sin equipo',
     exercises: [
       { name: 'Burpees',             equip: 'corporal' },
@@ -5305,7 +5305,7 @@ const QUICK_ROUTINES = [
   {
     name: 'Tren superior',
     duration: 20,
-    emoji: '💪',
+    icon: 'Icons/SVG/Biceps.svg',
     desc: 'Pecho, espalda, hombros · Sin equipo',
     exercises: [
       { name: 'Fondos en paralelas', equip: 'corporal' },
@@ -5318,7 +5318,7 @@ const QUICK_ROUTINES = [
   {
     name: 'Core + piernas',
     duration: 20,
-    emoji: '🦵',
+    icon: 'Icons/SVG/Leg.svg',
     desc: 'Piernas y abdomen · Sin equipo',
     exercises: [
       { name: 'Sentadilla',          equip: 'corporal' },
@@ -7806,7 +7806,7 @@ function openQuickWorkout() {
   list.innerHTML = QUICK_ROUTINES.map((r, i) => `
     <button onclick="startQuickRoutine(${i})" style="width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font);transition:border-color 0.15s" onmouseenter="this.style.borderColor='#4ade80'" onmouseleave="this.style.borderColor='var(--border)'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <span style="font-size:22px">${r.emoji}</span>
+        <img src="${r.icon}" style="width:22px;height:22px;object-fit:contain;flex-shrink:0" alt="">
         <span style="font-size:15px;font-weight:700;color:var(--text-primary)">${r.name}</span>
         <span style="margin-left:auto;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,0.1);padding:3px 8px;border-radius:6px">${r.duration} min</span>
       </div>
