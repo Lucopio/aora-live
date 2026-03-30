@@ -235,6 +235,36 @@ body {
 .routine-time-tabs { display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px; }
 .routine-time-tab { padding:6px 14px;border-radius:var(--radius-full);border:1.5px solid var(--border);background:transparent;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;transition:all .2s;color:var(--text-secondary);min-width:52px;text-align:center; }
 .routine-time-tab.active { border-color:var(--success);background:var(--success-light);color:var(--success); }
+/* ─── Routine Wizard ─────────────────────────────────────── */
+.wiz-progress { display:flex;align-items:flex-start;margin-bottom:22px;padding:0 2px; }
+.wiz-step-dot { display:flex;flex-direction:column;align-items:center;gap:5px;min-width:40px; }
+.wiz-dot-inner { width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.12);transition:all 0.25s;flex-shrink:0; }
+.wiz-dot-active .wiz-dot-inner { background:transparent;border:2px solid var(--primary);box-shadow:0 0 8px rgba(0,229,255,0.45); }
+.wiz-dot-done .wiz-dot-inner { background:var(--primary); }
+.wiz-step-dot span { font-size:9px;font-weight:600;color:var(--text-tertiary);letter-spacing:0.3px;text-align:center; }
+.wiz-dot-active span,.wiz-dot-done span { color:var(--primary); }
+.wiz-line { flex:1;height:1.5px;background:rgba(255,255,255,0.1);margin:4px 4px 0;transition:background 0.25s; }
+.wiz-line-done { background:var(--primary); }
+.wiz-level-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px; }
+.wiz-tile { display:flex;flex-direction:column;align-items:center;gap:5px;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;text-align:center; }
+.wiz-tile:active { transform:scale(0.96); }
+.wiz-tile.wiz-tile-selected { border-color:var(--primary);background:var(--primary-light); }
+.wiz-tile-emoji { font-size:28px;line-height:1; }
+.wiz-tile-name { font-size:13px;font-weight:700;color:var(--text-primary);transition:color 0.15s; }
+.wiz-tile-sub { font-size:10px;color:var(--text-secondary);line-height:1.35;transition:color 0.15s; }
+.wiz-tile.wiz-tile-selected .wiz-tile-name { color:var(--primary); }
+.wiz-tile.wiz-tile-selected .wiz-tile-sub { color:var(--primary);opacity:0.75; }
+.wiz-time-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px; }
+.wiz-time-tile { display:flex;flex-direction:column;align-items:center;padding:18px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent; }
+.wiz-time-tile:active { transform:scale(0.96); }
+.wiz-time-tile.wiz-tile-selected { border-color:var(--primary);background:var(--primary-light); }
+.wiz-time-num { font-family:var(--mono);font-size:32px;font-weight:700;color:var(--primary);line-height:1; }
+.wiz-time-label { font-size:11px;color:var(--text-secondary);margin-top:5px; }
+.wiz-preview-pill { background:var(--primary-light);color:var(--primary);border-left:3px solid var(--primary);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.4;margin-top:8px; }
+.wiz-btn-primary { width:100%;padding:15px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.15s;letter-spacing:0.2px; }
+.wiz-btn-primary:disabled { opacity:0.35;cursor:not-allowed; }
+.wiz-btn-ghost { padding:13px 16px;background:transparent;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;white-space:nowrap; }
+.wiz-step3-back { width:100%;margin-bottom:14px; }
 .routine-science-note { font-size:12px;color:var(--text-secondary);background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.55;border-left:3px solid var(--primary); }
 .routine-rest-info { display:flex;align-items:center;gap:10px;background:var(--warning-light);border-radius:10px;padding:10px 14px;margin-bottom:14px; }
 .routine-rest-icon { font-size:20px;flex-shrink:0; }
@@ -3072,30 +3102,83 @@ body {
 <!-- ROUTINES SHEET -->
 <div class="routines-overlay" id="routinesOverlay" onclick="closeRoutinesSheet()"></div>
 <div class="routines-sheet" id="routinesSheet">
-  <div class="sheet-handle" style="margin-bottom:16px"></div>
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+  <div class="sheet-handle" style="margin-bottom:14px"></div>
+
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
     <div>
-      <div style="font-size:18px;font-weight:700;margin-bottom:2px">Rutinas por ciencia</div>
-      <div style="font-size:13px;color:var(--text-secondary)">Personalizada según tu nivel, objetivo y tiempo disponible</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:2px">Rutinas por ciencia</div>
+      <div style="font-size:12px;color:var(--text-secondary)">Elige tu nivel y tiempo disponible</div>
     </div>
-    <button onclick="closeRoutinesSheet()" style="flex-shrink:0;margin-left:12px;margin-top:2px;background:var(--bg);border:1.5px solid var(--border);border-radius:50%;width:32px;height:32px;font-size:18px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1" title="Cerrar">×</button>
+    <button onclick="closeRoutinesSheet()" style="flex-shrink:0;margin-left:12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:50%;width:32px;height:32px;font-size:18px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">×</button>
   </div>
-  <!-- Nivel -->
-  <div class="routines-section-label">Nivel</div>
-  <div class="routine-level-tabs" id="routineLevelTabs">
-    <button class="routine-level-tab active" onclick="switchRoutineLevel('beginner',this)">🌱 Principiante</button>
-    <button class="routine-level-tab" onclick="switchRoutineLevel('intermediate',this)">⚡ Intermedio</button>
-    <button class="routine-level-tab" onclick="switchRoutineLevel('advanced',this)">🔥 Avanzado</button>
+
+  <!-- Barra de progreso -->
+  <div class="wiz-progress">
+    <div class="wiz-step-dot wiz-dot-active" id="wizDot1">
+      <div class="wiz-dot-inner"></div><span>Nivel</span>
+    </div>
+    <div class="wiz-line" id="wizLine1"></div>
+    <div class="wiz-step-dot wiz-dot-pending" id="wizDot2">
+      <div class="wiz-dot-inner"></div><span>Tiempo</span>
+    </div>
+    <div class="wiz-line" id="wizLine2"></div>
+    <div class="wiz-step-dot wiz-dot-pending" id="wizDot3">
+      <div class="wiz-dot-inner"></div><span>Rutina</span>
+    </div>
   </div>
-  <!-- Tiempo disponible -->
-  <div class="routines-section-label">¿Cuánto tiempo tienes hoy?</div>
-  <div class="routine-time-tabs" id="routineTimeTabs"></div>
-  <!-- Nota científica -->
-  <div id="routineScienceNote" class="routine-science-note"></div>
-  <!-- Descanso recomendado -->
-  <div id="routineRestInfo" class="routine-rest-info" style="display:none"></div>
-  <!-- Lista de días -->
-  <div id="routinesList"></div>
+
+  <!-- PASO 1: Nivel -->
+  <div id="wizStep1">
+    <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:14px">¿Cuál es tu nivel de experiencia?</div>
+    <div class="wiz-level-grid">
+      <div class="wiz-tile" id="wTileBeginner" onclick="wizardSelectLevel('beginner')">
+        <span class="wiz-tile-emoji">🌱</span>
+        <span class="wiz-tile-name">Principiante</span>
+        <span class="wiz-tile-sub">Primeros 6 meses</span>
+      </div>
+      <div class="wiz-tile" id="wTileIntermediate" onclick="wizardSelectLevel('intermediate')">
+        <span class="wiz-tile-emoji">⚡</span>
+        <span class="wiz-tile-name">Intermedio</span>
+        <span class="wiz-tile-sub">1–3 años de gym</span>
+      </div>
+      <div class="wiz-tile" id="wTileAdvanced" onclick="wizardSelectLevel('advanced')">
+        <span class="wiz-tile-emoji">🔥</span>
+        <span class="wiz-tile-name">Avanzado</span>
+        <span class="wiz-tile-sub">3+ años, split</span>
+      </div>
+    </div>
+    <button class="wiz-btn-primary" id="wizStep1Btn" onclick="goToWizardStep(2)" disabled>Continuar →</button>
+  </div>
+
+  <!-- PASO 2: Tiempo -->
+  <div id="wizStep2" style="display:none">
+    <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:14px">¿Cuánto tiempo tienes hoy?</div>
+    <div class="wiz-time-grid" id="wizTimeGrid"></div>
+    <div class="wiz-preview-pill" id="wizPreviewPill" style="display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="wiz-btn-ghost" onclick="goToWizardStep(1)">← Atrás</button>
+      <button class="wiz-btn-primary" id="wizStep2Btn" onclick="goToWizardStep(3)" style="flex:1">Ver mi rutina →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: Rutina -->
+  <div id="wizStep3" style="display:none">
+    <button class="wiz-btn-ghost wiz-step3-back" onclick="goToWizardStep(1)">← Cambiar rutina</button>
+    <div id="routineScienceNote" class="routine-science-note"></div>
+    <div id="routineRestInfo" class="routine-rest-info" style="display:none"></div>
+    <div id="routinesList"></div>
+  </div>
+
+  <!-- IDs legacy ocultos — las funciones existentes los necesitan sin romper -->
+  <div style="display:none" aria-hidden="true">
+    <div id="routineLevelTabs">
+      <button class="routine-level-tab active" onclick="switchRoutineLevel('beginner',this)">🌱 Principiante</button>
+      <button class="routine-level-tab" onclick="switchRoutineLevel('intermediate',this)">⚡ Intermedio</button>
+      <button class="routine-level-tab" onclick="switchRoutineLevel('advanced',this)">🔥 Avanzado</button>
+    </div>
+    <div id="routineTimeTabs"></div>
+  </div>
 </div>
 
 <!-- Config Sheet -->
@@ -6568,6 +6651,79 @@ function closeStartContextMenu() {
 // ─── Routines Sheet ───────────────────────────────────────────
 let _currentRoutineLevel = 'beginner';
 let _currentRoutineTime = 45;
+let _wizardStep = 1;
+
+// ─── Wizard helpers ──────────────────────────────────────────
+function wizardSelectLevel(level) {
+  _currentRoutineLevel = level;
+  // Sync hidden legacy tabs
+  const levels = ['beginner','intermediate','advanced'];
+  document.querySelectorAll('.routine-level-tab').forEach((t, i) => {
+    t.classList.toggle('active', levels[i] === level);
+  });
+  // Update tile visuals
+  ['Beginner','Intermediate','Advanced'].forEach(l => {
+    const tile = document.getElementById('wTile' + l);
+    if (tile) tile.classList.toggle('wiz-tile-selected', l.toLowerCase() === level);
+  });
+  // Enable continue button
+  const btn = document.getElementById('wizStep1Btn');
+  if (btn) btn.disabled = false;
+}
+
+function wizardSelectTime(time) {
+  _currentRoutineTime = time;
+  document.querySelectorAll('.wiz-time-tile').forEach(t => {
+    t.classList.toggle('wiz-tile-selected', parseInt(t.dataset.time) === time);
+  });
+  const data = SCIENCE_ROUTINES[_currentRoutineLevel]?.[time];
+  const pill = document.getElementById('wizPreviewPill');
+  if (pill && data) {
+    pill.textContent = `${data.split} · ${data.freq}`;
+    pill.style.display = 'block';
+  }
+}
+
+function goToWizardStep(step) {
+  _wizardStep = step;
+  // Progress bar
+  [1,2,3].forEach(s => {
+    const dot = document.getElementById('wizDot' + s);
+    if (!dot) return;
+    dot.className = 'wiz-step-dot ' + (s < step ? 'wiz-dot-done' : s === step ? 'wiz-dot-active' : 'wiz-dot-pending');
+  });
+  [1,2].forEach(s => {
+    const line = document.getElementById('wizLine' + s);
+    if (line) line.classList.toggle('wiz-line-done', s < step);
+  });
+  // Show/hide panels
+  ['wizStep1','wizStep2','wizStep3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (i + 1 === step) ? 'block' : 'none';
+  });
+  if (step === 1) {
+    // Pre-select current level tile
+    wizardSelectLevel(_currentRoutineLevel);
+  }
+  if (step === 2) {
+    const avail = SCIENCE_ROUTINES[_currentRoutineLevel]?.available || [45];
+    if (!avail.includes(_currentRoutineTime)) _currentRoutineTime = avail.includes(45) ? 45 : avail[0];
+    renderTimeTabs();
+    const grid = document.getElementById('wizTimeGrid');
+    if (grid) {
+      grid.innerHTML = avail.map(t =>
+        `<div class="wiz-time-tile${t === _currentRoutineTime ? ' wiz-tile-selected' : ''}" data-time="${t}" onclick="wizardSelectTime(${t})">
+          <span class="wiz-time-num">${t}</span>
+          <span class="wiz-time-label">min</span>
+        </div>`
+      ).join('');
+    }
+    wizardSelectTime(_currentRoutineTime);
+  }
+  if (step === 3) {
+    renderRoutines(_currentRoutineLevel, _currentRoutineTime);
+  }
+}
 
 function showRoutinesSheet() {
   const exp = userProfile?.experience;
@@ -6582,7 +6738,10 @@ function showRoutinesSheet() {
   renderTimeTabs();
   renderRoutines(_currentRoutineLevel, _currentRoutineTime);
   document.getElementById('routinesOverlay').classList.add('active');
-  setTimeout(() => document.getElementById('routinesSheet').classList.add('active'), 10);
+  setTimeout(() => {
+    document.getElementById('routinesSheet').classList.add('active');
+    goToWizardStep(1);
+  }, 10);
 }
 
 function closeRoutinesSheet() {
