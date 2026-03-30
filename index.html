@@ -2999,23 +2999,10 @@ body {
   <div class="ex-info-name" id="exInfoName">Ejercicio</div>
   <div class="ex-info-muscles" id="exInfoMuscles"></div>
 
-  <!-- #23 GIF / placeholder -->
+  <!-- GIF desde ExerciseDB API -->
   <div id="exInfoMediaWrap">
-    <img id="exInfoGifInline" src="" alt=""
-      style="display:none;width:100%;max-height:200px;object-fit:contain;border-radius:12px;margin:12px 0;background:var(--surface2)"
-      onload="this.style.display='block';document.getElementById('exInfoGifPlaceholder').style.display='none'"
-      onerror="this.style.display='none';document.getElementById('exInfoGifPlaceholder').style.display='flex'">
-    <div id="exInfoGifPlaceholder" class="ex-gif-placeholder" style="display:none">
-      <svg id="exInfoBodySvg" viewBox="0 0 60 100" width="54" height="90" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="30" cy="9" r="7"/>
-        <line x1="30" y1="16" x2="30" y2="55"/>
-        <line x1="30" y1="22" x2="12" y2="40"/>
-        <line x1="30" y1="22" x2="48" y2="40"/>
-        <line x1="30" y1="55" x2="18" y2="80"/>
-        <line x1="30" y1="55" x2="42" y2="80"/>
-      </svg>
-      <span style="font-size:11px">Sin animación disponible</span>
-    </div>
+    <img id="ex-info-gif" src="" alt=""
+      style="width:100%;border-radius:12px;margin-bottom:14px;max-height:220px;object-fit:contain;background:#1A1D24;display:none">
   </div>
 
   <div class="ex-info-desc" id="exInfoDesc"></div>
@@ -3094,10 +3081,7 @@ body {
       <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#333" stroke-width="3"/><path d="M16 4 A12 12 0 0 1 28 16" fill="none" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="0.8s" repeatCount="indefinite"/></path></svg>
       <span style="font-size:12px">Cargando animación…</span>
     </div>
-    <div id="exGifError" style="display:none;flex-direction:column;align-items:center;gap:8px;color:#666;padding:20px">
-      <span style="font-size:28px">🎬</span>
-      <span style="font-size:13px">GIF no disponible</span>
-    </div>
+    <div id="exGifError" style="display:none"></div>
     <img id="exGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px;display:none"
       onload="this.style.display='block';document.getElementById('exGifLoading').style.display='none'"
       onerror="this.style.display='none';document.getElementById('exGifLoading').style.display='none';document.getElementById('exGifError').style.display='flex'">
@@ -6196,7 +6180,7 @@ function _doSelectExercise(name, equip) {
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
   // #5 — mostrar/ocultar botón de GIF
   const wkGifBtn = document.getElementById('wkGifBtn');
-  if (wkGifBtn) wkGifBtn.style.display = exerciseGIFs[name] ? 'flex' : 'none';
+  if (wkGifBtn) wkGifBtn.style.display = 'flex';
 
   // Pre-fill last weight for this exercise+equipment combination
   const key = exKey(name, currentEquipment);
@@ -6534,7 +6518,64 @@ function dismissRoutineSuggest() {
 }
 
 // ─── Exercise Info Modal ──────────────────────────────────────
-let _currentExInfoGif = '';
+// ─── ExerciseDB GIF System ───────────────────────────────────
+const EXERCISE_EN = {
+  'Press de banca':'bench press','Press inclinado':'incline bench press',
+  'Press con mancuernas':'dumbbell bench press','Aperturas':'dumbbell fly',
+  'Fondos en paralelas':'chest dip','Crossover en polea':'cable crossover',
+  'Press declinado':'decline bench press','Pull-over con mancuerna':'dumbbell pullover',
+  'Press en máquina':'machine chest press','Dominadas':'pull up',
+  'Remo con barra':'barbell row','Remo con mancuerna':'dumbbell row',
+  'Jalones al pecho':'lat pulldown','Remo en maquina':'seated cable row',
+  'Peso muerto':'deadlift','Remo en T':'t bar row','Face pull':'face pull',
+  'Jalones con agarre neutro':'neutral grip pulldown','Pullover en polea':'cable pullover',
+  'Hiperextensiones':'back extension','Press militar':'overhead press',
+  'Elevaciones laterales':'lateral raise','Elevaciones frontales':'front raise',
+  'Pajaros':'rear delt fly','Arnold press':'arnold press',
+  'Press con mancuernas sentado':'seated dumbbell press',
+  'Elevaciones en polea':'cable lateral raise',
+  'Encogimientos de hombros':'barbell shrug','Curl con barra':'barbell curl',
+  'Curl con mancuernas':'dumbbell curl','Curl martillo':'hammer curl',
+  'Curl concentrado':'concentration curl','Curl en polea':'cable curl',
+  'Curl inclinado':'incline dumbbell curl','Curl en banca Scott':'preacher curl',
+  'Curl 21s':'barbell 21','Extension en polea alta':'tricep pushdown',
+  'Press frances':'skull crusher','Patada de triceps':'tricep kickback',
+  'Fondos de triceps':'tricep dip','Extension con mancuerna':'overhead tricep extension',
+  'Extension en polea baja':'cable tricep extension','Press cerrado':'close grip bench press',
+  'Overhead en polea':'cable overhead extension','Sentadilla':'barbell squat',
+  'Prensa de piernas':'leg press','Extension de cuadriceps':'leg extension',
+  'Curl de femoral':'leg curl','Peso muerto rumano':'romanian deadlift',
+  'Zancadas':'dumbbell lunge','Elevacion de gemelos':'standing calf raise',
+  'Hip thrust':'barbell hip thrust','Sentadilla búlgara':'bulgarian split squat',
+  'Abductores en máquina':'hip abduction','Aductores en máquina':'hip adduction',
+  'Step-up':'step up','Sentadilla sumo':'sumo squat',
+  'Patada de glúteo en polea':'cable glute kickback',
+  'Peso muerto a una pierna':'single leg deadlift','Puente de glúteo':'glute bridge',
+  'Abducción con banda':'band hip abduction','Plancha':'plank','Crunch':'crunch',
+  'Elevacion de piernas':'leg raise','Rueda abdominal':'ab wheel rollout',
+  'Russian twist':'russian twist','Crunch en polea':'cable crunch',
+  'Plancha lateral':'side plank','Mountain climbers':'mountain climber',
+  'Hollow hold':'hollow hold','Dragon flag':'dragon flag','Burpees':'burpee',
+  'Saltos de caja':'box jump','Cuerda':'jump rope','Muscle-up':'muscle up',
+  'Pistol squat':'pistol squat','Pike push-up':'pike push up','Archer push-up':'archer push up',
+};
+
+async function loadExerciseGif(exerciseName) {
+  const cache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
+  if (cache[exerciseName] !== undefined) return cache[exerciseName]; // null = ya buscado, no existe
+  const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
+  try {
+    const res = await fetch(
+      `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(query)}?limit=1`,
+      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '3d6f244f7fmsh4b183857ca45654p1a8daajsnf9338e4161b8' } }
+    );
+    const data = await res.json();
+    const gifUrl = data?.[0]?.gifUrl || null;
+    cache[exerciseName] = gifUrl;
+    localStorage.setItem('aora_gif_cache', JSON.stringify(cache));
+    return gifUrl;
+  } catch { return null; }
+}
 
 function showExerciseInfo(name) {
   const info = EXERCISE_INFO[name];
@@ -6545,18 +6586,12 @@ function showExerciseInfo(name) {
   document.getElementById('exInfoMuscles').innerHTML = (info.muscles || []).map(m => `<span class="ex-info-muscle-chip">${m}</span>`).join('');
   document.getElementById('exInfoDesc').textContent = info.desc || '';
 
-  // #23 — GIF or placeholder
-  _currentExInfoGif = exerciseGIFs[name] || '';
-  const gifInline = document.getElementById('exInfoGifInline');
-  const gifPlaceholder = document.getElementById('exInfoGifPlaceholder');
-  if (_currentExInfoGif) {
-    gifInline.src = _currentExInfoGif;
-    gifInline.style.display = 'none'; // onerror/onload toggles
-    if (gifPlaceholder) gifPlaceholder.style.display = 'none';
-  } else {
-    if (gifInline) gifInline.style.display = 'none';
-    if (gifPlaceholder) gifPlaceholder.style.display = 'flex';
-  }
+  // GIF desde ExerciseDB API (caché localStorage)
+  const gifEl = document.getElementById('ex-info-gif');
+  if (gifEl) gifEl.style.display = 'none';
+  loadExerciseGif(name).then(url => {
+    if (url && gifEl) { gifEl.src = url; gifEl.style.display = 'block'; }
+  });
 
   // #12 — Do's and Don'ts
   const dos = document.getElementById('exInfoDos');
@@ -6594,11 +6629,9 @@ function _resetGifSheet() {
 }
 
 function openExerciseGif() {
-  if (!_currentExInfoGif) return;
   const name = document.getElementById('exInfoName').textContent;
   document.getElementById('exGifTitle').textContent = name + ' — Forma correcta';
   _resetGifSheet();
-  document.getElementById('exGifImg').src = _currentExInfoGif;
   const overlay = document.getElementById('exGifOverlay');
   const sheet   = document.getElementById('exGifSheet');
   overlay.style.display = 'block';
@@ -6609,6 +6642,10 @@ function openExerciseGif() {
     sheet.style.transform  = 'translateX(-50%) translateY(0)';
   });
   document.body.style.overflow = 'hidden';
+  loadExerciseGif(name).then(url => {
+    if (url) { document.getElementById('exGifImg').src = url; }
+    else { document.getElementById('exGifLoading').style.display = 'none'; }
+  });
 }
 
 function closeExerciseGif() {
@@ -6624,11 +6661,8 @@ function closeExerciseGif() {
 
 // #5 — Ver GIF desde pantalla de entrenamiento activo
 function openWorkoutExerciseGif() {
-  const gif = exerciseGIFs[currentExerciseName];
-  if (!gif) return;
   document.getElementById('exGifTitle').textContent = currentExerciseName + ' — Forma correcta';
   _resetGifSheet();
-  document.getElementById('exGifImg').src = gif;
   const overlay = document.getElementById('exGifOverlay');
   const sheet   = document.getElementById('exGifSheet');
   overlay.style.display = 'block';
@@ -6640,6 +6674,10 @@ function openWorkoutExerciseGif() {
     sheet.style.transform  = 'translateX(-50%) translateY(0)';
   });
   document.body.style.overflow = 'hidden';
+  loadExerciseGif(currentExerciseName).then(url => {
+    if (url) { document.getElementById('exGifImg').src = url; }
+    else { document.getElementById('exGifLoading').style.display = 'none'; }
+  });
 }
 
 // ─── Start Workout Long-Press Context Menu ────────────────────
