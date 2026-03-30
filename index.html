@@ -91,7 +91,9 @@ body {
 .nav-icon-img { width: 28px; height: 28px; object-fit: contain; filter: grayscale(1) brightness(0.55); transition: filter 0.2s; }
 .nav-item.active .nav-icon-img { filter: none; }
 /* Iconos de app sobre fondo oscuro: silueta blanca limpia */
-.app-svg-icon { object-fit: contain; display: block; filter: brightness(0) invert(1); }
+/* Tile blanco para iconos PNG con fondo blanco */
+.app-icon-tile { background:rgba(255,255,255,0.9);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.app-svg-icon { object-fit: contain; display: block; }
 
 /* HOME */
 .home-header { margin-bottom: 24px; }
@@ -1113,7 +1115,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .wu-group-btn:active, .wu-group-btn.active { transform: scale(0.95); filter: brightness(0.95); }
-.wu-group-icon { width: 36px; height: 36px; object-fit: contain; display: block; filter: brightness(0) invert(1); }
+.wu-group-icon { width: 32px; height: 32px; object-fit: contain; display: block; }
 .wu-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
 /* Warmup animations */
 @keyframes wu-spin   { from { transform: rotate(0deg);    } to   { transform: rotate(360deg); } }
@@ -4281,7 +4283,7 @@ function renderGroupPicker() {
   ];
   document.getElementById('warmupGroupGrid').innerHTML = groups.map(g => `
     <button class="wu-group-btn" data-group="${g.key}" onclick="selectWarmupGroup('${g.key}')" style="border-color:${g.color}20;background:${g.color}10">
-      <img src="${g.icon}" class="wu-group-icon" alt="">
+      <div class="app-icon-tile" style="width:44px;height:44px"><img src="${g.icon}" class="wu-group-icon" alt=""></div>
       <span class="wu-group-label" style="color:${g.color}">${g.key}</span>
     </button>`).join('');
 }
@@ -6016,7 +6018,7 @@ function renderCatalog(filter) {
     html = groups.map(g => {
       const iconSrc = GROUP_ICONS[g];
       const iconHtml = iconSrc
-        ? `<img src="${iconSrc}" class="app-svg-icon" style="width:36px;height:36px;flex-shrink:0" alt="">`
+        ? `<div class="app-icon-tile" style="width:44px;height:44px;flex-shrink:0"><img src="${iconSrc}" class="app-svg-icon" style="width:34px;height:34px" alt=""></div>`
         : `<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--text-tertiary);fill:none;stroke-width:1.8;flex-shrink:0"><circle cx="12" cy="12" r="9"/></svg>`;
       return `<button class="group-item" data-group="${attr(g)}" onclick="showCatalogGroup(this.dataset.group)">
         <span style="display:flex;align-items:center;gap:12px">${iconHtml}<span>${g}</span></span>
@@ -7808,7 +7810,7 @@ function openQuickWorkout() {
   list.innerHTML = QUICK_ROUTINES.map((r, i) => `
     <button onclick="startQuickRoutine(${i})" style="width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font);transition:border-color 0.15s" onmouseenter="this.style.borderColor='#4ade80'" onmouseleave="this.style.borderColor='var(--border)'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <img src="${r.icon}" class="app-svg-icon" style="width:40px;height:40px;flex-shrink:0" alt="">
+        <div class="app-icon-tile" style="width:48px;height:48px;flex-shrink:0"><img src="${r.icon}" class="app-svg-icon" style="width:38px;height:38px" alt=""></div>
         <span style="font-size:15px;font-weight:700;color:var(--text-primary)">${r.name}</span>
         <span style="margin-left:auto;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,0.1);padding:3px 8px;border-radius:6px">${r.duration} min</span>
       </div>
