@@ -6365,6 +6365,9 @@ function initRPESlider(rpe) {
   const slider = document.getElementById('editSetRPE');
   const disp = document.getElementById('rpeDisplayVal');
   if (!slider || !disp) return;
+  const key = exKey(currentExerciseName, currentEquipment);
+  const lastRpe = lastWeights[key]?.rpe;
+  if (rpe == null && lastRpe != null) rpe = lastRpe;
   if (rpe != null && rpe >= 1 && rpe <= 10) {
     _editRPEActive = true;
     slider.value = rpe;
@@ -6390,7 +6393,7 @@ function addSet() {
   if (!thisIsWarmup) {
     const key = exKey(currentExerciseName, currentEquipment);
     if (weight > 0 || lastWeights[key]) {
-      lastWeights[key] = { weight: weight || (lastWeights[key]?.weight || 0), unit: weightUnit, reps, ts: Date.now() };
+      lastWeights[key] = { weight: weight || (lastWeights[key]?.weight || 0), unit: weightUnit, reps, rpe: null, ts: Date.now() };
     }
   }
   // Reset toggle — cada serie decide si es aproximación
@@ -7343,8 +7346,11 @@ function updateRPESheetSlider(val) {
 
 function showRPESelection() {
   const slider = document.getElementById('rpeSliderInput');
-  slider.value = 5;
-  updateRPESheetSlider(5);
+  const key = exKey(currentExerciseName, currentEquipment);
+  const lastRpe = lastWeights[key]?.rpe;
+  const initialRpe = (lastRpe != null && lastRpe >= 1 && lastRpe <= 10) ? lastRpe : 5;
+  slider.value = initialRpe;
+  updateRPESheetSlider(initialRpe);
   document.getElementById('rpeOverlay').style.display = 'block';
   document.getElementById('rpeSheet').style.display = 'block';
 }
@@ -7358,6 +7364,8 @@ function selectRPE(value) {
   if (currentExerciseSets.length > 0) {
     currentExerciseSets[currentExerciseSets.length - 1].rpe = value;
   }
+  const key = exKey(currentExerciseName, currentEquipment);
+  if (lastWeights[key]) lastWeights[key].rpe = value;
   document.getElementById('rpeOverlay').style.display = 'none';
   document.getElementById('rpeSheet').style.display = 'none';
   renderSets();
