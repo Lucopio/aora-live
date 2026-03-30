@@ -2331,7 +2331,7 @@ body {
 
     <!-- Rutinas sugeridas -->
     <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <img src="Icons/SVG/Rutinas.svg" style="width:18px;height:18px;object-fit:contain" alt="">
       Rutinas por nivel (Principiante · Intermedio · Avanzado)
     </button>
 
@@ -2372,7 +2372,7 @@ body {
     <div class="workout-top-bar">
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
-      <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none">🔥 Calentar</button>
+      <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><img src="Icons/SVG/Calentamiento.svg" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;margin-right:4px" alt=""> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="avgRestValue">--</span>
@@ -2484,7 +2484,7 @@ body {
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <img src="Icons/SVG/Timer.svg" style="width:24px;height:24px;object-fit:contain" alt="">
         <div class="rest-idle-text">
           <h4>Iniciar Descanso</h4>
           <p>Temporizador: <span id="restIdleSeconds">60</span>s configurados</p>
@@ -3133,17 +3133,17 @@ body {
     <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:14px">¿Cuál es tu nivel de experiencia?</div>
     <div class="wiz-level-grid">
       <div class="wiz-tile" id="wTileBeginner" onclick="wizardSelectLevel('beginner')">
-        <span class="wiz-tile-emoji">🌱</span>
+        <img src="Icons/SVG/Principiante.svg" style="width:36px;height:36px;object-fit:contain" alt="">
         <span class="wiz-tile-name">Principiante</span>
         <span class="wiz-tile-sub">Primeros 6 meses</span>
       </div>
       <div class="wiz-tile" id="wTileIntermediate" onclick="wizardSelectLevel('intermediate')">
-        <span class="wiz-tile-emoji">⚡</span>
+        <img src="Icons/SVG/Intermedio.svg" style="width:36px;height:36px;object-fit:contain" alt="">
         <span class="wiz-tile-name">Intermedio</span>
         <span class="wiz-tile-sub">1–3 años de gym</span>
       </div>
       <div class="wiz-tile" id="wTileAdvanced" onclick="wizardSelectLevel('advanced')">
-        <span class="wiz-tile-emoji">🔥</span>
+        <img src="Icons/SVG/Avanzado.svg" style="width:36px;height:36px;object-fit:contain" alt="">
         <span class="wiz-tile-name">Avanzado</span>
         <span class="wiz-tile-sub">3+ años, split</span>
       </div>
@@ -3225,7 +3225,7 @@ body {
     Comenzar desde cero
   </button>
   <button onclick="closeStartContextMenu();showRoutinesSheet();" style="width:100%;padding:14px 16px;background:var(--surface-raised);color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius-lg);font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:10px">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    <img src="Icons/SVG/Rutinas.svg" style="width:18px;height:18px;object-fit:contain" alt="">
     Cargar una rutina
   </button>
 </div>
@@ -5979,13 +5979,17 @@ function renderCatalog(filter) {
   if (!catalogGroup) {
     titleEl.textContent = 'Seleccionar ejercicio';
     const GROUP_ICONS = {
-      'Biceps': 'Icons/SVG/Biceps.svg', 'Triceps': 'Icons/SVG/Biceps.svg',
-      'Espalda': 'Icons/SVG/Back.svg',
-      'Piernas': 'Icons/SVG/Leg.svg',
-      'Hombros': 'Icons/SVG/Shoulders.svg',
-      'Abdominales': 'Icons/SVG/Core.svg', 'Core': 'Icons/SVG/Core.svg',
-      'Cardio': 'Icons/SVG/Cardio.svg',
-      'Pecho': 'Icons/SVG/Shoulders.svg',
+      'Pecho':       'Icons/SVG/Pecho.svg',
+      'Espalda':     'Icons/SVG/Back.svg',
+      'Hombros':     'Icons/SVG/Shoulders.svg',
+      'Biceps':      'Icons/SVG/Biceps.svg',
+      'Triceps':     'Icons/SVG/Tricpes.svg',
+      'Piernas':     'Icons/SVG/Leg.svg',
+      'Gluteos':     'Icons/SVG/Glúteos.svg',
+      'Glúteos':     'Icons/SVG/Glúteos.svg',
+      'Abdomen':     'Icons/SVG/Core.svg',
+      'Cardio':      'Icons/SVG/Cardio.svg',
+      'Calistenia':  'Icons/SVG/Calistenia.svg',
     };
     const groups = exerciseDB.map(g => g.group);
     if (customExercises.length) groups.push('Personalizados');
