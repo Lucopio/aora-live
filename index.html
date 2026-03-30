@@ -2034,7 +2034,11 @@ body {
       <div class="ob-subtitle">Esta información personaliza tu experiencia</div>
       <div class="ob-field">
         <label>Nombre</label>
-        <input class="ob-input" type="text" id="obName" placeholder="Tu nombre">
+        <input class="ob-input" type="text" id="obName" placeholder="Tu nombre completo">
+      </div>
+      <div class="ob-field">
+        <label>¿Cómo te llamamos? <span style="font-size:11px;color:var(--text-tertiary);font-weight:400">(apodo)</span></label>
+        <input class="ob-input" type="text" id="obNickname" placeholder="ej. Bestia, Tiburón, La Reina...">
       </div>
       <div class="ob-field">
         <label>Edad</label>
@@ -2282,8 +2286,11 @@ body {
     <div class="home-header" style="margin-bottom:16px">
       <div class="home-greeting-row">
         <div>
-          <p id="homeGreeting" style="font-size:14px;color:var(--text-secondary);margin-bottom:2px">Buenas tardes</p>
           <h1 id="homeUserName">AORA LIVE</h1>
+          <div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;flex-wrap:wrap">
+            <span id="homeNickname" style="font-size:15px;font-weight:700;color:var(--primary)"></span>
+            <span id="homeGreeting" style="font-size:13px;color:var(--text-secondary)">Listo para entrenar</span>
+          </div>
         </div>
         <span class="streak-badge" id="homeStreakBadge">🔥 0 semanas</span>
       </div>
@@ -3974,20 +3981,34 @@ function getWeekStreak() {
   return streak;
 }
 
-function updateHomeGreeting() {
-  const hour = new Date().getHours();
-  let greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
-  const greetEl = document.getElementById('homeGreeting');
-  if (greetEl) greetEl.textContent = greeting;
+const DAILY_MOTIVATIONS = [
+  'Listo para entrenar',
+  'Hoy es tu día',
+  'El límite eres tú',
+  'Cada rep cuenta',
+  'Más fuerte que ayer',
+  'A dejarlo todo',
+  'La constancia vence',
+  'El progreso no espera',
+  'Tu cuerpo, tu templo',
+  'No pares ahora',
+  'Hoy deja todo en el gym',
+  'Disciplina sobre motivación',
+  'Tú puedes, tú decides',
+  'Un día más, un paso más',
+];
+function _getDailyMotivation() {
+  const d = new Date();
+  const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  return DAILY_MOTIVATIONS[dayOfYear % DAILY_MOTIVATIONS.length];
+}
 
-  // User name
-  try {
-    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-    const nameEl = document.getElementById('homeUserName');
-    if (nameEl && profile.name) {
-      nameEl.textContent = profile.name + ' 💪';
-    }
-  } catch(e) {}
+function updateHomeGreeting() {
+  const nickDisplay = userProfile.nickname || (userProfile.full_name ? userProfile.full_name.split(' ')[0] : null);
+  const nicknameEl = document.getElementById('homeNickname');
+  const greetEl = document.getElementById('homeGreeting');
+  if (nicknameEl) nicknameEl.textContent = nickDisplay || '';
+  if (greetEl) greetEl.textContent = _getDailyMotivation();
 
   // Streak badge
   const streak = getWeekStreak();
@@ -8847,7 +8868,7 @@ isOnline = navigator.onLine; // eslint-disable-line (declared elsewhere)
 
 // ─── Perfil del usuario ────────────────────────────────────
 let userProfile = {
-  full_name: null, age: null, sex: null,
+  full_name: null, nickname: null, age: null, sex: null,
   body_weight: null, body_weight_unit: 'kg', height_cm: null,
   training_days: null, experience: null, training_goal: null,
   activity_level: null, onboarding_done: false
@@ -8869,7 +8890,8 @@ function initSupabase() {
             const { data: p } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
             if (p) {
               userProfile = {
-                full_name: p.full_name||null, age: p.age||null, sex: p.sex||null,
+                full_name: p.full_name||null, nickname: p.nickname||localStorage.getItem('gymtracker_nickname')||null,
+                age: p.age||null, sex: p.sex||null,
                 body_weight: p.body_weight||null, body_weight_unit: p.body_weight_unit||'kg',
                 height_cm: p.height_cm||null, training_days: p.training_days||null,
                 experience: p.experience||null, training_goal: p.training_goal||null,
@@ -9077,6 +9099,7 @@ async function syncFromCloud() {
       // Cargar datos de perfil personal
       userProfile = {
         full_name:        profile.full_name        || null,
+        nickname:         profile.nickname         || localStorage.getItem('gymtracker_nickname') || null,
         age:              profile.age              || null,
         sex:              profile.sex              || null,
         body_weight:      profile.body_weight      || null,
@@ -9209,8 +9232,9 @@ function showOnboarding(editMode) {
   _obWeightUnit = userProfile.body_weight_unit || 'kg';
 
   // Pre-fill inputs
-  document.getElementById('obName').value   = userProfile.full_name  || '';
-  document.getElementById('obAge').value    = userProfile.age        || '';
+  document.getElementById('obName').value     = userProfile.full_name  || '';
+  document.getElementById('obNickname').value = userProfile.nickname   || localStorage.getItem('gymtracker_nickname') || '';
+  document.getElementById('obAge').value      = userProfile.age        || '';
   document.getElementById('obWeight').value = userProfile.body_weight || '';
   document.getElementById('obHeight').value = userProfile.height_cm  || '';
   document.getElementById('obWtKg').classList.toggle('active', _obWeightUnit === 'kg');
@@ -9393,6 +9417,7 @@ async function obSave() {
     // Build profile object
     userProfile = {
       full_name:        document.getElementById('obName').value.trim()          || null,
+      nickname:         document.getElementById('obNickname').value.trim()       || null,
       age:              parseInt(document.getElementById('obAge').value)         || null,
       sex:              _obSel.sex,
       body_weight:      parseFloat(document.getElementById('obWeight').value)   || null,
@@ -9405,6 +9430,10 @@ async function obSave() {
       training_location:  _obSel.location || 'gym',
       onboarding_done:    true
     };
+
+    // Persist nickname independently (survives Supabase sync)
+    if (userProfile.nickname) localStorage.setItem('gymtracker_nickname', userProfile.nickname);
+    else localStorage.removeItem('gymtracker_nickname');
 
     // Persist location + cycle globals
     trainingLocation = userProfile.training_location || 'gym';
@@ -9499,14 +9528,12 @@ function updateProfileUI() {
     goalLabel.textContent = parts.join(' · ') || 'Completa tu perfil →';
   }
 
-  // Saludo personalizado en home
-  const greetEl = document.getElementById('homeGreeting');
-  if (greetEl && name) {
-    const firstName = name.split(' ')[0];
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
-    greetEl.textContent = `${greeting}, ${firstName}`;
-  }
+  // Nombre / apodo en home
+  const nickDisplay = userProfile.nickname || (name ? name.split(' ')[0] : null);
+  const nicknameEl = document.getElementById('homeNickname');
+  const greetEl    = document.getElementById('homeGreeting');
+  if (nicknameEl) nicknameEl.textContent = nickDisplay || '';
+  if (greetEl)    greetEl.textContent    = _getDailyMotivation();
 }
 
 // ─── Persistencia de sesión activa (#7) ─────────────────────
