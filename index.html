@@ -90,14 +90,22 @@ body {
   transition: background 0.2s, transform 0.15s;
   background: transparent;
 }
-.nav-item.active .nav-icon-wrap { background: rgba(0, 229, 255, 0.12); }
+/* Icono activo: fondo cyan — el color se ve a través del hueco del logo */
+.nav-item.active .nav-icon-wrap {
+  background: rgba(0,229,255,0.15);
+  box-shadow: 0 0 0 1px rgba(0,229,255,0.25);
+}
 .nav-item:active .nav-icon-wrap { transform: scale(0.93); }
 .nav-icon-img {
-  width: 26px; height: 26px; object-fit: contain;
-  filter: grayscale(1) brightness(0.38);
-  transition: filter 0.2s;
+  width: 28px; height: 28px; object-fit: contain;
+  /* opacity en lugar de filter: preserva el blanco del marco,
+     el hueco transparente del logo sigue mostrando el fondo */
+  opacity: 0.42;
+  transition: opacity 0.2s, filter 0.2s;
 }
+/* Activo: marco del icono en cyan, hueco muestra el fondo cyan del wrap */
 .nav-item.active .nav-icon-img {
+  opacity: 1;
   filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1);
 }
 .nav-active-dot {
@@ -110,10 +118,37 @@ body {
   transition: color 0.2s; letter-spacing: 0.2px;
 }
 .nav-item.active span { color: var(--primary); font-weight: 600; }
-/* Iconos de app sobre fondo oscuro: silueta blanca limpia */
-/* Tile blanco para iconos PNG con fondo blanco */
-.app-icon-tile { background:rgba(255,255,255,0.9);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+/* ── Iconos SVG con logo transparente ───────────────────────
+   Los SVGs tienen marco blanco + logo transparente (hueco).
+   El color del fondo del contenedor se ve a través del hueco.
+   NUNCA aplicar filter a iconos fuera del nav activo. */
+.app-icon-tile {
+  background: var(--surface-raised);
+  border-radius: 10px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
 .app-svg-icon { object-fit: contain; display: block; }
+
+/* Iconos en tiles coloreados (wiz-tile, catalog) — no filter */
+.wiz-tile img { display: block; }
+
+/* Iconos pequeños inline (botones, pills) */
+.icon-inline {
+  width: 16px; height: 16px; object-fit: contain;
+  display: inline-block; vertical-align: middle; opacity: 0.85;
+}
+
+/* Wrapper para iconos que necesitan fondo visible */
+.icon-tile-sm {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface-raised); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.icon-tile-md {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--surface-raised); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
 
 /* HOME */
 .home-header { margin-bottom: 24px; }
@@ -367,6 +402,13 @@ body {
   align-items: center; padding: 16px 20px 24px; min-height: 100vh;
 }
 
+.workout-abandon-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: var(--radius-full);
+  background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.25);
+  color: var(--danger); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); flex-shrink: 0;
+}
 .workout-top-bar {
   width: 100%; display: flex; align-items: center;
   justify-content: space-between; margin-bottom: 16px;
@@ -380,6 +422,7 @@ body {
   animation: pulse 1.5s infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+@keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .workout-status-pill span { font-size: 11px; font-weight: 600; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px; }
 
 .exercise-pill {
@@ -871,6 +914,121 @@ body {
 }
 .clear-done.show { display: flex; }
 
+/* ROUTINE EDITOR */
+#routineEditorOverlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 600;
+  display: none; flex-direction: column; overflow: hidden;
+}
+#routineEditorOverlay.active { display: flex; }
+.editor-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.editor-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.editor-save-btn {
+  padding: 8px 18px; background: var(--primary); color: #000;
+  border: none; border-radius: var(--radius-full); font-family: var(--font);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.editor-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.editor-body { flex: 1; overflow-y: auto; padding: 20px; }
+.editor-field-label {
+  font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+}
+.editor-input {
+  width: 100%; padding: 13px 16px; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 15px; color: var(--text-primary);
+  box-sizing: border-box; outline: none; transition: border-color 0.15s;
+}
+.editor-input:focus { border-color: var(--primary); }
+.editor-select {
+  width: 100%; padding: 13px 16px; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 14px; color: var(--text-primary);
+  box-sizing: border-box; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8F9E' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+.editor-exercise-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px;
+}
+.editor-exercise-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.sets-stepper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.sets-stepper button {
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: var(--surface-raised); color: var(--text-primary); font-size: 16px;
+  font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.sets-stepper button:active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+.sets-count { font-size: 13px; font-weight: 700; color: var(--text-primary); min-width: 20px; text-align: center; }
+.sets-label { font-size: 11px; color: var(--text-tertiary); }
+.editor-remove-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: var(--danger-light); color: var(--danger); font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.add-exercise-btn {
+  width: 100%; padding: 14px; border: 2px dashed var(--border);
+  border-radius: var(--radius-sm); background: transparent;
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.add-exercise-btn:active { border-color: var(--primary); color: var(--primary); }
+/* Exercise picker sheet */
+#exPickerSheet {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 700;
+  display: none; align-items: flex-end; justify-content: center;
+}
+#exPickerSheet.active { display: flex; }
+#exPickerSheetInner {
+  width: 100%; max-width: 480px; background: var(--surface);
+  border-radius: 20px 20px 0 0; padding: 20px 0 40px;
+  max-height: 80vh; display: flex; flex-direction: column;
+}
+.ex-picker-search {
+  margin: 0 16px 12px; padding: 10px 14px;
+  background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-family: var(--font);
+  font-size: 14px; color: var(--text-primary); outline: none; width: calc(100% - 32px); box-sizing: border-box;
+}
+.ex-picker-list { flex: 1; overflow-y: auto; padding: 0 16px; }
+.ex-picker-group-title {
+  font-size: 10px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 1px; padding: 10px 0 6px;
+}
+.ex-picker-item {
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px; color: var(--text-primary); cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ex-picker-item:active { color: var(--primary); }
+.ex-picker-item.selected { color: var(--primary); font-weight: 600; }
+
+/* ROUTINE SELECTOR MODAL */
+#routineSelectorModal > div { animation: slideUp 0.3s ease-out; }
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.routine-card {
+  background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+  cursor: pointer; transition: all 0.2s ease;
+}
+.routine-card:active { transform: scale(0.98); border-color: var(--primary); }
+.routine-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.routine-card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.routine-card-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+.routine-card-tag { display: inline-block; font-size: 10px; padding: 3px 8px; background: var(--primary-light); color: var(--primary); border-radius: 12px; font-weight: 700; margin-right: 6px; }
+.routine-card-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.routine-card-btn { flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-secondary); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.routine-card-btn:active { border-color: var(--primary); color: var(--primary); }
+.routine-card-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+
 /* MODE SELECTION MODAL */
 .mode-modal {
   position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300;
@@ -923,7 +1081,7 @@ body {
 .catalog-search input:focus { border-color: var(--primary); }
 .catalog-search-icon {
   position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-  width: 18px; height: 18px; stroke: var(--text-tertiary); fill: none; stroke-width: 2; pointer-events: none;
+  width: 18px; height: 18px; pointer-events: none; opacity: 0.5;
 }
 .exercise-group { margin-bottom: 4px; }
 .exercise-group-title {
@@ -1047,7 +1205,7 @@ body {
   width: 7px; height: 7px; background: var(--warning); border-radius: 50%;
   animation: pulse 1.5s infinite;
 }
-.warmup-badge span { font-size: 11px; font-weight: 700; color: #92400E; text-transform: uppercase; letter-spacing: 0.8px; }
+.warmup-badge span { font-size: 14px; font-weight: 700; color: #92400E; text-transform: uppercase; letter-spacing: 0.8px; animation: pulse-text 1.5s ease-in-out infinite; }
 .warmup-timer-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
 .warmup-timer-display {
   font-family: var(--mono); font-size: 64px; font-weight: 700;
@@ -1129,14 +1287,20 @@ body {
 .wu-maria-btn:active { opacity: 0.75; }
 /* Warmup group picker */
 .wu-group-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 12px 6px; border: 2px solid var(--border); border-radius: 12px;
-  background: var(--bg); cursor: pointer; transition: all 0.2s;
-  -webkit-tap-highlight-color: transparent;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 16px 12px; border: 2px solid var(--border); border-radius: var(--radius);
+  background: var(--surface-raised); cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent; min-height: 120px;
 }
-.wu-group-btn:active, .wu-group-btn.active { transform: scale(0.95); filter: brightness(0.95); }
-.wu-group-icon { width: 32px; height: 32px; object-fit: contain; display: block; }
-.wu-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+.wu-group-btn:active { transform: scale(0.97); border-color: var(--primary); background: var(--primary-light); }
+.wu-group-btn.active { border-color: var(--primary); background: var(--primary-light); }
+.wu-group-icon { width: 64px; height: 64px; object-fit: contain; display: block; filter: grayscale(1) brightness(1.4); }
+.wu-group-abbr { width: 64px; height: 64px; border-radius: 50%; background: var(--primary-light); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--primary); font-family: var(--font-display); letter-spacing: 1px; flex-shrink: 0; }
+/* Do's and Don'ts lists */
+#warmupDosList li, #warmupDontsList li { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 6px; position: relative; padding-left: 0; }
+#warmupDosList li::before { content: '•'; color: #10B981; font-weight: 700; font-size: 16px; position: absolute; left: -16px; top: -1px; }
+#warmupDontsList li::before { content: '•'; color: #EF4444; font-weight: 700; font-size: 16px; position: absolute; left: -16px; top: -1px; }
+.wu-group-label { font-size: 13px; font-weight: 700; color: var(--text-primary); text-align: center; line-height: 1.2; }
 /* Warmup animations */
 @keyframes wu-spin   { from { transform: rotate(0deg);    } to   { transform: rotate(360deg); } }
 @keyframes wu-push   { 0%,100% { transform: translateX(0);  } 50% { transform: translateX(-7px); } }
@@ -1363,7 +1527,11 @@ body {
 .nav-item span { color: var(--text-tertiary) !important; }
 .nav-item.active svg { stroke: var(--primary) !important; }
 .nav-item.active span { color: var(--primary) !important; font-weight: 700; }
-.nav-item.active .nav-icon-img { filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1) !important; }
+.nav-item .nav-icon-img { opacity: 0.42 !important; filter: none !important; }
+.nav-item.active .nav-icon-img {
+  opacity: 1 !important;
+  filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1) !important;
+}
 
 /* ─── HOME SCREEN ────────────────────────────────────────── */
 .home-header h1 {
@@ -2390,13 +2558,36 @@ body {
       </div>
     </div>
 
-    <div id="todayWorkoutCard" style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;cursor:pointer" onclick="openRoutinePicker()">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px">Entrenamiento de hoy</div>
-        <div style="font-size:11px;color:var(--primary);font-weight:600">Cambiar →</div>
+    <!-- Banner de rutina personalizada -->
+    <div id="todayWorkoutCard" style="background:linear-gradient(135deg,rgba(0,229,255,0.05),rgba(123,97,255,0.05));border:2px solid rgba(0,229,255,0.15);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;cursor:pointer;transition:all 0.2s ease" onclick="openRoutineSelector()">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div style="font-size:12px;font-weight:700;color:var(--text-primary);text-transform:uppercase;letter-spacing:0.8px">Mi Rutina de Hoy</div>
+        </div>
+        <div style="font-size:12px;color:var(--primary);font-weight:700;display:flex;align-items:center;gap:4px">
+          <span id="routineChangeBtn">Elegir</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
       </div>
-      <div id="todayWorkoutSummary" style="font-size:14px;color:var(--text-secondary)">Sin rutina seleccionada — toca para elegir</div>
-      <div id="todayExerciseChips" style="display:none;margin-top:10px;flex-wrap:wrap;gap:6px"></div>
+
+      <!-- Estado: sin rutina -->
+      <div id="noRoutineState" style="display:block">
+        <div style="font-size:14px;color:var(--text-secondary);line-height:1.5">Sin rutina seleccionada</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px">Toca para elegir una rutina guardada o crear una nueva</div>
+      </div>
+
+      <!-- Estado: con rutina seleccionada -->
+      <div id="selectedRoutineState" style="display:none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="font-size:15px;font-weight:700;color:var(--text-primary)" id="selectedRoutineName"></div>
+          <div style="font-size:11px;padding:3px 8px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-weight:700" id="selectedRoutineGroup"></div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary)" id="selectedRoutineExercises"></div>
+        <div id="selectedRoutineChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+      </div>
+
     </div>
 
     <button class="start-btn" onclick="openConfig()">
@@ -2412,7 +2603,7 @@ body {
 
     <!-- Rutinas sugeridas -->
     <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
-      <img src="Icons/SVG/Rutinas.svg" class="app-svg-icon" style="width:24px;height:24px" alt="">
+      <div class="icon-tile-sm" style="width:28px;height:28px;border-radius:8px"><img src="Icons/SVG/Rutinas.svg" style="width:20px;height:20px;object-fit:contain" alt=""></div>
       Rutinas por nivel (Principiante · Intermedio · Avanzado)
     </button>
 
@@ -2451,12 +2642,24 @@ body {
 <div class="screen fullscreen" id="workoutScreen">
   <div class="workout-screen">
     <div class="workout-top-bar">
+      <button class="workout-abandon-btn" onclick="showAbandonConfirm()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Salir
+      </button>
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
       <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><img src="Icons/SVG/Calentamiento.svg" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;margin-right:4px" alt=""> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="avgRestValue">--</span>
+      </div>
+    </div>
+
+    <!-- Chip de rutina activa — visible solo cuando hay rutina seleccionada -->
+    <div id="activeRoutineChip" style="display:none;margin-bottom:8px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--primary-light);border:1px solid rgba(0,229,255,0.3);border-radius:var(--radius-full)">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="activeRoutineName" style="font-size:11px;font-weight:700;color:var(--primary)"></span>
       </div>
     </div>
 
@@ -2565,7 +2768,7 @@ body {
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
-        <img src="Icons/SVG/Timer.svg" style="width:24px;height:24px;object-fit:contain" alt="">
+        <div class="icon-tile-sm" style="background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.2)"><img src="Icons/SVG/Timer.svg" style="width:22px;height:22px;object-fit:contain" alt=""></div>
         <div class="rest-idle-text">
           <h4>Iniciar Descanso</h4>
           <p>Temporizador: <span id="restIdleSeconds">60</span>s configurados</p>
@@ -3219,17 +3422,17 @@ body {
     <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:14px">¿Cuál es tu nivel de experiencia?</div>
     <div class="wiz-level-grid">
       <div class="wiz-tile" id="wTileBeginner" onclick="wizardSelectLevel('beginner')">
-        <img src="Icons/SVG/Principiante.svg" style="width:36px;height:36px;object-fit:contain" alt="">
+        <div class="icon-tile-sm"><img src="Icons/SVG/Principiante.svg" style="width:28px;height:28px;object-fit:contain" alt=""></div>
         <span class="wiz-tile-name">Principiante</span>
         <span class="wiz-tile-sub">Primeros 6 meses</span>
       </div>
       <div class="wiz-tile" id="wTileIntermediate" onclick="wizardSelectLevel('intermediate')">
-        <img src="Icons/SVG/Intermedio.svg" style="width:36px;height:36px;object-fit:contain" alt="">
+        <div class="icon-tile-sm"><img src="Icons/SVG/Intermedio.svg" style="width:28px;height:28px;object-fit:contain" alt=""></div>
         <span class="wiz-tile-name">Intermedio</span>
         <span class="wiz-tile-sub">1–3 años de gym</span>
       </div>
       <div class="wiz-tile" id="wTileAdvanced" onclick="wizardSelectLevel('advanced')">
-        <img src="Icons/SVG/Avanzado.svg" style="width:36px;height:36px;object-fit:contain" alt="">
+        <div class="icon-tile-sm"><img src="Icons/SVG/Avanzado.svg" style="width:28px;height:28px;object-fit:contain" alt=""></div>
         <span class="wiz-tile-name">Avanzado</span>
         <span class="wiz-tile-sub">3+ años, split</span>
       </div>
@@ -3327,6 +3530,9 @@ body {
 
 <!-- WARMUP -->
 <div class="screen fullscreen" id="warmupScreen" style="overflow-y:auto">
+  <button onclick="cancelWarmup()" style="position:absolute;top:16px;left:16px;z-index:10;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);cursor:pointer;color:var(--text-tertiary)">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
   <div class="warmup-screen" style="justify-content:flex-start;padding-bottom:140px">
 
     <!-- Badge + timer -->
@@ -3340,11 +3546,39 @@ body {
     <!-- Group Picker (shown when no auto-detection) -->
     <div id="warmupGroupPicker" style="display:none;width:100%;margin-top:4px;text-align:left">
       <p style="font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:16px">¿Qué grupo vas a entrenar hoy?</p>
-      <div id="warmupGroupGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+      <div id="warmupGroupGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
     </div>
 
     <!-- Recomendación dinámica -->
     <div id="warmupRecommendation" style="display:none;width:100%;text-align:left;margin-top:8px">
+
+      <!-- Do's and Don'ts Box -->
+      <div id="warmupDosBox" style="display:none; margin-bottom: 20px;">
+        <div style="background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(123,97,255,0.08)); border: 1px solid rgba(0,229,255,0.2); border-radius: var(--radius); padding: 16px; margin-top: 12px;">
+
+          <!-- Qué HACER -->
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10B981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span style="font-size: 12px; font-weight: 700; color: #10B981; text-transform: uppercase; letter-spacing: 0.5px;">Qué hacer</span>
+            </div>
+            <ul id="warmupDosList" style="margin: 0; padding-left: 20px; list-style: none;"></ul>
+          </div>
+
+          <!-- Línea separadora -->
+          <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 12px 0;"></div>
+
+          <!-- Qué NO HACER -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#EF4444" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span style="font-size: 12px; font-weight: 700; color: #EF4444; text-transform: uppercase; letter-spacing: 0.5px;">Qué NO hacer</span>
+            </div>
+            <ul id="warmupDontsList" style="margin: 0; padding-left: 20px; list-style: none;"></ul>
+          </div>
+
+        </div>
+      </div>
 
       <!-- Duración recomendada -->
       <div class="wu-rec-header">
@@ -3352,19 +3586,9 @@ body {
         <div class="wu-rec-value" id="warmupDuration">5-8 min</div>
       </div>
 
-      <!-- Objetivos -->
-      <div class="wu-section-title">Objetivos</div>
-      <ul id="warmupGoals" class="wu-goals-list"></ul>
-
       <!-- Ejercicios -->
       <div class="wu-section-title" style="margin-top:16px">Ejercicios sugeridos</div>
       <div id="warmupExercisesList"></div>
-
-      <!-- Advertencias -->
-      <div id="warmupWarnings" style="display:none;margin-top:12px">
-        <div class="wu-section-title" style="margin-top:0">⚠️ Lesiones — toca para ver cómo evitarlas</div>
-        <div id="warmupWarningsText" class="wu-inj-chips"></div>
-      </div>
     </div>
 
   </div>
@@ -3432,6 +3656,126 @@ body {
   </div>
   <div class="catalog-footer">
     <button class="end-workout-btn" onclick="endWorkout()">Finalizar Entrenamiento</button>
+  </div>
+</div>
+
+<!-- ROUTINE SELECTOR MODAL -->
+<div id="routineSelectorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;justify-content:center;align-items:flex-end" onclick="closeRoutineSelector(event)">
+  <div style="position:relative;width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:18px;font-weight:700;color:var(--text-primary);margin:0">Elige tu rutina</h3>
+      <button onclick="closeRoutineSelector()" style="background:var(--surface-raised);border:none;color:var(--text-secondary);width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+
+    <!-- Mis rutinas guardadas -->
+    <div id="myRoutinesSection">
+      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Mis rutinas guardadas</div>
+      <div id="myRoutinesList"></div>
+      <div id="emptyRoutinesState" style="display:none;text-align:center;padding:32px 20px;background:var(--surface-raised);border-radius:var(--radius);border:2px dashed var(--border)">
+        <div style="font-size:40px;margin-bottom:12px;opacity:0.3">📋</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:6px">No tienes rutinas guardadas</div>
+        <div style="font-size:12px;color:var(--text-tertiary)">Crea tu primera rutina para empezar a entrenar más rápido</div>
+      </div>
+    </div>
+
+    <!-- Repetir último entrenamiento -->
+    <div id="lastWorkoutSection" style="display:none;margin-top:24px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Repetir último entrenamiento</div>
+      <div id="lastWorkoutCard"></div>
+    </div>
+
+    <!-- Crear rutina nueva -->
+    <div style="margin-top:24px">
+      <button onclick="openRoutineEditor()" style="width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Crear rutina nueva
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ROUTINE EDITOR -->
+<div id="routineEditorOverlay">
+
+  <div class="editor-header">
+    <button onclick="closeRoutineEditor()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-secondary);display:flex;align-items:center">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="editor-title" id="editorTitle">Nueva rutina</div>
+    <button class="editor-save-btn" id="editorSaveBtn" onclick="saveRoutine()">Guardar</button>
+  </div>
+
+  <div class="editor-body">
+
+    <!-- Nombre -->
+    <div style="margin-bottom:20px">
+      <div class="editor-field-label">Nombre de la rutina</div>
+      <input class="editor-input" id="routineNameInput" type="text" placeholder="Ej: Push Day, Piernas A, Full Body…" maxlength="50" oninput="onEditorNameInput()">
+    </div>
+
+    <!-- Grupo muscular -->
+    <div style="margin-bottom:24px">
+      <div class="editor-field-label">Grupo muscular principal</div>
+      <select class="editor-select" id="routineGroupSelect">
+        <option value="">Sin clasificar</option>
+        <option value="Push">Push (Pecho, Hombros, Tríceps)</option>
+        <option value="Pull">Pull (Espalda, Bíceps)</option>
+        <option value="Piernas">Piernas</option>
+        <option value="Full Body">Full Body</option>
+        <option value="Pecho">Pecho</option>
+        <option value="Espalda">Espalda</option>
+        <option value="Hombros">Hombros</option>
+        <option value="Bíceps">Bíceps</option>
+        <option value="Tríceps">Tríceps</option>
+        <option value="Glúteos">Glúteos</option>
+        <option value="Abdomen">Abdomen</option>
+        <option value="Cardio">Cardio</option>
+      </select>
+    </div>
+
+    <!-- Ejercicios -->
+    <div style="margin-bottom:12px">
+      <div class="editor-field-label" style="margin-bottom:12px">Ejercicios</div>
+      <div id="editorExerciseList"></div>
+      <button class="add-exercise-btn" onclick="openExPicker()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Añadir ejercicio
+      </button>
+    </div>
+
+    <!-- Eliminar rutina (solo en modo edición) -->
+    <div id="deleteRoutineSection" style="display:none;margin-top:32px;padding-top:20px;border-top:1px solid var(--border)">
+      <button onclick="confirmDeleteRoutine()" style="width:100%;padding:14px;background:var(--danger-light);border:1.5px solid var(--danger);border-radius:var(--radius-sm);color:var(--danger);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">
+        Eliminar esta rutina
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- EXERCISE PICKER SHEET -->
+<div id="exPickerSheet" onclick="if(event.target===this)closeExPicker()">
+  <div id="exPickerSheetInner">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px">
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary)">Añadir ejercicio</div>
+      <button onclick="closeExPicker()" style="background:var(--surface-raised);border:none;color:var(--text-secondary);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <input class="ex-picker-search" id="exPickerSearch" type="text" placeholder="Buscar ejercicio…" oninput="renderExPicker(this.value)">
+    <div class="ex-picker-list" id="exPickerList"></div>
+  </div>
+</div>
+
+<!-- ABANDON WORKOUT MODAL -->
+<div class="mode-modal" id="abandonModal" onclick="if(event.target===this)hideAbandonConfirm()">
+  <div class="mode-modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="color:var(--danger)">¿Abandonar entrenamiento?</div>
+    <p style="font-size:14px;color:var(--text-secondary);text-align:center;margin:0 0 24px">El progreso de esta sesión se descartará.</p>
+    <button onclick="confirmAbandonWorkout()" style="width:100%;padding:16px;border-radius:var(--radius);background:var(--danger-light);border:1.5px solid var(--danger);color:var(--danger);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;font-family:var(--font)">Sí, abandonar sesión</button>
+    <button onclick="hideAbandonConfirm()" style="width:100%;padding:16px;border-radius:var(--radius);background:transparent;border:1.5px solid var(--border);color:var(--text-primary);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font)">Continuar entrenando</button>
   </div>
 </div>
 
@@ -4295,6 +4639,10 @@ function showScreen(name) {
 
 // ─── Config ─────────────────────────────────────────────────
 function openConfig() {
+  if (currentSelectedRoutine) {
+    showRoutinePreview();
+    return;
+  }
   document.getElementById('configOverlay').classList.add('active');
   setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
   suggestRoutineForToday();
@@ -4339,6 +4687,35 @@ function detectPrimaryMuscleGroup() {
   return found ? found.group : null;
 }
 
+// Abandon workout flow
+function showAbandonConfirm() {
+  document.getElementById('abandonModal').classList.add('active');
+}
+function hideAbandonConfirm() {
+  document.getElementById('abandonModal').classList.remove('active');
+}
+function confirmAbandonWorkout() {
+  hideAbandonConfirm();
+  clearInterval(timerInterval);
+  clearInterval(countdownInterval);
+  clearInterval(motivationInterval);
+  clearInterval(warmupInterval);
+  workoutStartTime = null;
+  isResting = false;
+  restStartedAt = null;
+  _restTargetSet = null;
+  warmupDuration = 0;
+  warmupStartTime = null;
+  hydrationAlertCount = 0;
+  sessionLongAlertFired = false;
+  warmupAlertFired = false;
+  _hydrationFired.clear();
+  dismissCoachAlert();
+  if (typeof releaseWakeLock === 'function') releaseWakeLock();
+  saveToStorage();
+  showScreen('home');
+}
+
 // Called from group picker buttons on warmup screen
 function selectWarmupGroup(group) {
   // Highlight selected button
@@ -4347,10 +4724,164 @@ function selectWarmupGroup(group) {
   // Show recommendations for chosen group
   const data = getWarmupForMuscleGroup(group);
   if (data) renderWarmupContent(group, data);
+
+  // Do's and Don'ts por grupo muscular (con tips expandibles)
+  const dosAndDonts = {
+    'Torso': {
+      dos: [
+        { text: 'Moviliza articulación del hombro en todas direcciones', tip: 'El hombro es la articulación más móvil del cuerpo. Círculos amplios hacia adelante y atrás lubrican la bursa y calientan el manguito rotador antes de cualquier carga.' },
+        { text: 'Activa el core antes de empezar', tip: 'El core estabiliza la columna en todos los movimientos de torso. 30 segundos de plancha o respiración diafragmática lo activa y protege la zona lumbar.' },
+        { text: 'Haz series ligeras del primer ejercicio', tip: 'Una serie al 30-40% del peso de trabajo activa los patrones neuromusculares sin generar fatiga. Los tendones se calientan más lento que los músculos.' }
+      ],
+      donts: [
+        { text: 'No hagas estiramientos estáticos prolongados', tip: 'Los estiramientos estáticos antes de levantar reducen la fuerza hasta un 8% durante 30 minutos. Guárdalos para el enfriamiento.' },
+        { text: 'No saltes directamente al peso máximo', tip: 'Los tendones y ligamentos necesitan más tiempo para calentarse que los músculos. Escalar el peso previene desgarros.' },
+        { text: 'No ignores molestias en hombros o codos', tip: 'Una molestia leve ignorada puede convertirse en lesión grave en pocas sesiones si se trabaja con fatiga o peso inadecuado.' }
+      ]
+    },
+    'Pecho': {
+      dos: [
+        { text: 'Activa los pectorales con flexiones ligeras', tip: 'Las flexiones sin carga extra despiertan las fibras del pectoral y preparan los tendones del hombro anterior para el press.' },
+        { text: 'Moviliza hombros con círculos amplios', tip: 'El hombro estabiliza todo movimiento de empuje. La movilización previa reduce el riesgo de impingement subacromial.' },
+        { text: 'Calienta codos y muñecas con rotaciones', tip: 'El press de banca aplica carga directa en muñecas y codos. Rotar estas articulaciones 30 segundos previene tendinopatías.' }
+      ],
+      donts: [
+        { text: 'No arquees excesivamente la espalda baja', tip: 'Un arco exagerado transfiere tensión a los discos lumbares y reduce la activación real del pectoral en el movimiento.' },
+        { text: 'No bloquees los codos completamente', tip: 'Bloquear los codos en extensión completa concentra el estrés en el tendón del tríceps y puede causar hiperextensión.' },
+        { text: 'No ignores dolor en el hombro anterior', tip: 'El tendón del bíceps cruza el hombro anterior. Dolor aquí al calentar puede indicar bicipital tendinitis activa.' }
+      ]
+    },
+    'Espalda': {
+      dos: [
+        { text: 'Activa dorsales con jalones sin peso', tip: 'Un jalón con banda o TRX sin carga establece la conexión mente-músculo antes de agregar resistencia pesada.' },
+        { text: 'Moviliza escápulas: retracción y protracción', tip: 'Las escápulas guían todos los movimientos de tirón. Activarlas previene el síndrome de impingement de hombro.' },
+        { text: 'Calienta con remo ligero o bandas', tip: 'El remo liviano activa romboides y trapecio inferior, músculos clave para mantener postura durante trabajo pesado.' }
+      ],
+      donts: [
+        { text: 'No uses impulso al inicio del movimiento', tip: 'El impulso lumbar al arrancar remos concentra carga en discos L4-L5 y elimina la activación de dorsales.' },
+        { text: 'No dejes caer los hombros hacia adelante', tip: 'Hombros caídos al inicio de cada repetición generan tensión en el manguito rotador y reducen el rango efectivo.' },
+        { text: 'No ignores molestias en la zona lumbar', tip: 'El erector espinal trabaja isométricamente en todos los movimientos de tirón. Una lesión aquí paraliza el entreno completo.' }
+      ]
+    },
+    'Hombros': {
+      dos: [
+        { text: 'Círculos de brazos en ambas direcciones', tip: 'Los círculos lubrifican la articulación glenohumeral y calientan el fluido sinovial que protege el cartílago articular.' },
+        { text: 'Activa el manguito rotador con bandas', tip: 'El manguito rotador estabiliza la cabeza del húmero. 2 series con banda elástica pueden reducir el riesgo de lesión hasta un 40%.' },
+        { text: 'Moviliza escápulas antes de press', tip: 'Sin movilidad escapular adecuada el press overhead comprime el espacio subacromial, causando dolor con el tiempo.' }
+      ],
+      donts: [
+        { text: 'No eleves el peso por encima del dolor', tip: 'El pain arc del hombro (60-120°) indica compresión subacromial. Entrenar a través del dolor puede causar rotura del supraespinoso.' },
+        { text: 'No uses impulso con la espalda baja', tip: 'Arquear la lumbar para empujar overhead concentra carga en L4-L5 y puede causar hernia discal a largo plazo.' },
+        { text: 'No ignores chasquidos o dolor agudo', tip: 'Un chasquido con dolor puede indicar labrum dañado o bursitis aguda. Ambas condiciones empeoran con el entrenamiento.' }
+      ]
+    },
+    'Bíceps': {
+      dos: [
+        { text: 'Moviliza codos con flexo-extensiones sin peso', tip: 'El codo es una bisagra que necesita lubricación. 20 extensiones completas calientan el tendón distal del bíceps.' },
+        { text: 'Activa bíceps con curl muy ligero', tip: 'Una serie al 20-25% del peso de trabajo establece la conexión mente-músculo y activa los receptores de tensión del tendón.' },
+        { text: 'Rota las muñecas para calentar antebrazos', tip: 'Los flexores del antebrazo asisten al bíceps en todos los curls. Calentarlos reduce el riesgo de codo de tenista.' }
+      ],
+      donts: [
+        { text: 'No balancees el torso para generar impulso', tip: 'El swinging elimina la tensión del bíceps, activa mal los lumbares fríos y no desarrolla el músculo correctamente.' },
+        { text: 'No bloquees los codos en extensión completa', tip: 'El bloqueo brusco en extensión aplica un golpe de tensión en el tendón distal y puede causar tendinopatía.' },
+        { text: 'No ignores dolor en el tendón del bíceps', tip: 'El tendón proximal del bíceps es frágil. La tendinitis aquí puede llegar a rotura con cargas altas si se ignora.' }
+      ]
+    },
+    'Tríceps': {
+      dos: [
+        { text: 'Extiende y flexiona codos sin carga', tip: 'Los extensores del codo trabajan con el brazo elevado. Calentar el rango completo previene el dolor en la inserción del olécranon.' },
+        { text: 'Moviliza hombros antes de fondos', tip: 'En los fondos los hombros soportan el peso corporal completo. Sin movilidad adecuada se genera estrés en la articulación AC.' },
+        { text: 'Activa tríceps con extensiones ligeras', tip: 'El tríceps tiene tres cabezas. Una extensión ligera las activa todas antes de aplicar carga en movimientos de empuje.' }
+      ],
+      donts: [
+        { text: 'No fuerces la extensión máxima en frío', tip: 'La extensión máxima del codo en frío puede irritar el nervio cubital y causar hormigueo en el dedo meñique.' },
+        { text: 'No colapses los hombros hacia adelante', tip: 'Hombros colapsados en fondos transfieren carga del tríceps al manguito rotador, aumentando el riesgo de lesión.' },
+        { text: 'No ignores dolor en codo o muñeca', tip: 'El codo de tenista afecta frecuentemente en extensiones con peso. Detectarlo temprano evita meses de rehabilitación.' }
+      ]
+    },
+    'Piernas Completas': {
+      dos: [
+        { text: 'Moviliza cadera, rodillas y tobillos', tip: 'Las tres articulaciones trabajan en cadena en sentadilla y peso muerto. Inmovilidad en cualquiera compensa con carga lumbar.' },
+        { text: 'Activa glúteos con puentes o kickbacks', tip: 'Si los glúteos están "dormidos" los cuádriceps y la espalda compensan todo el movimiento, aumentando el riesgo de lesión.' },
+        { text: 'Haz sentadillas sin peso para preparar patrón', tip: '5-10 sentadillas sin carga calibran la profundidad segura, activan estabilizadores de rodilla y lubrican la articulación.' }
+      ],
+      donts: [
+        { text: 'No dejes que las rodillas colapsen hacia adentro', tip: 'El valgo de rodilla genera tensión en el ligamento cruzado anterior. Es la causa más común de lesiones graves en piernas.' },
+        { text: 'No arquees excesivamente la espalda baja', tip: 'La hiperlordosis lumbar bajo carga comprime los discos vertebrales. Mantener columna neutra es fundamental.' },
+        { text: 'No ignores dolor en rodillas o caderas', tip: 'Las articulaciones de piernas soportan múltiples veces el peso corporal. Un dolor agudo aquí nunca debe ignorarse.' }
+      ]
+    },
+    'Piernas': {
+      dos: [
+        { text: 'Sentadillas sin peso para activar cuádriceps', tip: 'El cuádriceps estabiliza la rótula. Sin activación previa hay riesgo de síndrome patelofemoral durante sentadillas pesadas.' },
+        { text: 'Moviliza rodillas y tobillos con círculos', tip: 'La movilidad del tobillo determina la profundidad segura de la sentadilla. Tobillos rígidos compensan con colapso lumbar.' },
+        { text: 'Activa glúteos antes de ejercicios pesados', tip: 'Sin activación glútea, los isquiotibiales y la espalda baja compensan en peso muerto y sentadilla, generando desequilibrios.' }
+      ],
+      donts: [
+        { text: 'No dejes que las rodillas sobrepasen los pies excesivamente', tip: 'Un adelantamiento excesivo de rodilla aumenta la presión patelofemoral. Mantén el torso lo más vertical posible.' },
+        { text: 'No bloquees las rodillas en extensión completa', tip: 'Bloquear las rodillas en prensa o extensiones aplica presión directa sobre el cartílago articular y puede desgastarlo.' },
+        { text: 'No ignores dolor en rótula o meniscos', tip: 'Los meniscos son los amortiguadores de la rodilla. Dolor aquí bajo carga indica que algo está sobrecargado.' }
+      ]
+    },
+    'Glúteos': {
+      dos: [
+        { text: 'Activa glúteos con puentes o clamshells', tip: 'El glúteo mayor necesita "despertar" antes de trabajar. Sin activación previa los isquiotibiales y lumbares compensan todo.' },
+        { text: 'Moviliza cadera en todas direcciones', tip: 'La cadera debe rotar, flejar y extender libremente para que el glúteo trabaje en su rango completo sin compensaciones.' },
+        { text: 'Prepara isquiotibiales con peso muerto ligero', tip: 'Los isquiotibiales asisten al glúteo en casi todos los movimientos. Calentarlos con peso ligero previene desgarros.' }
+      ],
+      donts: [
+        { text: 'No uses solo cuádriceps compensando glúteos', tip: 'La dominancia de cuádriceps en movimientos de cadera genera desequilibrios que con el tiempo causan dolor patelofemoral.' },
+        { text: 'No arquees la espalda baja excesivamente', tip: 'En hip thrust y sentadilla glútea, la hiperlordosis comprime L4-L5. El core debe estar activo durante todo el movimiento.' },
+        { text: 'No ignores molestias en el nervio ciático', tip: 'El piriforme puede comprimir el ciático. Si hay hormigueo en la pierna, reduce volumen y evalúa con un profesional.' }
+      ]
+    },
+    'Abdomen': {
+      dos: [
+        { text: 'Activa el transverso con respiraciones profundas', tip: 'El transverso abdominal es el músculo más profundo del core. Activarlo con respiración de 360° crea una faja natural que protege la columna.' },
+        { text: 'Moviliza columna con gato-camello', tip: 'El gato-camello lubrica los discos intervertebrales con fluido sinovial y calibra la postura neutra antes de cargar el core.' },
+        { text: 'Calienta oblicuos con rotaciones suaves', tip: 'Los oblicuos generan rotación del tronco. Sin calentamiento son los primeros en sufrir desgarros en ejercicios dinámicos.' }
+      ],
+      donts: [
+        { text: 'No hagas crunch violentos en frío', tip: 'Los crunches rápidos sin activación previa generan presión discal alta en la columna lumbar antes de que los estabilizadores estén activos.' },
+        { text: 'No arquees la espalda baja al hacer abdominales', tip: 'El arco lumbar en abdominales transfiere la carga del core a los flexores de cadera y comprime los discos lumbares.' },
+        { text: 'No ignores dolor lumbar durante ejercicios', tip: 'El dolor lumbar en trabajo de core suele indicar activación incorrecta del transverso. Detente y reajusta la posición.' }
+      ]
+    },
+    'Cardio': {
+      dos: [
+        { text: 'Empieza a ritmo muy suave (50-60% FCmax)', tip: 'Iniciar despacio permite que el corazón eleve gradualmente el gasto cardíaco. Un arranque brusco puede causar mareo o arritmia.' },
+        { text: 'Aumenta intensidad gradualmente', tip: 'El calentamiento cardio ideal dura 5-8 minutos en etapas. Esto reduce el ácido láctico acumulado al inicio del ejercicio intenso.' },
+        { text: 'Moviliza tobillos y rodillas si vas a correr', tip: 'Los impactos de carrera multiplican el peso corporal por 3-5 veces. Articulaciones frías bajo esa carga tienen mayor riesgo de lesión.' }
+      ],
+      donts: [
+        { text: 'No arranques a máxima intensidad', tip: 'El sistema cardiovascular tarda 3-5 minutos en redistribuir el flujo sanguíneo. Arrancar al 100% puede generar dolor de costado.' },
+        { text: 'No ignores dolor articular o muscular', tip: 'En cardio el dolor articular indica impacto sin absorción correcta. Continuar lo convierte en una lesión por repetición.' },
+        { text: 'No te saltes el enfriamiento al terminar', tip: 'El enfriamiento gradual permite que el corazón vuelva a la frecuencia basal sin acumulación de sangre en extremidades.' }
+      ]
+    }
+  };
+
+  const dosBox    = document.getElementById('warmupDosBox');
+  const dosList   = document.getElementById('warmupDosList');
+  const dontsList = document.getElementById('warmupDontsList');
+  if (dosAndDonts[group]) {
+    const renderItem = (item, prefix, i) => {
+      const tipId  = `${prefix}_${i}`;
+      const tipBtn = item.tip ? `<button id="${tipId}_btn" onclick="toggleWuTip('${tipId}')" style="margin-left:6px;padding:1px 7px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle;font-family:var(--font)">¿qué es?</button>` : '';
+      const tipBox = item.tip ? `<div id="${tipId}" style="display:none;margin-top:6px;padding:8px 10px;background:var(--bg);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.5">${item.tip}</div>` : '';
+      return `<li>${item.text}${tipBtn}${tipBox}</li>`;
+    };
+    dosList.innerHTML   = dosAndDonts[group].dos.map((item, i)   => renderItem(item, 'wuDo',   i)).join('');
+    dontsList.innerHTML = dosAndDonts[group].donts.map((item, i) => renderItem(item, 'wuDont', i)).join('');
+    dosBox.style.display = 'block';
+  } else {
+    dosBox.style.display = 'none';
+  }
 }
 
 function getWarmupForMuscleGroup(muscleGroup) {
-  return warmupDatabase[muscleGroup] || null;
+  const keyMap = { 'Bíceps': 'Biceps', 'Tríceps': 'Triceps', 'Glúteos': 'Gluteos' };
+  return warmupDatabase[keyMap[muscleGroup] || muscleGroup] || null;
 }
 
 function renderWarmupRecommendations() {
@@ -4378,19 +4909,22 @@ function renderWarmupRecommendations() {
 
 function renderGroupPicker() {
   const groups = [
-    { key: 'Pecho',    icon: 'Icons/SVG/Pecho.svg',    color: '#EF4444' },
-    { key: 'Espalda',  icon: 'Icons/SVG/Back.svg',      color: '#3B82F6' },
-    { key: 'Hombros',  icon: 'Icons/SVG/Shoulders.svg', color: '#8B5CF6' },
-    { key: 'Biceps',   icon: 'Icons/SVG/Biceps.svg',    color: '#F59E0B' },
-    { key: 'Triceps',  icon: 'Icons/SVG/Tricpes.svg',   color: '#10B981' },
-    { key: 'Piernas',  icon: 'Icons/SVG/Leg.svg',       color: '#EC4899' },
-    { key: 'Abdomen',  icon: 'Icons/SVG/Core.svg',      color: '#F97316' },
-    { key: 'Cardio',   icon: 'Icons/SVG/Cardio.svg',    color: '#06B6D4' },
+    { key: 'Torso',             abbr: 'TO' },
+    { key: 'Pecho',             abbr: 'PE' },
+    { key: 'Espalda',           abbr: 'ES' },
+    { key: 'Hombros',           abbr: 'HO' },
+    { key: 'Bíceps',            abbr: 'BI' },
+    { key: 'Tríceps',           abbr: 'TR' },
+    { key: 'Piernas Completas', abbr: 'PC' },
+    { key: 'Piernas',           abbr: 'PI' },
+    { key: 'Glúteos',           abbr: 'GL' },
+    { key: 'Abdomen',           abbr: 'AB' },
+    { key: 'Cardio',            abbr: 'CA' },
   ];
   document.getElementById('warmupGroupGrid').innerHTML = groups.map(g => `
-    <button class="wu-group-btn" data-group="${g.key}" onclick="selectWarmupGroup('${g.key}')" style="border-color:${g.color}20;background:${g.color}10">
-      <div class="app-icon-tile" style="width:44px;height:44px"><img src="${g.icon}" class="wu-group-icon" alt=""></div>
-      <span class="wu-group-label" style="color:${g.color}">${g.key}</span>
+    <button class="wu-group-btn" data-group="${g.key}" onclick="selectWarmupGroup('${g.key}')">
+      <div class="wu-group-abbr">${g.abbr}</div>
+      <span class="wu-group-label">${g.key}</span>
     </button>`).join('');
 }
 
@@ -4459,19 +4993,17 @@ function toggleGoalTip(idx) {
   if (btn) btn.style.background = open ? 'var(--primary-light)' : 'var(--primary)';
   if (btn) btn.style.color = open ? 'var(--primary)' : 'white';
 }
+function toggleWuTip(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  const btn = document.getElementById(id + '_btn');
+  if (btn) { btn.style.background = open ? 'var(--primary-light)' : 'var(--primary)'; btn.style.color = open ? 'var(--primary)' : 'white'; }
+}
 
 function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupDuration').textContent = data.duration;
-  document.getElementById('warmupGoals').innerHTML = data.goals.map((g, i) => {
-    const hasTip = g.tip;
-    const tipBtn = hasTip
-      ? `<button id="goalTipBtn${i}" onclick="toggleGoalTip(${i})" style="margin-left:6px;padding:1px 7px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle">¿qué es?</button>`
-      : '';
-    const tipBox = hasTip
-      ? `<div id="goalTip${i}" style="display:none;margin-top:6px;padding:8px 10px;background:var(--bg);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.5">${g.tip}</div>`
-      : '';
-    return `<li style="margin-bottom:4px">${g.text}${tipBtn}${tipBox}</li>`;
-  }).join('');
 
   // Animation map per exercise keyword
   const animMap = {
@@ -4530,19 +5062,6 @@ function renderWarmupContent(muscleGroup, data) {
       </div>
     </div>`;
   }).join('');
-
-  const warningsEl = document.getElementById('warmupWarnings');
-  if (data.injuries && data.injuries.length) {
-    document.getElementById('warmupWarningsText').innerHTML = data.injuries.map(inj => {
-      if (typeof inj === 'object' && inj.simple) {
-        return `<div class="wu-inj-chip" onclick="toggleWuInjury(this)"><span class="wu-inj-label">${inj.simple}</span>${inj.action ? `<span class="wu-inj-action">${inj.action}</span>` : ''}</div>`;
-      }
-      return `<div class="wu-inj-chip"><span class="wu-inj-label">${inj}</span></div>`;
-    }).join('');
-    warningsEl.style.display = 'block';
-  } else {
-    warningsEl.style.display = 'none';
-  }
 
   // Reveal content panel
   document.getElementById('warmupRecommendation').style.display = 'block';
@@ -4666,6 +5185,10 @@ window.addEventListener('popstate', () => {
   history.pushState({}, '');
 
   // Primero cerrar overlays abiertos
+  if (document.getElementById('exPickerSheet')?.classList.contains('active')) { closeExPicker(); return; }
+  if (document.getElementById('routineEditorOverlay')?.classList.contains('active')) { closeRoutineEditor(); return; }
+  if (document.getElementById('routineSelectorModal')?.style.display === 'flex') { closeRoutineSelector(); return; }
+  if (document.getElementById('abandonModal')?.classList.contains('active')) { hideAbandonConfirm(); return; }
   if (document.getElementById('equipSheet')?.classList.contains('active')) { closeEquipSheet(); return; }
   if (document.getElementById('configSheet')?.classList.contains('active')) { closeConfig(); return; }
   if (document.getElementById('modeModal')?.classList.contains('active')) {
@@ -4726,6 +5249,17 @@ function selectMode(mode) {
     updateMotivation();
     clearInterval(motivationInterval);
     motivationInterval = setInterval(updateMotivation, 45000);
+  }
+
+  // Chip de rutina activa
+  const chip = document.getElementById('activeRoutineChip');
+  if (chip) {
+    if (currentSelectedRoutine) {
+      document.getElementById('activeRoutineName').textContent = currentSelectedRoutine.name;
+      chip.style.display = 'block';
+    } else {
+      chip.style.display = 'none';
+    }
   }
 
   // Siempre pasa por calentamiento (el usuario puede saltar)
@@ -5231,6 +5765,39 @@ const warmupDatabase = {
       { simple: '❌ Dolor en el cuello al hacer crunch', action: 'No jales la cabeza con las manos — solo guía suavemente' },
       { simple: '❌ Tirón en el costado', action: 'No hagas rotaciones bruscas — gira despacio y con control' }
     ]
+  },
+  'Torso': {
+    duration: '6-8 minutos',
+    goals: [],
+    exercises: [
+      { name: 'Rotaciones de brazos (ambos sentidos)', reps: '20 reps', duration: '2 min', why: 'Calienta el hombro en todo su rango antes de cualquier movimiento de torso', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Cat-Cow (movimiento de columna)', reps: '10 reps', duration: '1 min', why: 'Moviliza la columna torácica y lumbar antes de empujar o jalar', gif: W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Band pull-aparts (o aperturas sin carga)', reps: '15 reps', duration: '2 min', why: 'Activa los retractores de escápula — clave para estabilidad en press y remos', gif: W+'8/83/Upward_row-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Press muy ligero (barra vacía o banda)', reps: '15 reps', duration: '2 min', why: 'Prepara los patrones de empuje con poco peso antes de incrementar la carga', gif: W+'8/88/Chest_press-CDC_strength_training_for_older_adults.gif' }
+    ],
+    injuries: []
+  },
+  'Gluteos': {
+    duration: '5-8 minutos',
+    goals: [],
+    exercises: [
+      { name: 'Puente de glúteo (sin peso)', reps: '15 reps', duration: '2 min', why: 'Activa el glúteo mayor antes de hip thrust o sentadilla pesada', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Clamshells con banda elástica', reps: '15 reps cada lado', duration: '2 min', why: 'Activa el glúteo medio — clave para estabilidad de rodilla y cadera en todo movimiento de pierna', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Círculos de cadera (de pie)', reps: '10 reps cada lado', duration: '1 min', why: 'Moviliza la articulación de la cadera en todo su rango antes de cargar', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Patada de glúteo sin peso', reps: '12 reps cada lado', duration: '2 min', why: 'Establece la conexión mente-músculo con el glúteo antes de agregar resistencia', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' }
+    ],
+    injuries: []
+  },
+  'Piernas Completas': {
+    duration: '8-10 minutos',
+    goals: [],
+    exercises: [
+      { name: 'Sentadilla sin peso', reps: '15 reps', duration: '2 min', why: 'Activa toda la cadena y calienta rodillas, caderas y tobillos simultáneamente', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Círculos de cadera y rodillas', reps: '10 reps cada sentido', duration: '2 min', why: 'Moviliza las articulaciones principales de pierna antes de aplicar carga pesada', gif: W+'5/5d/Man_Doing_Warm_Up_Exercise_GIF_Animation_Loop.gif' },
+      { name: 'Puente de glúteo (sin peso)', reps: '15 reps', duration: '2 min', why: 'Activa glúteos e isquiotibiales antes de movimientos de cadena posterior', gif: W+'d/d3/Abdominal_curl-CDC_strength_training_for_older_adults.gif' },
+      { name: 'Zancadas de movilidad dinámica', reps: '10 reps cada lado', duration: '2 min', why: 'Prepara la articulación de la cadera y el cuádriceps para rangos de movimiento completos', gif: W+'8/8d/Backstretch-CDC_strength_training_for_older_adults.gif' }
+    ],
+    injuries: []
   },
   'Cardio': {
     duration: '5-10 minutos',
@@ -6148,8 +6715,10 @@ function renderCatalog(filter) {
     html = groups.map(g => {
       const iconSrc = GROUP_ICONS[g];
       const mc = MUSCLE_GROUP_COLORS[g];
+      // tile más opaco para que el color se vea bien a través del logo transparente
+      const tileBg = mc ? mc.bg.replace(/[\d.]+\)$/, '0.18)') : 'rgba(255,255,255,0.08)';
       const iconHtml = iconSrc
-        ? `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${mc ? mc.bg : 'rgba(255,255,255,0.08)'}"><img src="${iconSrc}" class="app-svg-icon" style="width:28px;height:28px;filter:${mc ? muscleIconFilter(mc.color) : 'none'}" alt=""></div>`
+        ? `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${tileBg};border:1px solid ${mc ? mc.bg.replace(/[\d.]+\)$/, '0.35)') : 'var(--border)'}"><img src="${iconSrc}" class="app-svg-icon" style="width:28px;height:28px;filter:${mc ? muscleIconFilter(mc.color) : 'none'}" alt=""></div>`
         : `<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--text-tertiary);fill:none;stroke-width:1.8;flex-shrink:0"><circle cx="12" cy="12" r="9"/></svg>`;
       return `<button class="group-item" data-group="${attr(g)}" onclick="showCatalogGroup(this.dataset.group)">
         <span style="display:flex;align-items:center;gap:12px">${iconHtml}<span>${g}</span></span>
@@ -6674,21 +7243,28 @@ function openRoutinePicker() {
 }
 
 function _updateTodayWorkoutCard() {
-  const summary = document.getElementById('todayWorkoutSummary');
-  const chips = document.getElementById('todayExerciseChips');
-  if (!summary) return;
+  // Si hay rutina seleccionada, el banner ya está actualizado por updateRoutineBanner().
+  // Solo actualizamos si viene de una rutina preset (suggestedRoutine/pendingExercises sin currentSelectedRoutine).
+  if (currentSelectedRoutine) return;
   if (!pendingExercises || pendingExercises.length === 0) {
-    summary.textContent = 'Sin rutina seleccionada — toca para elegir';
-    if (chips) chips.style.display = 'none';
+    updateRoutineBanner(null);
     return;
   }
-  summary.textContent = `${pendingExercises.length} ejercicios listos`;
-  if (chips) {
-    chips.style.display = 'flex';
-    chips.innerHTML = pendingExercises.slice(0, 4).map(e =>
-      `<span style="font-size:11px;padding:4px 10px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:20px;color:var(--primary);font-weight:600">${e.name}</span>`
-    ).join('') + (pendingExercises.length > 4 ? `<span style="font-size:11px;color:var(--text-tertiary);padding:4px 6px">+${pendingExercises.length - 4} más</span>` : '');
-  }
+  // Rutina preset cargada (no es una routine guardada): mostrar como rutina ad-hoc
+  const noState      = document.getElementById('noRoutineState');
+  const selectedState = document.getElementById('selectedRoutineState');
+  const changeBtn    = document.getElementById('routineChangeBtn');
+  if (!noState) return;
+  noState.style.display = 'none';
+  selectedState.style.display = 'block';
+  if (changeBtn) changeBtn.textContent = 'Cambiar';
+  document.getElementById('selectedRoutineName').textContent = 'Rutina sugerida';
+  document.getElementById('selectedRoutineGroup').textContent = `${pendingExercises.length} ejercicios`;
+  document.getElementById('selectedRoutineExercises').textContent = 'Cargada automáticamente · toca para cambiar';
+  const chips = document.getElementById('selectedRoutineChips');
+  if (chips) chips.innerHTML = pendingExercises.slice(0, 4).map(e =>
+    `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-secondary)">${e.name}</div>`
+  ).join('') + (pendingExercises.length > 4 ? `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-tertiary)">+${pendingExercises.length - 4} más</div>` : '');
 }
 
 function loadSuggestedRoutine() {
@@ -9177,6 +9753,11 @@ endWorkout = function() {
   _origEndWorkout();
   releaseWakeLock();
   saveToStorage();
+  // Ocultar chip de rutina y limpiar selección
+  const chip = document.getElementById('activeRoutineChip');
+  if (chip) chip.style.display = 'none';
+  currentSelectedRoutine = null;
+  updateRoutineBanner(null);
   // Genera tip post-entrenamiento de forma asíncrona (no bloquea)
   if (savedWorkouts.length > 0) {
     const lastWo = savedWorkouts[0];
@@ -10046,6 +10627,412 @@ function initializeApp() {
   }
 }
 initializeApp();
+
+// ─── ROUTINE SYSTEM ──────────────────────────────────────────
+
+let currentSelectedRoutine = null;
+
+function openRoutineSelector() {
+  document.getElementById('routineSelectorModal').style.display = 'flex';
+  loadUserRoutines();
+}
+
+function closeRoutineSelector(event) {
+  if (!event || event.target.id === 'routineSelectorModal') {
+    document.getElementById('routineSelectorModal').style.display = 'none';
+  }
+}
+
+async function loadUserRoutines() {
+  const container  = document.getElementById('myRoutinesList');
+  const emptyState = document.getElementById('emptyRoutinesState');
+  container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-tertiary);font-size:13px">Cargando...</div>';
+  emptyState.style.display = 'none';
+
+  // "Repetir último entrenamiento" — usa savedWorkouts (local, siempre disponible)
+  _renderLastWorkoutCard();
+
+  try {
+    const { data: routines, error } = await supabase
+      .from('workout_templates')
+      .select('*')
+      .order('last_used_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!routines || routines.length === 0) {
+      container.innerHTML = '';
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+    container.innerHTML = routines.map(r => {
+      const exCount  = r.exercises.length;
+      const setCount = r.exercises.reduce((s, ex) => s + (ex.sets || 0), 0);
+      const tag = r.muscle_group ? `<span class="routine-card-tag">${r.muscle_group}</span>` : '';
+      return `
+        <div class="routine-card" onclick="selectRoutineFromModal('${r.id}')">
+          <div class="routine-card-header">
+            <div class="routine-card-title">${r.name}</div>
+            ${tag}
+          </div>
+          <div class="routine-card-meta">${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} · Usado ${r.use_count || 0} veces</div>
+          <div class="routine-card-actions">
+            <button class="routine-card-btn" onclick="event.stopPropagation();editRoutine('${r.id}')">Editar</button>
+            <button class="routine-card-btn primary" onclick="event.stopPropagation();selectRoutineFromModal('${r.id}')">Usar esta rutina</button>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    console.error('Error loading routines:', err);
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+    showToast('Error al cargar rutinas', 'error');
+  }
+}
+
+async function selectRoutineFromModal(routineId) {
+  try {
+    const { data: routine, error } = await supabase
+      .from('workout_templates')
+      .select('*')
+      .eq('id', routineId)
+      .single();
+
+    if (error) throw error;
+
+    currentSelectedRoutine = routine;
+    updateRoutineBanner(routine);
+    closeRoutineSelector();
+    showToast(`✓ Rutina "${routine.name}" seleccionada`, 'success');
+
+  } catch (err) {
+    console.error('Error selecting routine:', err);
+    showToast('Error al seleccionar rutina', 'error');
+  }
+}
+
+function updateRoutineBanner(routine) {
+  const noState      = document.getElementById('noRoutineState');
+  const selectedState = document.getElementById('selectedRoutineState');
+  const changeBtn    = document.getElementById('routineChangeBtn');
+  if (!noState) return;
+
+  if (!routine) {
+    noState.style.display = 'block';
+    selectedState.style.display = 'none';
+    if (changeBtn) changeBtn.textContent = 'Elegir';
+    return;
+  }
+
+  noState.style.display = 'none';
+  selectedState.style.display = 'block';
+  if (changeBtn) changeBtn.textContent = 'Cambiar';
+
+  document.getElementById('selectedRoutineName').textContent = routine.name;
+  document.getElementById('selectedRoutineGroup').textContent = routine.muscle_group || 'Personalizado';
+
+  const exCount  = routine.exercises.length;
+  const setCount = routine.exercises.reduce((s, ex) => s + (ex.sets || 0), 0);
+  document.getElementById('selectedRoutineExercises').textContent =
+    `${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} totales`;
+
+  const chips = document.getElementById('selectedRoutineChips');
+  chips.innerHTML = routine.exercises.slice(0, 4).map(ex =>
+    `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-secondary)">${ex.name}</div>`
+  ).join('');
+  if (routine.exercises.length > 4) {
+    chips.innerHTML += `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-tertiary)">+${routine.exercises.length - 4} más</div>`;
+  }
+}
+
+// ─── ROUTINE EDITOR ──────────────────────────────────────────
+
+let _editingRoutineId = null;
+let _editorExercises  = []; // [{ name, sets }]
+
+async function openRoutineEditor(routineId = null) {
+  closeRoutineSelector();
+  _editingRoutineId = routineId;
+  _editorExercises  = [];
+
+  document.getElementById('routineNameInput').value   = '';
+  document.getElementById('routineGroupSelect').value = '';
+  document.getElementById('editorExerciseList').innerHTML = '';
+  document.getElementById('deleteRoutineSection').style.display = 'none';
+  document.getElementById('editorTitle').textContent = routineId ? 'Editar rutina' : 'Nueva rutina';
+  document.getElementById('editorSaveBtn').disabled = true;
+
+  if (routineId) {
+    try {
+      const { data, error } = await supabase
+        .from('workout_templates')
+        .select('*')
+        .eq('id', routineId)
+        .single();
+      if (error) throw error;
+      document.getElementById('routineNameInput').value   = data.name;
+      document.getElementById('routineGroupSelect').value = data.muscle_group || '';
+      _editorExercises = data.exercises.map(ex => ({ name: ex.name, sets: ex.sets || 3 }));
+      document.getElementById('deleteRoutineSection').style.display = 'block';
+    } catch (err) {
+      console.error('Error loading routine for edit:', err);
+      showToast('Error al cargar la rutina', 'error');
+      return;
+    }
+  }
+
+  renderEditorExercises();
+  onEditorNameInput();
+  document.getElementById('routineEditorOverlay').classList.add('active');
+}
+
+function closeRoutineEditor() {
+  document.getElementById('routineEditorOverlay').classList.remove('active');
+  closeExPicker();
+}
+
+function editRoutine(routineId) {
+  openRoutineEditor(routineId);
+}
+
+function onEditorNameInput() {
+  const name = document.getElementById('routineNameInput').value.trim();
+  document.getElementById('editorSaveBtn').disabled = name.length === 0 || _editorExercises.length === 0;
+}
+
+function renderEditorExercises() {
+  const list = document.getElementById('editorExerciseList');
+  if (_editorExercises.length === 0) {
+    list.innerHTML = '';
+    return;
+  }
+  list.innerHTML = _editorExercises.map((ex, i) => `
+    <div class="editor-exercise-row">
+      <div class="editor-exercise-name">${ex.name}</div>
+      <div class="sets-stepper">
+        <button onclick="changeEditorSets(${i}, -1)">−</button>
+        <div>
+          <div class="sets-count">${ex.sets}</div>
+          <div class="sets-label">series</div>
+        </div>
+        <button onclick="changeEditorSets(${i}, 1)">+</button>
+      </div>
+      <button class="editor-remove-btn" onclick="removeEditorExercise(${i})">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+  onEditorNameInput();
+}
+
+function changeEditorSets(index, delta) {
+  _editorExercises[index].sets = Math.max(1, Math.min(10, _editorExercises[index].sets + delta));
+  renderEditorExercises();
+}
+
+function removeEditorExercise(index) {
+  _editorExercises.splice(index, 1);
+  renderEditorExercises();
+}
+
+async function saveRoutine() {
+  const name        = document.getElementById('routineNameInput').value.trim();
+  const muscleGroup = document.getElementById('routineGroupSelect').value;
+  if (!name || _editorExercises.length === 0) return;
+
+  const btn = document.getElementById('editorSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  const payload = {
+    name,
+    muscle_group: muscleGroup || null,
+    exercises: _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets }))
+  };
+
+  try {
+    let error;
+    if (_editingRoutineId) {
+      ({ error } = await supabase
+        .from('workout_templates')
+        .update(payload)
+        .eq('id', _editingRoutineId));
+    } else {
+      ({ error } = await supabase
+        .from('workout_templates')
+        .insert(payload));
+    }
+    if (error) throw error;
+
+    showToast(_editingRoutineId ? '✓ Rutina actualizada' : '✓ Rutina guardada', 'success');
+    closeRoutineEditor();
+    // Si el selector está abierto, refrescar lista
+    if (document.getElementById('routineSelectorModal').style.display === 'flex') {
+      loadUserRoutines();
+    }
+  } catch (err) {
+    console.error('Error saving routine:', err);
+    showToast('Error al guardar', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+}
+
+async function confirmDeleteRoutine() {
+  if (!_editingRoutineId) return;
+  if (!confirm('¿Eliminar esta rutina? Esta acción no se puede deshacer.')) return;
+
+  try {
+    const { error } = await supabase
+      .from('workout_templates')
+      .delete()
+      .eq('id', _editingRoutineId);
+    if (error) throw error;
+
+    // Si era la rutina seleccionada, limpiar el banner
+    if (currentSelectedRoutine?.id === _editingRoutineId) {
+      currentSelectedRoutine = null;
+      updateRoutineBanner(null);
+    }
+    showToast('Rutina eliminada', 'info');
+    closeRoutineEditor();
+    if (document.getElementById('routineSelectorModal').style.display === 'flex') {
+      loadUserRoutines();
+    }
+  } catch (err) {
+    console.error('Error deleting routine:', err);
+    showToast('Error al eliminar', 'error');
+  }
+}
+
+// ─── EXERCISE PICKER ─────────────────────────────────────────
+
+function openExPicker() {
+  document.getElementById('exPickerSearch').value = '';
+  renderExPicker('');
+  document.getElementById('exPickerSheet').classList.add('active');
+  setTimeout(() => document.getElementById('exPickerSearch').focus(), 200);
+}
+
+function closeExPicker() {
+  document.getElementById('exPickerSheet').classList.remove('active');
+}
+
+function renderExPicker(filter) {
+  const f = (filter || '').toLowerCase().trim();
+  const selected = new Set(_editorExercises.map(ex => ex.name));
+  let html = '';
+
+  const allGroups = exerciseDB.map(g => ({
+    group: g.group,
+    items: f ? g.items.filter(i => i.toLowerCase().includes(f)) : g.items
+  })).filter(g => g.items.length > 0);
+
+  allGroups.forEach(g => {
+    if (!f) html += `<div class="ex-picker-group-title">${g.group}</div>`;
+    g.items.forEach(item => {
+      const sel = selected.has(item);
+      html += `<div class="ex-picker-item${sel ? ' selected' : ''}" onclick="toggleExPickerItem('${item.replace(/'/g, "\\'")}')">
+        <span>${item}</span>
+        ${sel ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>`;
+    });
+  });
+
+  if (!html) html = `<div style="text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px">Sin resultados</div>`;
+  document.getElementById('exPickerList').innerHTML = html;
+}
+
+function toggleExPickerItem(name) {
+  const idx = _editorExercises.findIndex(ex => ex.name === name);
+  if (idx >= 0) {
+    _editorExercises.splice(idx, 1);
+  } else {
+    _editorExercises.push({ name, sets: 3 });
+  }
+  renderEditorExercises();
+  renderExPicker(document.getElementById('exPickerSearch').value);
+}
+
+function showRoutinePreview() {
+  const routine = currentSelectedRoutine;
+  // Cargar ejercicios al queue — equipment vacío, el usuario lo elige en workout
+  pendingExercises = routine.exercises.map(ex => ({ name: ex.name, equipment: '' }));
+  // Marcar rutina como usada en Supabase (async, no bloquea)
+  _markRoutineUsed(routine.id);
+  // Abrir config sheet de descanso (flujo normal)
+  document.getElementById('configOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
+  suggestRoutineForToday();
+}
+
+// ─── ÚLTIMO ENTRENAMIENTO ────────────────────────────────────
+
+function _renderLastWorkoutCard() {
+  const section = document.getElementById('lastWorkoutSection');
+  const cardEl  = document.getElementById('lastWorkoutCard');
+  if (!section || !cardEl) return;
+
+  const last = savedWorkouts[0];
+  if (!last || !last.exercises_detail || last.exercises_detail.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  const exCount  = last.exercises_detail.length;
+  const dateStr  = new Date(last.date).toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+  const durStr   = last.duration ? Math.round(last.duration / 60000) + ' min' : '';
+  const chips    = last.exercises_detail.slice(0, 3)
+    .map(e => `<div style="font-size:11px;padding:3px 8px;background:var(--surface-raised);border:1px solid var(--border);border-radius:12px;color:var(--text-secondary)">${e.name}</div>`)
+    .join('');
+  const more = exCount > 3 ? `<div style="font-size:11px;padding:3px 8px;color:var(--text-tertiary)">+${exCount - 3} más</div>` : '';
+
+  cardEl.innerHTML = `
+    <div style="background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary)">${dateStr} · ${exCount} ejercicios</div>
+          ${durStr ? `<div style="font-size:12px;color:var(--text-tertiary);margin-top:2px">${durStr}</div>` : ''}
+        </div>
+        <button onclick="repeatLastWorkout()" style="padding:8px 14px;background:var(--primary);color:#000;border:none;border-radius:var(--radius-full);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">
+          Repetir
+        </button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${chips}${more}</div>
+    </div>`;
+}
+
+function repeatLastWorkout() {
+  const last = savedWorkouts[0];
+  if (!last?.exercises_detail?.length) return;
+  pendingExercises = last.exercises_detail.map(ex => ({ name: ex.name, equipment: ex.equipment || '' }));
+  currentSelectedRoutine = null;
+  updateRoutineBanner(null);
+  closeRoutineSelector();
+  showToast(`↩ Repitiendo último entrenamiento (${last.exercises_detail.length} ejercicios)`, 'info');
+  document.getElementById('configOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
+  suggestRoutineForToday();
+}
+
+async function _markRoutineUsed(routineId) {
+  if (!routineId) return;
+  try {
+    const { data: current } = await supabase
+      .from('workout_templates')
+      .select('use_count')
+      .eq('id', routineId)
+      .single();
+    await supabase
+      .from('workout_templates')
+      .update({ last_used_at: new Date().toISOString(), use_count: (current?.use_count || 0) + 1 })
+      .eq('id', routineId);
+  } catch (e) { /* silencioso — no es crítico */ }
+}
 
 </script>
 </body>

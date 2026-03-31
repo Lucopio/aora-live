@@ -145,7 +145,7 @@ Deno.serve(async (req: Request) => {
       // Historial de conversación (últimos 10 pares máx)
       ...history
         .filter((m) => validRoles.has(m.role) && typeof m.content === "string")
-        .slice(-20),
+        .slice(-16),
       // Nuevo mensaje del usuario
       { role: "user", content: message.trim() },
     ];

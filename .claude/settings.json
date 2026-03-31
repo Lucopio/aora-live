@@ -19,8 +19,8 @@
       ".env.*",
       "**/*.key",
       "**/*.pem",
-      "secrets/**",
-      "credentials/**",
+      "Secrets/**",
+      "Credentials/**",
       ".git/**"
     ]
   }
