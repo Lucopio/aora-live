@@ -930,7 +930,16 @@ body {
   border: none; border-radius: var(--radius-full); font-family: var(--font);
   font-size: 13px; font-weight: 700; cursor: pointer;
 }
-.editor-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.editor-save-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+/* Day-of-week chips */
+.day-chip {
+  padding: 7px 13px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--border); background: transparent;
+  color: var(--text-secondary); font-family: var(--font);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.day-chip.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
 .editor-body { flex: 1; overflow-y: auto; padding: 20px; }
 .editor-field-label {
   font-size: 11px; font-weight: 700; color: var(--text-tertiary);
@@ -3717,9 +3726,9 @@ body {
     </div>
 
     <!-- Grupo muscular -->
-    <div style="margin-bottom:24px">
+    <div style="margin-bottom:20px">
       <div class="editor-field-label">Grupo muscular principal</div>
-      <select class="editor-select" id="routineGroupSelect">
+      <select class="editor-select" id="routineGroupSelect" onchange="onRoutineGroupChange()">
         <option value="">Sin clasificar</option>
         <option value="Push">Push (Pecho, Hombros, Tríceps)</option>
         <option value="Pull">Pull (Espalda, Bíceps)</option>
@@ -3734,6 +3743,19 @@ body {
         <option value="Abdomen">Abdomen</option>
         <option value="Cardio">Cardio</option>
       </select>
+    </div>
+
+    <!-- Días de entrenamiento -->
+    <div style="margin-bottom:20px">
+      <div class="editor-field-label">Días de entrenamiento</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorDayChips"></div>
+    </div>
+
+    <!-- Hora habitual -->
+    <div style="margin-bottom:24px">
+      <div class="editor-field-label">Hora habitual</div>
+      <input class="editor-input" id="routineTimeInput" type="time"
+        style="width:auto;min-width:150px;color:var(--text-primary);color-scheme:dark">
     </div>
 
     <!-- Ejercicios -->
@@ -3764,6 +3786,17 @@ body {
       <button onclick="closeExPicker()" style="background:var(--surface-raised);border:none;color:var(--text-secondary);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
     </div>
     <input class="ex-picker-search" id="exPickerSearch" type="text" placeholder="Buscar ejercicio…" oninput="renderExPicker(this.value)">
+    <!-- Custom exercise row -->
+    <div style="display:flex;gap:8px;padding:0 16px 4px;align-items:center" id="exCustomRow">
+      <input id="exCustomInput" type="text" maxlength="60"
+        placeholder="Añadir otro ejercicio…"
+        style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none"
+        onkeydown="if(event.key==='Enter')addCustomExercise()">
+      <button onclick="addCustomExercise()"
+        style="flex-shrink:0;padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:var(--radius-sm);color:var(--primary);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
+        + Añadir
+      </button>
+    </div>
     <div class="ex-picker-list" id="exPickerList"></div>
   </div>
 </div>
@@ -10753,14 +10786,35 @@ function updateRoutineBanner(routine) {
 
 let _editingRoutineId = null;
 let _editorExercises  = []; // [{ name, sets }]
+let _editorDays       = []; // [0..6] indices (0=Lun)
+let _pickerGroupFilter = ''; // exerciseDB group names to filter by
+
+const ROUTINE_GROUP_MAP = {
+  'Push':     ['Pecho','Hombros','Triceps'],
+  'Pull':     ['Espalda','Biceps'],
+  'Piernas':  ['Piernas','Gluteos'],
+  'Full Body': null,
+  'Pecho':    ['Pecho'],
+  'Espalda':  ['Espalda'],
+  'Hombros':  ['Hombros'],
+  'Bíceps':   ['Biceps'],
+  'Tríceps':  ['Triceps'],
+  'Glúteos':  ['Gluteos'],
+  'Abdomen':  ['Abdomen'],
+  'Cardio':   ['Cardio','Calistenia'],
+};
+const DAYS_ES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
 async function openRoutineEditor(routineId = null) {
   closeRoutineSelector();
-  _editingRoutineId = routineId;
-  _editorExercises  = [];
+  _editingRoutineId   = routineId;
+  _editorExercises    = [];
+  _editorDays         = [];
+  _pickerGroupFilter  = '';
 
   document.getElementById('routineNameInput').value   = '';
   document.getElementById('routineGroupSelect').value = '';
+  document.getElementById('routineTimeInput').value   = '';
   document.getElementById('editorExerciseList').innerHTML = '';
   document.getElementById('deleteRoutineSection').style.display = 'none';
   document.getElementById('editorTitle').textContent = routineId ? 'Editar rutina' : 'Nueva rutina';
@@ -10777,6 +10831,9 @@ async function openRoutineEditor(routineId = null) {
       document.getElementById('routineNameInput').value   = data.name;
       document.getElementById('routineGroupSelect').value = data.muscle_group || '';
       _editorExercises = data.exercises.map(ex => ({ name: ex.name, sets: ex.sets || 3 }));
+      _editorDays      = Array.isArray(data.scheduled_days) ? data.scheduled_days : [];
+      document.getElementById('routineTimeInput').value = data.scheduled_time || '';
+      _pickerGroupFilter = data.muscle_group || '';
       document.getElementById('deleteRoutineSection').style.display = 'block';
     } catch (err) {
       console.error('Error loading routine for edit:', err);
@@ -10786,6 +10843,7 @@ async function openRoutineEditor(routineId = null) {
   }
 
   renderEditorExercises();
+  renderEditorDayChips();
   onEditorNameInput();
   document.getElementById('routineEditorOverlay').classList.add('active');
 }
@@ -10799,9 +10857,29 @@ function editRoutine(routineId) {
   openRoutineEditor(routineId);
 }
 
+function renderEditorDayChips() {
+  const container = document.getElementById('editorDayChips');
+  if (!container) return;
+  container.innerHTML = DAYS_ES.map((d, i) =>
+    `<button class="day-chip${_editorDays.includes(i) ? ' active' : ''}" onclick="toggleDayChip(${i})">${d}</button>`
+  ).join('');
+}
+
+function toggleDayChip(day) {
+  const idx = _editorDays.indexOf(day);
+  if (idx >= 0) _editorDays.splice(idx, 1);
+  else _editorDays.push(day);
+  renderEditorDayChips();
+}
+
+function onRoutineGroupChange() {
+  const val = document.getElementById('routineGroupSelect').value;
+  _pickerGroupFilter = val;
+}
+
 function onEditorNameInput() {
   const name = document.getElementById('routineNameInput').value.trim();
-  document.getElementById('editorSaveBtn').disabled = name.length === 0 || _editorExercises.length === 0;
+  document.getElementById('editorSaveBtn').disabled = name.length === 0;
 }
 
 function renderEditorExercises() {
@@ -10841,19 +10919,28 @@ function removeEditorExercise(index) {
 async function saveRoutine() {
   const name        = document.getElementById('routineNameInput').value.trim();
   const muscleGroup = document.getElementById('routineGroupSelect').value;
-  if (!name || _editorExercises.length === 0) return;
+  const schedTime   = document.getElementById('routineTimeInput').value || null;
+
+  if (!name) { showToast('Escribe un nombre para la rutina', 'warning'); return; }
+  if (_editorExercises.length === 0) { showToast('Añade al menos un ejercicio', 'warning'); return; }
 
   const btn = document.getElementById('editorSaveBtn');
   btn.disabled = true;
   btn.textContent = 'Guardando…';
 
-  const payload = {
-    name,
-    muscle_group: muscleGroup || null,
-    exercises: _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets }))
-  };
-
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
+
+    const payload = {
+      user_id:         user.id,
+      name,
+      muscle_group:    muscleGroup || null,
+      exercises:       _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
+      scheduled_days:  _editorDays.length > 0 ? _editorDays : null,
+      scheduled_time:  schedTime,
+    };
+
     let error;
     if (_editingRoutineId) {
       ({ error } = await supabase
@@ -10869,13 +10956,12 @@ async function saveRoutine() {
 
     showToast(_editingRoutineId ? '✓ Rutina actualizada' : '✓ Rutina guardada', 'success');
     closeRoutineEditor();
-    // Si el selector está abierto, refrescar lista
     if (document.getElementById('routineSelectorModal').style.display === 'flex') {
       loadUserRoutines();
     }
   } catch (err) {
     console.error('Error saving routine:', err);
-    showToast('Error al guardar', 'error');
+    showToast('Error al guardar: ' + (err.message || ''), 'error');
     btn.disabled = false;
     btn.textContent = 'Guardar';
   }
@@ -10911,7 +10997,9 @@ async function confirmDeleteRoutine() {
 // ─── EXERCISE PICKER ─────────────────────────────────────────
 
 function openExPicker() {
+  _pickerGroupFilter = document.getElementById('routineGroupSelect').value;
   document.getElementById('exPickerSearch').value = '';
+  document.getElementById('exCustomInput').value  = '';
   renderExPicker('');
   document.getElementById('exPickerSheet').classList.add('active');
   setTimeout(() => document.getElementById('exPickerSearch').focus(), 200);
@@ -10921,14 +11009,36 @@ function closeExPicker() {
   document.getElementById('exPickerSheet').classList.remove('active');
 }
 
+function addCustomExercise() {
+  const input = document.getElementById('exCustomInput');
+  const name  = (input.value || '').trim();
+  if (!name) { input.focus(); return; }
+  if (_editorExercises.find(ex => ex.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Ya está en la lista', 'info');
+    return;
+  }
+  _editorExercises.push({ name, sets: 3 });
+  input.value = '';
+  renderEditorExercises();
+  renderExPicker(document.getElementById('exPickerSearch').value);
+  showToast('✓ ' + name + ' añadido', 'success');
+}
+
 function renderExPicker(filter) {
   const f = (filter || '').toLowerCase().trim();
   const selected = new Set(_editorExercises.map(ex => ex.name));
+
+  // Determine which exerciseDB groups to show
+  const groupWhitelist = (_pickerGroupFilter && _pickerGroupFilter !== 'Full Body')
+    ? (ROUTINE_GROUP_MAP[_pickerGroupFilter] || null)
+    : null; // null = show all
+
   let html = '';
 
   const allGroups = exerciseDB.map(g => ({
     group: g.group,
-    items: f ? g.items.filter(i => i.toLowerCase().includes(f)) : g.items
+    items: (groupWhitelist ? (groupWhitelist.includes(g.group) ? g.items : []) : g.items)
+           .filter(i => !f || i.toLowerCase().includes(f))
   })).filter(g => g.items.length > 0);
 
   allGroups.forEach(g => {
@@ -10942,7 +11052,7 @@ function renderExPicker(filter) {
     });
   });
 
-  if (!html) html = `<div style="text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px">Sin resultados</div>`;
+  if (!html) html = `<div style="text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px">Sin resultados para ese filtro</div>`;
   document.getElementById('exPickerList').innerHTML = html;
 }
 
