@@ -3752,10 +3752,23 @@ body {
     </div>
 
     <!-- Hora habitual -->
-    <div style="margin-bottom:24px">
+    <div style="margin-bottom:20px">
       <div class="editor-field-label">Hora habitual</div>
       <input class="editor-input" id="routineTimeInput" type="time"
         style="width:auto;min-width:150px;color:var(--text-primary);color-scheme:dark">
+    </div>
+
+    <!-- Descanso entre series -->
+    <div style="margin-bottom:24px">
+      <div class="editor-field-label">Descanso entre series</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorRestChips">
+        <button class="day-chip" onclick="setEditorRest(30,this)">30s</button>
+        <button class="day-chip" onclick="setEditorRest(60,this)">1 min</button>
+        <button class="day-chip" onclick="setEditorRest(90,this)">1:30</button>
+        <button class="day-chip active" onclick="setEditorRest(120,this)">2 min</button>
+        <button class="day-chip" onclick="setEditorRest(180,this)">3 min</button>
+        <button class="day-chip" onclick="setEditorRest(240,this)">4 min</button>
+      </div>
     </div>
 
     <!-- Ejercicios -->
@@ -10686,7 +10699,7 @@ async function loadUserRoutines() {
   _renderLastWorkoutCard();
 
   try {
-    const { data: routines, error } = await supabase
+    const { data: routines, error } = await sb
       .from('workout_templates')
       .select('*')
       .order('last_used_at', { ascending: false, nullsFirst: false })
@@ -10729,7 +10742,7 @@ async function loadUserRoutines() {
 
 async function selectRoutineFromModal(routineId) {
   try {
-    const { data: routine, error } = await supabase
+    const { data: routine, error } = await sb
       .from('workout_templates')
       .select('*')
       .eq('id', routineId)
@@ -10784,9 +10797,10 @@ function updateRoutineBanner(routine) {
 
 // ─── ROUTINE EDITOR ──────────────────────────────────────────
 
-let _editingRoutineId = null;
-let _editorExercises  = []; // [{ name, sets }]
-let _editorDays       = []; // [0..6] indices (0=Lun)
+let _editingRoutineId  = null;
+let _editorExercises   = []; // [{ name, sets }]
+let _editorDays        = []; // [0..6] indices (0=Lun)
+let _editorRest        = 120; // seconds
 let _pickerGroupFilter = ''; // exerciseDB group names to filter by
 
 const ROUTINE_GROUP_MAP = {
@@ -10810,6 +10824,7 @@ async function openRoutineEditor(routineId = null) {
   _editingRoutineId   = routineId;
   _editorExercises    = [];
   _editorDays         = [];
+  _editorRest         = 120;
   _pickerGroupFilter  = '';
 
   document.getElementById('routineNameInput').value   = '';
@@ -10822,7 +10837,7 @@ async function openRoutineEditor(routineId = null) {
 
   if (routineId) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('workout_templates')
         .select('*')
         .eq('id', routineId)
@@ -10832,6 +10847,7 @@ async function openRoutineEditor(routineId = null) {
       document.getElementById('routineGroupSelect').value = data.muscle_group || '';
       _editorExercises = data.exercises.map(ex => ({ name: ex.name, sets: ex.sets || 3 }));
       _editorDays      = Array.isArray(data.scheduled_days) ? data.scheduled_days : [];
+      _editorRest      = data.default_rest_seconds || 120;
       document.getElementById('routineTimeInput').value = data.scheduled_time || '';
       _pickerGroupFilter = data.muscle_group || '';
       document.getElementById('deleteRoutineSection').style.display = 'block';
@@ -10844,6 +10860,7 @@ async function openRoutineEditor(routineId = null) {
 
   renderEditorExercises();
   renderEditorDayChips();
+  renderEditorRestChips();
   onEditorNameInput();
   document.getElementById('routineEditorOverlay').classList.add('active');
 }
@@ -10870,6 +10887,22 @@ function toggleDayChip(day) {
   if (idx >= 0) _editorDays.splice(idx, 1);
   else _editorDays.push(day);
   renderEditorDayChips();
+}
+
+const REST_CHIP_VALUES = [30, 60, 90, 120, 180, 240];
+
+function renderEditorRestChips() {
+  const container = document.getElementById('editorRestChips');
+  if (!container) return;
+  const labels = { 30:'30s', 60:'1 min', 90:'1:30', 120:'2 min', 180:'3 min', 240:'4 min' };
+  container.innerHTML = REST_CHIP_VALUES.map(s =>
+    `<button class="day-chip${_editorRest === s ? ' active' : ''}" onclick="setEditorRest(${s},this)">${labels[s]}</button>`
+  ).join('');
+}
+
+function setEditorRest(seconds) {
+  _editorRest = seconds;
+  renderEditorRestChips();
 }
 
 function onRoutineGroupChange() {
@@ -10929,26 +10962,27 @@ async function saveRoutine() {
   btn.textContent = 'Guardando…';
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await sb.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
     const payload = {
-      user_id:         user.id,
+      user_id:              user.id,
       name,
-      muscle_group:    muscleGroup || null,
-      exercises:       _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
-      scheduled_days:  _editorDays.length > 0 ? _editorDays : null,
-      scheduled_time:  schedTime,
+      muscle_group:         muscleGroup || null,
+      exercises:            _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
+      scheduled_days:       _editorDays.length > 0 ? _editorDays : null,
+      scheduled_time:       schedTime,
+      default_rest_seconds: _editorRest,
     };
 
     let error;
     if (_editingRoutineId) {
-      ({ error } = await supabase
+      ({ error } = await sb
         .from('workout_templates')
         .update(payload)
         .eq('id', _editingRoutineId));
     } else {
-      ({ error } = await supabase
+      ({ error } = await sb
         .from('workout_templates')
         .insert(payload));
     }
@@ -10972,7 +11006,7 @@ async function confirmDeleteRoutine() {
   if (!confirm('¿Eliminar esta rutina? Esta acción no se puede deshacer.')) return;
 
   try {
-    const { error } = await supabase
+    const { error } = await sb
       .from('workout_templates')
       .delete()
       .eq('id', _editingRoutineId);
@@ -11071,6 +11105,11 @@ function showRoutinePreview() {
   const routine = currentSelectedRoutine;
   // Cargar ejercicios al queue — equipment vacío, el usuario lo elige en workout
   pendingExercises = routine.exercises.map(ex => ({ name: ex.name, equipment: '' }));
+  // Aplicar descanso configurado en la rutina
+  if (routine.default_rest_seconds) {
+    restSeconds = routine.default_rest_seconds;
+    setRest(restSeconds);
+  }
   // Marcar rutina como usada en Supabase (async, no bloquea)
   _markRoutineUsed(routine.id);
   // Abrir config sheet de descanso (flujo normal)
@@ -11132,12 +11171,12 @@ function repeatLastWorkout() {
 async function _markRoutineUsed(routineId) {
   if (!routineId) return;
   try {
-    const { data: current } = await supabase
+    const { data: current } = await sb
       .from('workout_templates')
       .select('use_count')
       .eq('id', routineId)
       .single();
-    await supabase
+    await sb
       .from('workout_templates')
       .update({ last_used_at: new Date().toISOString(), use_count: (current?.use_count || 0) + 1 })
       .eq('id', routineId);
