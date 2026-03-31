@@ -1012,6 +1012,18 @@ body {
   font-size: 10px; font-weight: 700; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: 1px; padding: 10px 0 6px;
 }
+/* Group filter chips inside exercise picker */
+.ex-group-chip {
+  display: inline-flex; align-items: center; padding: 6px 12px;
+  border-radius: var(--radius-full); border: 1.5px solid var(--border);
+  background: transparent; color: var(--text-secondary);
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  cursor: pointer; margin-right: 6px; transition: all .15s;
+  -webkit-tap-highlight-color: transparent; white-space: nowrap;
+}
+.ex-group-chip.active {
+  border-color: var(--primary); background: var(--primary-light); color: var(--primary);
+}
 .ex-picker-item {
   padding: 12px 0; border-bottom: 1px solid var(--border);
   font-size: 14px; color: var(--text-primary); cursor: pointer;
@@ -3754,20 +3766,18 @@ body {
     <!-- Hora habitual -->
     <div style="margin-bottom:20px">
       <div class="editor-field-label">Hora habitual</div>
-      <input class="editor-input" id="routineTimeInput" type="time"
-        style="width:auto;min-width:150px;color:var(--text-primary);color-scheme:dark">
+      <label for="routineTimeInput" style="display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;cursor:pointer;transition:border-color .15s" onclick="this.querySelector('input').showPicker&&this.querySelector('input').showPicker()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <input id="routineTimeInput" type="time"
+          style="background:none;border:none;color:var(--text-primary);font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;color-scheme:dark;outline:none;min-width:90px;padding:0">
+      </label>
     </div>
 
     <!-- Descanso entre series -->
     <div style="margin-bottom:24px">
       <div class="editor-field-label">Descanso entre series</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorRestChips">
-        <button class="day-chip" onclick="setEditorRest(30,this)">30s</button>
-        <button class="day-chip" onclick="setEditorRest(60,this)">1 min</button>
-        <button class="day-chip" onclick="setEditorRest(90,this)">1:30</button>
-        <button class="day-chip active" onclick="setEditorRest(120,this)">2 min</button>
-        <button class="day-chip" onclick="setEditorRest(180,this)">3 min</button>
-        <button class="day-chip" onclick="setEditorRest(240,this)">4 min</button>
+        <!-- rendered by renderEditorRestChips() -->
       </div>
     </div>
 
@@ -3798,6 +3808,8 @@ body {
       <div style="font-size:16px;font-weight:700;color:var(--text-primary)">Añadir ejercicio</div>
       <button onclick="closeExPicker()" style="background:var(--surface-raised);border:none;color:var(--text-secondary);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
     </div>
+    <!-- Group filter bar -->
+    <div id="exPickerGroupBar" style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
     <input class="ex-picker-search" id="exPickerSearch" type="text" placeholder="Buscar ejercicio…" oninput="renderExPicker(this.value)">
     <!-- Custom exercise row -->
     <div style="display:flex;gap:8px;padding:0 16px 4px;align-items:center" id="exCustomRow">
@@ -10698,12 +10710,21 @@ async function loadUserRoutines() {
   // "Repetir último entrenamiento" — usa savedWorkouts (local, siempre disponible)
   _renderLastWorkoutCard();
 
+  if (!currentUser) {
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+
   try {
-    const { data: routines, error } = await sb
-      .from('workout_templates')
-      .select('*')
+    // Timeout guard — don't hang forever if Supabase is unreachable
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000));
+    const query   = sb.from('workout_templates').select('*')
+      .eq('user_id', currentUser.id)
       .order('last_used_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
+
+    const { data: routines, error } = await Promise.race([query, timeout]);
 
     if (error) throw error;
 
@@ -10736,7 +10757,8 @@ async function loadUserRoutines() {
     console.error('Error loading routines:', err);
     container.innerHTML = '';
     emptyState.style.display = 'block';
-    showToast('Error al cargar rutinas', 'error');
+    // Only show toast for non-timeout errors (timeout is silent)
+    if (err.message !== 'timeout') showToast('Error al cargar rutinas', 'error');
   }
 }
 
@@ -10797,11 +10819,12 @@ function updateRoutineBanner(routine) {
 
 // ─── ROUTINE EDITOR ──────────────────────────────────────────
 
-let _editingRoutineId  = null;
-let _editorExercises   = []; // [{ name, sets }]
-let _editorDays        = []; // [0..6] indices (0=Lun)
-let _editorRest        = 120; // seconds
-let _pickerGroupFilter = ''; // exerciseDB group names to filter by
+let _editingRoutineId   = null;
+let _editorExercises    = []; // [{ name, sets }]
+let _editorDays         = []; // [0..6] indices (0=Lun)
+let _editorRest         = 120; // seconds
+let _pickerGroupFilter  = ''; // routine-level group key
+let _exPickerActiveGroup = ''; // active exerciseDB group filter in picker ('' = all)
 
 const ROUTINE_GROUP_MAP = {
   'Push':     ['Pecho','Hombros','Triceps'],
@@ -10894,9 +10917,8 @@ const REST_CHIP_VALUES = [30, 60, 90, 120, 180, 240];
 function renderEditorRestChips() {
   const container = document.getElementById('editorRestChips');
   if (!container) return;
-  const labels = { 30:'30s', 60:'1 min', 90:'1:30', 120:'2 min', 180:'3 min', 240:'4 min' };
   container.innerHTML = REST_CHIP_VALUES.map(s =>
-    `<button class="day-chip${_editorRest === s ? ' active' : ''}" onclick="setEditorRest(${s},this)">${labels[s]}</button>`
+    `<button class="day-chip${_editorRest === s ? ' active' : ''}" onclick="setEditorRest(${s})">${s}s</button>`
   ).join('');
 }
 
@@ -10962,11 +10984,10 @@ async function saveRoutine() {
   btn.textContent = 'Guardando…';
 
   try {
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) throw new Error('No autenticado');
+    if (!currentUser) throw new Error('Debes iniciar sesión');
 
     const payload = {
-      user_id:              user.id,
+      user_id:              currentUser.id,
       name,
       muscle_group:         muscleGroup || null,
       exercises:            _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
@@ -11032,11 +11053,35 @@ async function confirmDeleteRoutine() {
 
 function openExPicker() {
   _pickerGroupFilter = document.getElementById('routineGroupSelect').value;
+  // Set initial active group from routine's muscle group
+  if (_pickerGroupFilter && _pickerGroupFilter !== 'Full Body' && ROUTINE_GROUP_MAP[_pickerGroupFilter]) {
+    _exPickerActiveGroup = ROUTINE_GROUP_MAP[_pickerGroupFilter][0] || '';
+  } else {
+    _exPickerActiveGroup = '';
+  }
   document.getElementById('exPickerSearch').value = '';
   document.getElementById('exCustomInput').value  = '';
+  renderExPickerGroupBar();
   renderExPicker('');
   document.getElementById('exPickerSheet').classList.add('active');
   setTimeout(() => document.getElementById('exPickerSearch').focus(), 200);
+}
+
+function renderExPickerGroupBar() {
+  const bar = document.getElementById('exPickerGroupBar');
+  if (!bar) return;
+  const groups = exerciseDB.map(g => g.group);
+  bar.innerHTML =
+    `<button class="ex-group-chip${_exPickerActiveGroup === '' ? ' active' : ''}" onclick="setExPickerGroup('')">Todos</button>` +
+    groups.map(g =>
+      `<button class="ex-group-chip${_exPickerActiveGroup === g ? ' active' : ''}" onclick="setExPickerGroup('${g}')">${g}</button>`
+    ).join('');
+}
+
+function setExPickerGroup(group) {
+  _exPickerActiveGroup = group;
+  renderExPickerGroupBar();
+  renderExPicker(document.getElementById('exPickerSearch').value);
 }
 
 function closeExPicker() {
@@ -11062,16 +11107,14 @@ function renderExPicker(filter) {
   const f = (filter || '').toLowerCase().trim();
   const selected = new Set(_editorExercises.map(ex => ex.name));
 
-  // Determine which exerciseDB groups to show
-  const groupWhitelist = (_pickerGroupFilter && _pickerGroupFilter !== 'Full Body')
-    ? (ROUTINE_GROUP_MAP[_pickerGroupFilter] || null)
-    : null; // null = show all
+  // Filter by active group chip (direct exerciseDB group name, '' = all)
+  const activeGroup = _exPickerActiveGroup;
 
   let html = '';
 
   const allGroups = exerciseDB.map(g => ({
     group: g.group,
-    items: (groupWhitelist ? (groupWhitelist.includes(g.group) ? g.items : []) : g.items)
+    items: (activeGroup ? (g.group === activeGroup ? g.items : []) : g.items)
            .filter(i => !f || i.toLowerCase().includes(f))
   })).filter(g => g.items.length > 0);
 
