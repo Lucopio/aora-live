@@ -4606,6 +4606,45 @@ function updateChatCounter() {
   if (input) input.disabled = remaining <= 0;
 }
 
+// Obtiene un token de acceso válido sin colgarse si getSession() está bloqueado.
+// Estrategia: timeout → localStorage directo → nueva sesión anónima.
+async function _getCoachToken() {
+  // 1. Intentar getSession() con timeout de 3s (evita el deadlock del SDK)
+  try {
+    const result = await Promise.race([
+      sb.auth.getSession(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
+    ]);
+    const tok = result?.data?.session?.access_token;
+    if (tok) { currentUser = currentUser || result.data.session.user; return tok; }
+  } catch(e) {
+    console.warn('[coach] getSession bloqueado, usando localStorage...');
+  }
+
+  // 2. Leer token directamente del localStorage de Supabase
+  try {
+    const raw = localStorage.getItem('sb-edythbvezafpnkslavcv-auth-token');
+    if (raw) {
+      const stored = JSON.parse(raw);
+      const tok = stored?.access_token;
+      if (tok) { console.log('[coach] token leído de localStorage OK'); return tok; }
+    }
+  } catch(e) {}
+
+  // 3. Crear sesión anónima nueva (skip_auth users)
+  if (localStorage.getItem('gymtracker_skip_auth') && sb) {
+    try {
+      console.log('[coach] creando sesión anónima nueva...');
+      const { data, error } = await sb.auth.signInAnonymously();
+      if (!error && data?.session?.access_token) {
+        currentUser = data.user;
+        return data.session.access_token;
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
 async function sendCoachMessage() {
   // ── 1. Recuperar sesión si currentUser es null (usuarios sin cuenta) ──────
   if (!currentUser && sb && localStorage.getItem('gymtracker_skip_auth')) {
@@ -4648,23 +4687,9 @@ async function sendCoachMessage() {
   showTypingIndicator();
 
   try {
-    // ── 2. Obtener token válido ───────────────────────────────────────────────
-    console.log('[coach] paso 1: getSession...');
-    let { data: { session } } = await sb.auth.getSession();
-    console.log('[coach] sesión:', session ? 'OK uid=' + session.user?.id?.slice(0,8) : 'null');
-
-    // Recuperar sesión si está ausente (skip_auth)
-    if (!session && localStorage.getItem('gymtracker_skip_auth')) {
-      console.log('[coach] sin sesión, creando anónima...');
-      const { data: anonData, error: anonErr } = await sb.auth.signInAnonymously();
-      console.log('[coach] anon result:', anonErr ? anonErr.message : 'OK');
-      if (anonData?.session) { session = anonData.session; currentUser = anonData.user; }
-    }
-    if (!session) throw new Error('Sin sesión — recarga la app');
-
-    const token = session.access_token;
-    if (!token) throw new Error('Token vacío — recarga la app');
-    console.log('[coach] token OK, llamando edge function...');
+    // ── 2. Obtener token — resiliente contra getSession() bloqueado ──────────
+    const token = await _getCoachToken();
+    if (!token) throw new Error('Sin sesión. Recarga la app.');
 
     // ── 3. Llamar Edge Function con timeout de 20s ───────────────────────────
     const ctrl = new AbortController();
@@ -4680,7 +4705,6 @@ async function sendCoachMessage() {
     } finally {
       clearTimeout(fetchTimeout);
     }
-    console.log('[coach] HTTP', res.status);
 
     let data;
     const rawText = await res.text();
