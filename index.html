@@ -4607,8 +4607,24 @@ function updateChatCounter() {
 }
 
 async function sendCoachMessage() {
+  // ── 1. Recuperar sesión si currentUser es null (usuarios sin cuenta) ──────
+  if (!currentUser && sb && localStorage.getItem('gymtracker_skip_auth')) {
+    try {
+      const { data: { session: existingSession } } = await sb.auth.getSession();
+      if (existingSession?.user) {
+        currentUser = existingSession.user;
+      } else {
+        const { data: anonData, error: anonErr } = await sb.auth.signInAnonymously();
+        if (!anonErr && anonData?.user) {
+          currentUser = anonData.user;
+        }
+      }
+    } catch(e) { /* continuar, el check de abajo mostrará el error */ }
+  }
+
   if (!currentUser) {
-    appendChatBubble('system', 'Sin sesión activa. Recarga la app e intenta de nuevo.');
+    showToast('Sin sesión. Recarga la app.', 'error');
+    appendChatBubble('system', '⚠️ Sin sesión activa — recarga la app e intenta de nuevo.');
     return;
   }
   if (!canSendMessage()) { updateChatCounter(); return; }
@@ -4618,59 +4634,56 @@ async function sendCoachMessage() {
   if (!text) return;
 
   const coach = getSelectedCoach();
-  if (!coach) return;
+  if (!coach) {
+    showToast('Selecciona un entrenador primero', 'error');
+    return;
+  }
 
   input.value = '';
   input.style.height = 'auto';
-
   appendChatBubble('user', text);
 
-  // Lee el historial ANTES de añadir el nuevo mensaje —
-  // la Edge Function añade el mensaje nuevo por su cuenta, no hay que duplicarlo.
   const history = getChatHistory(coach.id);
   const historyToSend = history.slice(-20).map(m => ({ role: m.role, content: m.content }));
-
   showTypingIndicator();
 
   try {
-    // getSession() puede devolver un token expirado; refreshSession() garantiza uno válido
+    // ── 2. Obtener token válido ───────────────────────────────────────────────
     let { data: { session } } = await sb.auth.getSession();
-    if (!session) throw new Error('No session');
-    // Si el token expira en menos de 60 s, forzar refresh
+
+    // Recuperar sesión si está ausente (skip_auth)
+    if (!session && localStorage.getItem('gymtracker_skip_auth')) {
+      const { data: anonData } = await sb.auth.signInAnonymously();
+      if (anonData?.session) { session = anonData.session; currentUser = anonData.user; }
+    }
+    if (!session) throw new Error('Sin sesión — recarga la app');
+
+    // Refrescar si expira en < 60 s
     if ((session.expires_at ?? 0) - Math.floor(Date.now() / 1000) < 60) {
       const { data: r } = await sb.auth.refreshSession();
       if (r?.session) session = r.session;
     }
     const token = session.access_token;
-    if (!token) throw new Error('No session');
+    if (!token) throw new Error('Token inválido — recarga la app');
 
+    // ── 3. Llamar Edge Function ──────────────────────────────────────────────
     const res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        coachId: coach.id,
-        message: text,
-        history: historyToSend,
-        context: buildChatContext()
-      })
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coachId: coach.id, message: text, history: historyToSend, context: buildChatContext() })
     });
 
     let data;
     const rawText = await res.text();
     hideTypingIndicator();
     try { data = JSON.parse(rawText); } catch(e) {
-      throw new Error(`HTTP ${res.status} — respuesta no JSON: ${rawText.slice(0, 120)}`);
+      throw new Error(`Error ${res.status}: respuesta inesperada del servidor`);
     }
+    if (!res.ok) throw new Error(`Error ${res.status}: ${data?.error || 'el coach no está disponible'}`);
+    if (!data.response) throw new Error('Respuesta vacía del coach');
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${data?.error || rawText.slice(0, 120)}`);
-    if (!data.response) throw new Error('La función no devolvió texto');
-
+    // ── 4. Mostrar respuesta ─────────────────────────────────────────────────
     appendChatBubble('coach', data.response);
-
-    // Guarda ambos mensajes en el historial local
     history.push({ role: 'user',      content: text,          ts: new Date().toISOString() });
     history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
     saveChatHistory(coach.id, history);
@@ -4679,8 +4692,10 @@ async function sendCoachMessage() {
 
   } catch(err) {
     hideTypingIndicator();
-    console.error('coach-chat error:', err);
-    appendChatBubble('system', String(err.message || err));
+    console.error('[coach-chat]', err);
+    const msg = String(err.message || err);
+    showToast(msg, 'error');
+    appendChatBubble('system', '⚠️ ' + msg);
   }
 }
 
