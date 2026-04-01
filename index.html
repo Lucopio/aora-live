@@ -2376,24 +2376,24 @@ body {
       <div class="ob-field">
         <div class="ob-cards" id="obLocationCards" style="grid-template-columns:1fr 1fr">
           <div class="ob-card" onclick="obCard(this,'location','gym')" style="align-items:center;text-align:center;gap:6px">
-            <span style="font-size:28px">🏋️</span>
-            <div style="font-weight:700">Gym</div>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12"/></svg>
+            <div style="font-weight:700;color:var(--text-primary)">Gym</div>
             <div style="font-size:11px;color:var(--text-secondary)">Todo el equipo</div>
           </div>
           <div class="ob-card" onclick="obCard(this,'location','casa')" style="align-items:center;text-align:center;gap:6px">
-            <span style="font-size:28px">🏠</span>
-            <div style="font-weight:700">Casa</div>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div style="font-weight:700;color:var(--text-primary)">Casa</div>
             <div style="font-size:11px;color:var(--text-secondary)">Corporal + mancuernas</div>
           </div>
           <div class="ob-card" onclick="obCard(this,'location','parque')" style="align-items:center;text-align:center;gap:6px">
-            <span style="font-size:28px">🌳</span>
-            <div style="font-weight:700">Parque</div>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><path d="M17 22V12a5 5 0 0 0-10 0v10"/><path d="M12 7V2"/><path d="M7 22h10"/></svg>
+            <div style="font-weight:700;color:var(--text-primary)">Parque</div>
             <div style="font-size:11px;color:var(--text-secondary)">Solo peso corporal</div>
           </div>
           <div class="ob-card" onclick="obCard(this,'location','mixto')" style="align-items:center;text-align:center;gap:6px">
-            <span style="font-size:28px">🔀</span>
-            <div style="font-weight:700">Mixto</div>
-            <div style="font-size:11px;color:var(--text-secondary)">Sin filtro</div>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <div style="font-weight:700;color:var(--text-primary)">Mixto</div>
+            <div style="font-size:11px;color:var(--text-secondary)">Gym + casa + parque</div>
           </div>
         </div>
       </div>
@@ -2426,6 +2426,7 @@ body {
           <div class="ob-pill" onclick="obPill(this,'days',4)">4</div>
           <div class="ob-pill" onclick="obPill(this,'days',5)">5</div>
           <div class="ob-pill" onclick="obPill(this,'days',6)">6</div>
+          <div class="ob-pill" onclick="obPill(this,'days',7)">7</div>
         </div>
       </div>
     </div>
@@ -2493,25 +2494,49 @@ body {
           <div class="trainer-flag">🇨🇴</div>
           <div class="trainer-name">María</div>
           <div class="trainer-specialty">HIIT & Funcional</div>
+          <button onclick="event.stopPropagation();showObCoachProfile('maria')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'carlos')" data-coach="carlos">
           <div class="trainer-emoji">👨🏽</div>
           <div class="trainer-flag">🇲🇽</div>
           <div class="trainer-name">Carlos</div>
           <div class="trainer-specialty">Fuerza & Masa</div>
+          <button onclick="event.stopPropagation();showObCoachProfile('carlos')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'andrea')" data-coach="andrea">
           <div class="trainer-emoji">👩🏻</div>
           <div class="trainer-flag">🇦🇷</div>
           <div class="trainer-name">Andrea</div>
           <div class="trainer-specialty">Bienestar integral</div>
+          <button onclick="event.stopPropagation();showObCoachProfile('andrea')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'diego')" data-coach="diego">
           <div class="trainer-emoji">👨🏾</div>
           <div class="trainer-flag">🇵🇪</div>
           <div class="trainer-name">Diego</div>
           <div class="trainer-specialty">Resiliencia & Calistenia</div>
+          <button onclick="event.stopPropagation();showObCoachProfile('diego')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Onboarding Coach Profile Overlay -->
+    <div id="obCoachProfilePanel" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);flex-direction:column;overflow-y:auto">
+      <div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)">
+        <button onclick="hideObCoachProfile()" style="background:none;border:none;color:var(--text-primary);cursor:pointer;padding:4px;display:flex;align-items:center;gap:6px;font-family:var(--font);font-size:14px">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Atrás
+        </button>
+      </div>
+      <div style="padding:32px 24px 40px;display:flex;flex-direction:column;align-items:center;gap:20px;max-width:480px;width:100%;margin:0 auto">
+        <div id="obProfileEmoji" style="font-size:64px;line-height:1">👩🏽</div>
+        <div id="obProfileCountry" style="font-size:22px">🇨🇴</div>
+        <div id="obProfileName" style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text-primary);text-align:center">María</div>
+        <div id="obProfileSpecialty" style="font-size:14px;color:var(--primary);font-weight:600;text-align:center">HIIT & Funcional</div>
+        <p id="obProfileDesc" style="font-size:15px;color:var(--text-secondary);line-height:1.7;text-align:center;margin:0"></p>
+        <button id="obProfileSelectBtn" onclick="obSelectCoachFromProfile()" style="width:100%;padding:16px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;margin-top:8px">
+          Elegir a <span id="obProfileBtnName">María</span> →
+        </button>
       </div>
     </div>
 
@@ -2521,37 +2546,48 @@ body {
       <div class="ob-subtitle">Encuentra entrenamientos que se adapten a ti</div>
 
       <!-- Modo de selección de tipo -->
-      <div id="obStep4Selection" style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px">
+      <div id="obStep4Selection" style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
         <!-- Por Nivel -->
-        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.2s;hover:{background:rgba(59, 130, 246, 0.05)}" onclick="selectRoutineType('level')" id="routineTypeLevel">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="font-size:18px">🌱</span>
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.2s" onclick="selectRoutineType('level')" id="routineTypeLevel">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;flex-shrink:0"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             <div style="font-weight:700;font-size:15px;color:var(--text-primary)">POR NIVEL</div>
           </div>
-          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-left:26px">
-            Selecciona según tu experiencia (Principiante, Intermedio, Avanzado). Ideal si eres nuevo y quieres empezar con lo básico.
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-left:40px">
+            Principiante: fundamentos y técnica. Intermedio: más volumen y carga. Avanzado: periodización y especialización.
           </div>
         </div>
 
         <!-- Por Objetivo -->
         <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.2s" onclick="selectRoutineType('goal')" id="routineTypeGoal">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="font-size:18px">🎯</span>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
             <div style="font-weight:700;font-size:15px;color:var(--text-primary)">POR OBJETIVO</div>
           </div>
-          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-left:26px">
-            Selecciona según tu meta (Perder peso, Ganar músculo, etc). Cada rutina está diseñada para un objetivo específico.
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-left:40px">
+            Ganar músculo: más volumen e hipertrofia. Perder grasa: déficit calórico y cardio integrado. Rendimiento: fuerza funcional y explosividad.
+          </div>
+        </div>
+
+        <!-- Ya tengo mi rutina -->
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.2s" onclick="selectRoutineType('custom')" id="routineTypeCustom">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <div style="font-weight:700;font-size:15px;color:var(--text-primary)">YA TENGO MI RUTINA</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-left:40px">
+            Crea o importa la rutina que ya llevas trabajando. Puedes configurarla ahora o ir agregando días poco a poco. Tu coach IA la revisará y hará recomendaciones personalizadas.
           </div>
         </div>
       </div>
 
       <!-- Modo de acciones después de seleccionar -->
       <div id="obStep4Actions" style="display:none;flex-direction:column;gap:12px">
-        <div style="background:rgba(59, 130, 246, 0.1);border-left:3px solid var(--primary);padding:12px 16px;border-radius:6px;font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:8px">
+        <div style="background:rgba(0,229,255,0.06);border-left:3px solid var(--primary);padding:12px 16px;border-radius:6px;font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:8px">
           <strong style="color:var(--text-primary);display:block;margin-bottom:4px" id="routineTypeLabel">Rutinas por nivel</strong>
-          Seleccionaste explorar entrenamientos según tu experiencia. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.
+          <span id="routineTypeDesc">Seleccionaste explorar entrenamientos según tu experiencia. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.</span>
         </div>
-        <button class="ob-action-btn" onclick="obExploreRoutines()" style="background:var(--primary);color:#080A0F;padding:12px 16px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <button class="ob-action-btn" id="obExploreBtn" onclick="obExploreRoutines()" style="background:var(--primary);color:#080A0F;padding:12px 16px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
           <span>🔍</span> Explorar rutinas
         </button>
         <button class="ob-action-btn" onclick="obSkipRoutines()" style="background:var(--surface);color:var(--text-primary);padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">
@@ -2559,9 +2595,19 @@ body {
         </button>
       </div>
 
-      <div style="background:rgba(59, 130, 246, 0.1);border-left:3px solid var(--primary);padding:12px 16px;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:16px;display:none" id="obStep4Tip">
-        <strong style="color:var(--text-primary)">Tip:</strong> Puedes cambiar de rutina en cualquier momento desde Inicio. Elige la que mejor se adapte a ti ahora.
+      <!-- Botón principal (visible cuando no se ha seleccionado aún) -->
+      <div id="obStep4MainActions" style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <button onclick="obSaveAndStart()" style="width:100%;padding:16px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer">
+          Guardar y empezar →
+        </button>
+        <button onclick="obSkipRoutines()" style="background:none;border:none;color:var(--text-tertiary);font-family:var(--font);font-size:13px;cursor:pointer;padding:8px;width:100%;text-align:center">
+          Omitir por ahora
+        </button>
       </div>
+
+      <p style="color:var(--text-tertiary);font-size:12px;text-align:center;padding-top:16px;line-height:1.6;margin:0">
+        🤖 Tu coach IA revisará tu rutina y progreso para hacer recomendaciones personalizadas en cualquier momento.
+      </p>
     </div>
 
     <div class="ob-footer">
@@ -4350,6 +4396,42 @@ function updateCoachSpotlight() {
 
 function updateCoachScreen(coach) {
   // Legacy no-op (coach screen is now a chat UI, header updated in initCoachChat)
+}
+
+// Onboarding coach profile overlay
+const _OB_COACH_DESCS = {
+  maria:  'María entrena con energía contagiosa y motivación constante. Su estilo HIIT funcional está diseñado para quemar calorías rápido sin perder la técnica. Directa, cálida y muy efectiva — ideal si quieres resultados visibles en poco tiempo.',
+  carlos: 'Carlos es el coach de los datos. Analiza tu progreso, optimiza tus cargas y no acepta excusas. Su enfoque en fuerza e hipertrofia es metódico y probado. Perfecto si buscas masa muscular con ciencia detrás.',
+  andrea: 'Andrea conecta el cuerpo con la mente. Su enfoque de bienestar integral combina movilidad, respiración y fuerza funcional. Empática y profunda — ideal si quieres entrenar de forma sostenible y cuidar tu salud a largo plazo.',
+  diego:  'Diego entrena con calma y propósito. Calistenia, control corporal y resiliencia mental son su firma. Filosófico y paciente — ideal si quieres dominar tu peso corporal y construir una base sólida.',
+};
+let _obProfileCoachId = null;
+
+function showObCoachProfile(coachId) {
+  const coach = COACHES[coachId];
+  if (!coach) return;
+  _obProfileCoachId = coachId;
+  document.getElementById('obProfileEmoji').textContent = coach.emoji;
+  document.getElementById('obProfileCountry').textContent = coach.flag;
+  document.getElementById('obProfileName').textContent = coach.name;
+  document.getElementById('obProfileSpecialty').textContent = coach.specialty;
+  document.getElementById('obProfileDesc').textContent = _OB_COACH_DESCS[coachId] || '';
+  document.getElementById('obProfileBtnName').textContent = coach.name;
+  const panel = document.getElementById('obCoachProfilePanel');
+  if (panel) { panel.style.display = 'flex'; }
+}
+
+function hideObCoachProfile() {
+  const panel = document.getElementById('obCoachProfilePanel');
+  if (panel) panel.style.display = 'none';
+  _obProfileCoachId = null;
+}
+
+function obSelectCoachFromProfile() {
+  if (!_obProfileCoachId) return;
+  hideObCoachProfile();
+  const card = document.querySelector(`[data-coach="${_obProfileCoachId}"]`);
+  if (card) obSelectCoach(card, _obProfileCoachId);
 }
 
 function obSelectCoach(el, coachId) {
@@ -10672,14 +10754,16 @@ function obBack() {
       selectionDiv.style.display = 'flex';
       actionsDiv.style.display = 'none';
       // Reset selections
-      document.getElementById('routineTypeLevel').style.background = 'var(--surface)';
-      document.getElementById('routineTypeLevel').style.borderColor = 'var(--border)';
-      document.getElementById('routineTypeLevel').style.color = 'inherit';
-      document.getElementById('routineTypeGoal').style.background = 'var(--surface)';
-      document.getElementById('routineTypeGoal').style.borderColor = 'var(--border)';
-      document.getElementById('routineTypeGoal').style.color = 'inherit';
-      document.getElementById('routineTypeLevel').querySelectorAll('div').forEach(el => el.style.color = '');
-      document.getElementById('routineTypeGoal').querySelectorAll('div').forEach(el => el.style.color = '');
+      ['routineTypeLevel','routineTypeGoal','routineTypeCustom'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.background = 'var(--surface)';
+        el.style.borderColor = 'var(--border)';
+        el.style.color = 'inherit';
+        el.querySelectorAll('div').forEach(c => c.style.color = '');
+      });
+      const mainAct = document.getElementById('obStep4MainActions');
+      if (mainAct) mainAct.style.display = 'flex';
       return;
     }
   }
@@ -10692,42 +10776,49 @@ function obBack() {
 function selectRoutineType(type) {
   _obSel.routine_type = type;
 
-  // Visual feedback: highlight the selected option
-  const levelBox = document.getElementById('routineTypeLevel');
-  const goalBox = document.getElementById('routineTypeGoal');
+  const levelBox  = document.getElementById('routineTypeLevel');
+  const goalBox   = document.getElementById('routineTypeGoal');
+  const customBox = document.getElementById('routineTypeCustom');
   const typeLabel = document.getElementById('routineTypeLabel');
-  const selectionDiv = document.getElementById('obStep4Selection');
-  const actionsDiv = document.getElementById('obStep4Actions');
+  const typeDesc  = document.getElementById('routineTypeDesc');
+  const selectionDiv     = document.getElementById('obStep4Selection');
+  const actionsDiv       = document.getElementById('obStep4Actions');
+  const mainActionsDiv   = document.getElementById('obStep4MainActions');
 
-  // Reset both to default
-  levelBox.style.background = 'var(--surface)';
-  levelBox.style.borderColor = 'var(--border)';
-  levelBox.style.color = 'inherit';
-  goalBox.style.background = 'var(--surface)';
-  goalBox.style.borderColor = 'var(--border)';
-  goalBox.style.color = 'inherit';
+  // Reset all to default
+  [levelBox, goalBox, customBox].forEach(box => {
+    if (!box) return;
+    box.style.background = 'var(--surface)';
+    box.style.borderColor = 'var(--border)';
+    box.querySelectorAll('div').forEach(el => el.style.color = '');
+  });
 
   if (type === 'level') {
-    levelBox.style.background = 'var(--primary)';
+    levelBox.style.background = 'rgba(0,229,255,0.1)';
     levelBox.style.borderColor = 'var(--primary)';
-    levelBox.style.color = 'white';
-    // Make all child text white
-    const levelTexts = levelBox.querySelectorAll('div');
-    levelTexts.forEach(el => el.style.color = 'white');
+    levelBox.querySelectorAll('div').forEach(el => el.style.color = '');
     typeLabel.textContent = 'Rutinas por nivel';
-  } else {
-    goalBox.style.background = 'var(--primary)';
+    typeDesc.textContent = 'Seleccionaste explorar entrenamientos según tu experiencia. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.';
+    document.getElementById('obExploreBtn').style.display = 'flex';
+  } else if (type === 'goal') {
+    goalBox.style.background = 'rgba(0,229,255,0.1)';
     goalBox.style.borderColor = 'var(--primary)';
-    goalBox.style.color = 'white';
-    // Make all child text white
-    const goalTexts = goalBox.querySelectorAll('div');
-    goalTexts.forEach(el => el.style.color = 'white');
+    goalBox.querySelectorAll('div').forEach(el => el.style.color = '');
     typeLabel.textContent = 'Rutinas por objetivo';
+    typeDesc.textContent = 'Seleccionaste explorar entrenamientos por meta. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.';
+    document.getElementById('obExploreBtn').style.display = 'flex';
+  } else if (type === 'custom') {
+    customBox.style.background = 'rgba(0,229,255,0.1)';
+    customBox.style.borderColor = 'var(--primary)';
+    customBox.querySelectorAll('div').forEach(el => el.style.color = '');
+    typeLabel.textContent = 'Mi rutina actual';
+    typeDesc.textContent = 'Crearás tu propia rutina desde cero. Tu coach IA la revisará y hará recomendaciones personalizadas.';
+    document.getElementById('obExploreBtn').style.display = 'none';
   }
 
-  // Hide selection, show actions
   selectionDiv.style.display = 'none';
   actionsDiv.style.display = 'flex';
+  if (mainActionsDiv) mainActionsDiv.style.display = 'none';
 }
 
 // Step 4: Explore Routines
@@ -10739,6 +10830,16 @@ function obExploreRoutines() {
 // Step 4: Skip Routine Selection
 function obSkipRoutines() {
   obSave(); // Just save and go to home
+}
+
+// Step 4: Save and start (with or without routine type selected)
+function obSaveAndStart() {
+  if (_obSel.routine_type === 'custom') {
+    obSave();
+    setTimeout(() => showRoutinesSheet(), 300);
+  } else {
+    obSave();
+  }
 }
 
 // Selección de pill genérica: field = 'sex'|'days'|'activity'
