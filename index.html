@@ -2116,15 +2116,20 @@ body {
 </div>
 
 <!-- ONBOARDING TOUR OVERLAY -->
-<div id="onboardingTourOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9500;align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:0">
-  <div style="width:100%;max-width:400px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px">
-    <div id="tourIcon" style="font-size:48px;line-height:1;margin-bottom:4px">👋</div>
-    <div style="display:flex;gap:6px;margin-bottom:4px" id="tourDots"></div>
-    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px" id="tourStep">Paso 1 de 4</div>
-    <div style="font-size:22px;font-weight:700;color:var(--text-primary);line-height:1.3;font-family:var(--font-display)" id="tourTitle">Bienvenido a Aora Live</div>
-    <div style="font-size:15px;color:var(--text-secondary);line-height:1.6;max-width:320px" id="tourDesc">Tu entrenador personal está listo. Aquí te guiamos en los primeros pasos.</div>
-    <button onclick="tourNext()" id="tourNextBtn" style="width:100%;padding:18px;background:var(--primary);color:#000;border:none;border-radius:16px;font-family:var(--font);font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:0.2px">Siguiente →</button>
-    <button onclick="tourSkip()" style="background:none;border:none;color:var(--text-tertiary);font-size:13px;font-weight:500;cursor:pointer;padding:8px;font-family:var(--font)">Saltar tour</button>
+<div id="onboardingTourOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);z-index:9500;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:420px;background:var(--surface);border-radius:var(--radius-lg);padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div id="tourIcon" style="line-height:1;text-align:center"></div>
+    <div style="display:flex;gap:6px" id="tourDots"></div>
+    <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;text-align:center" id="tourStep">Paso 1 de 6</div>
+    <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-primary);line-height:1.3;text-align:center" id="tourTitle"></div>
+    <div id="tourSubtitle" style="display:none;font-size:13px;color:var(--primary);font-weight:600;text-align:center"></div>
+    <div style="font-size:14px;color:var(--text-secondary);line-height:1.65;width:100%;text-align:left" id="tourDesc"></div>
+    <div id="tourSummaryPills" style="display:none;gap:8px;width:100%"></div>
+    <div id="tourBtnRow" style="display:flex;gap:10px;width:100%;margin-top:4px">
+      <button onclick="tourPrev()" id="tourPrevBtn" style="display:none;flex:0 0 35%;padding:16px 0;background:transparent;color:var(--text-primary);border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer">← Anterior</button>
+      <button onclick="tourNext()" id="tourNextBtn" style="flex:1;padding:16px 0;background:var(--primary);color:#000;border:none;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.2px">Siguiente →</button>
+    </div>
+    <button onclick="tourSkip()" id="tourSkipBtn" style="background:none;border:none;color:var(--text-tertiary);font-size:13px;font-weight:500;cursor:pointer;padding:4px;font-family:var(--font)">Saltar tour</button>
   </div>
 </div>
 
@@ -9171,63 +9176,111 @@ function showCoachmark(key) {
 
 // ─── Onboarding Tour (first-time) ─────────────────────────────────────────
 const ONBOARDING_TOUR_KEY = 'aora_tour_done';
-const TOUR_STEPS = [
-  {
-    icon: '👋',
-    title: 'Bienvenido a Aora Live',
-    desc: 'Tienes un entrenador personal contigo 24/7. Te vamos a mostrar lo más importante en 4 pasos.',
-    step: '1 de 4'
-  },
-  {
-    icon: '⏱',
-    title: 'Tu timer de sesión',
-    desc: 'Este cronómetro corre durante todo tu entrenamiento. Siempre visible para que mantengas el ritmo.',
-    step: '2 de 4'
-  },
-  {
-    icon: '🏋️',
-    title: 'Registra cada serie',
-    desc: 'Anota peso y repeticiones. Tu coach analiza cada serie en tiempo real y te da retroalimentación.',
-    step: '3 de 4'
-  },
-  {
-    icon: '🎙️',
-    title: 'Tu coach siempre presente',
-    desc: 'María, Carlos, Andrea o Diego estarán contigo. Te hablarán, te corregirán, te motivarán. Nunca entrenas solo.',
-    step: '4 de 4',
-    lastStep: true
-  }
-];
+const TOUR_TOTAL = 6;
+
+const _COACH_SUBTITLES = {
+  maria:  'Entrenadora colombiana · HIIT & Funcional',
+  carlos: 'Entrenador mexicano · Fuerza & Masa',
+  andrea: 'Entrenadora argentina · Bienestar integral',
+  diego:  'Entrenador peruano · Calistenia & Resiliencia',
+};
+
 let _tourStep = 0;
 
 function showOnboardingTour() {
   if (localStorage.getItem(ONBOARDING_TOUR_KEY)) return;
   _tourStep = 0;
   _renderTourStep();
-  const overlay = document.getElementById('onboardingTourOverlay');
-  overlay.style.display = 'flex';
+  document.getElementById('onboardingTourOverlay').style.display = 'flex';
 }
 
 function _renderTourStep() {
-  const s = TOUR_STEPS[_tourStep];
-  document.getElementById('tourIcon').textContent = s.icon;
-  document.getElementById('tourTitle').textContent = s.title;
-  document.getElementById('tourDesc').textContent = s.desc;
-  document.getElementById('tourStep').textContent = 'Paso ' + s.step;
-  document.getElementById('tourNextBtn').textContent = s.lastStep ? '¡Empezar! →' : 'Siguiente →';
-  const dots = document.getElementById('tourDots');
-  dots.innerHTML = TOUR_STEPS.map((_, i) =>
-    `<div style="width:${i===_tourStep?'20px':'7px'};height:7px;border-radius:4px;background:${i===_tourStep?'var(--primary)':'rgba(255,255,255,0.18)'};transition:all 0.3s"></div>`
+  const coach    = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽', specialty: 'HIIT & Funcional' };
+  const cn       = coach.name || 'Tu coach';
+  const userName = (userProfile && (userProfile.nickname || userProfile.full_name)) || 'campeón';
+  const step     = _tourStep;
+
+  // Step indicator & dots
+  document.getElementById('tourStep').textContent = `Paso ${step + 1} de ${TOUR_TOTAL}`;
+  document.getElementById('tourDots').innerHTML = Array.from({length: TOUR_TOTAL}, (_, i) =>
+    `<div style="width:${i===step?'20px':'7px'};height:7px;border-radius:4px;background:${i===step?'var(--primary)':'var(--border)'};transition:all 0.3s"></div>`
   ).join('');
+
+  // Prev button: visible from step 2 onward
+  const prevBtn = document.getElementById('tourPrevBtn');
+  prevBtn.style.display = step > 0 ? 'block' : 'none';
+  prevBtn.style.flex    = step > 0 ? '0 0 35%' : '0 0 0%';
+  document.getElementById('tourNextBtn').style.flex = step > 0 ? '1' : '1';
+
+  // Subtitle & pills: hide by default
+  document.getElementById('tourSubtitle').style.display = 'none';
+  document.getElementById('tourSummaryPills').style.display = 'none';
+
+  // Skip: hidden on last step
+  document.getElementById('tourSkipBtn').style.display = step < TOUR_TOTAL - 1 ? 'block' : 'none';
+
+  const iconEl  = document.getElementById('tourIcon');
+  const titleEl = document.getElementById('tourTitle');
+  const descEl  = document.getElementById('tourDesc');
+  const nextBtn = document.getElementById('tourNextBtn');
+
+  if (step === 0) {
+    iconEl.innerHTML  = `<span style="font-size:52px">${coach.emoji}</span>`;
+    titleEl.textContent = `${cn} es tu entrenador personal`;
+    const sub = document.getElementById('tourSubtitle');
+    sub.style.display   = 'block';
+    sub.textContent     = _COACH_SUBTITLES[coach.id] || coach.specialty || '';
+    descEl.innerHTML    = `<p style="margin:0 0 12px">${cn} te acompaña en cada entrenamiento. Revisa tu rutina, analiza tu progreso y está disponible para chatear contigo en cualquier momento — antes, durante o después de entrenar.</p><p style="margin:0">No es un bot genérico: conoce tus metas, tu historial y habla contigo de forma personalizada.</p>`;
+    nextBtn.textContent = 'Siguiente →';
+
+  } else if (step === 1) {
+    iconEl.innerHTML    = `<svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--primary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+    titleEl.textContent = 'El descanso es parte del entrenamiento';
+    descEl.innerHTML    = `<p style="margin:0 0 12px">Estudios de ciencias del deporte demuestran que controlar el tiempo de descanso entre series puede mejorar tu rendimiento y progresión muscular en más del 50%.</p><p style="margin:0">La mayoría de apps y personas lo ignoran. Aora Live mide cada descanso automáticamente, te avisa cuando es momento de continuar y registra tu tiempo promedio de recuperación para que mejores sesión a sesión.</p>`;
+    nextBtn.textContent = 'Siguiente →';
+
+  } else if (step === 2) {
+    iconEl.innerHTML    = `<svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--primary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`;
+    titleEl.textContent = 'Tu entrenamiento, documentado';
+    descEl.innerHTML    = `<p style="margin:0 0 12px">Registra cada serie, peso y repetición. Aora Live guarda tu historial completo para que veas exactamente cuánto has progresado desde el primer día.</p><p style="margin:0">${cn} usa ese historial para ajustar tus cargas, sugerirte cuándo aumentar peso y celebrar tus récords personales.</p>`;
+    nextBtn.textContent = 'Siguiente →';
+
+  } else if (step === 3) {
+    iconEl.innerHTML    = `<svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--primary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    titleEl.textContent = 'Pregúntale lo que quieras';
+    descEl.innerHTML    = `<p style="margin:0 0 12px">¿Tienes dudas sobre técnica? ¿Quieres saber si estás descansando lo suficiente? ¿Necesitas motivación?</p><p style="margin:0">${cn} está en la pestaña Coach, listo para responder en cualquier momento. Cuanto más le cuentes, más personalizadas serán sus respuestas.</p>`;
+    nextBtn.textContent = 'Siguiente →';
+
+  } else if (step === 4) {
+    iconEl.innerHTML    = `<svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--warning);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    titleEl.textContent = 'La constancia es el único secreto';
+    descEl.innerHTML    = `<p style="margin:0 0 12px">Tu racha cuenta cada semana que entrenas. Mantenerla activa es la señal más clara de que estás construyendo un hábito real.</p><p style="margin:0">${cn} te recordará cuando lleves días sin entrenar y celebrará contigo cuando rompas récords de consistencia.</p>`;
+    nextBtn.textContent = 'Siguiente →';
+
+  } else if (step === 5) {
+    iconEl.innerHTML    = `<svg viewBox="0 0 24 24" style="width:52px;height:52px;stroke:var(--success);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    titleEl.textContent = `Todo listo, ${userName}`;
+    descEl.innerHTML    = `<p style="margin:0 0 12px">Tienes a ${cn} de tu lado, el control de tus descansos, el registro de cada sesión y el chat abierto para cualquier pregunta.</p>`;
+    const pillsEl = document.getElementById('tourSummaryPills');
+    pillsEl.style.display = 'flex';
+    pillsEl.innerHTML = [
+      ['⏱', 'Descansos', 'controlados'],
+      ['📋', 'Rutinas',   'registradas'],
+      ['💬', 'Coach IA',  'disponible'],
+    ].map(([icon, line1, line2]) =>
+      `<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center"><span style="font-size:18px">${icon}</span>${line1}<span>${line2}</span></div>`
+    ).join('');
+    nextBtn.textContent = '¡Empecemos! →';
+  }
+}
+
+function tourPrev() {
+  if (_tourStep > 0) { _tourStep--; _renderTourStep(); }
 }
 
 function tourNext() {
-  if (_tourStep < TOUR_STEPS.length - 1) {
-    _tourStep++;
-    _renderTourStep();
-  } else {
-    tourSkip();
-  }
+  if (_tourStep < TOUR_TOTAL - 1) { _tourStep++; _renderTourStep(); }
+  else tourSkip();
 }
 
 function tourSkip() {
