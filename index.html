@@ -96,18 +96,22 @@ body {
   box-shadow: 0 0 0 1px rgba(0,229,255,0.25);
 }
 .nav-item:active .nav-icon-wrap { transform: scale(0.93); }
-.nav-icon-img {
-  width: 28px; height: 28px; object-fit: contain;
-  /* opacity en lugar de filter: preserva el blanco del marco,
-     el hueco transparente del logo sigue mostrando el fondo */
-  opacity: 0.42;
-  transition: opacity 0.2s, filter 0.2s;
+.icon {
+  width: 22px; height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  display: block;
 }
-/* Activo: marco del icono en cyan, hueco muestra el fondo cyan del wrap */
-.nav-item.active .nav-icon-img {
-  opacity: 1;
-  filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1);
-}
+.icon-sm { width: 18px; height: 18px; }
+.icon-lg { width: 26px; height: 26px; }
+
+/* Nav: estado inactivo y activo */
+.nav-item .icon { stroke: var(--text-tertiary); }
+.nav-item.active .icon { stroke: var(--primary); }
 .nav-active-dot {
   width: 4px; height: 4px; border-radius: 50%;
   background: transparent; transition: background 0.2s;
@@ -1548,11 +1552,6 @@ body {
 .nav-item span { color: var(--text-tertiary) !important; }
 .nav-item.active svg { stroke: var(--primary) !important; }
 .nav-item.active span { color: var(--primary) !important; font-weight: 700; }
-.nav-item .nav-icon-img { opacity: 0.42 !important; filter: none !important; }
-.nav-item.active .nav-icon-img {
-  opacity: 1 !important;
-  filter: brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1) !important;
-}
 
 /* ─── HOME SCREEN ────────────────────────────────────────── */
 .home-header h1 {
@@ -2624,7 +2623,7 @@ body {
 
     <!-- Rutinas sugeridas -->
     <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
-      <div class="icon-tile-sm" style="width:28px;height:28px;border-radius:8px"><img src="Icons/SVG/Rutinas.svg" style="width:20px;height:20px;object-fit:contain" alt=""></div>
+      <div class="icon-tile-sm" style="width:28px;height:28px;border-radius:8px"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
       Rutinas por nivel (Principiante · Intermedio · Avanzado)
     </button>
 
@@ -2669,7 +2668,7 @@ body {
       </button>
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
-      <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><img src="Icons/SVG/Calentamiento.svg" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;margin-right:4px" alt=""> Calentar</button>
+      <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="avgRestValue">--</span>
@@ -3261,28 +3260,28 @@ body {
 <div class="bottom-nav" id="bottomNav">
   <div class="nav-item active" onclick="showScreen('home')">
     <div class="nav-icon-wrap">
-      <img src="Icons/SVG/Home.svg" class="nav-icon-img" alt="">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </div>
     <span>Inicio</span>
     <div class="nav-active-dot"></div>
   </div>
   <div class="nav-item" onclick="showScreen('coach')">
     <div class="nav-icon-wrap">
-      <img src="Icons/SVG/Coach check.svg" class="nav-icon-img" alt="">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </div>
     <span>Coach</span>
     <div class="nav-active-dot"></div>
   </div>
   <div class="nav-item" onclick="showScreen('insights')">
     <div class="nav-icon-wrap">
-      <img src="Icons/SVG/Insigths.svg" class="nav-icon-img" alt="">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
     </div>
     <span>Progreso</span>
     <div class="nav-active-dot"></div>
   </div>
   <div class="nav-item" onclick="showScreen('settings')">
     <div class="nav-icon-wrap">
-      <img src="Icons/SVG/Settings.svg" class="nav-icon-img" alt="">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </div>
     <span>Yo</span>
     <div class="nav-active-dot"></div>
@@ -3535,7 +3534,7 @@ body {
     Comenzar desde cero
   </button>
   <button onclick="closeStartContextMenu();showRoutinesSheet();" style="width:100%;padding:14px 16px;background:var(--surface-raised);color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius-lg);font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:10px">
-    <img src="Icons/SVG/Rutinas.svg" class="app-svg-icon" style="width:24px;height:24px" alt="">
+    <svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     Cargar una rutina
   </button>
 </div>
@@ -6733,19 +6732,6 @@ function renderCatalog(filter) {
   // Level 1: Group list
   if (!catalogGroup) {
     titleEl.textContent = 'Seleccionar ejercicio';
-    const GROUP_ICONS = {
-      'Pecho':       'Icons/SVG/Pecho.svg',
-      'Espalda':     'Icons/SVG/Back.svg',
-      'Hombros':     'Icons/SVG/Shoulders.svg',
-      'Biceps':      'Icons/SVG/Biceps.svg',
-      'Triceps':     'Icons/SVG/Tricpes.svg',
-      'Piernas':     'Icons/SVG/Leg.svg',
-      'Gluteos':     'Icons/SVG/Glúteos.svg',
-      'Glúteos':     'Icons/SVG/Glúteos.svg',
-      'Abdomen':     'Icons/SVG/Core.svg',
-      'Cardio':      'Icons/SVG/Cardio.svg',
-      'Calistenia':  'Icons/SVG/Calistenia.svg',
-    };
     const MUSCLE_GROUP_COLORS = {
       'Pecho':       { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)' },
       'Espalda':     { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)' },
@@ -6759,25 +6745,30 @@ function renderCatalog(filter) {
       'Cardio':      { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
       'Calistenia':  { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
     };
-    function muscleIconFilter(color) {
-      const map = {
-        '#00E5FF': 'brightness(0) saturate(100%) invert(85%) sepia(68%) saturate(500%) hue-rotate(155deg) brightness(1.1)',
-        '#7B61FF': 'brightness(0) saturate(100%) invert(45%) sepia(60%) saturate(600%) hue-rotate(220deg) brightness(1.1)',
-        '#FFB800': 'brightness(0) saturate(100%) invert(75%) sepia(80%) saturate(700%) hue-rotate(10deg) brightness(1.05)',
-        '#00C896': 'brightness(0) saturate(100%) invert(65%) sepia(60%) saturate(500%) hue-rotate(130deg) brightness(1.1)',
+    function muscleGroupSvg(g, color) {
+      const c = color || 'var(--text-tertiary)';
+      const svgs = {
+        'Pecho':      `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+        'Espalda':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>`,
+        'Hombros':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+        'Biceps':     `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="6" y1="19" x2="18" y2="19"/></svg>`,
+        'Triceps':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`,
+        'Piernas':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+        'Glúteos':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+        'Gluteos':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+        'Abdomen':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+        'Cardio':     `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+        'Calistenia': `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>`,
       };
-      return map[color] || 'none';
+      return svgs[g] || `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="12" r="9"/></svg>`;
     }
     const groups = exerciseDB.map(g => g.group);
     if (customExercises.length) groups.push('Personalizados');
     html = groups.map(g => {
-      const iconSrc = GROUP_ICONS[g];
       const mc = MUSCLE_GROUP_COLORS[g];
-      // tile más opaco para que el color se vea bien a través del logo transparente
       const tileBg = mc ? mc.bg.replace(/[\d.]+\)$/, '0.18)') : 'rgba(255,255,255,0.08)';
-      const iconHtml = iconSrc
-        ? `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${tileBg};border:1px solid ${mc ? mc.bg.replace(/[\d.]+\)$/, '0.35)') : 'var(--border)'}"><img src="${iconSrc}" class="app-svg-icon" style="width:28px;height:28px;filter:${mc ? muscleIconFilter(mc.color) : 'none'}" alt=""></div>`
-        : `<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--text-tertiary);fill:none;stroke-width:1.8;flex-shrink:0"><circle cx="12" cy="12" r="9"/></svg>`;
+      const tileBorder = mc ? mc.bg.replace(/[\d.]+\)$/, '0.35)') : 'var(--border)';
+      const iconHtml = `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${tileBg};border:1px solid ${tileBorder}">${muscleGroupSvg(g, mc ? mc.color : undefined)}</div>`;
       return `<button class="group-item" data-group="${attr(g)}" onclick="showCatalogGroup(this.dataset.group)">
         <span style="display:flex;align-items:center;gap:12px">${iconHtml}<span>${g}</span></span>
         <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
