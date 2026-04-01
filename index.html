@@ -11272,7 +11272,6 @@ function showRoutinePreview() {
   // Aplicar descanso configurado en la rutina
   if (routine.default_rest_seconds) {
     restSeconds = routine.default_rest_seconds;
-    setRest(restSeconds);
   }
   // Marcar rutina como usada en Supabase (async, no bloquea)
   _markRoutineUsed(routine.id);
