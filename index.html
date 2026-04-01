@@ -2060,6 +2060,40 @@ body {
   font-family: var(--font); white-space: nowrap;
 }
 
+/* ─── COACH PROFILE SCREEN ───────────────────────────────────────────────── */
+#coachProfileScreen { display:none; flex-direction:column; height:100vh; height:100dvh; overflow:hidden; background:var(--bg); }
+#coachProfileScreen.active { display:flex; }
+.coach-profile-header { display:flex; align-items:center; gap:12px; padding:56px 20px 16px; flex-shrink:0; }
+.coach-profile-back { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); flex-shrink:0; }
+.coach-profile-header-title { font-size:17px; color:var(--text-primary); font-weight:500; letter-spacing:-0.3px; }
+.coach-profile-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.coach-profile-hero { position:relative; width:100%; height:400px; overflow:hidden; }
+.coach-profile-photo { width:100%; height:100%; object-fit:cover; object-position:center top; }
+.coach-profile-hero-gradient { position:absolute; bottom:0; left:0; right:0; height:200px; background:linear-gradient(to top, var(--bg) 0%, rgba(8,10,15,0.7) 50%, transparent 100%); }
+.coach-profile-ai-badge { position:absolute; top:16px; right:16px; background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.3); border-radius:20px; padding:4px 12px; font-size:11px; color:var(--primary); letter-spacing:0.5px; }
+.coach-profile-hero-name { position:absolute; bottom:24px; left:20px; }
+.coach-profile-name { font-size:36px; color:var(--text-primary); font-weight:700; letter-spacing:-1px; line-height:1; }
+.coach-profile-location { font-size:13px; color:rgba(240,242,245,0.5); margin-top:4px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }
+.coach-profile-online-dot { width:7px; height:7px; border-radius:50%; background:#22C55E; flex-shrink:0; }
+.coach-profile-content { padding:0 20px 40px; }
+.coach-profile-tags { display:flex; gap:8px; margin:20px 0; flex-wrap:wrap; }
+.coach-profile-tag { background:rgba(123,97,255,0.12); border:1px solid rgba(123,97,255,0.25); border-radius:20px; padding:6px 14px; font-size:12px; color:var(--accent2); letter-spacing:0.3px; }
+.coach-profile-tag.cyan { background:rgba(0,229,255,0.08); border-color:rgba(0,229,255,0.2); color:var(--primary); }
+.coach-profile-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:0 0 24px; }
+.coach-profile-stat { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px 12px; text-align:center; }
+.coach-profile-stat-num { display:block; font-size:22px; color:var(--text-primary); font-weight:700; letter-spacing:-0.5px; }
+.coach-profile-stat-label { display:block; font-size:10px; color:var(--text-secondary); margin-top:3px; letter-spacing:0.5px; text-transform:uppercase; }
+.coach-profile-section-label { font-size:10px; color:var(--text-secondary); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px; opacity:0.5; }
+.coach-profile-bio { font-size:14px; color:var(--text-secondary); line-height:1.7; margin-bottom:24px; }
+.coach-profile-divider { height:1px; background:var(--border); margin:0 0 24px; }
+.coach-profile-approach { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+.coach-profile-approach-item { display:flex; align-items:flex-start; gap:12px; }
+.coach-profile-approach-dot { width:6px; height:6px; border-radius:50%; background:var(--primary); margin-top:5px; flex-shrink:0; }
+.coach-profile-approach-text { font-size:13px; color:var(--text-secondary); line-height:1.5; }
+.coach-profile-quote { background:var(--surface2); border-left:2px solid var(--accent2); border-radius:0 12px 12px 0; padding:16px 18px; margin-bottom:28px; }
+.coach-profile-quote-text { font-size:14px; color:rgba(240,242,245,0.8); line-height:1.6; font-style:italic; }
+.coach-profile-cta { width:100%; background:var(--primary); border:none; border-radius:14px; padding:16px; font-size:15px; color:#080A0F; font-weight:700; cursor:pointer; letter-spacing:-0.3px; font-family:var(--font); }
+
 </style>
 </head>
 <body>
@@ -2568,7 +2602,7 @@ body {
       </div>
     </div>
     <div class="coach-message" id="coachDailyMessage" style="display:none"></div>
-    <button class="coach-chat-btn" id="coachChatBtn" onclick="showScreen('coach')" style="display:none">💬 Responderle a <span id="coachChatBtnName">tu coach</span> →</button>
+    <button class="coach-chat-btn" id="coachChatBtn" onclick="showCoachProfile()" style="display:none">💬 Responderle a <span id="coachChatBtnName">tu coach</span> →</button>
 
     <!-- Weekly Stats Grid -->
     <div class="weekly-stats-grid">
@@ -2794,13 +2828,22 @@ body {
     <div id="adjustRestOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140" onclick="closeAdjustRestSheet()"></div>
     <div id="adjustRestSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 36px;z-index:150">
       <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
-      <p style="font-size:13px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:16px">¿Olvidaste iniciar el timer? Resta segundos al descanso actual.</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
-        <button onclick="adjustRest(10)" style="padding:16px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--text-primary);cursor:pointer">−10s</button>
-        <button onclick="adjustRest(20)" style="padding:16px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--text-primary);cursor:pointer">−20s</button>
-        <button onclick="adjustRest(30)" style="padding:16px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--text-primary);cursor:pointer">−30s</button>
+      <!-- Cambiar tiempo base -->
+      <p style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Cambiar descanso base</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px">
+        <button onclick="setRestBaseline(45)"  class="adj-base-btn" data-val="45"  style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">45s</button>
+        <button onclick="setRestBaseline(60)"  class="adj-base-btn" data-val="60"  style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">60s</button>
+        <button onclick="setRestBaseline(90)"  class="adj-base-btn" data-val="90"  style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">90s</button>
+        <button onclick="setRestBaseline(120)" class="adj-base-btn" data-val="120" style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">120s</button>
       </div>
-      <button onclick="closeAdjustRestSheet()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancelar</button>
+      <!-- Restar al timer activo -->
+      <p style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Restar al timer actual</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <button onclick="adjustRest(10)" style="padding:14px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:18px;font-weight:800;color:var(--text-primary);cursor:pointer">−10s</button>
+        <button onclick="adjustRest(20)" style="padding:14px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:18px;font-weight:800;color:var(--text-primary);cursor:pointer">−20s</button>
+        <button onclick="adjustRest(30)" style="padding:14px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:18px;font-weight:800;color:var(--text-primary);cursor:pointer">−30s</button>
+      </div>
+      <button onclick="closeAdjustRestSheet()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cerrar</button>
     </div>
 
     <!-- REST ZONE -->
@@ -3201,6 +3244,58 @@ body {
   <div style="height:80px"></div>
 </div>
 
+<!-- COACH PROFILE SCREEN -->
+<div class="screen" id="coachProfileScreen">
+  <div class="coach-profile-header">
+    <button class="coach-profile-back" onclick="showScreen('home')">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="coach-profile-header-title">Perfil de entrenadora</span>
+  </div>
+  <div class="coach-profile-scroll">
+    <div class="coach-profile-hero">
+      <img class="coach-profile-photo" id="coachProfilePhoto" src="" alt="" />
+      <div class="coach-profile-hero-gradient"></div>
+      <div class="coach-profile-ai-badge">IA Coach</div>
+      <div class="coach-profile-hero-name">
+        <h1 class="coach-profile-name" id="coachProfileName">María</h1>
+        <p class="coach-profile-location" id="coachProfileLocation">
+          <span class="coach-profile-online-dot"></span>
+          <span id="coachProfileLocationText">Disponible ahora · Bogotá, CO</span>
+        </p>
+      </div>
+    </div>
+    <div class="coach-profile-content">
+      <div class="coach-profile-tags" id="coachProfileTags"></div>
+      <div class="coach-profile-stats">
+        <div class="coach-profile-stat">
+          <span class="coach-profile-stat-num" id="coachProfileExp">5+</span>
+          <span class="coach-profile-stat-label">Años exp.</span>
+        </div>
+        <div class="coach-profile-stat">
+          <span class="coach-profile-stat-num" id="coachProfileRating">4.9★</span>
+          <span class="coach-profile-stat-label">Valoración</span>
+        </div>
+        <div class="coach-profile-stat">
+          <span class="coach-profile-stat-num" id="coachProfileSessions">2.3k</span>
+          <span class="coach-profile-stat-label">Entrenos</span>
+        </div>
+      </div>
+      <div class="coach-profile-section-label">Sobre el coach</div>
+      <p class="coach-profile-bio" id="coachProfileBio"></p>
+      <div class="coach-profile-divider"></div>
+      <div class="coach-profile-section-label">Mi enfoque</div>
+      <div class="coach-profile-approach" id="coachProfileApproach"></div>
+      <div class="coach-profile-quote" id="coachProfileQuoteBlock">
+        <p class="coach-profile-quote-text" id="coachProfileQuote"></p>
+      </div>
+      <button class="coach-profile-cta" id="coachProfileCta" onclick="showScreen('coach')">
+        Hablar con <span id="coachProfileCtaName">María</span> 💬
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- COACH SCREEN -->
 <div class="screen" id="coachScreen">
   <!-- Header fijo -->
@@ -3283,7 +3378,7 @@ body {
     <span>Inicio</span>
     <div class="nav-active-dot"></div>
   </div>
-  <div class="nav-item" onclick="showScreen('coach')">
+  <div class="nav-item" onclick="showCoachProfile()">
     <div class="nav-icon-wrap">
       <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </div>
@@ -3904,10 +3999,62 @@ function aoraLogo(size = 'md') {
 
 // ─── COACHES DATA ────────────────────────────────────────────────────────────
 const COACHES = {
-  maria:  { name: 'María',  emoji: '👩🏽', country: 'Colombia', flag: '🇨🇴', specialty: 'HIIT & Funcional',       tone: 'energética' },
-  carlos: { name: 'Carlos', emoji: '👨🏽', country: 'México',   flag: '🇲🇽', specialty: 'Fuerza & Masa',          tone: 'directo'    },
-  andrea: { name: 'Andrea', emoji: '👩🏻', country: 'Argentina', flag: '🇦🇷', specialty: 'Bienestar integral',     tone: 'empática'   },
-  diego:  { name: 'Diego',  emoji: '👨🏾', country: 'Perú',     flag: '🇵🇪', specialty: 'Resiliencia & Calistenia', tone: 'sereno'   }
+  maria: {
+    name: 'María', emoji: '👩🏽', country: 'Colombia', flag: '🇨🇴', specialty: 'HIIT & Funcional', tone: 'energética',
+    photoUrl: 'images/coaches/maria.jpg',
+    bio: 'Entrenadora personal colombiana especializada en HIIT y entrenamiento funcional. Empecé en un pequeño gym de barrio y hoy acompaño a cientos de personas a moverse mejor.',
+    approach: [
+      'Celebro cada pequeño logro — los grandes cambios se construyen así.',
+      'Nunca prometo resultados imposibles ni ignoro tus limitaciones reales.',
+      'Análisis de datos reales: peso, volumen, progresión semana a semana.'
+    ],
+    quote: '¡Dale, que tú puedes! Cada repetición cuenta. Yo lo veo aunque tú no lo notes todavía.',
+    stats: { exp: '5+', rating: '4.9★', sessions: '2.3k' },
+    tags: ['HIIT', 'Funcional', 'Nutrición'],
+    location: 'Disponible ahora · Bogotá, CO'
+  },
+  carlos: {
+    name: 'Carlos', emoji: '👨🏽', country: 'México', flag: '🇲🇽', specialty: 'Fuerza & Masa', tone: 'directo',
+    photoUrl: 'images/coaches/carlos.jpg',
+    bio: 'Entrenador de fuerza y masa muscular mexicano. Datos, progresión y técnica. Sin excusas, sin magia — solo trabajo bien hecho.',
+    approach: [
+      'Periodización seria: cada semana construye sobre la anterior.',
+      'Técnica primero, peso después. Siempre.',
+      'Los datos no mienten: volumen, intensidad y recuperación medidos.'
+    ],
+    quote: 'El músculo no crece por accidente. Crece por presión calculada y descanso inteligente.',
+    stats: { exp: '7+', rating: '4.8★', sessions: '3.1k' },
+    tags: ['Fuerza', 'Hipertrofia', 'Periodización'],
+    location: 'Disponible ahora · Ciudad de México, MX'
+  },
+  andrea: {
+    name: 'Andrea', emoji: '👩🏻', country: 'Argentina', flag: '🇦🇷', specialty: 'Bienestar integral', tone: 'empática',
+    photoUrl: 'images/coaches/andrea.jpg',
+    bio: 'Entrenadora argentina de bienestar integral. Trabajo el cuerpo y la mente juntos porque no puedes tener uno sin el otro.',
+    approach: [
+      'Escucho primero. Tu cuerpo me habla antes de que tú lo hagas.',
+      'Integración mente-cuerpo: movilidad, respiración y fuerza van juntas.',
+      'Sin juicios, con adaptaciones reales para tu vida real.'
+    ],
+    quote: 'Tu cuerpo me habla. Vamos a escucharlo juntas.',
+    stats: { exp: '4+', rating: '4.9★', sessions: '1.8k' },
+    tags: ['Movilidad', 'Bienestar', 'Mindfulness'],
+    location: 'Disponible ahora · Buenos Aires, AR'
+  },
+  diego: {
+    name: 'Diego', emoji: '👨🏾', country: 'Perú', flag: '🇵🇪', specialty: 'Resiliencia & Calistenia', tone: 'sereno',
+    photoUrl: 'images/coaches/diego.jpg',
+    bio: 'Entrenador peruano de calistenia y resiliencia. Con poco puedes lograr mucho. La mentalidad es el primer músculo que hay que entrenar.',
+    approach: [
+      'El cuerpo como herramienta: sin gimnasio, sin excusas.',
+      'Mentalidad grit — la incomodidad es donde crece el progreso.',
+      'Nutrición ancestral y moderna: lo que te alimenta de verdad.'
+    ],
+    quote: 'El progreso no es lineal, pero es real. Yo lo sé.',
+    stats: { exp: '8+', rating: '4.7★', sessions: '2.9k' },
+    tags: ['Calistenia', 'Resistencia', 'Mentalidad'],
+    location: 'Disponible ahora · Lima, PE'
+  }
 };
 
 function getSelectedCoach() {
@@ -4449,6 +4596,68 @@ async function sendCoachMessage() {
   }
 }
 
+function showCoachProfile(coachId) {
+  const coach = coachId ? { id: coachId, ...COACHES[coachId] } : getSelectedCoach();
+  if (!coach) { showScreen('coach'); return; }
+
+  // Foto
+  const photoEl = document.getElementById('coachProfilePhoto');
+  if (photoEl) { photoEl.src = coach.photoUrl || ''; photoEl.alt = coach.name; }
+
+  // Header title
+  const titleEl = document.querySelector('.coach-profile-header-title');
+  const isFemale = coach.id === 'maria' || coach.id === 'andrea';
+  if (titleEl) titleEl.textContent = `Perfil de entrenador${isFemale ? 'a' : ''}`;
+
+  // Nombre y ubicación
+  const nameEl = document.getElementById('coachProfileName');
+  const locEl  = document.getElementById('coachProfileLocationText');
+  if (nameEl) nameEl.textContent = coach.name;
+  if (locEl)  locEl.textContent  = coach.location || 'Disponible ahora';
+
+  // Tags
+  const tagsEl = document.getElementById('coachProfileTags');
+  if (tagsEl && coach.tags) {
+    tagsEl.innerHTML = coach.tags.map(t => `<span class="coach-profile-tag">${t}</span>`).join('') +
+      `<span class="coach-profile-tag cyan">IA Coach</span>`;
+  }
+
+  // Stats
+  if (coach.stats) {
+    const expEl = document.getElementById('coachProfileExp');
+    const ratEl = document.getElementById('coachProfileRating');
+    const sesEl = document.getElementById('coachProfileSessions');
+    if (expEl) expEl.textContent = coach.stats.exp;
+    if (ratEl) ratEl.textContent = coach.stats.rating;
+    if (sesEl) sesEl.textContent = coach.stats.sessions;
+  }
+
+  // Bio
+  const bioEl = document.getElementById('coachProfileBio');
+  if (bioEl) bioEl.textContent = coach.bio || '';
+
+  // Approach
+  const appEl = document.getElementById('coachProfileApproach');
+  if (appEl && coach.approach) {
+    appEl.innerHTML = coach.approach.map(a =>
+      `<div class="coach-profile-approach-item">
+        <div class="coach-profile-approach-dot"></div>
+        <span class="coach-profile-approach-text">${a}</span>
+      </div>`
+    ).join('');
+  }
+
+  // Quote
+  const quoteEl = document.getElementById('coachProfileQuote');
+  if (quoteEl) quoteEl.textContent = `"${coach.quote || ''}"`;
+
+  // CTA
+  const ctaName = document.getElementById('coachProfileCtaName');
+  if (ctaName) ctaName.textContent = coach.name;
+
+  showScreen('coachProfile');
+}
+
 function initCoachChat() {
   const coach = getSelectedCoach();
 
@@ -4726,7 +4935,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, coach: 1, insights: 2, settings: 3 };
   if (map[name] !== undefined) { const ni = document.querySelectorAll('.nav-item')[map[name]]; if (ni) ni.classList.add('active'); }
-  const screenMap = { home:'homeScreen', coach:'coachScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen' };
+  const screenMap = { home:'homeScreen', coach:'coachScreen', coachProfile:'coachProfileScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
@@ -8090,8 +8299,30 @@ function skipRest() {
 }
 
 function openAdjustRestSheet() {
+  // Marcar el chip activo según restSeconds actual
+  document.querySelectorAll('.adj-base-btn').forEach(b => {
+    const active = parseInt(b.dataset.val) === restSeconds;
+    b.style.borderColor = active ? 'var(--text-primary)' : 'var(--border)';
+    b.style.color       = active ? 'var(--text-primary)' : 'var(--text-secondary)';
+    b.style.fontWeight  = active ? '800' : '700';
+  });
   document.getElementById('adjustRestOverlay').style.display = 'block';
   document.getElementById('adjustRestSheet').style.display = 'block';
+}
+function setRestBaseline(seconds) {
+  restSeconds = seconds;
+  document.getElementById('restIdleSeconds').textContent = seconds;
+  document.getElementById('customRestInput').value = seconds;
+  // Marcar chip seleccionado
+  document.querySelectorAll('.adj-base-btn').forEach(b => {
+    const active = parseInt(b.dataset.val) === seconds;
+    b.style.borderColor = active ? 'var(--text-primary)' : 'var(--border)';
+    b.style.color       = active ? 'var(--text-primary)' : 'var(--text-secondary)';
+    b.style.fontWeight  = active ? '800' : '700';
+  });
+  saveToStorage();
+  showToast(`Descanso cambiado a ${seconds}s`, 'success');
+  closeAdjustRestSheet();
 }
 function closeAdjustRestSheet() {
   document.getElementById('adjustRestOverlay').style.display = 'none';
@@ -11329,20 +11560,14 @@ function showRoutinePreview() {
   // Marcar rutina como usada (async, no bloquea)
   _markRoutineUsed(routine.id);
 
-  if (routine.default_rest_seconds) {
-    // Ya tiene descanso configurado — saltarse el config sheet e ir directo al modal de modo
-    restSeconds = routine.default_rest_seconds;
-    const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
-    showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! Descanso: ${routine.default_rest_seconds}s`, 'info');
-    setTimeout(() => {
-      document.getElementById('modeModal').classList.add('active');
-    }, 600);
-  } else {
-    // Sin descanso configurado — mostrar config sheet para que el usuario lo elija
-    document.getElementById('configOverlay').classList.add('active');
-    setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
-    suggestRoutineForToday();
-  }
+  // Aplicar descanso de la rutina si está configurado, si no usar el último valor usado
+  if (routine.default_rest_seconds) restSeconds = routine.default_rest_seconds;
+  // Siempre saltarse el config sheet — restSeconds ya tiene un valor válido
+  const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
+  showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! Descanso: ${restSeconds}s`, 'info');
+  setTimeout(() => {
+    document.getElementById('modeModal').classList.add('active');
+  }, 600);
 }
 
 // ─── ÚLTIMO ENTRENAMIENTO ────────────────────────────────────
