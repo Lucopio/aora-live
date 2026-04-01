@@ -10674,13 +10674,19 @@ function hideLoadingOverlay() {
 function initializeApp() {
   history.pushState({ screen: 'home' }, '');
   loadFromStorage();
+
+  // CRITICAL: Siempre inicializar Supabase, incluso si el usuario saltó el auth.
+  // Necesario para que el chat del coach y otras features de red funcionen.
+  initSupabase();
+
+  // Si el usuario prefiere saltar auth, mostrar home inmediatamente.
+  // initSupabase() sigue corriendo en background (no bloqueante).
   if (localStorage.getItem('gymtracker_skip_auth')) {
     hideLoadingOverlay();
     showScreen('home');
     restoreSessionState(); // #7 — restaurar entrenamiento activo si lo hay
-  } else {
-    initSupabase(); // hideLoadingOverlay() se llama dentro de initSupabase
   }
+  // Si NO saltó auth, initSupabase() maneja el flujo (auth screen o home según sesión)
 }
 initializeApp();
 
