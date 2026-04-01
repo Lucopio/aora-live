@@ -12,7 +12,8 @@
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(*)"
     ],
     "deny": [
       ".env",

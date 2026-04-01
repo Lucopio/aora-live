@@ -436,9 +436,9 @@ body {
 .ex-badge {
   width: 24px; height: 24px; background: var(--primary); border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--mono); font-size: 13px; font-weight: 700; color: white;
+  font-family: var(--mono); font-size: 13px; font-weight: 700; color: #080A0F;
 }
-.exercise-pill span { font-size: 11px; font-weight: 600; color: var(--primary); }
+.exercise-pill span { font-size: 11px; font-weight: 600; color: var(--text-primary); }
 .avg-rest-pill {
   display: flex; align-items: center; gap: 5px;
   padding: 5px 12px; background: rgba(255,255,255,0.06); border-radius: var(--radius-full);
@@ -476,13 +476,13 @@ body {
 .rest-zone { width: 100%; margin-bottom: 16px; }
 
 .rest-idle {
-  width: 100%; padding: 20px; background: #F0F4FF; border: 2px dashed var(--primary);
+  width: 100%; padding: 20px; background: var(--surface2); border: 2px dashed var(--border);
   border-radius: var(--radius); cursor: pointer; display: flex;
   align-items: center; justify-content: center; gap: 12px; transition: all 0.2s;
 }
-.rest-idle:active { transform: scale(0.97); background: var(--primary-light); }
-.rest-idle svg { width: 28px; height: 28px; stroke: var(--primary); fill: none; stroke-width: 2; }
-.rest-idle-text h4 { font-size: 15px; font-weight: 700; color: var(--primary); }
+.rest-idle:active { transform: scale(0.97); background: var(--surface); }
+.rest-idle svg { width: 28px; height: 28px; stroke: var(--text-secondary); fill: none; stroke-width: 2; }
+.rest-idle-text h4 { font-size: 15px; font-weight: 700; color: var(--text-secondary); }
 .rest-idle-text p { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
 
 .rest-active {
@@ -499,11 +499,11 @@ body {
 }
 .rest-active-label {
   font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-  color: var(--primary); display: flex; align-items: center; gap: 6px; transition: color 0.3s;
+  color: var(--text-secondary); display: flex; align-items: center; gap: 6px; transition: color 0.3s;
 }
 .rest-active-label.alert { color: var(--danger); }
 .rest-active-label .rest-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--primary);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--text-secondary);
   animation: pulse 1s infinite; transition: background 0.3s;
 }
 .rest-active-label.alert .rest-dot { background: var(--danger); }
@@ -1225,7 +1225,7 @@ body {
 }
 .set-input-group input:focus { border-color: var(--primary); }
 .add-set-btn {
-  padding: 12px 14px; background: var(--primary); color:#080A0F; border: none;
+  padding: 12px 14px; background: var(--surface2); color: var(--text-primary); border: 1px solid var(--border);
   border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px;
   font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.15s;
   align-self: flex-end;
@@ -2039,13 +2039,13 @@ body {
 .coach-alert-avatar { font-size: 32px; line-height: 1; flex-shrink: 0; }
 .coach-alert-body { flex: 1; }
 .coach-alert-name {
-  font-size: 11px; font-weight: 600; color: var(--primary);
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
   text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
 }
 .coach-alert-text { font-size: 14px; color: var(--text-primary); line-height: 1.45; }
 .coach-alert-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 .coach-alert-dismiss {
-  font-size: 13px; font-weight: 600; color: var(--primary);
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
   background: none; border: none; padding: 0; cursor: pointer; font-family: var(--font);
 }
 .coach-alert-warmup-btn {
@@ -2632,10 +2632,10 @@ body {
       Nuevo Entrenamiento
     </button>
 
-    <!-- No tengo tiempo -->
+    <!-- Rutinas Express -->
     <button onclick="openQuickWorkout()" style="width:100%;margin-bottom:10px;padding:13px 16px;background:linear-gradient(135deg,#1a2a1a,#0d1a0d);border:1px solid #2d5a2d;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;color:#4ade80;cursor:pointer;display:flex;align-items:center;gap:10px" id="quickWorkoutBtn">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      No tengo tiempo · 15–20 min
+      Rutinas Express · máx 30 min
     </button>
 
     <!-- Rutinas sugeridas -->
@@ -2684,6 +2684,7 @@ body {
         Salir
       </button>
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
+      <button onclick="showScreen('coach')" id="workoutCoachBtn" style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-full);font-family:var(--font);font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;flex-shrink:0"><span id="workoutCoachEmoji">👩🏽</span><span>Coach</span></button>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
       <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
@@ -2805,7 +2806,7 @@ body {
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
-        <div class="icon-tile-sm" style="background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.2)"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--primary)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="icon-tile-sm" style="background:var(--surface2);border-color:var(--border)"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary);opacity:0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div class="rest-idle-text">
           <h4>Iniciar Descanso</h4>
           <p>Temporizador: <span id="restIdleSeconds">60</span>s configurados</p>
@@ -2815,7 +2816,7 @@ body {
         <div class="rest-active-header">
           <div class="rest-active-label" id="restActiveLabel"><div class="rest-dot"></div>DESCANSO</div>
           <div style="display: flex; gap: 8px;">
-            <button class="skip-link" onclick="markRestReady()" style="background: var(--primary); color:#080A0F; font-weight: 600;">Listo</button>
+            <button class="skip-link" onclick="markRestReady()" style="background: var(--surface2); color:var(--text-primary); font-weight: 600; border: 1px solid var(--border);">Listo</button>
             <button class="skip-link" onclick="openAdjustRestSheet()">−s</button>
             <button class="skip-link" onclick="skipRest()">Saltar</button>
           </div>
@@ -3419,9 +3420,9 @@ body {
   <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4ade80" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    <h3 style="font-size:18px;font-weight:700;color:var(--text-primary);margin:0">No tengo tiempo</h3>
+    <h3 style="font-size:18px;font-weight:700;color:var(--text-primary);margin:0">Rutinas Express</h3>
   </div>
-  <p style="font-size:13px;color:var(--text-secondary);margin:0 0 20px">Elige una rutina rápida · 100% peso corporal</p>
+  <p style="font-size:13px;color:var(--text-secondary);margin:0 0 20px">5 rutinas sin equipo · máx 30 min · Elige la que encaje en tu tiempo</p>
   <div id="quickWorkoutList" style="display:flex;flex-direction:column;gap:10px"></div>
 </div>
 
@@ -4191,6 +4192,8 @@ function updateCoachSpotlight() {
   if (avatarEl) avatarEl.textContent = coach.emoji;
   if (nameEl) nameEl.textContent = coach.name + ' ' + coach.flag;
   if (btnName) btnName.textContent = coach.name;
+  const workoutCoachEmoji = document.getElementById('workoutCoachEmoji');
+  if (workoutCoachEmoji) workoutCoachEmoji.textContent = coach.emoji;
 
   // Update message
   const msg = getCoachMessage(coach.id, {});
@@ -4230,10 +4233,30 @@ function closeCoachChangeSheet() {
   setTimeout(() => document.getElementById('coachChangeOverlay').classList.remove('open'), 350);
 }
 function selectCoachFromChat(coachId) {
+  const prevCoach = getSelectedCoach();
+
+  // Transferir contexto si el coach nuevo no tiene historial
+  if (prevCoach && prevCoach.id && prevCoach.id !== coachId) {
+    const prevHistory = getChatHistory(prevCoach.id);
+    const newHistory  = getChatHistory(coachId);
+
+    if (prevHistory.length > 0 && newHistory.length === 0) {
+      const newCoach = COACHES[coachId];
+      // Llevar los últimos 8 mensajes del coach anterior al nuevo (contexto para el LLM)
+      const contextMsgs = prevHistory.slice(-8);
+      // Saludo de traspaso del nuevo coach
+      const handoffMsg = {
+        role: 'assistant',
+        content: `¡Hola! Soy ${newCoach.name} 👋 ${prevCoach.name} me puso al día con todo lo que han trabajado juntos — ya estoy al tanto de tus objetivos y tu rutina. Desde mi enfoque en ${newCoach.specialty}, ¿en qué te puedo ayudar hoy?`,
+        ts: new Date().toISOString()
+      };
+      saveChatHistory(coachId, [...contextMsgs, handoffMsg]);
+    }
+  }
+
   saveSelectedCoach(coachId);
   updateCoachSpotlight();
   closeCoachChangeSheet();
-  // Re-init chat for new coach
   setTimeout(() => initCoachChat(), 360);
 }
 
@@ -4797,17 +4820,8 @@ function confirmAbandonWorkout() {
   showScreen('home');
 }
 
-// Called from group picker buttons on warmup screen
-function selectWarmupGroup(group) {
-  // Highlight selected button
-  document.querySelectorAll('.wu-group-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.wu-group-btn[data-group="${group}"]`)?.classList.add('active');
-  // Show recommendations for chosen group
-  const data = getWarmupForMuscleGroup(group);
-  if (data) renderWarmupContent(group, data);
-
-  // Do's and Don'ts por grupo muscular (con tips expandibles)
-  const dosAndDonts = {
+// Do's and Don'ts por grupo muscular — usada tanto en auto-detección como en selector manual
+const WU_DOS_DONTS = {
     'Torso': {
       dos: [
         { text: 'Moviliza articulación del hombro en todas direcciones', tip: 'El hombro es la articulación más móvil del cuerpo. Círculos amplios hacia adelante y atrás lubrican la bursa y calientan el manguito rotador antes de cualquier carga.' },
@@ -4942,22 +4956,32 @@ function selectWarmupGroup(group) {
     }
   };
 
+function renderWarmupDosAndDonts(group) {
   const dosBox    = document.getElementById('warmupDosBox');
   const dosList   = document.getElementById('warmupDosList');
   const dontsList = document.getElementById('warmupDontsList');
-  if (dosAndDonts[group]) {
+  if (WU_DOS_DONTS[group]) {
     const renderItem = (item, prefix, i) => {
       const tipId  = `${prefix}_${i}`;
       const tipBtn = item.tip ? `<button id="${tipId}_btn" onclick="toggleWuTip('${tipId}')" style="margin-left:6px;padding:1px 7px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle;font-family:var(--font)">¿qué es?</button>` : '';
       const tipBox = item.tip ? `<div id="${tipId}" style="display:none;margin-top:6px;padding:8px 10px;background:var(--bg);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.5">${item.tip}</div>` : '';
       return `<li>${item.text}${tipBtn}${tipBox}</li>`;
     };
-    dosList.innerHTML   = dosAndDonts[group].dos.map((item, i)   => renderItem(item, 'wuDo',   i)).join('');
-    dontsList.innerHTML = dosAndDonts[group].donts.map((item, i) => renderItem(item, 'wuDont', i)).join('');
+    dosList.innerHTML   = WU_DOS_DONTS[group].dos.map((item, i)   => renderItem(item, 'wuDo',   i)).join('');
+    dontsList.innerHTML = WU_DOS_DONTS[group].donts.map((item, i) => renderItem(item, 'wuDont', i)).join('');
     dosBox.style.display = 'block';
   } else {
     dosBox.style.display = 'none';
   }
+}
+
+// Called from group picker buttons on warmup screen
+function selectWarmupGroup(group) {
+  document.querySelectorAll('.wu-group-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.wu-group-btn[data-group="${group}"]`)?.classList.add('active');
+  const data = getWarmupForMuscleGroup(group);
+  if (data) renderWarmupContent(group, data);
+  renderWarmupDosAndDonts(group);
 }
 
 function getWarmupForMuscleGroup(muscleGroup) {
@@ -4979,6 +5003,7 @@ function renderWarmupRecommendations() {
     picker.style.display = 'none';
     titleEl.textContent  = `Calentamiento · ${muscleGroup}`;
     renderWarmupContent(muscleGroup, data);
+    renderWarmupDosAndDonts(muscleGroup);
   } else {
     // Show group picker for manual selection
     recEl.style.display  = 'none';
@@ -5227,7 +5252,7 @@ function launchWorkout() {
     if (pendingExercises.length > 0) {
       const first = pendingExercises.shift();
       updatePendingPill();
-      selectExercise(first.name, first.equipment);
+      selectExercise(first.name, first.equipment, first.targetSets || 0);
     } else {
       openCatalog();
     }
@@ -6037,6 +6062,7 @@ const QR_ICONS = {
   zap:      `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
   muscle:   `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="6" y1="19" x2="18" y2="19"/></svg>`,
   legs:     `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+  home:     `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
 };
 
 const QUICK_ROUTINES = [
@@ -6092,6 +6118,22 @@ const QUICK_ROUTINES = [
       { name: 'Elevacion de piernas',equip: 'corporal' },
       { name: 'Russian twist',       equip: 'corporal' },
       { name: 'Plancha lateral',     equip: 'corporal' },
+    ],
+  },
+  {
+    name: 'Casa sin equipo',
+    duration: 30,
+    icon: QR_ICONS.home,
+    desc: 'Full body en casa · 20–35 min',
+    exercises: [
+      { name: 'Sentadilla',          equip: 'corporal' },
+      { name: 'Flexiones',           equip: 'corporal' },
+      { name: 'Zancadas',            equip: 'corporal' },
+      { name: 'Fondos de triceps',   equip: 'corporal' },
+      { name: 'Hip thrust',          equip: 'corporal' },
+      { name: 'Plancha',             equip: 'corporal' },
+      { name: 'Crunch',              equip: 'corporal' },
+      { name: 'Superman',            equip: 'corporal' },
     ],
   },
 ];
@@ -6552,6 +6594,7 @@ let customExercises = []; // ejercicios personalizados guardados entre sesiones
 let supersetActive = false;
 let supersetGroupCounter = 0;
 let pendingExercises = []; // cola de ejercicios para rutina sugerida
+let currentTargetSets = 0; // series pre-configuradas en la rutina para el ejercicio actual
 let suggestedRoutine = null;
 let catalogGroup = null;  // null = lista de grupos, string = ejercicios de ese grupo
 
@@ -6892,7 +6935,8 @@ function setWeightUnit(unit) {
   document.getElementById('weightLabel').textContent = `PESO (${unit})`;
 }
 
-function selectExercise(name, equip) {
+function selectExercise(name, equip, targetSets = 0) {
+  currentTargetSets = targetSets;
   _unilateralPendingSide = false;
   // #9 — Si hay series del ejercicio ACTUAL y el usuario elige uno DIFERENTE, preguntar qué hacer
   if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
@@ -7133,7 +7177,10 @@ function addSet() {
 
 function renderSets() {
   const list = document.getElementById('setsList');
-  if (!currentExerciseSets.length) {
+  const completedWorkSets = currentExerciseSets.filter(s => !s.is_warmup_set).length;
+  const pendingSlots = Math.max(0, currentTargetSets - completedWorkSets);
+
+  if (!currentExerciseSets.length && !pendingSlots) {
     list.innerHTML = '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Registra tu primera serie</p>';
     return;
   }
@@ -7165,6 +7212,16 @@ function renderSets() {
       </div>`);
     }
   });
+  // Ghost slots para series pendientes de la rutina
+  if (pendingSlots > 0) {
+    for (let p = 0; p < pendingSlots; p++) {
+      const setNum = completedWorkSets + p + 1;
+      parts.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;border:1.5px dashed rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);margin-bottom:0;opacity:0.6">
+        <span style="font-size:13px;font-weight:600;color:var(--text-tertiary)">Serie ${setNum}</span>
+        <span style="font-size:12px;color:var(--text-tertiary)">Ingresa peso · reps y toca + Serie</span>
+      </div>`);
+    }
+  }
   list.innerHTML = parts.join('');
 }
 
@@ -7265,7 +7322,7 @@ function nextExercise() {
   if (pendingExercises.length > 0) {
     const next = pendingExercises.shift();
     updatePendingPill();
-    selectExercise(next.name, next.equipment);
+    selectExercise(next.name, next.equipment, next.targetSets || 0);
   } else {
     if (!supersetActive) supersetGroupCounter = 0;
     openCatalog();
@@ -11268,17 +11325,24 @@ function toggleExPickerItem(name) {
 function showRoutinePreview() {
   const routine = currentSelectedRoutine;
   // Cargar ejercicios al queue — equipment vacío, el usuario lo elige en workout
-  pendingExercises = routine.exercises.map(ex => ({ name: ex.name, equipment: '' }));
-  // Aplicar descanso configurado en la rutina
-  if (routine.default_rest_seconds) {
-    restSeconds = routine.default_rest_seconds;
-  }
-  // Marcar rutina como usada en Supabase (async, no bloquea)
+  pendingExercises = routine.exercises.map(ex => ({ name: ex.name, equipment: '', targetSets: ex.sets || 3 }));
+  // Marcar rutina como usada (async, no bloquea)
   _markRoutineUsed(routine.id);
-  // Abrir config sheet de descanso (flujo normal)
-  document.getElementById('configOverlay').classList.add('active');
-  setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
-  suggestRoutineForToday();
+
+  if (routine.default_rest_seconds) {
+    // Ya tiene descanso configurado — saltarse el config sheet e ir directo al modal de modo
+    restSeconds = routine.default_rest_seconds;
+    const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
+    showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! Descanso: ${routine.default_rest_seconds}s`, 'info');
+    setTimeout(() => {
+      document.getElementById('modeModal').classList.add('active');
+    }, 600);
+  } else {
+    // Sin descanso configurado — mostrar config sheet para que el usuario lo elija
+    document.getElementById('configOverlay').classList.add('active');
+    setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
+    suggestRoutineForToday();
+  }
 }
 
 // ─── ÚLTIMO ENTRENAMIENTO ────────────────────────────────────
