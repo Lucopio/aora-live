@@ -2595,6 +2595,9 @@ body {
         <button class="ob-action-btn" id="obExploreBtn" onclick="obExploreRoutines()" style="background:var(--primary);color:#080A0F;padding:12px 16px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
           <span>🔍</span> Explorar rutinas
         </button>
+        <button class="ob-action-btn" id="obCustomRoutineBtn" onclick="obSaveAndGoToRoutine()" style="display:none;background:var(--primary);color:#080A0F;padding:12px 16px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;align-items:center;justify-content:center;gap:8px">
+          <span>✏️</span> Guardar y crear mi rutina →
+        </button>
         <button class="ob-action-btn" onclick="obSkipRoutines()" style="background:var(--surface);color:var(--text-primary);padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">
           Saltear por ahora
         </button>
@@ -3351,7 +3354,7 @@ body {
 <div class="screen" id="coachScreen">
   <!-- Header fijo -->
   <div class="coach-chat-header">
-    <button class="coach-chat-back" onclick="showScreen('home')">
+    <button class="coach-chat-back" onclick="workoutStartTime ? showScreen('workout') : showScreen('home')">
       <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
     <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0;-webkit-tap-highlight-color:transparent" onclick="showCoachProfile()">
@@ -7271,6 +7274,12 @@ function addCustomExercise() {
   }
   // Llevar al usuario al grupo Personalizados para que seleccione el equipo
   showCatalogGroup('Personalizados');
+  // Seleccionar automáticamente el ejercicio recién creado para continuar el entrenamiento
+  if (workoutStartTime) {
+    _doSelectExercise(name, '');
+  } else {
+    selectExercise(name, '');
+  }
 }
 
 function setWeightUnit(unit) {
@@ -8254,8 +8263,16 @@ function startScienceRoutine(level, time, dayIdx) {
 }
 
 function changeExercise() {
-  skipRest(); // Capturar descanso antes de limpiar sets
-  currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
+  // Guardar series actuales antes de cambiar ejercicio
+  if (currentExerciseName && currentExerciseSets.length > 0) {
+    completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+    exerciseCount = completedExercises.length;
+    document.getElementById('exBadge').textContent = exerciseCount;
+  }
+  // NO cancelar el rest timer — el descanso es global a la sesión
+  currentExerciseName = '';
+  currentEquipment = '';
+  currentExerciseSets = [];
   isUnilateral = false;
   const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
@@ -8538,7 +8555,10 @@ function confirmRPESelection() {
 
 function selectRPE(value) {
   if (currentExerciseSets.length > 0) {
-    currentExerciseSets[currentExerciseSets.length - 1].rpe = value;
+    const targetIdx = [...currentExerciseSets].map((s, i) => ({s, i}))
+      .filter(({s}) => !s.is_warmup_set && (s.rpe === null || s.rpe === undefined))
+      .pop()?.i ?? (currentExerciseSets.length - 1);
+    currentExerciseSets[targetIdx].rpe = value;
   }
   const key = exKey(currentExerciseName, currentEquipment);
   if (lastWeights[key]) lastWeights[key].rpe = value;
@@ -9445,9 +9465,8 @@ function speakCoachText(text) {
 function _speakExerciseDos(exerciseName) {
   if (voiceAlertMode === 'ninguna') return;
   if (!window.speechSynthesis) return;
-  const dosEl = document.getElementById('exInfoDos');
-  if (!dosEl) return;
-  const dosItems = Array.from(dosEl.querySelectorAll('li, div, p')).slice(0, 2).map(el => el.textContent.trim()).filter(Boolean);
+  const info = EXERCISE_INFO[exerciseName];
+  const dosItems = (info?.tips || []).slice(0, 2).map(t => t.trim()).filter(Boolean);
   if (!dosItems.length) return;
   const coach = getSelectedCoach();
   const coachId = coach ? coach.id : 'maria';
@@ -10901,6 +10920,8 @@ function selectRoutineType(type) {
     typeLabel.textContent = 'Rutinas por nivel';
     typeDesc.textContent = 'Seleccionaste explorar entrenamientos según tu experiencia. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.';
     document.getElementById('obExploreBtn').style.display = 'flex';
+    const customBtn = document.getElementById('obCustomRoutineBtn');
+    if (customBtn) customBtn.style.display = 'none';
   } else if (type === 'goal') {
     goalBox.style.background = 'rgba(0,229,255,0.1)';
     goalBox.style.borderColor = 'var(--primary)';
@@ -10908,6 +10929,8 @@ function selectRoutineType(type) {
     typeLabel.textContent = 'Rutinas por objetivo';
     typeDesc.textContent = 'Seleccionaste explorar entrenamientos por meta. Puedes verlos ahora o hacerlo después desde la pantalla de inicio.';
     document.getElementById('obExploreBtn').style.display = 'flex';
+    const customBtn = document.getElementById('obCustomRoutineBtn');
+    if (customBtn) customBtn.style.display = 'none';
   } else if (type === 'custom') {
     customBox.style.background = 'rgba(0,229,255,0.1)';
     customBox.style.borderColor = 'var(--primary)';
@@ -10915,6 +10938,8 @@ function selectRoutineType(type) {
     typeLabel.textContent = 'Mi rutina actual';
     typeDesc.textContent = 'Crearás tu propia rutina desde cero. Tu coach IA la revisará y hará recomendaciones personalizadas.';
     document.getElementById('obExploreBtn').style.display = 'none';
+    const customBtn = document.getElementById('obCustomRoutineBtn');
+    if (customBtn) customBtn.style.display = 'flex';
   }
 
   selectionDiv.style.display = 'none';
@@ -10941,6 +10966,13 @@ function obSaveAndStart() {
   } else {
     obSave();
   }
+}
+function obSaveAndGoToRoutine() {
+  obSave();
+  setTimeout(() => {
+    showScreen('home');
+    setTimeout(() => showRoutinesSheet(), 400);
+  }, 300);
 }
 
 // Selección de pill genérica: field = 'sex'|'days'|'activity'
@@ -11586,6 +11618,7 @@ function _dragStart(e, idx) {
       const moved = _editorExercises.splice(_dragSrcIdx, 1)[0];
       _editorExercises.splice(_dragOverIdx, 0, moved);
       renderEditorExercises();
+      saveToStorage();
     } else {
       rows().forEach(r => r.classList.remove('dragging', 'drag-over'));
     }
