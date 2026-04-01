@@ -4649,29 +4649,38 @@ async function sendCoachMessage() {
 
   try {
     // ── 2. Obtener token válido ───────────────────────────────────────────────
+    console.log('[coach] paso 1: getSession...');
     let { data: { session } } = await sb.auth.getSession();
+    console.log('[coach] sesión:', session ? 'OK uid=' + session.user?.id?.slice(0,8) : 'null');
 
     // Recuperar sesión si está ausente (skip_auth)
     if (!session && localStorage.getItem('gymtracker_skip_auth')) {
-      const { data: anonData } = await sb.auth.signInAnonymously();
+      console.log('[coach] sin sesión, creando anónima...');
+      const { data: anonData, error: anonErr } = await sb.auth.signInAnonymously();
+      console.log('[coach] anon result:', anonErr ? anonErr.message : 'OK');
       if (anonData?.session) { session = anonData.session; currentUser = anonData.user; }
     }
     if (!session) throw new Error('Sin sesión — recarga la app');
 
-    // Refrescar si expira en < 60 s
-    if ((session.expires_at ?? 0) - Math.floor(Date.now() / 1000) < 60) {
-      const { data: r } = await sb.auth.refreshSession();
-      if (r?.session) session = r.session;
-    }
     const token = session.access_token;
-    if (!token) throw new Error('Token inválido — recarga la app');
+    if (!token) throw new Error('Token vacío — recarga la app');
+    console.log('[coach] token OK, llamando edge function...');
 
-    // ── 3. Llamar Edge Function ──────────────────────────────────────────────
-    const res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ coachId: coach.id, message: text, history: historyToSend, context: buildChatContext() })
-    });
+    // ── 3. Llamar Edge Function con timeout de 20s ───────────────────────────
+    const ctrl = new AbortController();
+    const fetchTimeout = setTimeout(() => ctrl.abort(), 20000);
+    let res;
+    try {
+      res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coachId: coach.id, message: text, history: historyToSend, context: buildChatContext() })
+      });
+    } finally {
+      clearTimeout(fetchTimeout);
+    }
+    console.log('[coach] HTTP', res.status);
 
     let data;
     const rawText = await res.text();
