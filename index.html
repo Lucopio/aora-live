@@ -10712,86 +10712,107 @@ function closeRoutineSelector(event) {
   }
 }
 
-async function loadUserRoutines() {
+// ─── Rutinas: localStorage-first (Supabase = sync opcional) ──
+const ROUTINES_LS_KEY = 'aora_routines';
+
+function _getLocalRoutines() {
+  try { return JSON.parse(localStorage.getItem(ROUTINES_LS_KEY) || '[]'); }
+  catch { return []; }
+}
+function _saveLocalRoutines(routines) {
+  localStorage.setItem(ROUTINES_LS_KEY, JSON.stringify(routines));
+}
+
+function _renderRoutineCards(routines) {
   const container  = document.getElementById('myRoutinesList');
   const emptyState = document.getElementById('emptyRoutinesState');
-  container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-tertiary);font-size:13px">Cargando...</div>';
+  if (!routines || routines.length === 0) {
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+  emptyState.style.display = 'none';
+  container.innerHTML = routines.map(r => {
+    const exCount  = r.exercises?.length || 0;
+    const setCount = (r.exercises || []).reduce((s, ex) => s + (ex.sets || 0), 0);
+    const tag = r.muscle_group ? `<span class="routine-card-tag">${r.muscle_group}</span>` : '';
+    return `
+      <div class="routine-card" onclick="selectRoutineFromModal('${r.id}')">
+        <div class="routine-card-header">
+          <div class="routine-card-title">${r.name}</div>
+          ${tag}
+        </div>
+        <div class="routine-card-meta">${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} · Usado ${r.use_count || 0} veces</div>
+        <div class="routine-card-actions">
+          <button class="routine-card-btn" onclick="event.stopPropagation();editRoutine('${r.id}')">Editar</button>
+          <button class="routine-card-btn primary" onclick="event.stopPropagation();selectRoutineFromModal('${r.id}')">Usar esta rutina</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Sync background: push local routines to Supabase (non-blocking, silent)
+async function _syncRoutinesToSupabase() {
+  if (!currentUser || !sb) return;
+  try {
+    const local = _getLocalRoutines().filter(r => r.user_id === currentUser.id);
+    if (local.length === 0) return;
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000));
+    const query   = sb.from('workout_templates').select('id').eq('user_id', currentUser.id);
+    const { data: existing } = await Promise.race([query, timeout]).catch(() => ({ data: [] }));
+    const existingIds = new Set((existing || []).map(r => r.id));
+    for (const r of local) {
+      if (existingIds.has(r.id)) {
+        await sb.from('workout_templates').update({
+          name: r.name, muscle_group: r.muscle_group, exercises: r.exercises,
+          scheduled_days: r.scheduled_days, scheduled_time: r.scheduled_time,
+          default_rest_seconds: r.default_rest_seconds,
+          last_used_at: r.last_used_at, use_count: r.use_count,
+        }).eq('id', r.id);
+      } else {
+        await sb.from('workout_templates').insert({
+          id: r.id, user_id: r.user_id, name: r.name, muscle_group: r.muscle_group,
+          exercises: r.exercises, scheduled_days: r.scheduled_days,
+          scheduled_time: r.scheduled_time, default_rest_seconds: r.default_rest_seconds,
+          created_at: r.created_at, last_used_at: r.last_used_at, use_count: r.use_count,
+        });
+      }
+    }
+  } catch { /* silencioso */ }
+}
+
+function loadUserRoutines() {
+  const container  = document.getElementById('myRoutinesList');
+  const emptyState = document.getElementById('emptyRoutinesState');
+  container.innerHTML = '';
   emptyState.style.display = 'none';
 
   // "Repetir último entrenamiento" — usa savedWorkouts (local, siempre disponible)
   _renderLastWorkoutCard();
 
-  if (!currentUser) {
-    container.innerHTML = '';
-    emptyState.style.display = 'block';
-    return;
-  }
+  // Leer de localStorage al instante (sin red)
+  const local = _getLocalRoutines()
+    .filter(r => !currentUser || r.user_id === currentUser.id || !r.user_id)
+    .sort((a, b) => {
+      const ta = a.last_used_at || a.created_at || '';
+      const tb = b.last_used_at || b.created_at || '';
+      return tb.localeCompare(ta);
+    });
 
-  try {
-    // Timeout guard — don't hang forever if Supabase is unreachable
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000));
-    const query   = sb.from('workout_templates').select('*')
-      .eq('user_id', currentUser.id)
-      .order('last_used_at', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false });
+  _renderRoutineCards(local);
 
-    const { data: routines, error } = await Promise.race([query, timeout]);
-
-    if (error) throw error;
-
-    if (!routines || routines.length === 0) {
-      container.innerHTML = '';
-      emptyState.style.display = 'block';
-      return;
-    }
-
-    emptyState.style.display = 'none';
-    container.innerHTML = routines.map(r => {
-      const exCount  = r.exercises.length;
-      const setCount = r.exercises.reduce((s, ex) => s + (ex.sets || 0), 0);
-      const tag = r.muscle_group ? `<span class="routine-card-tag">${r.muscle_group}</span>` : '';
-      return `
-        <div class="routine-card" onclick="selectRoutineFromModal('${r.id}')">
-          <div class="routine-card-header">
-            <div class="routine-card-title">${r.name}</div>
-            ${tag}
-          </div>
-          <div class="routine-card-meta">${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} · Usado ${r.use_count || 0} veces</div>
-          <div class="routine-card-actions">
-            <button class="routine-card-btn" onclick="event.stopPropagation();editRoutine('${r.id}')">Editar</button>
-            <button class="routine-card-btn primary" onclick="event.stopPropagation();selectRoutineFromModal('${r.id}')">Usar esta rutina</button>
-          </div>
-        </div>`;
-    }).join('');
-
-  } catch (err) {
-    console.error('Error loading routines:', err);
-    container.innerHTML = '';
-    emptyState.style.display = 'block';
-    // Only show toast for non-timeout errors (timeout is silent)
-    if (err.message !== 'timeout') showToast('Error al cargar rutinas', 'error');
-  }
+  // Sync to Supabase en background (no bloquea la UI)
+  _syncRoutinesToSupabase();
 }
 
-async function selectRoutineFromModal(routineId) {
-  try {
-    const { data: routine, error } = await sb
-      .from('workout_templates')
-      .select('*')
-      .eq('id', routineId)
-      .single();
-
-    if (error) throw error;
-
-    currentSelectedRoutine = routine;
-    updateRoutineBanner(routine);
-    closeRoutineSelector();
-    showToast(`✓ Rutina "${routine.name}" seleccionada`, 'success');
-
-  } catch (err) {
-    console.error('Error selecting routine:', err);
-    showToast('Error al seleccionar rutina', 'error');
-  }
+function selectRoutineFromModal(routineId) {
+  const routines = _getLocalRoutines();
+  const routine  = routines.find(r => r.id === routineId);
+  if (!routine) { showToast('Rutina no encontrada', 'error'); return; }
+  currentSelectedRoutine = routine;
+  updateRoutineBanner(routine);
+  closeRoutineSelector();
+  showToast(`✓ Rutina "${routine.name}" seleccionada`, 'success');
 }
 
 function updateRoutineBanner(routine) {
@@ -10853,7 +10874,7 @@ const ROUTINE_GROUP_MAP = {
 };
 const DAYS_ES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
-async function openRoutineEditor(routineId = null) {
+function openRoutineEditor(routineId = null) {
   closeRoutineSelector();
   _editingRoutineId   = routineId;
   _editorExercises    = [];
@@ -10870,26 +10891,17 @@ async function openRoutineEditor(routineId = null) {
   document.getElementById('editorSaveBtn').disabled = true;
 
   if (routineId) {
-    try {
-      const { data, error } = await sb
-        .from('workout_templates')
-        .select('*')
-        .eq('id', routineId)
-        .single();
-      if (error) throw error;
-      document.getElementById('routineNameInput').value   = data.name;
-      document.getElementById('routineGroupSelect').value = data.muscle_group || '';
-      _editorExercises = data.exercises.map(ex => ({ name: ex.name, sets: ex.sets || 3 }));
-      _editorDays      = Array.isArray(data.scheduled_days) ? data.scheduled_days : [];
-      _editorRest      = data.default_rest_seconds || 120;
-      document.getElementById('routineTimeInput').value = data.scheduled_time || '';
-      _pickerGroupFilter = data.muscle_group || '';
-      document.getElementById('deleteRoutineSection').style.display = 'block';
-    } catch (err) {
-      console.error('Error loading routine for edit:', err);
-      showToast('Error al cargar la rutina', 'error');
-      return;
-    }
+    // Leer de localStorage (sin red)
+    const data = _getLocalRoutines().find(r => r.id === routineId);
+    if (!data) { showToast('Rutina no encontrada', 'error'); return; }
+    document.getElementById('routineNameInput').value   = data.name;
+    document.getElementById('routineGroupSelect').value = data.muscle_group || '';
+    _editorExercises = (data.exercises || []).map(ex => ({ name: ex.name, sets: ex.sets || 3 }));
+    _editorDays      = Array.isArray(data.scheduled_days) ? data.scheduled_days : [];
+    _editorRest      = data.default_rest_seconds || 120;
+    document.getElementById('routineTimeInput').value = data.scheduled_time || '';
+    _pickerGroupFilter = data.muscle_group || '';
+    document.getElementById('deleteRoutineSection').style.display = 'block';
   }
 
   renderEditorExercises();
@@ -11007,7 +11019,7 @@ function removeEditorExercise(index) {
   renderEditorExercises();
 }
 
-async function saveRoutine() {
+function saveRoutine() {
   const name        = document.getElementById('routineNameInput').value.trim();
   const muscleGroup = document.getElementById('routineGroupSelect').value;
   const schedTime   = document.getElementById('routineTimeInput').value || null;
@@ -11019,90 +11031,71 @@ async function saveRoutine() {
   btn.disabled = true;
   btn.textContent = 'Guardando…';
 
-  const _sbOp = (query) => Promise.race([
-    query,
-    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
-  ]);
-
   try {
-    if (!currentUser) throw new Error('Debes iniciar sesión para guardar rutinas');
+    const routines = _getLocalRoutines();
+    const now = new Date().toISOString();
 
-    // Payload completo (requiere columnas opcionales en la tabla)
-    const fullPayload = {
-      user_id:              currentUser.id,
-      name,
-      muscle_group:         muscleGroup || null,
-      exercises:            _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
-      scheduled_days:       _editorDays.length > 0 ? _editorDays : null,
-      scheduled_time:       schedTime,
-      default_rest_seconds: _editorRest,
-    };
-
-    // Payload mínimo (solo columnas base — funciona aunque el ALTER TABLE no se haya corrido)
-    const minPayload = {
-      user_id:      currentUser.id,
-      name,
-      muscle_group: muscleGroup || null,
-      exercises:    _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
-    };
-
-    let error;
-    const runQuery = (payload) => _editingRoutineId
-      ? sb.from('workout_templates').update(payload).eq('id', _editingRoutineId)
-      : sb.from('workout_templates').insert(payload);
-
-    ({ error } = await _sbOp(runQuery(fullPayload)));
-
-    // Si falla por columna inexistente, reintentar con payload mínimo
-    if (error && (error.message?.includes('column') || error.code === '42703')) {
-      console.warn('saveRoutine: columnas opcionales no existen, reintentando con payload mínimo');
-      ({ error } = await _sbOp(runQuery(minPayload)));
+    if (_editingRoutineId) {
+      // Actualizar rutina existente
+      const idx = routines.findIndex(r => r.id === _editingRoutineId);
+      if (idx >= 0) {
+        routines[idx] = { ...routines[idx], name, muscle_group: muscleGroup || null,
+          exercises: _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
+          scheduled_days: _editorDays.length > 0 ? _editorDays : null,
+          scheduled_time: schedTime, default_rest_seconds: _editorRest };
+      }
+    } else {
+      // Nueva rutina — generar ID local
+      const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      routines.unshift({ id, user_id: currentUser?.id || null, name,
+        muscle_group: muscleGroup || null,
+        exercises: _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
+        scheduled_days: _editorDays.length > 0 ? _editorDays : null,
+        scheduled_time: schedTime, default_rest_seconds: _editorRest,
+        created_at: now, last_used_at: null, use_count: 0 });
     }
 
-    if (error) throw error;
-
+    _saveLocalRoutines(routines);
     showToast(_editingRoutineId ? '✓ Rutina actualizada' : '✓ Rutina guardada', 'success');
     closeRoutineEditor();
     if (document.getElementById('routineSelectorModal').style.display === 'flex') {
       loadUserRoutines();
     }
+    // Sync a Supabase en background (no bloquea)
+    _syncRoutinesToSupabase();
+
   } catch (err) {
-    console.error('Error saving routine:', err);
-    const msg = err.message === 'timeout'
-      ? 'Tiempo de espera agotado — verifica tu conexión'
-      : err.message === 'Debes iniciar sesión para guardar rutinas'
-        ? err.message
-        : 'Error al guardar. Intenta de nuevo.';
-    showToast(msg, 'error');
+    console.error('Error saving routine locally:', err);
+    showToast('Error al guardar', 'error');
     btn.disabled = false;
     btn.textContent = 'Guardar';
   }
 }
 
-async function confirmDeleteRoutine() {
+function confirmDeleteRoutine() {
   if (!_editingRoutineId) return;
   if (!confirm('¿Eliminar esta rutina? Esta acción no se puede deshacer.')) return;
 
-  try {
-    const { error } = await sb
-      .from('workout_templates')
-      .delete()
-      .eq('id', _editingRoutineId);
-    if (error) throw error;
+  // Eliminar de localStorage inmediatamente
+  const routines = _getLocalRoutines().filter(r => r.id !== _editingRoutineId);
+  _saveLocalRoutines(routines);
 
-    // Si era la rutina seleccionada, limpiar el banner
-    if (currentSelectedRoutine?.id === _editingRoutineId) {
-      currentSelectedRoutine = null;
-      updateRoutineBanner(null);
-    }
-    showToast('Rutina eliminada', 'info');
-    closeRoutineEditor();
-    if (document.getElementById('routineSelectorModal').style.display === 'flex') {
-      loadUserRoutines();
-    }
-  } catch (err) {
-    console.error('Error deleting routine:', err);
-    showToast('Error al eliminar', 'error');
+  // Si era la rutina seleccionada, limpiar el banner
+  if (currentSelectedRoutine?.id === _editingRoutineId) {
+    currentSelectedRoutine = null;
+    updateRoutineBanner(null);
+  }
+  showToast('Rutina eliminada', 'info');
+  closeRoutineEditor();
+  if (document.getElementById('routineSelectorModal').style.display === 'flex') {
+    loadUserRoutines();
+  }
+
+  // Eliminar de Supabase en background (no bloquea)
+  if (sb && currentUser) {
+    sb.from('workout_templates').delete().eq('id', _editingRoutineId).then(() => {}).catch(() => {});
   }
 }
 
@@ -11268,19 +11261,18 @@ function repeatLastWorkout() {
   suggestRoutineForToday();
 }
 
-async function _markRoutineUsed(routineId) {
+function _markRoutineUsed(routineId) {
   if (!routineId) return;
-  try {
-    const { data: current } = await sb
-      .from('workout_templates')
-      .select('use_count')
-      .eq('id', routineId)
-      .single();
-    await sb
-      .from('workout_templates')
-      .update({ last_used_at: new Date().toISOString(), use_count: (current?.use_count || 0) + 1 })
-      .eq('id', routineId);
-  } catch (e) { /* silencioso — no es crítico */ }
+  // Actualizar localStorage inmediatamente
+  const routines = _getLocalRoutines();
+  const idx = routines.findIndex(r => r.id === routineId);
+  if (idx >= 0) {
+    routines[idx].last_used_at = new Date().toISOString();
+    routines[idx].use_count    = (routines[idx].use_count || 0) + 1;
+    _saveLocalRoutines(routines);
+  }
+  // Sync a Supabase en background
+  _syncRoutinesToSupabase();
 }
 
 </script>
