@@ -10327,9 +10327,17 @@ function translateAuthError(msg) {
   return msg;
 }
 
-function continueWithoutAccount() {
+async function continueWithoutAccount() {
   localStorage.setItem('gymtracker_skip_auth', 'true');
-  currentUser = null;
+  // Crear sesión anónima real para que la Edge Function de coach-chat acepte las peticiones
+  try {
+    if (sb) {
+      const { data, error } = await sb.auth.signInAnonymously();
+      if (!error && data?.user) {
+        currentUser = data.user;
+      }
+    }
+  } catch(e) { /* si falla, seguir sin sesión */ }
   updateAccountUI();
   showScreen('home');
 }
