@@ -3303,13 +3303,15 @@ body {
     <button class="coach-chat-back" onclick="showScreen('home')">
       <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
-    <div class="coach-chat-header-avatar" id="chatHeaderAvatar">
-      <span id="chatCoachEmoji">🤖</span>
-      <div class="coach-online-dot"></div>
-    </div>
-    <div class="coach-chat-header-text">
-      <div class="coach-chat-header-name" id="chatCoachName">Coach IA</div>
-      <div class="coach-chat-header-sub" id="chatCoachSub">Entrenador personal</div>
+    <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0;-webkit-tap-highlight-color:transparent" onclick="showCoachProfile()">
+      <div class="coach-chat-header-avatar" id="chatHeaderAvatar">
+        <span id="chatCoachEmoji">🤖</span>
+        <div class="coach-online-dot"></div>
+      </div>
+      <div class="coach-chat-header-text">
+        <div class="coach-chat-header-name" id="chatCoachName">Coach IA</div>
+        <div class="coach-chat-header-sub" id="chatCoachSub">Entrenador personal</div>
+      </div>
     </div>
     <button class="coach-change-btn" onclick="openCoachChangeSheet()">Cambiar</button>
   </div>
@@ -3378,7 +3380,7 @@ body {
     <span>Inicio</span>
     <div class="nav-active-dot"></div>
   </div>
-  <div class="nav-item" onclick="showCoachProfile()">
+  <div class="nav-item" onclick="handleCoachNavTap()">
     <div class="nav-icon-wrap">
       <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </div>
@@ -4518,7 +4520,10 @@ function updateChatCounter() {
 }
 
 async function sendCoachMessage() {
-  if (!currentUser) return;
+  if (!currentUser) {
+    appendChatBubble('system', 'Sin sesión activa. Recarga la app e intenta de nuevo.');
+    return;
+  }
   if (!canSendMessage()) { updateChatCounter(); return; }
 
   const input = document.getElementById('chatInput');
@@ -4589,6 +4594,16 @@ async function sendCoachMessage() {
     hideTypingIndicator();
     console.error('coach-chat error:', err);
     appendChatBubble('system', String(err.message || err));
+  }
+}
+
+function handleCoachNavTap() {
+  const count = parseInt(localStorage.getItem('aora_coach_nav_count') || '0');
+  localStorage.setItem('aora_coach_nav_count', String(count + 1));
+  if (count < 2) {
+    showCoachProfile();
+  } else {
+    showScreen('coach');
   }
 }
 
@@ -10232,7 +10247,7 @@ function initSupabase() {
         }
         hideLoadingOverlay();
         if (document.getElementById('authScreen').classList.contains('active') || !document.querySelector('.screen.active')) {
-          if (userProfile.onboarding_done) {
+          if (userProfile.onboarding_done || localStorage.getItem('gymtracker_skip_auth')) {
             showScreen('home');
             restoreSessionState();
           } else {
