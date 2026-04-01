@@ -3778,6 +3778,13 @@ body {
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorRestChips">
         <!-- rendered by renderEditorRestChips() -->
       </div>
+      <!-- Input personalizado, visible solo cuando se elige "Otro" -->
+      <div id="editorRestCustomRow" style="display:none;margin-top:10px;display:none;align-items:center;gap:10px">
+        <input id="editorRestCustomInput" type="number" min="10" max="600" placeholder="Ej: 75"
+          style="width:90px;background:var(--surface2);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font);font-size:15px;font-weight:700;color:var(--text-primary);outline:none;color-scheme:dark"
+          oninput="applyCustomRest(this.value)">
+        <span style="font-size:13px;color:var(--text-secondary)">segundos</span>
+      </div>
     </div>
 
     <!-- Ejercicios -->
@@ -10917,18 +10924,43 @@ function toggleDayChip(day) {
 }
 
 const REST_CHIP_VALUES = [30, 60, 90, 120, 180, 240];
+let _editorRestCustom = false; // true cuando el usuario eligió "Otro"
 
 function renderEditorRestChips() {
   const container = document.getElementById('editorRestChips');
   if (!container) return;
-  container.innerHTML = REST_CHIP_VALUES.map(s =>
-    `<button class="day-chip${_editorRest === s ? ' active' : ''}" onclick="setEditorRest(${s})">${s}s</button>`
-  ).join('');
+  const isCustom = !REST_CHIP_VALUES.includes(_editorRest);
+  container.innerHTML =
+    REST_CHIP_VALUES.map(s =>
+      `<button class="day-chip${!isCustom && _editorRest === s ? ' active' : ''}" onclick="setEditorRest(${s})">${s}s</button>`
+    ).join('') +
+    `<button class="day-chip${isCustom ? ' active' : ''}" onclick="setEditorRestCustomMode()">Otro</button>`;
+
+  const customRow = document.getElementById('editorRestCustomRow');
+  if (customRow) {
+    customRow.style.display = isCustom ? 'flex' : 'none';
+    if (isCustom) {
+      const inp = document.getElementById('editorRestCustomInput');
+      if (inp && !inp.value) inp.value = _editorRest;
+    }
+  }
 }
 
 function setEditorRest(seconds) {
   _editorRest = seconds;
   renderEditorRestChips();
+}
+
+function setEditorRestCustomMode() {
+  // Activar modo custom — poner un valor inicial si no hay uno fuera del preset
+  if (REST_CHIP_VALUES.includes(_editorRest)) _editorRest = 75; // default custom
+  renderEditorRestChips();
+  setTimeout(() => document.getElementById('editorRestCustomInput')?.focus(), 50);
+}
+
+function applyCustomRest(val) {
+  const n = parseInt(val, 10);
+  if (n >= 10 && n <= 600) _editorRest = n;
 }
 
 function onRoutineGroupChange() {
@@ -10987,10 +11019,16 @@ async function saveRoutine() {
   btn.disabled = true;
   btn.textContent = 'Guardando…';
 
-  try {
-    if (!currentUser) throw new Error('Debes iniciar sesión');
+  const _sbOp = (query) => Promise.race([
+    query,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
+  ]);
 
-    const payload = {
+  try {
+    if (!currentUser) throw new Error('Debes iniciar sesión para guardar rutinas');
+
+    // Payload completo (requiere columnas opcionales en la tabla)
+    const fullPayload = {
       user_id:              currentUser.id,
       name,
       muscle_group:         muscleGroup || null,
@@ -11000,17 +11038,27 @@ async function saveRoutine() {
       default_rest_seconds: _editorRest,
     };
 
+    // Payload mínimo (solo columnas base — funciona aunque el ALTER TABLE no se haya corrido)
+    const minPayload = {
+      user_id:      currentUser.id,
+      name,
+      muscle_group: muscleGroup || null,
+      exercises:    _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
+    };
+
     let error;
-    if (_editingRoutineId) {
-      ({ error } = await sb
-        .from('workout_templates')
-        .update(payload)
-        .eq('id', _editingRoutineId));
-    } else {
-      ({ error } = await sb
-        .from('workout_templates')
-        .insert(payload));
+    const runQuery = (payload) => _editingRoutineId
+      ? sb.from('workout_templates').update(payload).eq('id', _editingRoutineId)
+      : sb.from('workout_templates').insert(payload);
+
+    ({ error } = await _sbOp(runQuery(fullPayload)));
+
+    // Si falla por columna inexistente, reintentar con payload mínimo
+    if (error && (error.message?.includes('column') || error.code === '42703')) {
+      console.warn('saveRoutine: columnas opcionales no existen, reintentando con payload mínimo');
+      ({ error } = await _sbOp(runQuery(minPayload)));
     }
+
     if (error) throw error;
 
     showToast(_editingRoutineId ? '✓ Rutina actualizada' : '✓ Rutina guardada', 'success');
@@ -11020,7 +11068,12 @@ async function saveRoutine() {
     }
   } catch (err) {
     console.error('Error saving routine:', err);
-    showToast('Error al guardar: ' + (err.message || ''), 'error');
+    const msg = err.message === 'timeout'
+      ? 'Tiempo de espera agotado — verifica tu conexión'
+      : err.message === 'Debes iniciar sesión para guardar rutinas'
+        ? err.message
+        : 'Error al guardar. Intenta de nuevo.';
+    showToast(msg, 'error');
     btn.disabled = false;
     btn.textContent = 'Guardar';
   }
