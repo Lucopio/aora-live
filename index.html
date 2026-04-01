@@ -2788,7 +2788,7 @@ body {
     <!-- REST ZONE -->
     <div class="rest-zone" id="restZone">
       <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
-        <div class="icon-tile-sm" style="background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.2)"><img src="Icons/SVG/Timer.svg" style="width:22px;height:22px;object-fit:contain" alt=""></div>
+        <div class="icon-tile-sm" style="background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.2)"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--primary)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div class="rest-idle-text">
           <h4>Iniciar Descanso</h4>
           <p>Temporizador: <span id="restIdleSeconds">60</span>s configurados</p>
@@ -2955,7 +2955,7 @@ body {
 
     <!-- IA: Análisis y Recomendaciones -->
     <div class="insights-card" id="aiInsightsCard">
-      <div class="ai-section-title" style="display:flex;align-items:center;gap:6px"><img src="Icons/SVG/Insigths.svg" style="width:13px;height:13px;object-fit:contain" alt=""> Análisis con IA</div>
+      <div class="ai-section-title" style="display:flex;align-items:center;gap:6px"><svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--primary)"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Análisis con IA</div>
 
       <!-- Estado: Botón para generar -->
       <div id="aiGenerateState">
@@ -3123,9 +3123,9 @@ body {
       <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
         <div class="setting-left"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg><span>Objetivo de entrenamiento</span></div>
         <div style="display:flex;gap:8px;width:100%">
-          <button id="focusStrength" onclick="setTrainingFocus('strength',this)" class="focus-btn active" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--primary);color:#080A0F;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><img src="Icons/SVG/Biceps.svg" style="width:13px;height:13px;object-fit:contain" alt=""> Fuerza</button>
-          <button id="focusHypertrophy" onclick="setTrainingFocus('hypertrophy',this)" class="focus-btn" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface-raised);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><img src="Icons/SVG/Calentamiento.svg" style="width:13px;height:13px;object-fit:contain" alt=""> Hipertrofia</button>
-          <button id="focusEndurance" onclick="setTrainingFocus('endurance',this)" class="focus-btn" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface-raised);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><img src="Icons/SVG/Cardio.svg" style="width:13px;height:13px;object-fit:contain" alt=""> Resistencia</button>
+          <button id="focusStrength" onclick="setTrainingFocus('strength',this)" class="focus-btn active" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--primary);color:#080A0F;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="6" y1="19" x2="18" y2="19"/></svg> Fuerza</button>
+          <button id="focusHypertrophy" onclick="setTrainingFocus('hypertrophy',this)" class="focus-btn" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface-raised);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Hipertrofia</button>
+          <button id="focusEndurance" onclick="setTrainingFocus('endurance',this)" class="focus-btn" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface-raised);color:var(--text-primary);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Resistencia</button>
         </div>
       </div>
 
@@ -3442,17 +3442,17 @@ body {
     <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:14px">¿Cuál es tu nivel de experiencia?</div>
     <div class="wiz-level-grid">
       <div class="wiz-tile" id="wTileBeginner" onclick="wizardSelectLevel('beginner')">
-        <div class="icon-tile-sm"><img src="Icons/SVG/Principiante.svg" style="width:28px;height:28px;object-fit:contain" alt=""></div>
+        <div class="icon-tile-sm"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <span class="wiz-tile-name">Principiante</span>
         <span class="wiz-tile-sub">Primeros 6 meses</span>
       </div>
       <div class="wiz-tile" id="wTileIntermediate" onclick="wizardSelectLevel('intermediate')">
-        <div class="icon-tile-sm"><img src="Icons/SVG/Intermedio.svg" style="width:28px;height:28px;object-fit:contain" alt=""></div>
+        <div class="icon-tile-sm"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
         <span class="wiz-tile-name">Intermedio</span>
         <span class="wiz-tile-sub">1–3 años de gym</span>
       </div>
       <div class="wiz-tile" id="wTileAdvanced" onclick="wizardSelectLevel('advanced')">
-        <div class="icon-tile-sm"><img src="Icons/SVG/Avanzado.svg" style="width:28px;height:28px;object-fit:contain" alt=""></div>
+        <div class="icon-tile-sm"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div>
         <span class="wiz-tile-name">Avanzado</span>
         <span class="wiz-tile-sub">3+ años, split</span>
       </div>
@@ -3654,7 +3654,7 @@ body {
       <p id="catalogExCount">0 ejercicios completados</p>
     </div>
     <div class="catalog-search">
-      <img src="Icons/SVG/Search.svg" class="catalog-search-icon" style="width:18px;height:18px;object-fit:contain" alt="">
+      <svg class="icon catalog-search-icon" viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--text-tertiary)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="catalogSearchInput" placeholder="Buscar ejercicio..." oninput="filterExercises(this.value)">
     </div>
     <div id="exerciseList"></div>
@@ -6008,11 +6008,18 @@ function dismissTutorial() {
 }
 
 // ─── Quick Home Routines ("No tengo tiempo") ─────────────────
+const QR_ICONS = {
+  timer:    `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  zap:      `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  muscle:   `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="6" y1="19" x2="18" y2="19"/></svg>`,
+  legs:     `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+};
+
 const QUICK_ROUTINES = [
   {
     name: 'Full body express',
     duration: 15,
-    icon: 'Icons/SVG/Timer.svg',
+    icon: QR_ICONS.timer,
     desc: 'Cuerpo completo · Sin equipo',
     exercises: [
       { name: 'Sentadilla',          equip: 'corporal' },
@@ -6026,7 +6033,7 @@ const QUICK_ROUTINES = [
   {
     name: 'HIIT cardio',
     duration: 15,
-    icon: 'Icons/SVG/Calentamiento.svg',
+    icon: QR_ICONS.zap,
     desc: 'Alta intensidad · Sin equipo',
     exercises: [
       { name: 'Burpees',             equip: 'corporal' },
@@ -6039,7 +6046,7 @@ const QUICK_ROUTINES = [
   {
     name: 'Tren superior',
     duration: 20,
-    icon: 'Icons/SVG/Biceps.svg',
+    icon: QR_ICONS.muscle,
     desc: 'Pecho, espalda, hombros · Sin equipo',
     exercises: [
       { name: 'Fondos en paralelas', equip: 'corporal' },
@@ -6052,7 +6059,7 @@ const QUICK_ROUTINES = [
   {
     name: 'Core + piernas',
     duration: 20,
-    icon: 'Icons/SVG/Leg.svg',
+    icon: QR_ICONS.legs,
     desc: 'Piernas y abdomen · Sin equipo',
     exercises: [
       { name: 'Sentadilla',          equip: 'corporal' },
@@ -6781,7 +6788,7 @@ function renderCatalog(filter) {
   // Level 2: Exercise list for selected group
   titleEl.textContent = catalogGroup;
   html = `<button class="catalog-back-btn" onclick="backToCatalogGroups()">
-    <img src="Icons/SVG/Back.svg" style="width:20px;height:20px;object-fit:contain" alt="">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     Grupos musculares
   </button>`;
   if (catalogGroup === 'Personalizados') {
@@ -8627,7 +8634,7 @@ function openQuickWorkout() {
   list.innerHTML = QUICK_ROUTINES.map((r, i) => `
     <button onclick="startQuickRoutine(${i})" style="width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font);transition:border-color 0.15s" onmouseenter="this.style.borderColor='#4ade80'" onmouseleave="this.style.borderColor='var(--border)'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <div class="app-icon-tile" style="width:48px;height:48px;flex-shrink:0"><img src="${r.icon}" class="app-svg-icon" style="width:38px;height:38px" alt=""></div>
+        <div class="app-icon-tile" style="width:48px;height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${r.icon}</div>
         <span style="font-size:15px;font-weight:700;color:var(--text-primary)">${r.name}</span>
         <span style="margin-left:auto;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,0.1);padding:3px 8px;border-radius:6px">${r.duration} min</span>
       </div>
