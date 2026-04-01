@@ -4001,7 +4001,7 @@ function aoraLogo(size = 'md') {
 const COACHES = {
   maria: {
     name: 'María', emoji: '👩🏽', country: 'Colombia', flag: '🇨🇴', specialty: 'HIIT & Funcional', tone: 'energética',
-    photoUrl: 'images/coaches/maria.png',
+    photoUrl: 'Images/coaches/maria.png',
     bio: 'Entrenadora personal colombiana especializada en HIIT y entrenamiento funcional. Empecé en un pequeño gym de barrio y hoy acompaño a cientos de personas a moverse mejor.',
     approach: [
       'Celebro cada pequeño logro — los grandes cambios se construyen así.',
@@ -4015,7 +4015,7 @@ const COACHES = {
   },
   carlos: {
     name: 'Carlos', emoji: '👨🏽', country: 'México', flag: '🇲🇽', specialty: 'Fuerza & Masa', tone: 'directo',
-    photoUrl: 'images/coaches/carlos.jpg',
+    photoUrl: 'Images/coaches/carlos.jpg',
     bio: 'Entrenador de fuerza y masa muscular mexicano. Datos, progresión y técnica. Sin excusas, sin magia — solo trabajo bien hecho.',
     approach: [
       'Periodización seria: cada semana construye sobre la anterior.',
@@ -4029,7 +4029,7 @@ const COACHES = {
   },
   andrea: {
     name: 'Andrea', emoji: '👩🏻', country: 'Argentina', flag: '🇦🇷', specialty: 'Bienestar integral', tone: 'empática',
-    photoUrl: 'images/coaches/andrea.jpg',
+    photoUrl: 'Images/coaches/andrea.jpg',
     bio: 'Entrenadora argentina de bienestar integral. Trabajo el cuerpo y la mente juntos porque no puedes tener uno sin el otro.',
     approach: [
       'Escucho primero. Tu cuerpo me habla antes de que tú lo hagas.',
@@ -4043,7 +4043,7 @@ const COACHES = {
   },
   diego: {
     name: 'Diego', emoji: '👨🏾', country: 'Perú', flag: '🇵🇪', specialty: 'Resiliencia & Calistenia', tone: 'sereno',
-    photoUrl: 'images/coaches/diego.jpg',
+    photoUrl: 'Images/coaches/diego.jpg',
     bio: 'Entrenador peruano de calistenia y resiliencia. Con poco puedes lograr mucho. La mentalidad es el primer músculo que hay que entrenar.',
     approach: [
       'El cuerpo como herramienta: sin gimnasio, sin excusas.',
@@ -4295,28 +4295,24 @@ function getCoachMessage(coachKey, userData) {
 
   // Generar mensaje según coach y contexto
   if (coach.tone === 'energética') { // María
-    if (daysSinceLast >= 3) return `¡Ey! Llevas ${daysSinceLast} días sin verte por aquí. Tu cuerpo ya está listo para moverse. ¡Vamos con todo hoy! 💪🏽`;
+    if (sessions === 0) return `¡Hola! Soy María 👋 Qué bueno verte por aquí. ¿Cómo te sientes hoy? Cuéntame, ¡estoy lista para ayudarte! 💪🏽`;
     if (thisVol > prevVol && prevVol > 0) return `¡Brutal! Esta semana ya subiste ${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen vs la semana pasada. Eso es progreso real. ¡Sigamos!`;
-    if (sessions === 0) return `¡Nuevo inicio de semana! Empieza fuerte hoy y el resto de la semana fluirá. ¿Lista? 🚀`;
-    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. ¡Vas por buen camino! Cada entrenamiento cuenta. 🔥`;
+    return `¡Hola! ${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana — ¡vas muy bien! ¿Qué vamos a trabajar hoy? 🔥`;
   }
   if (coach.tone === 'directo') { // Carlos
-    if (daysSinceLast >= 3) return `${daysSinceLast} días sin entrenar. El músculo no espera. Hoy vuelves, sin excusas.`;
+    if (sessions === 0) return `Carlos aquí. ¿Qué vamos a trabajar hoy? Dime tu objetivo y te doy el plan.`;
     if (thisVol > prevVol && prevVol > 0) return `Volumen +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% esta semana. Eso es lo que quiero ver. Mantén el nivel.`;
-    if (sessions === 0) return `Semana nueva. Oportunidad nueva. Entra, levanta, supérate.`;
-    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Bien. Pero puedes más. ¿Listo para subir el peso hoy?`;
+    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Bien. ¿En qué te puedo ayudar hoy?`;
   }
   if (coach.tone === 'empática') { // Andrea
-    if (daysSinceLast >= 3) return `Hola 🌸 Llevas unos días de descanso — y eso también es parte del proceso. Cuando te sientas lista, aquí estoy para acompañarte.`;
+    if (sessions === 0) return `Hola 🌸 Soy Andrea. ¿Cómo estás hoy? Estoy aquí para acompañarte, sin presiones. Cuéntame lo que necesites.`;
     if (thisVol > prevVol && prevVol > 0) return `¡Qué semana más bonita! Tu volumen creció y eso refleja tu dedicación. Recuerda descansar bien esta noche 💙`;
-    if (sessions === 0) return `Nuevo comienzo de semana. Sin presiones. Muévete hoy a tu ritmo, que eso ya es mucho.`;
-    return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Estás construyendo algo sólido, paso a paso. Orgullosa de ti 💪`;
+    return `Hola 🌸 ${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Estás construyendo algo sólido. ¿En qué te puedo ayudar hoy?`;
   }
   // Diego (sereno)
-  if (daysSinceLast >= 3) return `${daysSinceLast} días de recuperación. Tu cuerpo habló y escuchaste. Ahora, cuando estés listo, el camino sigue.`;
+  if (sessions === 0) return `Hola. Soy Diego. Estoy aquí cuando estés listo. ¿Qué necesitas hoy?`;
   if (thisVol > prevVol && prevVol > 0) return `El progreso es silencioso pero constante. Esta semana lo demuestra: +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen. Bien hecho.`;
-  if (sessions === 0) return `La semana es larga. El primer paso, el más importante. Empieza cuando estés listo.`;
-  return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. La consistencia construye cuerpos. Sigue así.`;
+  return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. La consistencia construye cuerpos. ¿En qué te ayudo hoy?`;
 }
 
 function updateCoachSpotlight() {
@@ -10255,12 +10251,21 @@ function initSupabase() {
     sb.auth.getSession().then(({ data: { session } }) => {
       // Solo ocultar overlay cuando NO hay sesión — si hay sesión, onAuthStateChange lo maneja
       if (!session) {
-        hideLoadingOverlay();
         if (!localStorage.getItem('gymtracker_skip_auth')) {
+          hideLoadingOverlay();
           showScreen('auth');
         } else {
-          showScreen('home');
-          restoreSessionState();
+          // Usuario sin cuenta: crear sesión anónima para que el chat funcione
+          sb.auth.signInAnonymously().then(({ data, error }) => {
+            if (!error && data?.user) { currentUser = data.user; }
+            hideLoadingOverlay();
+            showScreen('home');
+            restoreSessionState();
+          }).catch(() => {
+            hideLoadingOverlay();
+            showScreen('home');
+            restoreSessionState();
+          });
         }
       }
     });
