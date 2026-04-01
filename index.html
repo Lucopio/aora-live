@@ -968,6 +968,23 @@ body {
   display: flex; align-items: center; gap: 12px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px;
+  transition: box-shadow 0.15s, opacity 0.15s;
+  user-select: none; -webkit-user-select: none;
+}
+.editor-exercise-row.drag-over {
+  border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light);
+}
+.editor-exercise-row.dragging {
+  opacity: 0.4;
+}
+.drag-handle {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 4px 2px; cursor: grab; flex-shrink: 0; touch-action: none;
+}
+.drag-handle:active { cursor: grabbing; }
+.drag-handle span {
+  display: block; width: 16px; height: 2px;
+  background: var(--text-tertiary); border-radius: 2px;
 }
 .editor-exercise-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .sets-stepper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -10992,7 +11009,10 @@ function renderEditorExercises() {
     return;
   }
   list.innerHTML = _editorExercises.map((ex, i) => `
-    <div class="editor-exercise-row">
+    <div class="editor-exercise-row" data-idx="${i}">
+      <div class="drag-handle" data-drag="${i}" onmousedown="_dragStart(event,${i})" ontouchstart="_dragStart(event,${i})">
+        <span></span><span></span><span></span>
+      </div>
       <div class="editor-exercise-name">${ex.name}</div>
       <div class="sets-stepper">
         <button onclick="changeEditorSets(${i}, -1)">−</button>
@@ -11007,6 +11027,57 @@ function renderEditorExercises() {
       </button>
     </div>`).join('');
   onEditorNameInput();
+}
+
+// ─── Drag-to-reorder (mouse + touch) ─────────────────────────
+let _dragSrcIdx  = null;
+let _dragOverIdx = null;
+
+function _dragStart(e, idx) {
+  e.preventDefault();
+  _dragSrcIdx  = idx;
+  _dragOverIdx = idx;
+
+  const rows = () => document.querySelectorAll('#editorExerciseList .editor-exercise-row');
+  rows()[idx]?.classList.add('dragging');
+
+  const moveHandler = (ev) => {
+    const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    let target = null;
+    rows().forEach(row => {
+      const rect = row.getBoundingClientRect();
+      if (clientY >= rect.top && clientY <= rect.bottom) target = row;
+    });
+    if (target) {
+      const overIdx = parseInt(target.dataset.idx);
+      if (overIdx !== _dragOverIdx) {
+        rows().forEach(r => r.classList.remove('drag-over'));
+        target.classList.add('drag-over');
+        _dragOverIdx = overIdx;
+      }
+    }
+  };
+
+  const upHandler = () => {
+    document.removeEventListener('mousemove', moveHandler);
+    document.removeEventListener('touchmove', moveHandler);
+    document.removeEventListener('mouseup',   upHandler);
+    document.removeEventListener('touchend',  upHandler);
+
+    if (_dragSrcIdx !== null && _dragOverIdx !== null && _dragSrcIdx !== _dragOverIdx) {
+      const moved = _editorExercises.splice(_dragSrcIdx, 1)[0];
+      _editorExercises.splice(_dragOverIdx, 0, moved);
+      renderEditorExercises();
+    } else {
+      rows().forEach(r => r.classList.remove('dragging', 'drag-over'));
+    }
+    _dragSrcIdx = _dragOverIdx = null;
+  };
+
+  document.addEventListener('mousemove', moveHandler, { passive: false });
+  document.addEventListener('touchmove', moveHandler, { passive: false });
+  document.addEventListener('mouseup',   upHandler);
+  document.addEventListener('touchend',  upHandler);
 }
 
 function changeEditorSets(index, delta) {
