@@ -403,7 +403,7 @@ body {
 /* WORKOUT */
 .workout-screen {
   background: var(--surface); display: flex; flex-direction: column;
-  align-items: center; padding: 16px 20px 24px; min-height: 100vh;
+  align-items: center; padding: 16px 20px calc(24px + env(safe-area-inset-bottom)); min-height: 100vh;
 }
 
 .workout-abandon-btn {
@@ -487,7 +487,7 @@ body {
 
 .rest-active {
   display: none; width: 100%; background: var(--bg); border-radius: var(--radius);
-  border: 2px solid var(--border); padding: 16px 20px;
+  border: 2px solid var(--primary); padding: 16px 20px;
   flex-direction: column; align-items: center; transition: all 0.4s;
 }
 .rest-active.show { display: flex; }
@@ -498,12 +498,12 @@ body {
   justify-content: space-between; margin-bottom: 12px;
 }
 .rest-active-label {
-  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-  color: var(--text-secondary); display: flex; align-items: center; gap: 6px; transition: color 0.3s;
+  font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--primary); display: flex; align-items: center; gap: 6px; transition: color 0.3s;
 }
 .rest-active-label.alert { color: var(--danger); }
 .rest-active-label .rest-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--text-secondary);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--primary);
   animation: pulse 1s infinite; transition: background 0.3s;
 }
 .rest-active-label.alert .rest-dot { background: var(--danger); }
@@ -2777,6 +2777,7 @@ body {
       <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span style="color:var(--text-tertiary);font-weight:400">descanso prom </span>
         <span id="avgRestValue">--</span>
       </div>
     </div>
@@ -2958,6 +2959,7 @@ body {
   </div>
   <div class="summary-grid">
     <div class="summary-stat"><div class="s-icon" style="background:var(--primary-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumDuration">--</div><div class="s-label" id="sumDurationLabel">Duracion</div></div>
+    <div class="summary-stat" id="sumRestStat" style="display:none"><div class="s-icon" style="background:rgba(0,229,255,0.1)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumAvgRest">--</div><div class="s-label">Descanso prom</div></div>
     <div class="summary-stat"><div class="s-icon" style="background:var(--success-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="s-value" id="sumExercises">--</div><div class="s-label">Ejercicios</div></div>
   </div>
   <!-- Warmup row (shown only when warmupDuration > 0) -->
@@ -4265,8 +4267,8 @@ function showCoachAlertToast(alertType) {
       <div class="coach-alert-name">${coach.name}</div>
       <div class="coach-alert-text">${message}</div>
       <div class="coach-alert-actions">
-        ${warmupBtn}
         <button class="coach-alert-dismiss" onclick="dismissCoachAlert()">Entendido ✓</button>
+        ${warmupBtn}
       </div>
     </div>
   `;
@@ -4275,6 +4277,16 @@ function showCoachAlertToast(alertType) {
   toast.style.padding = '';
   toast.style.overflow = '';
   toast.classList.remove('visible');
+  // Crear/reusar overlay de fondo
+  let toastOverlay = document.getElementById('coachAlertOverlay');
+  if (!toastOverlay) {
+    toastOverlay = document.createElement('div');
+    toastOverlay.id = 'coachAlertOverlay';
+    toastOverlay.style.cssText = 'position:fixed;inset:0;z-index:899;background:transparent';
+    toastOverlay.onclick = () => dismissCoachAlert();
+    document.body.appendChild(toastOverlay);
+  }
+  toastOverlay.style.display = 'block';
   setTimeout(() => { toast.classList.add('visible'); }, 30);
   clearTimeout(window._coachAlertTimeout);
 }
@@ -4292,6 +4304,8 @@ function dismissCoachAlert() {
       toast.style.overflow = 'hidden';
     }
   }, 380);
+  const overlay = document.getElementById('coachAlertOverlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 // ─── Generic UI toast (non-coach) ────────────────────────────
@@ -8661,6 +8675,15 @@ function endWorkout() {
   // #3 — excluir series de aproximación de los descansos analizados
   const allRests = allExDetail.flatMap(ex => ex.sets.filter(s => s.rest_after_ms != null && !s.is_warmup_set));
   const avgRestMs = allRests.length ? Math.round(allRests.reduce((sum, s) => sum + s.rest_after_ms, 0) / allRests.length) : null;
+  const avgRestStat = document.getElementById('sumRestStat');
+  const avgRestEl = document.getElementById('sumAvgRest');
+  if (avgRestMs && avgRestMs > 0 && avgRestEl && avgRestStat) {
+    const avgSec = Math.round(avgRestMs / 1000);
+    avgRestEl.textContent = avgSec >= 60
+      ? `${Math.floor(avgSec/60)}m ${avgSec%60}s`
+      : `${avgSec}s`;
+    avgRestStat.style.display = '';
+  }
   // Adherencia = promedio de (descanso real / descanso configurado), máx 1.0 por serie
   // Así: 0s descansados = 0%, 30s de 60s = 50%, 60s de 60s = 100%, 90s de 60s = 100%
   const restAdherence = allRests.length ? Math.round(
