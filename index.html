@@ -1688,6 +1688,7 @@ body {
   letter-spacing: 0.2px;
 }
 .coach-chat-btn:active { opacity: 0.85; }
+.coach-chat-btn { animation: coachPulse 2s ease-in-out 3; }
 
 /* Weekly stats grid */
 .weekly-stats-grid {
@@ -2775,7 +2776,7 @@ body {
         Salir
       </button>
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
-      <button onclick="showScreen('coach')" id="workoutCoachBtn" style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-full);font-family:var(--font);font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;flex-shrink:0"><span id="workoutCoachEmoji">👩🏽</span><span>Coach</span></button>
+      <button onclick="showScreen('coach')" id="workoutCoachBtn" style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:rgba(0,229,255,0.08);border:1.5px solid var(--primary);border-radius:var(--radius-full);font-family:var(--font);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;flex-shrink:0"><span id="workoutCoachEmoji">👩🏽</span><span>Coach</span></button>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
       <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
@@ -2786,11 +2787,19 @@ body {
     </div>
 
     <!-- Chip de rutina activa — visible solo cuando hay rutina seleccionada -->
-    <div id="activeRoutineChip" style="display:none;margin-bottom:8px">
+    <div id="activeRoutineChip" style="display:none;margin-bottom:8px;cursor:pointer" onclick="openPendingExercisesSheet()">
       <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--primary-light);border:1px solid rgba(0,229,255,0.3);border-radius:var(--radius-full)">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span id="activeRoutineName" style="font-size:11px;font-weight:700;color:var(--primary)"></span>
+        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
+    </div>
+    <!-- Pending exercises sheet -->
+    <div id="pendingExOverlay" onclick="closePendingExercisesSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:700"></div>
+    <div id="pendingExSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 32px;z-index:701;max-height:60vh;overflow-y:auto">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:12px">Ejercicios pendientes</div>
+      <div id="pendingExList"></div>
     </div>
 
     <div class="main-timer-section">
@@ -3599,7 +3608,11 @@ body {
       <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#333" stroke-width="3"/><path d="M16 4 A12 12 0 0 1 28 16" fill="none" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="0.8s" repeatCount="indefinite"/></path></svg>
       <span style="font-size:12px">Cargando animación…</span>
     </div>
-    <div id="exGifError" style="display:none"></div>
+    <div id="exGifError" style="display:none;flex-direction:column;align-items:center;gap:12px;padding:20px;text-align:center">
+      <div style="font-size:32px">🎬</div>
+      <div style="font-size:13px;color:var(--text-secondary)">No encontramos animación para este ejercicio</div>
+      <button id="exGifYtBtn" onclick="openExerciseYouTube()" style="padding:10px 20px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar en YouTube</button>
+    </div>
     <img id="exGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px;display:none"
       onload="this.style.display='block';document.getElementById('exGifLoading').style.display='none'"
       onerror="this.style.display='none';document.getElementById('exGifLoading').style.display='none';document.getElementById('exGifError').style.display='flex'">
@@ -4554,23 +4567,34 @@ function getCoachMessage(coachKey, userData) {
   const sessions = thisWeekWorkouts.length;
 
   // Generar mensaje según coach y contexto
+  const engagementQ = [
+    '¿Qué música te motiva para entrenar? 🎵',
+    '¿Entrenas solo o con alguien? A veces el compañero cambia todo.',
+    '¿A qué hora del día te sientes con más energía para entrenar?'
+  ];
+  const pickEngagement = () => engagementQ[Math.floor(Math.random() * engagementQ.length)];
+
   if (coach.tone === 'energética') { // María
     if (sessions === 0) return `¡Hola! Soy María 👋 ¿De dónde vienes y qué te trae por aquí?`;
+    if (sessions === 1) return `¡Ya arrancaste esta semana! 🔥 ` + pickEngagement();
     if (thisVol > prevVol && prevVol > 0) return `¡Brutal! Esta semana ya subiste ${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen vs la semana pasada. Eso es progreso real. ¡Sigamos!`;
     return `¡Hola! ${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana — ¡vas muy bien! ¿Qué vamos a trabajar hoy? 🔥`;
   }
   if (coach.tone === 'directo') { // Carlos
     if (sessions === 0) return `Carlos. ¿Qué te trae por aquí?`;
+    if (sessions === 1) return `Primera sesión hecha. ` + pickEngagement();
     if (thisVol > prevVol && prevVol > 0) return `Volumen +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% esta semana. Eso es lo que quiero ver. Mantén el nivel.`;
     return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Bien. ¿En qué te puedo ayudar hoy?`;
   }
   if (coach.tone === 'empática') { // Andrea
     if (sessions === 0) return `Hola 🌸 Soy Andrea. ¿Cómo estás hoy?`;
+    if (sessions === 1) return `Ya diste el primer paso esta semana 🌸 ` + pickEngagement();
     if (thisVol > prevVol && prevVol > 0) return `¡Qué semana más bonita! Tu volumen creció y eso refleja tu dedicación. Recuerda descansar bien esta noche 💙`;
     return `Hola 🌸 ${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Estás construyendo algo sólido. ¿En qué te puedo ayudar hoy?`;
   }
   // Diego (sereno)
   if (sessions === 0) return `Hola. Soy Diego. ¿Qué necesitas?`;
+  if (sessions === 1) return `Una sesión. ` + pickEngagement();
   if (thisVol > prevVol && prevVol > 0) return `El progreso es silencioso pero constante. Esta semana lo demuestra: +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen. Bien hecho.`;
   return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. La consistencia construye cuerpos. ¿En qué te ayudo hoy?`;
 }
@@ -4766,8 +4790,11 @@ function appendChatBubble(role, text) {
   div.className = 'chat-bubble ' + role;
   if (role === 'coach') {
     const coach = getSelectedCoach();
+    const avatarHtml = coach && coach.photoUrl
+      ? `<div class="chat-bubble-avatar"><img src="${coach.photoUrl}" alt="${coach.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>`
+      : `<div class="chat-bubble-avatar">${coach ? coach.emoji : '🤖'}</div>`;
     div.innerHTML = `
-      <div class="chat-bubble-avatar">${coach ? coach.emoji : '🤖'}</div>
+      ${avatarHtml}
       <div class="chat-bubble-content">${text.replace(/\n/g, '<br>')}</div>`;
   } else if (role === 'user') {
     div.innerHTML = `<div class="chat-bubble-content">${text.replace(/\n/g, '<br>')}</div>`;
@@ -4785,8 +4812,11 @@ function showTypingIndicator() {
   div.className = 'chat-typing';
   div.id = 'chatTyping';
   const coach = getSelectedCoach();
+  const typingAvatarHtml = coach && coach.photoUrl
+    ? `<div class="chat-bubble-avatar"><img src="${coach.photoUrl}" alt="${coach.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>`
+    : `<div class="chat-bubble-avatar">${coach ? coach.emoji : '🤖'}</div>`;
   div.innerHTML = `
-    <div class="chat-bubble-avatar">${coach ? coach.emoji : '🤖'}</div>
+    ${typingAvatarHtml}
     <div class="chat-typing-dots">
       <div class="chat-typing-dot"></div>
       <div class="chat-typing-dot"></div>
@@ -5018,7 +5048,13 @@ function initCoachChat() {
   const emojiEl = document.getElementById('chatCoachEmoji');
   const nameEl  = document.getElementById('chatCoachName');
   const subEl   = document.getElementById('chatCoachSub');
-  if (emojiEl) emojiEl.textContent = coach ? coach.emoji : '🤖';
+  if (emojiEl) {
+    if (coach && coach.photoUrl) {
+      emojiEl.innerHTML = `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    } else {
+      emojiEl.textContent = coach ? coach.emoji : '🤖';
+    }
+  }
   if (nameEl)  nameEl.textContent  = coach ? coach.name  : 'Coach IA';
   if (subEl)   subEl.textContent   = coach ? (coach.specialty + ' · ' + coach.flag) : 'Entrenador personal';
 
@@ -7169,6 +7205,14 @@ let pendingExercises = []; // cola de ejercicios para rutina sugerida
 let currentTargetSets = 0; // series pre-configuradas en la rutina para el ejercicio actual
 let suggestedRoutine = null;
 let catalogGroup = null;  // null = lista de grupos, string = ejercicios de ese grupo
+let catalogSubGroup = null; // sub-grupo para Piernas
+
+const LEG_SUBGROUPS = {
+  'Cuádriceps': ['Sentadilla', 'Prensa de piernas', 'Extension de cuadriceps', 'Sentadilla bulgara', 'Step-up', 'Sentadilla sumo'],
+  'Isquiotibiales': ['Curl de femoral', 'Peso muerto rumano', 'Zancadas'],
+  'Glúteos': ['Hip thrust', 'Patada de gluteo en polea', 'Peso muerto a una pierna', 'Puente de gluteo', 'Abduccion con banda', 'Abductores en maquina', 'Aductores en maquina'],
+  'Pantorrillas': ['Elevacion de gemelos']
+};
 
 const EQUIPMENT_OPTIONS = [
   { id: 'barra',       label: 'Barra' },
@@ -7425,15 +7469,35 @@ function renderCatalog(filter) {
   }
 
   // Level 2: Exercise list for selected group
-  titleEl.textContent = catalogGroup;
-  html = `<button class="catalog-back-btn" onclick="backToCatalogGroups()">
+  titleEl.textContent = catalogSubGroup || catalogGroup;
+
+  // Piernas sub-group selection level
+  if (catalogGroup === 'Piernas' && !catalogSubGroup) {
+    html = `<button class="catalog-back-btn" onclick="backToCatalogGroups()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Grupos musculares
+    </button>`;
+    html += Object.keys(LEG_SUBGROUPS).map(sg => `<button class="group-item" onclick="showCatalogSubGroup('${sg}')">
+      <span style="display:flex;align-items:center;gap:12px"><span>${sg}</span></span>
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>`).join('');
+    list.innerHTML = html;
+    return;
+  }
+
+  const backTarget = catalogSubGroup ? 'backToCatalogSubGroups()' : 'backToCatalogGroups()';
+  const backLabel = catalogSubGroup ? 'Piernas' : 'Grupos musculares';
+  html = `<button class="catalog-back-btn" onclick="${backTarget}">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    Grupos musculares
+    ${backLabel}
   </button>`;
   if (catalogGroup === 'Personalizados') {
     if (customExercises.length) {
       customExercises.forEach(item => {
-        html += exerciseRowHtml(item, EQUIPMENT_OPTIONS.map(e => e.id));
+        html += `<div style="display:flex;align-items:center;gap:4px">
+          <div style="flex:1">${exerciseRowHtml(item, EQUIPMENT_OPTIONS.map(e => e.id))}</div>
+          <button onclick="renameCustomExercise('${item.replace(/'/g, "\\'")}')" style="background:none;border:none;padding:8px;cursor:pointer;color:var(--text-tertiary);font-size:16px;flex-shrink:0" title="Renombrar">✏️</button>
+        </div>`;
       });
     } else {
       html += `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Agrega tu primer ejercicio personalizado abajo</p></div>`;
@@ -7441,7 +7505,9 @@ function renderCatalog(filter) {
   } else {
     const grp = exerciseDB.find(g => g.group === catalogGroup);
     const locFilter = getLocationEquipFilter();
+    const subItems = catalogSubGroup ? LEG_SUBGROUPS[catalogSubGroup] : null;
     if (grp) grp.items.forEach(item => {
+      if (subItems && !subItems.includes(item)) return;
       const equips = EXERCISE_EQUIP[item] || [''];
       const filtered = locFilter ? equips.filter(e => locFilter.has(e)) : equips;
       if (filtered.length > 0) html += exerciseRowHtml(item, filtered);
@@ -7453,6 +7519,7 @@ function renderCatalog(filter) {
 
 function openCatalog() {
   catalogGroup = null;
+  catalogSubGroup = null;
   document.getElementById('catalogSearchInput').value = '';
   renderCatalog();
   showScreen('catalog');
@@ -7462,6 +7529,7 @@ function openCatalog() {
 
 function backToCatalogGroups() {
   catalogGroup = null;
+  catalogSubGroup = null;
   document.getElementById('catalogSearchInput').value = '';
   renderCatalog();
   _resetCatalogMapHighlight();
@@ -7469,7 +7537,18 @@ function backToCatalogGroups() {
 
 function showCatalogGroup(group) {
   catalogGroup = group;
+  catalogSubGroup = null;
   document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+}
+
+function showCatalogSubGroup(subGroup) {
+  catalogSubGroup = subGroup;
+  renderCatalog();
+}
+
+function backToCatalogSubGroups() {
+  catalogSubGroup = null;
   renderCatalog();
 }
 
@@ -7490,6 +7569,26 @@ function addCustomExercise() {
   }
   // Llevar al usuario al grupo Personalizados para que seleccione el equipo
   showCatalogGroup('Personalizados');
+}
+
+function renameCustomExercise(oldName) {
+  const newName = prompt('Nuevo nombre para "' + oldName + '":', oldName);
+  if (!newName || newName.trim() === '' || newName.trim() === oldName) return;
+  const trimmed = newName.trim();
+  const idx = customExercises.indexOf(oldName);
+  if (idx === -1) return;
+  customExercises[idx] = trimmed;
+  // Migrar lastWeights keys
+  const keys = Object.keys(lastWeights);
+  keys.forEach(k => {
+    if (k === oldName || k.startsWith(oldName + '_')) {
+      const newKey = k.replace(oldName, trimmed);
+      lastWeights[newKey] = lastWeights[k];
+      delete lastWeights[k];
+    }
+  });
+  saveToStorage();
+  renderCatalog();
   // Seleccionar automáticamente el ejercicio recién creado para continuar el entrenamiento
   if (workoutStartTime) {
     _doSelectExercise(name, '');
@@ -7921,6 +8020,37 @@ function updatePendingPill() {
   }
 }
 
+function openPendingExercisesSheet() {
+  if (!pendingExercises.length) return;
+  renderPendingExList();
+  document.getElementById('pendingExOverlay').style.display = 'block';
+  document.getElementById('pendingExSheet').style.display = 'block';
+}
+function closePendingExercisesSheet() {
+  document.getElementById('pendingExOverlay').style.display = 'none';
+  document.getElementById('pendingExSheet').style.display = 'none';
+}
+function renderPendingExList() {
+  const list = document.getElementById('pendingExList');
+  if (!list) return;
+  list.innerHTML = pendingExercises.map((ex, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:700;color:var(--text-tertiary);width:20px;text-align:center">${i + 1}</span>
+      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary)">${ex.name}</span>
+      <button onclick="movePendingEx(${i},-1)" style="background:none;border:none;padding:4px;cursor:pointer;color:var(--text-secondary);font-size:16px" ${i === 0 ? 'disabled style="opacity:0.3;background:none;border:none;padding:4px;cursor:default;font-size:16px"' : ''}>↑</button>
+      <button onclick="movePendingEx(${i},1)" style="background:none;border:none;padding:4px;cursor:pointer;color:var(--text-secondary);font-size:16px" ${i === pendingExercises.length - 1 ? 'disabled style="opacity:0.3;background:none;border:none;padding:4px;cursor:default;font-size:16px"' : ''}>↓</button>
+    </div>
+  `).join('');
+}
+function movePendingEx(idx, dir) {
+  const target = idx + dir;
+  if (target < 0 || target >= pendingExercises.length) return;
+  [pendingExercises[idx], pendingExercises[target]] = [pendingExercises[target], pendingExercises[idx]];
+  renderPendingExList();
+  updatePendingPill();
+  saveToStorage();
+}
+
 function toggleSuperset() {
   supersetActive = !supersetActive;
   const btn = document.getElementById('supersetBtn');
@@ -8123,9 +8253,10 @@ function openExerciseGif() {
     sheet.style.transform  = 'translateX(-50%) translateY(0)';
   });
   document.body.style.overflow = 'hidden';
+  window._currentGifExName = name;
   loadExerciseGif(name).then(url => {
     if (url) { document.getElementById('exGifImg').src = url; }
-    else { document.getElementById('exGifLoading').style.display = 'none'; }
+    else { document.getElementById('exGifLoading').style.display = 'none'; document.getElementById('exGifError').style.display = 'flex'; }
   });
 }
 
@@ -8155,10 +8286,18 @@ function openWorkoutExerciseGif() {
     sheet.style.transform  = 'translateX(-50%) translateY(0)';
   });
   document.body.style.overflow = 'hidden';
+  window._currentGifExName = currentExerciseName;
   loadExerciseGif(currentExerciseName).then(url => {
     if (url) { document.getElementById('exGifImg').src = url; }
-    else { document.getElementById('exGifLoading').style.display = 'none'; }
+    else { document.getElementById('exGifLoading').style.display = 'none'; document.getElementById('exGifError').style.display = 'flex'; }
   });
+}
+
+function openExerciseYouTube() {
+  const name = window._currentGifExName || currentExerciseName || '';
+  const info = EXERCISE_INFO[name];
+  const query = info && info.yt ? info.yt : name + ' técnica correcta';
+  window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(query), '_blank');
 }
 
 // ─── Start Workout Long-Press Context Menu ────────────────────
