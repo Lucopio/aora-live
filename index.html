@@ -4373,22 +4373,22 @@ function getCoachMessage(coachKey, userData) {
 
   // Generar mensaje según coach y contexto
   if (coach.tone === 'energética') { // María
-    if (sessions === 0) return `¡Hola! Soy María 👋 Qué bueno verte por aquí. ¿Cómo te sientes hoy? Cuéntame, ¡estoy lista para ayudarte! 💪🏽`;
+    if (sessions === 0) return `¡Hola! Soy María 👋 ¿De dónde vienes y qué te trae por aquí?`;
     if (thisVol > prevVol && prevVol > 0) return `¡Brutal! Esta semana ya subiste ${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen vs la semana pasada. Eso es progreso real. ¡Sigamos!`;
     return `¡Hola! ${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana — ¡vas muy bien! ¿Qué vamos a trabajar hoy? 🔥`;
   }
   if (coach.tone === 'directo') { // Carlos
-    if (sessions === 0) return `Carlos aquí. ¿Qué vamos a trabajar hoy? Dime tu objetivo y te doy el plan.`;
+    if (sessions === 0) return `Carlos. ¿Qué te trae por aquí?`;
     if (thisVol > prevVol && prevVol > 0) return `Volumen +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% esta semana. Eso es lo que quiero ver. Mantén el nivel.`;
     return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Bien. ¿En qué te puedo ayudar hoy?`;
   }
   if (coach.tone === 'empática') { // Andrea
-    if (sessions === 0) return `Hola 🌸 Soy Andrea. ¿Cómo estás hoy? Estoy aquí para acompañarte, sin presiones. Cuéntame lo que necesites.`;
+    if (sessions === 0) return `Hola 🌸 Soy Andrea. ¿Cómo estás hoy?`;
     if (thisVol > prevVol && prevVol > 0) return `¡Qué semana más bonita! Tu volumen creció y eso refleja tu dedicación. Recuerda descansar bien esta noche 💙`;
     return `Hola 🌸 ${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. Estás construyendo algo sólido. ¿En qué te puedo ayudar hoy?`;
   }
   // Diego (sereno)
-  if (sessions === 0) return `Hola. Soy Diego. Estoy aquí cuando estés listo. ¿Qué necesitas hoy?`;
+  if (sessions === 0) return `Hola. Soy Diego. ¿Qué necesitas?`;
   if (thisVol > prevVol && prevVol > 0) return `El progreso es silencioso pero constante. Esta semana lo demuestra: +${Math.round(((thisVol - prevVol) / prevVol) * 100)}% de volumen. Bien hecho.`;
   return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. La consistencia construye cuerpos. ¿En qué te ayudo hoy?`;
 }
