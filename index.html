@@ -2143,7 +2143,10 @@ body {
       <span style="margin-left:auto;font-size:10px;font-weight:700;background:var(--accent2);color:#fff;padding:2px 6px;border-radius:5px">NUEVO</span>
     </div>
     <div style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px" id="hlCoachmarkDesc">Descripción del coachmark.</div>
-    <button onclick="dismissHighlightCoachmark()" style="width:100%;padding:10px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Entendido ✓</button>
+    <div style="display:flex;gap:8px" id="hlCoachmarkActions">
+      <button onclick="dismissHighlightCoachmark()" style="flex:1;padding:10px;background:var(--surface2);color:var(--text-secondary);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">Entendido ✓</button>
+      <button id="hlTryBtn" onclick="tryHighlightCoachmark()" style="flex:1;padding:10px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;display:none">Probar →</button>
+    </div>
   </div>
 </div>
 
@@ -5182,7 +5185,7 @@ let trainingLocation = 'gym'; // 'gym' | 'casa' | 'parque' | 'mixto'
 let cycleEnabled = false;
 let cycleStartDate = null; // ISO date string 'YYYY-MM-DD'
 let workoutSessionCount = 0; // para coachmarks
-let coachmarksSeen = { restTimer: false, coachBtn: false, customExercise: false };
+let coachmarksSeen = { restTimer: false, coachBtn: false, customExercise: false, rpeTracking: false };
 
 // ─── Coach Voice Phrases ─────────────────────────────────────
 const COACH_VOICE = {
@@ -9499,6 +9502,7 @@ function saveAndExit() {
   showScreen('home');
   updateCyclePill();
   setTimeout(() => checkCoachmarks('coachBtn'), 1500);
+  setTimeout(() => checkCoachmarks('rpeTracking'), 3000);
 }
 
 function discardAndExit() {
@@ -9609,19 +9613,25 @@ const COACHMARKS = [
     key: 'restTimer',
     emoji: '⏱️',
     title: 'Timer de descanso inteligente',
-    text: 'Cada vez que terminas una serie, el timer arranca solo. Te avisa con sonido y voz del coach cuando es momento de volver.',
+    text: 'Toca "Iniciar Descanso" después de cada serie. El timer arranca, te avisa a la mitad y con voz del coach cuando es momento de volver. El descanso bien cronometrado es parte del entrenamiento.',
   },
   {
     key: 'coachBtn',
-    emoji: '🤖',
-    title: 'Tu coach IA está aquí',
-    text: 'Tu entrenador te envía mensajes personalizados durante el entrenamiento: hidratación, intensidad y motivación según tu perfil.',
+    emoji: '💬',
+    title: 'Tu coach te acompaña en vivo',
+    text: 'El botón "Coach" en la barra superior te conecta con tu entrenador IA durante el entrenamiento. Puedes preguntarle lo que necesites — técnica, dolor, cambio de ejercicio, motivación.',
   },
   {
     key: 'customExercise',
     emoji: '➕',
-    title: 'Agrega tus propios ejercicios',
-    text: 'En el catálogo puedes agregar ejercicios personalizados. Aparecerán en la sección "Personalizados" con su historial de pesos.',
+    title: 'Agrega tus ejercicios',
+    text: 'En el catálogo, escribe el nombre de cualquier ejercicio que no encuentres y toca "Agregar". Quedará guardado en "Personalizados" con su historial de pesos.',
+  },
+  {
+    key: 'rpeTracking',
+    emoji: '🎯',
+    title: 'RPE: esfuerzo percibido',
+    text: 'Después de cada serie aparece un slider de RPE (1-10). RPE 7-8 es la zona ideal de hipertrofia. Menos de 6 no genera adaptación real. Tu coach usa este dato para darte feedback personalizado.',
   },
 ];
 
@@ -9769,7 +9779,7 @@ function tourSkip() {
 // ─── Highlight Coachmarks (contextual tooltip + highlight) ────────────────
 const HL_COACHMARK_KEY_PREFIX = 'aora_hlcm_';
 
-function showHighlightCoachmark({ id, targetId, title, desc, tooltipPosition = 'below' }) {
+function showHighlightCoachmark({ id, targetId, title, desc, tooltipPosition = 'below', onTry = null }) {
   if (localStorage.getItem(HL_COACHMARK_KEY_PREFIX + id)) return;
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -9792,8 +9802,18 @@ function showHighlightCoachmark({ id, targetId, title, desc, tooltipPosition = '
     tt.style.left = ttLeft + 'px';
   }
   const overlay = document.getElementById('highlightCoachmarkOverlay');
+  overlay._onTry = onTry;
+  const tryBtn = document.getElementById('hlTryBtn');
+  if (tryBtn) tryBtn.style.display = onTry ? 'block' : 'none';
   overlay.style.display = 'block';
   overlay.dataset.activeId = id;
+}
+
+function tryHighlightCoachmark() {
+  const overlay = document.getElementById('highlightCoachmarkOverlay');
+  const fn = overlay._onTry;
+  dismissHighlightCoachmark();
+  if (typeof fn === 'function') setTimeout(fn, 200);
 }
 
 function dismissHighlightCoachmark() {
@@ -9804,14 +9824,58 @@ function dismissHighlightCoachmark() {
 }
 
 function checkNewFeatureCoachmarks() {
-  // Ejemplo de uso:
-  // showHighlightCoachmark({
-  //   id: 'coach_chat_workout',
-  //   targetId: 'coachWorkoutBtn',
-  //   title: 'Habla con tu coach',
-  //   desc: 'Ahora puedes preguntarle a tu coach lo que necesites durante el entrenamiento.',
-  //   tooltipPosition: 'above'
-  // });
+  // Mostrar coachmarks en cascada con delays para no saturar
+
+  // 1. Botón Coach en workout (2s) — el más importante
+  setTimeout(() => {
+    showHighlightCoachmark({
+      id: 'wk_coach_btn',
+      targetId: 'workoutCoachBtn',
+      title: 'Tu coach en tiempo real',
+      desc: 'Durante el entrenamiento puedes hablar con tu coach. Te da feedback, ajusta la rutina y te motiva según cómo va la sesión.',
+      tooltipPosition: 'below',
+      onTry: () => showScreen('coach')
+    });
+  }, 2000);
+
+  // 2. Timer de descanso (8s) — solo si el de coach ya fue visto
+  setTimeout(() => {
+    if (!localStorage.getItem(HL_COACHMARK_KEY_PREFIX + 'wk_coach_btn')) return;
+    showHighlightCoachmark({
+      id: 'wk_rest_timer',
+      targetId: 'restIdle',
+      title: 'Timer de descanso automático',
+      desc: 'Toca aquí para iniciar el descanso. Te avisa con sonido y voz del coach cuando es hora de la siguiente serie.',
+      tooltipPosition: 'above',
+      onTry: () => startRestTimer()
+    });
+  }, 8000);
+
+  // 3. Serie de aproximación (14s) — solo si los anteriores ya fueron vistos
+  setTimeout(() => {
+    if (!localStorage.getItem(HL_COACHMARK_KEY_PREFIX + 'wk_rest_timer')) return;
+    showHighlightCoachmark({
+      id: 'wk_warmup_set',
+      targetId: 'warmupSetToggle',
+      title: 'Series de aproximación',
+      desc: 'Activa esto antes de registrar una serie de calentamiento. No cuenta para el volumen pero prepara el músculo para la carga máxima.',
+      tooltipPosition: 'above',
+      onTry: null
+    });
+  }, 14000);
+
+  // 4. Ejercicio unilateral (20s) — solo si los anteriores ya fueron vistos
+  setTimeout(() => {
+    if (!localStorage.getItem(HL_COACHMARK_KEY_PREFIX + 'wk_warmup_set')) return;
+    showHighlightCoachmark({
+      id: 'wk_unilateral',
+      targetId: 'unilateralBtn',
+      title: 'Ejercicios unilaterales',
+      desc: 'Si el ejercicio es de un solo lado (curl alternado, remo unilateral), activa esto. Registrará cada lado por separado.',
+      tooltipPosition: 'above',
+      onTry: null
+    });
+  }, 20000);
 }
 
 function dismissCoachmark() {
