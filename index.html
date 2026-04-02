@@ -3826,6 +3826,15 @@ body {
       <svg class="icon catalog-search-icon" viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--text-tertiary)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="catalogSearchInput" placeholder="Buscar ejercicio..." oninput="filterExercises(this.value)">
     </div>
+    <!-- Catalog Body Mini-map -->
+    <div id="catalogBodyMap" style="display:none;padding:8px 0 4px">
+      <div style="text-align:center">
+        <div id="catalogBodyMapSvg"></div>
+        <div id="catalogMapLabel" style="margin-top:5px;font-size:11px;color:var(--text-tertiary);font-family:var(--font)">Toca un músculo para filtrar</div>
+        <button id="catalogMapResetBtn" onclick="resetCatalogMapFilter()" style="display:none;margin-top:4px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;color:#00E5FF;border-radius:12px;padding:4px 14px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer">Ver todos</button>
+      </div>
+    </div>
+
     <div id="exerciseList"></div>
 
     <!-- Ejercicio personalizado -->
@@ -3867,6 +3876,19 @@ body {
         <div style="font-size:14px;color:var(--text-secondary);margin-bottom:6px">No tienes rutinas guardadas</div>
         <div style="font-size:12px;color:var(--text-tertiary)">Crea tu primera rutina para empezar a entrenar más rápido</div>
       </div>
+    </div>
+
+    <!-- Muscle Recovery Card -->
+    <div id="muscleRecoveryCard" style="display:none;margin:0 0 20px;background:var(--surface);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);text-transform:uppercase;letter-spacing:0.08em">Estado Muscular</span>
+        <div style="display:flex;gap:10px;font-size:10px;font-family:var(--font)">
+          <span style="color:#00E5FF">● Fresco</span>
+          <span style="color:#FFB800">● Recuperando</span>
+          <span style="color:#FF4444">● Fatigado</span>
+        </div>
+      </div>
+      <div id="muscleBodySvg"></div>
     </div>
 
     <!-- Repetir último entrenamiento -->
@@ -5091,7 +5113,7 @@ function showScreen(name) {
   ['workout','summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
-  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); }
+  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); }
   if (name === 'coach') { initCoachChat(); }
   if (name === 'settings') { updateAccountUI(); }
   if (name === 'workout') setTimeout(() => checkNewFeatureCoachmarks(), 800);
@@ -7243,16 +7265,18 @@ function openCatalog() {
   renderCatalog();
   showScreen('catalog');
   checkCoachmarks('customExercise');
-}
-
-function showCatalogGroup(group) {
-  catalogGroup = group;
-  document.getElementById('catalogSearchInput').value = '';
-  renderCatalog();
+  initCatalogBodyMap();
 }
 
 function backToCatalogGroups() {
   catalogGroup = null;
+  document.getElementById('catalogSearchInput').value = '';
+  renderCatalog();
+  _resetCatalogMapHighlight();
+}
+
+function showCatalogGroup(group) {
+  catalogGroup = group;
   document.getElementById('catalogSearchInput').value = '';
   renderCatalog();
 }
@@ -11271,6 +11295,7 @@ let currentSelectedRoutine = null;
 function openRoutineSelector() {
   document.getElementById('routineSelectorModal').style.display = 'flex';
   loadUserRoutines();
+  renderMuscleRecoveryCard();
 }
 
 function closeRoutineSelector(event) {
@@ -11881,6 +11906,184 @@ function repeatLastWorkout() {
   document.getElementById('configOverlay').classList.add('active');
   setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
   suggestRoutineForToday();
+}
+
+// ─── Muscle Recovery Map ──────────────────────────────────────
+const MUSCLE_REGION_MAP = {
+  'Pecho':      ['svg-pecho'],
+  'Espalda':    ['b-espalda', 'b-lumbares'],
+  'Hombros':    ['svg-hombros'],
+  'Biceps':     ['svg-biceps'],
+  'Triceps':    ['b-triceps'],
+  'Piernas':    ['svg-cuadriceps', 'svg-abductores', 'b-isquiotibiales', 'b-pantorrillas'],
+  'Gluteos':    ['b-gluteos'],
+  'Abdomen':    ['svg-abdomen'],
+  'Cardio':     [],
+  'Calistenia': []
+};
+
+function getMuscleRecoveryState() {
+  const now = Date.now();
+  const cutoff = now - 4 * 24 * 3600000;
+  const groupLastTime = {};
+  savedWorkouts.filter(w => new Date(w.date).getTime() >= cutoff).forEach(w => {
+    const ts = new Date(w.date).getTime();
+    if (!w.exercises_detail) return;
+    w.exercises_detail.forEach(ex => {
+      const grpObj = exerciseDB.find(g => g.items.includes(ex.name));
+      if (!grpObj) return;
+      const grp = grpObj.group;
+      if (!groupLastTime[grp] || ts > groupLastTime[grp]) groupLastTime[grp] = ts;
+    });
+  });
+  const state = {};
+  exerciseDB.forEach(g => {
+    const lastTs = groupLastTime[g.group];
+    if (!lastTs) { state[g.group] = 'fresco'; return; }
+    const h = (now - lastTs) / 3600000;
+    state[g.group] = h < 24 ? 'fatigado' : h < 48 ? 'recuperando' : 'fresco';
+  });
+  return state;
+}
+
+function _buildBodySvgHtml(sex, prefix, catalogMode) {
+  const isFemale = sex === 'F';
+  const vb = '0 0 100 260';
+  const svgW = '75';
+  const hipL = isFemale ? 26 : 31;
+  const hipR = isFemale ? 74 : 69;
+  const p = prefix || '';
+  const ca = (grp) => catalogMode ? ` onclick="catalogMapClick('${grp}')" style="cursor:pointer"` : '';
+  const BASE = 'rgba(255,255,255,0.06)';
+  const MUS  = 'rgba(255,255,255,0.10)';
+
+  const bodyBase = `
+    <circle cx="50" cy="14" r="${isFemale?11:12}" fill="${BASE}"/>
+    <path fill="${BASE}" d="M44,25 L56,25 L55,39 L45,39 Z"/>
+    <path fill="${BASE}" d="M22,41 L30,39 L32,100 L18,103 Z"/>
+    <path fill="${BASE}" d="M70,39 L78,41 L82,103 L68,100 Z"/>
+    <path fill="${BASE}" d="M30,39 L70,39 L68,130 L32,130 Z"/>
+    <path fill="${BASE}" d="M32,130 L68,130 L${hipR},150 L${hipL},150 Z"/>
+    <path fill="${BASE}" d="M${hipL},150 L50,150 L49,228 L${hipL-1},228 Z"/>
+    <path fill="${BASE}" d="M50,150 L${hipR},150 L${hipR+1},228 L51,228 Z"/>
+    <path fill="${BASE}" d="M${hipL-1},226 L49,226 L47,242 L${hipL-3},242 Z"/>
+    <path fill="${BASE}" d="M51,226 L${hipR+1},226 L${hipR+3},242 L53,242 Z"/>`;
+
+  const pecPath = isFemale
+    ? `M32,41 C28,44 27,52 28,62 L30,74 C31,77 35,77 38,76 L50,74 L50,41 Z M50,41 L50,74 L62,76 C65,77 69,77 70,74 L72,62 C73,52 72,44 68,41 Z`
+    : `M32,41 C28,44 26,50 26,58 L26,76 C26,80 30,82 34,80 L50,78 L50,41 Z M50,41 L50,78 L66,80 C70,82 74,80 74,76 L74,58 C74,50 72,44 68,41 Z`;
+  const absY = isFemale ? 74 : 78;
+
+  const frontInner = `${bodyBase}
+    <path id="${p}svg-pecho"${ca('Pecho')} fill="${MUS}" d="${pecPath}"/>
+    <path id="${p}svg-hombros"${ca('Hombros')} fill="${MUS}" d="M22,41 L30,39 L32,56 L20,60 C17,54 17,46 22,41 Z M70,39 L78,41 C83,46 83,54 80,60 L68,56 Z"/>
+    <path id="${p}svg-biceps"${ca('Biceps')} fill="${MUS}" d="M18,60 L32,56 L33,92 L17,96 Z M68,56 L82,60 L83,96 L67,92 Z"/>
+    <path id="${p}svg-antebrazo" fill="${MUS}" d="M17,96 L33,92 L33,112 L17,116 Z M67,92 L83,96 L83,116 L67,112 Z"/>
+    <path id="${p}svg-abdomen"${ca('Abdomen')} fill="${MUS}" d="M36,${absY} L64,${absY} L62,130 L38,130 Z"/>
+    <path id="${p}svg-cuadriceps"${ca('Piernas')} fill="${MUS}" d="M${hipL},150 L50,150 L49,215 L${hipL-1},215 Z M50,150 L${hipR},150 L${hipR+1},215 L51,215 Z"/>
+    <path id="${p}svg-abductores" fill="${MUS}" d="M${hipL-7},153 L${hipL},150 L${hipL-1},215 L${hipL-8},207 Z M${hipR},150 L${hipR+7},153 L${hipR+8},207 L${hipR+1},215 Z"/>`;
+
+  const backInner = `${bodyBase}
+    <path id="${p}b-espalda"${ca('Espalda')} fill="${MUS}" d="M30,39 L70,39 L70,104 L30,104 Z"/>
+    <path fill="${MUS}" opacity="0.5" d="M44,25 L56,25 L70,39 L30,39 Z"/>
+    <path id="${p}b-triceps"${ca('Triceps')} fill="${MUS}" d="M18,60 L32,56 L33,92 L17,96 Z M68,56 L82,60 L83,96 L67,92 Z"/>
+    <path id="${p}b-lumbares" fill="${MUS}" d="M36,102 L64,102 L63,130 L37,130 Z"/>
+    <path id="${p}b-gluteos"${ca('Gluteos')} fill="${MUS}" d="M${hipL},148 L${hipR},148 L${hipR+2},170 L${hipL-2},170 Z"/>
+    <path id="${p}b-isquiotibiales"${ca('Piernas')} fill="${MUS}" d="M${hipL-2},168 L50,168 L49,215 L${hipL-3},215 Z M50,168 L${hipR+2},168 L${hipR+3},215 L51,215 Z"/>
+    <path id="${p}b-pantorrillas"${ca('Piernas')} fill="${MUS}" d="M${hipL-3},213 L49,213 L47,242 L${hipL-5},242 Z M51,213 L${hipR+3},213 L${hipR+5},242 L53,242 Z"/>`;
+
+  if (catalogMode) {
+    return `<svg id="${p}svgFront" viewBox="${vb}" style="width:${svgW}px;height:auto;display:block;margin:0 auto">${frontInner}</svg>`;
+  }
+
+  return `<div style="display:flex;justify-content:center;gap:20px;align-items:flex-start">
+    <div style="text-align:center">
+      <div style="font-size:9px;font-family:var(--mono);color:var(--text-tertiary);letter-spacing:0.08em;margin-bottom:4px">FRONTAL</div>
+      <svg id="${p}svgFront" viewBox="${vb}" style="width:${svgW}px;height:auto;display:block;margin:0 auto">${frontInner}</svg>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:9px;font-family:var(--mono);color:var(--text-tertiary);letter-spacing:0.08em;margin-bottom:4px">POSTERIOR</div>
+      <svg id="${p}svgBack" viewBox="${vb}" style="width:${svgW}px;height:auto;display:block;margin:0 auto">${backInner}</svg>
+    </div>
+  </div>`;
+}
+
+function applyMuscleColors(recoveryState, prefix) {
+  const colorMap = { fatigado: '#FF4444', recuperando: '#FFB800' };
+  const p = prefix || '';
+  Object.entries(MUSCLE_REGION_MAP).forEach(([group, regions]) => {
+    const s = recoveryState[group];
+    const color = colorMap[s] || null;
+    regions.forEach(id => {
+      const el = document.getElementById(p + id);
+      if (!el) return;
+      if (color) {
+        el.setAttribute('fill', color);
+        el.setAttribute('opacity', s === 'fatigado' ? '0.85' : '0.7');
+      } else {
+        el.setAttribute('fill', 'rgba(0,229,255,0.35)');
+        el.setAttribute('opacity', '1');
+      }
+    });
+  });
+}
+
+function renderMuscleRecoveryCard() {
+  const card = document.getElementById('muscleRecoveryCard');
+  if (!card) return;
+  const cutoff = Date.now() - 4 * 24 * 3600000;
+  const hasRecent = savedWorkouts.some(w => new Date(w.date).getTime() >= cutoff && w.exercises_detail?.length);
+  if (!hasRecent) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  let sex = 'M';
+  try { sex = JSON.parse(localStorage.getItem('gymtracker_profile') || '{}').sex || 'M'; } catch(e) {}
+  const container = document.getElementById('muscleBodySvg');
+  if (container) container.innerHTML = _buildBodySvgHtml(sex, '', false);
+  applyMuscleColors(getMuscleRecoveryState(), '');
+}
+
+function initCatalogBodyMap() {
+  const mapDiv = document.getElementById('catalogBodyMap');
+  if (!mapDiv) return;
+  let sex = 'M';
+  try { sex = JSON.parse(localStorage.getItem('gymtracker_profile') || '{}').sex || 'M'; } catch(e) {}
+  const container = document.getElementById('catalogBodyMapSvg');
+  if (container) container.innerHTML = _buildBodySvgHtml(sex, 'cat-', true);
+  mapDiv.style.display = 'block';
+  const lbl = document.getElementById('catalogMapLabel');
+  if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
+  const btn = document.getElementById('catalogMapResetBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+function catalogMapClick(group) {
+  _resetCatalogMapHighlight();
+  const regions = MUSCLE_REGION_MAP[group] || [];
+  regions.forEach(id => {
+    const el = document.getElementById('cat-' + id);
+    if (el) { el.setAttribute('fill', 'rgba(0,229,255,0.75)'); el.setAttribute('opacity', '1'); }
+  });
+  const lbl = document.getElementById('catalogMapLabel');
+  if (lbl) lbl.textContent = `Tocando: ${group}`;
+  const btn = document.getElementById('catalogMapResetBtn');
+  if (btn) btn.style.display = 'inline-block';
+  showCatalogGroup(group);
+}
+
+function _resetCatalogMapHighlight() {
+  Object.values(MUSCLE_REGION_MAP).flat().forEach(id => {
+    const el = document.getElementById('cat-' + id);
+    if (el) { el.setAttribute('fill', 'rgba(255,255,255,0.10)'); el.setAttribute('opacity', '1'); }
+  });
+  const lbl = document.getElementById('catalogMapLabel');
+  if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
+  const btn = document.getElementById('catalogMapResetBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+function resetCatalogMapFilter() {
+  _resetCatalogMapHighlight();
+  backToCatalogGroups();
 }
 
 function _markRoutineUsed(routineId) {
