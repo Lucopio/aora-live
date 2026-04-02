@@ -578,7 +578,7 @@ body {
 .summary-header h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
 .summary-header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
 
-.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 12px; margin-bottom: 24px; }
 .summary-stat { background: var(--bg); border-radius: var(--radius-sm); padding: 20px; text-align: center; }
 .summary-stat .s-icon {
   width: 40px; height: 40px; border-radius: 10px;
@@ -2961,6 +2961,15 @@ body {
     <div class="summary-stat"><div class="s-icon" style="background:var(--primary-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumDuration">--</div><div class="s-label" id="sumDurationLabel">Duracion</div></div>
     <div class="summary-stat" id="sumRestStat" style="display:none"><div class="s-icon" style="background:rgba(0,229,255,0.1)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumAvgRest">--</div><div class="s-label">Descanso prom</div></div>
     <div class="summary-stat"><div class="s-icon" style="background:var(--success-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="s-value" id="sumExercises">--</div><div class="s-label">Ejercicios</div></div>
+    <div class="summary-stat" id="sumEffectiveStat" style="display:none">
+      <div class="s-icon" style="background:rgba(0,200,150,0.12)">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="s-value" id="sumEffectiveSets">--</div>
+      <div class="s-label">Series efectivas</div>
+    </div>
   </div>
   <!-- Warmup row (shown only when warmupDuration > 0) -->
   <div class="summary-warmup-row" id="summaryWarmupRow" style="display:none">
@@ -2973,8 +2982,11 @@ body {
     </div>
   </div>
 
-  <div class="summary-motivation">
-    <div class="sm-emoji">🏆</div>
+  <div class="summary-motivation" id="summaryCoachMsg">
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px">
+      <span style="font-size:22px" id="summaryCoachEmoji">🏆</span>
+      <span style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px" id="summaryCoachName"></span>
+    </div>
     <div class="sm-text" id="summaryMotivation">Gran trabajo hoy. La constancia es lo que construye resultados.</div>
   </div>
 
@@ -3007,6 +3019,33 @@ body {
     </div>
   </div>
 
+  <div id="postWorkoutFeeling" style="margin:0 0 20px">
+    <div style="font-size:13px;font-weight:700;color:var(--text-secondary);text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
+      ¿Cómo te fue hoy?
+    </div>
+    <div style="display:flex;justify-content:center;gap:12px">
+      <button class="feeling-btn" data-val="malo" onclick="selectFeeling(this,'malo')"
+        style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;font-family:var(--font);transition:all 0.15s">
+        <span style="font-size:24px">😓</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-secondary)">Difícil</span>
+      </button>
+      <button class="feeling-btn" data-val="regular" onclick="selectFeeling(this,'regular')"
+        style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;font-family:var(--font);transition:all 0.15s">
+        <span style="font-size:24px">😐</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-secondary)">Regular</span>
+      </button>
+      <button class="feeling-btn" data-val="bien" onclick="selectFeeling(this,'bien')"
+        style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;font-family:var(--font);transition:all 0.15s">
+        <span style="font-size:24px">💪</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-secondary)">Bien</span>
+      </button>
+      <button class="feeling-btn" data-val="excelente" onclick="selectFeeling(this,'excelente')"
+        style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;font-family:var(--font);transition:all 0.15s">
+        <span style="font-size:24px">🔥</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-secondary)">Excelente</span>
+      </button>
+    </div>
+  </div>
   <button class="save-btn" onclick="saveAndExit()">Guardar y Salir</button>
   <button onclick="discardAndExit()" style="display:block;width:100%;background:none;border:none;color:var(--text-secondary);font-size:14px;font-weight:500;padding:14px;cursor:pointer;margin-top:4px;font-family:var(--font)">Salir sin guardar</button>
 </div>
@@ -5100,9 +5139,14 @@ const quotes = [
 const summaryQuotes = [
   "Gran trabajo hoy. La constancia es lo que construye resultados.",
   "Otro entrenamiento en el banco. Tu cuerpo lo agradece.",
-  "Eso es disciplina. Nos vemos en el proximo.",
-  "Cada sesion te acerca mas a tu mejor version.",
+  "Eso es disciplina. Nos vemos en el próximo.",
+  "Cada sesión te acerca más a tu mejor versión.",
   "Hoy decidiste ser mejor. Y lo lograste.",
+  "El descanso de hoy es parte del entrenamiento de mañana.",
+  "No todos los días son perfectos — pero todos suman.",
+  "El músculo no crece en el gym. Crece mientras descansas.",
+  "Progreso silencioso es progreso real.",
+  "Alimentación, sueño, entreno. Los tres pilares. Hoy cumpliste uno.",
 ];
 
 function getRandomQuote() {
@@ -8621,6 +8665,137 @@ function skipRPESelection() {
 }
 
 // ─── End Workout ────────────────────────────────────────────
+function getCoachSummaryMessage(coachId, effectiveSets, totalSets, sessionRPE, durationMs) {
+  const durationMin = Math.round((durationMs || 0) / 60000);
+  const pct = totalSets > 0 ? Math.round((effectiveSets / totalSets) * 100) : 0;
+
+  const pools = {
+    maria: {
+      excelente: [
+        `¡Eso es lo que quiero ver! ${effectiveSets} series efectivas — tu cuerpo va a crecer con esto. 💪`,
+        `${pct}% de series efectivas. Parcera, eso no es suerte, es trabajo bien hecho. ¡Sigamos así!`,
+        `RPE ${sessionRPE} de promedio y ${effectiveSets} series que contaron de verdad. ¡Brutal!`
+      ],
+      bueno: [
+        `Buen trabajo hoy. ${effectiveSets} series efectivas es una base sólida. Descansa bien esta noche.`,
+        `${durationMin} minutos de trabajo real. ¿Comiste proteína después? Ese detalle importa. 🥗`,
+        `Consistencia es la clave. Hoy sumaste. Mañana sumas más.`
+      ],
+      mejorar: [
+        `Veo que algunas series quedaron por debajo del umbral de adaptación. ¿Cómo estuvo la energía hoy?`,
+        `El volumen estuvo bajo hoy — puede ser fatiga acumulada. Noche de sueño profundo, ¿sí?`,
+        `No todos los días son perfectos. Lo que importa es que viniste. ¿Qué necesitas para la próxima?`
+      ],
+      alimentacion: [
+        `Recuerda: en las próximas 2 horas es la ventana de recuperación. Proteína + carbos. ¡No te lo saltes!`,
+        `El entrenamiento terminó pero la recuperación apenas empieza. Hidratación y comida, ¿cómo vas?`
+      ],
+      estres: [
+        `El ejercicio ya hizo su parte con el cortisol. Ahora toca descansar de verdad — sin pantallas antes de dormir.`,
+        `Entrenar con estrés es doble trabajo. ¿Cómo está la cabeza fuera del gym?`
+      ]
+    },
+    carlos: {
+      excelente: [
+        `${effectiveSets} series efectivas sobre ${totalSets} totales. ${pct}% de eficiencia. Eso es lo que busco.`,
+        `RPE ${sessionRPE} promedio con ${effectiveSets} series productivas. Los datos hablan.`,
+        `Sesión sólida. ${durationMin} minutos bien invertidos. Recuperación ahora es obligatoria.`
+      ],
+      bueno: [
+        `Trabajo decente. Pero sé que puedes llegar a más del ${pct}% de efectividad. ¿Qué limitó hoy?`,
+        `${effectiveSets} series que contaron. El resto fue calentamiento. La próxima, más intensidad desde el inicio.`,
+        `${durationMin} minutos. El volumen existe. Asegúrate de que la proteína también.`
+      ],
+      mejorar: [
+        `Bajo rendimiento hoy. ¿Sueño? ¿Nutrición? ¿Estrés? El cuerpo no miente. Revisa las variables.`,
+        `Menos del 50% de series efectivas. Esto no se solucionará entrenando más — revisa la recuperación.`,
+        `El problema no siempre está en el gym. ¿Cuántas horas dormiste?`
+      ],
+      alimentacion: [
+        `Ventana anabólica activa. 30-40g de proteína en la próxima hora. No es opcional.`,
+        `Post-entrenamiento: proteína + carbos de rápida absorción. Los datos respaldan esto.`
+      ],
+      estres: [
+        `El cortisol interfiere con la síntesis proteica. Si el estrés es alto, el entrenamiento rinde menos. Gestiona eso.`,
+        `Sueño de calidad = más testosterona = más músculo. Esa ecuación no cambia.`
+      ]
+    },
+    andrea: {
+      excelente: [
+        `¡Qué sesión más completa! ${effectiveSets} series en las que tu cuerpo realmente trabajó. Eso se siente. 🌟`,
+        `${pct}% de intensidad efectiva. Pero lo más importante: ¿cómo se siente tu cuerpo ahora mismo?`,
+        `Bellísimo trabajo hoy. Ahora el descanso es parte del proceso — no lo saltes.`
+      ],
+      bueno: [
+        `Buen esfuerzo hoy. Escucha lo que tu cuerpo te dice en las próximas horas.`,
+        `${effectiveSets} series de calidad. ¿Tomaste suficiente agua durante el entrenamiento?`,
+        `Consistencia sin prisa. Cada sesión suma, aunque no sea perfecta. 💙`
+      ],
+      mejorar: [
+        `A veces el cuerpo necesita más descanso que esfuerzo. ¿Cómo dormiste anoche?`,
+        `Días así existen. Lo importante es que escuchaste tu cuerpo y terminaste. Eso tiene valor.`,
+        `¿Hay algo fuera del gym que esté pesando? El estrés afecta el rendimiento más de lo que creemos.`
+      ],
+      alimentacion: [
+        `La recuperación empieza ahora. Algo nutritivo en la próxima hora — no tiene que ser perfecto, solo real.`,
+        `Tu cuerpo acaba de trabajar duro. Dale lo que necesita: agua, proteína, y descanso. 🥗`
+      ],
+      estres: [
+        `El entrenamiento libera tensión, pero el descanso la procesa. Esta noche, duerme sin culpa.`,
+        `¿Cómo está la mente fuera del gym? El bienestar es todo el sistema, no solo el músculo.`
+      ]
+    },
+    diego: {
+      excelente: [
+        `${effectiveSets} series que contaron. El resto fue preparación. Así se construye.`,
+        `RPE ${sessionRPE}. Intensidad con control. Eso es madurez atlética.`,
+        `Buen trabajo. El cuerpo creció hoy. Ahora dejar que lo procese.`
+      ],
+      bueno: [
+        `Suficiente para hoy. La constancia no necesita ser espectacular para ser efectiva.`,
+        `${durationMin} minutos. ${effectiveSets} series útiles. El proceso avanza.`,
+        `No cada día es la cima. Hoy fue trabajo base. Eso también cuenta.`
+      ],
+      mejorar: [
+        `El guerrero que no descansa bien, pelea mal. ¿Qué está restando energía fuera del gym?`,
+        `Pocas series efectivas. No es el entrenamiento — es lo que rodeó al entrenamiento. Revisa.`,
+        `El progreso no siempre es hacia arriba. A veces es hacia adentro. ¿Qué aprendiste hoy?`
+      ],
+      alimentacion: [
+        `El cuerpo reconstruye con lo que le das. Proteína y descanso. Sin atajos.`,
+        `Nutrición post-entrenamiento: simple y real. Lo que la naturaleza provee.`
+      ],
+      estres: [
+        `La mente en silencio construye más que el cuerpo en movimiento constante. Descansa bien.`,
+        `El estrés es carga invisible. El cuerpo la siente aunque tú no la veas.`
+      ]
+    }
+  };
+
+  const pool = pools[coachId] || pools.maria;
+  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  if (pct >= 70 && sessionRPE >= 7) return rand(pool.excelente);
+  if (pct >= 40) {
+    const extras = [...pool.alimentacion, ...pool.estres];
+    return Math.random() > 0.5 ? rand(pool.bueno) : rand(extras);
+  }
+  const lowPool = [...pool.mejorar, ...pool.estres];
+  return rand(lowPool);
+}
+
+let _postWorkoutFeeling = null;
+
+function selectFeeling(btn, val) {
+  _postWorkoutFeeling = val;
+  document.querySelectorAll('.feeling-btn').forEach(b => {
+    const isSelected = b === btn;
+    b.style.borderColor = isSelected ? 'var(--primary)' : 'var(--border)';
+    b.style.background = isSelected ? 'rgba(0,229,255,0.08)' : 'var(--bg)';
+    b.querySelector('span:last-child').style.color = isSelected ? 'var(--primary)' : 'var(--text-secondary)';
+  });
+}
+
 function endWorkout() {
   // Capturar descanso activo antes de cerrar (usa _restTargetSet para sobrevivir cambios de ejercicio)
   if (isResting && restStartedAt && _restTargetSet) {
@@ -8658,9 +8833,22 @@ function endWorkout() {
     document.getElementById('sumExercises').previousElementSibling.innerHTML =
       '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
   }
+  // Series efectivas: work sets con RPE >= 6
+  const allWorkSets = completedExercises.flatMap(ex =>
+    ex.sets.filter(s => !s.is_warmup_set)
+  );
+  const effectiveSets = allWorkSets.filter(s => s.rpe != null && s.rpe >= 6).length;
+  const totalWorkSets = allWorkSets.length;
+  const effectiveStat = document.getElementById('sumEffectiveStat');
+  const effectiveEl = document.getElementById('sumEffectiveSets');
+  if (effectiveStat && effectiveEl && totalWorkSets > 0) {
+    effectiveEl.textContent = effectiveSets;
+    effectiveStat.style.display = '';
+  } else if (effectiveStat) {
+    effectiveStat.style.display = 'none';
+  }
   const now = new Date();
   document.getElementById('summaryDate').textContent = now.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' });
-  document.getElementById('summaryMotivation').textContent = summaryQuotes[Math.floor(Math.random() * summaryQuotes.length)];
   // Warmup stat — show only if the user actually warmed up
   const warmupRow = document.getElementById('summaryWarmupRow');
   if (warmupDuration > 0) {
@@ -8701,7 +8889,18 @@ function endWorkout() {
     rpeRow.style.display = 'none';
   }
 
-  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked, avg_rpe: sessionRPE });
+  // Mensaje contextual del coach en el resumen
+  const _coach = getSelectedCoach();
+  const _coachId = _coach ? _coach.id : 'maria';
+  const _coachMsg = getCoachSummaryMessage(_coachId, effectiveSets, totalWorkSets, sessionRPE, elapsed);
+  document.getElementById('summaryMotivation').textContent = _coachMsg;
+  const _summaryCoachEmoji = document.getElementById('summaryCoachEmoji');
+  const _summaryCoachName = document.getElementById('summaryCoachName');
+  if (_summaryCoachEmoji && _coach) _summaryCoachEmoji.textContent = _coach.emoji;
+  if (_summaryCoachName && _coach) _summaryCoachName.textContent = _coach.name;
+
+  _postWorkoutFeeling = null;
+  savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked, avg_rpe: sessionRPE, feeling: _postWorkoutFeeling });
   clearSessionState(); // #7 — entrenamiento terminado, limpiar estado guardado
   // #10 — feedback semanal (solo viernes/lunes con ≥2 sesiones)
   const weeklyFB = generateWeeklyFeedback();
@@ -10394,6 +10593,10 @@ endWorkout = function() {
 };
 const _origSaveAndExit = saveAndExit;
 saveAndExit = function() {
+  if (_postWorkoutFeeling && savedWorkouts.length > 0) {
+    savedWorkouts[0].feeling = _postWorkoutFeeling;
+  }
+  _postWorkoutFeeling = null;
   _origSaveAndExit();
   saveToStorage();
   updateHomeStats();
