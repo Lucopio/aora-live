@@ -4616,11 +4616,23 @@ function updateCoachSpotlight() {
   // Update spotlight
   const avatarEl = document.getElementById('coachAvatarEmoji');
   const nameEl = document.getElementById('coachSpotlightName');
-  if (avatarEl) avatarEl.textContent = coach.emoji;
+  if (avatarEl) {
+    if (coach.photoUrl) {
+      avatarEl.innerHTML = `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    } else {
+      avatarEl.textContent = coach.emoji;
+    }
+  }
   if (nameEl) nameEl.textContent = coach.name + ' ' + coach.flag;
   if (btnName) btnName.textContent = coach.name;
   const workoutCoachEmoji = document.getElementById('workoutCoachEmoji');
-  if (workoutCoachEmoji) workoutCoachEmoji.textContent = coach.emoji;
+  if (workoutCoachEmoji) {
+    if (coach.photoUrl) {
+      workoutCoachEmoji.innerHTML = `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;vertical-align:middle">`;
+    } else {
+      workoutCoachEmoji.textContent = coach.emoji;
+    }
+  }
 
   // Update message
   const msg = getCoachMessage(coach.id, {});
