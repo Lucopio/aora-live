@@ -4258,6 +4258,109 @@ const COACH_ALERTS = {
       "Sin calentamiento. Recuerda: la lesión que te saca 4 semanas empieza en el primer minuto apresurado.",
       "El guerrero que no afila su espada pierde la batalla antes de empezar."
     ]
+  },
+  checkIn: {
+    maria: [
+      "¡Hola! ¿Cómo amaneciste hoy? Cuéntame cómo estás antes de arrancar. 💪",
+      "¡Buenas! ¿Cómo está el cuerpo hoy? ¿Dormiste bien anoche?",
+      "¡Ey! ¿Cómo estuvo el día? Aquí estoy contigo para este entrenamiento. 🔥",
+      "¿Lista/listo para esto? ¿Cómo te sientes hoy — energía alta, media, o estás empujando?"
+    ],
+    carlos: [
+      "¿Cómo está el cuerpo hoy? Sueño, alimentación, estrés — esos factores afectan el rendimiento.",
+      "Antes de arrancar: ¿cómo dormiste? ¿Comiste bien hoy? Eso define el techo de hoy.",
+      "Check rápido: energía de 1 a 10, ¿cómo estás?",
+      "¿Cómo está la recuperación desde el último entreno?"
+    ],
+    andrea: [
+      "Hola 🌸 ¿Cómo llegás hoy? Cuerpo, mente — todo cuenta. ¿Cómo estás?",
+      "Antes de empezar: ¿cómo dormiste? ¿Cómo está la cabeza hoy?",
+      "¿Qué tal el día hasta acá? Me interesa saber cómo llegás al entreno.",
+      "¿Cómo está tu energía hoy? Sin presión — lo que sientas está bien."
+    ],
+    diego: [
+      "¿Cómo llegás hoy?",
+      "Antes de empezar — ¿cómo está el cuerpo?",
+      "¿Dormiste bien? ¿Comiste? El entrenamiento de hoy depende de eso.",
+      "¿Cómo está la cabeza hoy?"
+    ]
+  },
+  inactivity: {
+    maria: [
+      "¡Ey, te perdí de vista! 👀 ¿Todo bien? Registrar tus series es clave — así sabemos si estás progresando de verdad.",
+      "Llevas un rato sin anotar nada. ¿Descansando, cambiando ejercicio o necesitas ayuda? ¡Cuéntame!",
+      "Psst — no te olvides de registrar. Cada serie que anotas es datos reales de tu progreso. 📊",
+      "¿Sigues ahí? Recuerda que lo que no se mide no mejora. ¡Registra tu próxima serie!"
+    ],
+    carlos: [
+      "5 minutos sin registro. El tracking no es opcional — es la diferencia entre progresar y estancarse.",
+      "Sin datos no hay análisis. ¿Qué pasó en los últimos minutos? Registra cada serie.",
+      "El que no mide no mejora. Llevas un rato sin anotar. Vuelve al registro.",
+      "Dato perdido = progreso invisible. Registra ahora."
+    ],
+    andrea: [
+      "¿Cómo vas? Noto que no has registrado nada en un rato. ¿Todo bien? Llevar el control también es cuidarte.",
+      "No es obligación, pero registrar cómo va el entreno te ayuda a entender tu cuerpo mejor. ¿Seguimos?",
+      "¿Necesitás una pausa? Está bien. Pero si estás entrenando, registrar te ayuda a ver el progreso real.",
+      "A veces cuando no registramos es porque algo nos distrajo. ¿Todo bien por ahí?"
+    ],
+    diego: [
+      "Sin registro, sin memoria. El cuerpo olvida lo que la mente no anota.",
+      "¿Sigues entrenando? Registra. El progreso que no ves no existe.",
+      "Llevas rato sin anotar. El guerrero que no lleva cuenta de sus batallas no aprende de ellas.",
+      "Registra. Es disciplina, no burocracia."
+    ]
+  },
+  setFeedback: {
+    high_rpe: {
+      maria: [
+        "¡RPE alto! Eso es esfuerzo real. ¿Descansaste suficiente antes de esta serie?",
+        "Alta intensidad — bien. Asegúrate de descansar bien entre series.",
+        "¡Eso fue fuerte! Escucha cómo responde tu cuerpo en el descanso. 💪"
+      ],
+      carlos: [
+        "RPE alto. Verifica la técnica — la fatiga compromete la forma antes que la fuerza.",
+        "Alta intensidad. El descanso ahora no es opcional.",
+        "Con RPE así, el siguiente set puede necesitar reducción de peso para mantener técnica."
+      ],
+      andrea: [
+        "Eso fue intenso. ¿Cómo está tu cuerpo? Respira antes de la siguiente serie.",
+        "Alta intensidad — escuchate. ¿Ese esfuerzo fue del cuerpo o de la mente empujando más de la cuenta?",
+        "¿Cómo se sintió esa serie? A veces el RPE alto nos dice algo interesante sobre nuestro estado."
+      ],
+      diego: [
+        "Alta intensidad. El descanso que viene es parte del entrenamiento.",
+        "RPE alto. Buen trabajo. Ahora recupera con intención.",
+        "El esfuerzo se ve. El descanso también importa."
+      ]
+    },
+    low_rpe: {
+      maria: [
+        "RPE bajo — ¿puedes subir un poco el peso o las reps? ¡Dale más! 🔥",
+        "Esa serie fue cómoda. Si puedes, súbele la carga en la siguiente.",
+        "¿Hay más en el tanque? Con RPE bajo todavía tienes margen para progresar."
+      ],
+      carlos: [
+        "RPE bajo = estímulo insuficiente para hipertrofia. Aumenta carga o reps.",
+        "Zona de confort. Progresa: más peso, más reps, o menos descanso.",
+        "Con RPE tan bajo no hay adaptación real. Ajusta la carga."
+      ],
+      andrea: [
+        "Esa serie se sintió liviana, ¿verdad? Podés exigirte un poco más si el cuerpo está bien.",
+        "RPE bajo significa que hay reservas. ¿Cómo te sentís para la siguiente?",
+        "Si se sintió fácil y el cuerpo está bien, considera subir un poco la carga."
+      ],
+      diego: [
+        "Muy liviano. El progreso está fuera de la zona de confort.",
+        "RPE bajo. Todavía hay más. ¿Lo usas?",
+        "Sin esfuerzo no hay adaptación. Ajusta."
+      ]
+    },
+    good_rpe: [
+      "Intensidad perfecta. Así se progresa.",
+      "Zona óptima. Sigue así.",
+      "Esa es la zona. Mantén el ritmo."
+    ]
   }
 };
 
@@ -4265,6 +4368,10 @@ const COACH_ALERTS = {
 let hydrationAlertCount = 0;
 let sessionLongAlertFired = false;
 let warmupAlertFired = false;
+let _lastSetRegisteredAt = null;
+let _inactivityAlertCount = 0;
+const INACTIVITY_THRESHOLD_MS = 5 * 60 * 1000;
+let _setFeedbackCount = 0;
 const _hydrationFired = new Set();
 const SESSION_LONG_MS = 75 * 60 * 1000;
 
@@ -4284,7 +4391,14 @@ function getRandomAlertMessage(alertType) {
 
 function showCoachAlertToast(alertType) {
   const coach = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽' };
-  const message = getRandomAlertMessage(alertType);
+  // Soporte para mensaje pre-calculado (usado en setFeedback)
+  let message;
+  if (alertType === 'setFeedback' && window._pendingSetFeedbackMsg) {
+    message = window._pendingSetFeedbackMsg;
+    window._pendingSetFeedbackMsg = null;
+  } else {
+    message = getRandomAlertMessage(alertType);
+  }
   // Leer la alerta en voz alta si la voz está habilitada
   speakCoachText(message);
 
@@ -4388,6 +4502,18 @@ function checkWorkoutAlerts() {
   if (!sessionLongAlertFired && elapsed >= SESSION_LONG_MS) {
     sessionLongAlertFired = true;
     setTimeout(() => showCoachAlertToast('sessionLength'), 3000);
+  }
+
+  // Inactividad: alerta si llevan más de 5 min sin registrar series (máx 2 veces)
+  if (
+    workoutMode === 'full' &&
+    _inactivityAlertCount < 2 &&
+    _lastSetRegisteredAt !== null &&
+    (Date.now() - _lastSetRegisteredAt) >= INACTIVITY_THRESHOLD_MS
+  ) {
+    _inactivityAlertCount++;
+    _lastSetRegisteredAt = Date.now();
+    showCoachAlertToast('inactivity');
   }
 }
 
@@ -5252,6 +5378,9 @@ function confirmAbandonWorkout() {
   sessionLongAlertFired = false;
   warmupAlertFired = false;
   _hydrationFired.clear();
+  _lastSetRegisteredAt = null;
+  _inactivityAlertCount = 0;
+  _setFeedbackCount = 0;
   dismissCoachAlert();
   if (typeof releaseWakeLock === 'function') releaseWakeLock();
   saveToStorage();
@@ -5680,6 +5809,8 @@ function skipWarmup() {
 }
 
 function launchWorkout() {
+  // Check-in del coach al inicio del entrenamiento
+  setTimeout(() => showCoachAlertToast('checkIn'), 1500);
   workoutStartTime = Date.now();
   resetRestZone();
   startTimer();
@@ -7582,6 +7713,7 @@ function addSet() {
   const side = isUnilateral ? activeSide : null;
   const thisIsWarmup = isWarmupSet;
   currentExerciseSets.push({ weight, reps, unit: weightUnit, side, rpe: null, is_warmup_set: thisIsWarmup, rest_duration_seconds: null });
+  _lastSetRegisteredAt = Date.now();
   // Guardar último peso + reps solo de series de trabajo
   if (!thisIsWarmup) {
     const key = exKey(currentExerciseName, currentEquipment);
@@ -8652,6 +8784,32 @@ function selectRPE(value) {
     startRestTimer();
   }
   setJustDeleted = false;
+
+  // Feedback contextual del coach tras confirmar RPE (40% de probabilidad, máx cada 3 series)
+  const _workSetsCount = currentExerciseSets.filter(s => !s.is_warmup_set).length;
+  if (
+    _workSetsCount > 0 &&
+    _setFeedbackCount < 6 &&
+    _workSetsCount % 3 === 0 &&
+    Math.random() < 0.4
+  ) {
+    const _coachId = getActiveCoachId();
+    const _sf = COACH_ALERTS.setFeedback;
+    let _feedbackMsg;
+    if (value >= 9) {
+      const pool = _sf.high_rpe[_coachId] || _sf.high_rpe.maria;
+      _feedbackMsg = pool[Math.floor(Math.random() * pool.length)];
+    } else if (value <= 5) {
+      const pool = _sf.low_rpe[_coachId] || _sf.low_rpe.maria;
+      _feedbackMsg = pool[Math.floor(Math.random() * pool.length)];
+    } else {
+      const pool = _sf.good_rpe;
+      _feedbackMsg = pool[Math.floor(Math.random() * pool.length)];
+    }
+    _setFeedbackCount++;
+    window._pendingSetFeedbackMsg = _feedbackMsg;
+    setTimeout(() => showCoachAlertToast('setFeedback'), 800);
+  }
 }
 
 function skipRPESelection() {
@@ -9329,6 +9487,9 @@ function saveAndExit() {
   sessionLongAlertFired = false;
   warmupAlertFired = false;
   _hydrationFired.clear();
+  _lastSetRegisteredAt = null;
+  _inactivityAlertCount = 0;
+  _setFeedbackCount = 0;
   dismissCoachAlert();
 
   const ws = savedWorkouts.length + 3;
@@ -9348,6 +9509,9 @@ function discardAndExit() {
   sessionLongAlertFired = false;
   warmupAlertFired = false;
   _hydrationFired.clear();
+  _lastSetRegisteredAt = null;
+  _inactivityAlertCount = 0;
+  _setFeedbackCount = 0;
   dismissCoachAlert();
   showScreen('home');
 }
