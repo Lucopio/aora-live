@@ -2834,6 +2834,7 @@ body {
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
             Ver forma
           </button>
+          <button id="wkInfoBtn" onclick="showExerciseInfo(currentExerciseName)" style="display:none;align-items:center;justify-content:center;width:28px;height:28px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;font-size:13px;font-weight:700;color:var(--text-secondary);cursor:pointer;padding:0;flex-shrink:0" title="Técnica del ejercicio">ⓘ</button>
           <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
         </div>
       </div>
@@ -3558,7 +3559,7 @@ body {
     ontouchstart="this.style.opacity='0.85'"
     ontouchend="this.style.opacity='1'"
   >
-    Entendido, empezar ✓
+    Entendido ✓
   </button>
 </div>
 
@@ -7408,11 +7409,10 @@ function exerciseRowHtml(item, equips) {
   const chips = equips.map(e =>
     `<button class="equip-chip" data-exercise="${attr(item)}" data-equip="${attr(e)}" onclick="catalogSelectEquip(this)">${equipChipLabel(e)}</button>`
   ).join('');
-  const hasInfo = !!EXERCISE_INFO[item];
-  const infoBtn = hasInfo ? `<button class="ex-info-btn" onclick="event.stopPropagation();showExerciseInfo('${attr(item)}')" title="Info del ejercicio">ℹ</button>` : '';
+  // Botón ℹ eliminado del catálogo — la info de técnica se abre desde el workout
   return `<div class="exercise-row">
     <div class="exercise-row-header">
-      <span class="exercise-row-name">${item}</span>${infoBtn}${lwStr}
+      <span class="exercise-row-name">${item}</span>${lwStr}
     </div>
     <div class="equip-chips">${chips}</div>
   </div>`;
@@ -7712,6 +7712,8 @@ function _doSelectExercise(name, equip) {
   // #5 — mostrar/ocultar botón de GIF
   const wkGifBtn = document.getElementById('wkGifBtn');
   if (wkGifBtn) wkGifBtn.style.display = 'flex';
+  const wkInfoBtn = document.getElementById('wkInfoBtn');
+  if (wkInfoBtn) wkInfoBtn.style.display = EXERCISE_INFO[name] ? 'flex' : 'none';
 
   // Pre-fill last weight for this exercise+equipment combination
   const key = exKey(name, currentEquipment);
@@ -8252,7 +8254,9 @@ function showExerciseInfo(name) {
 }
 
 function openExerciseYT() {
-  const query = document.getElementById('exInfoYtBtn').dataset.query || '';
+  const base = document.getElementById('exInfoYtBtn').dataset.query || '';
+  const equipLabel = currentEquipment ? (EQUIP_LABEL[currentEquipment] || currentEquipment) : '';
+  const query = equipLabel ? `${base} ${equipLabel}` : base;
   window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(query), '_blank');
 }
 
