@@ -3754,10 +3754,19 @@ body {
       </div>
     </div>
   </div>
+  <button id="preWkExBtn" onclick="openPreWorkoutPicker()" style="width:100%;padding:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Agregar ejercicios a mi rutina de hoy
+  </button>
   <button class="sheet-cta" id="startWorkoutBtn" onclick="startWorkout()" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     Comenzar Entrenamiento
   </button>
+</div>
+
+<!-- PRE-WORKOUT EXERCISE PICKER SHEET -->
+<div id="preWkPickerSheet" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:650;display:none;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closePreWorkoutPicker()">
+  <div id="preWkPickerInner" style="width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 0 env(safe-area-inset-bottom,24px);max-height:85vh;display:flex;flex-direction:column"></div>
 </div>
 
 <!-- START WORKOUT CONTEXT MENU -->
@@ -6031,6 +6040,120 @@ const exerciseDB = [
   { group: 'Calistenia', items: ['Muscle-up', 'L-sit', 'Pistol squat', 'Archer push-up', 'Pike push-up', 'Hollow body', 'Back lever'] },
 ];
 
+// ─── Exercise Catalog (name + equipment pairs, para Universal Picker) ────────
+const EXERCISE_CATALOG = {
+  pecho:    { label: 'Pecho',    exercises: [
+    { name: 'Press de pecho',   equipment: 'Barra' },
+    { name: 'Press de pecho',   equipment: 'Mancuernas' },
+    { name: 'Press de pecho',   equipment: 'Máquina' },
+    { name: 'Press inclinado',  equipment: 'Barra' },
+    { name: 'Press inclinado',  equipment: 'Mancuernas' },
+    { name: 'Aperturas',        equipment: 'Mancuernas' },
+    { name: 'Aperturas',        equipment: 'Cable' },
+    { name: 'Aperturas',        equipment: 'Máquina' },
+    { name: 'Fondos',           equipment: 'Barras paralelas' },
+    { name: 'Crossover',        equipment: 'Cable' },
+    { name: 'Pull-over',        equipment: 'Mancuerna' },
+    { name: 'Press declinado',  equipment: 'Barra' },
+    { name: 'Press declinado',  equipment: 'Mancuernas' },
+  ]},
+  espalda:  { label: 'Espalda',  exercises: [
+    { name: 'Dominadas',              equipment: 'Peso corporal' },
+    { name: 'Remo',                   equipment: 'Barra' },
+    { name: 'Remo',                   equipment: 'Mancuerna' },
+    { name: 'Remo',                   equipment: 'Cable' },
+    { name: 'Remo',                   equipment: 'Máquina' },
+    { name: 'Peso muerto',            equipment: 'Barra' },
+    { name: 'Peso muerto',            equipment: 'Mancuernas' },
+    { name: 'Jalones al pecho',       equipment: 'Cable' },
+    { name: 'Jalones al pecho',       equipment: 'Máquina' },
+    { name: 'Jalones agarre neutro',  equipment: 'Cable' },
+    { name: 'Remo en T',              equipment: 'Barra' },
+    { name: 'Face pull',              equipment: 'Cable' },
+  ]},
+  hombros:  { label: 'Hombros',  exercises: [
+    { name: 'Press de hombros',       equipment: 'Barra' },
+    { name: 'Press de hombros',       equipment: 'Mancuernas' },
+    { name: 'Press de hombros',       equipment: 'Máquina' },
+    { name: 'Elevaciones laterales',  equipment: 'Mancuernas' },
+    { name: 'Elevaciones laterales',  equipment: 'Cable' },
+    { name: 'Elevaciones frontales',  equipment: 'Mancuernas' },
+    { name: 'Elevaciones frontales',  equipment: 'Barra' },
+    { name: 'Remo al cuello',         equipment: 'Barra' },
+    { name: 'Remo al cuello',         equipment: 'Cable' },
+    { name: 'Pájaros',                equipment: 'Mancuernas' },
+    { name: 'Pájaros',                equipment: 'Cable' },
+  ]},
+  biceps:   { label: 'Bíceps',   exercises: [
+    { name: 'Curl de bíceps',    equipment: 'Barra' },
+    { name: 'Curl de bíceps',    equipment: 'Mancuernas' },
+    { name: 'Curl de bíceps',    equipment: 'Cable' },
+    { name: 'Curl de bíceps',    equipment: 'Máquina' },
+    { name: 'Curl martillo',     equipment: 'Mancuernas' },
+    { name: 'Curl martillo',     equipment: 'Cable' },
+    { name: 'Curl concentrado',  equipment: 'Mancuerna' },
+    { name: 'Curl predicador',   equipment: 'Barra' },
+    { name: 'Curl predicador',   equipment: 'Mancuerna' },
+    { name: 'Curl inverso',      equipment: 'Barra' },
+  ]},
+  triceps:  { label: 'Tríceps',  exercises: [
+    { name: 'Press francés',        equipment: 'Barra' },
+    { name: 'Press francés',        equipment: 'Mancuernas' },
+    { name: 'Jalón de tríceps',     equipment: 'Cable' },
+    { name: 'Extensión de tríceps', equipment: 'Cable' },
+    { name: 'Extensión de tríceps', equipment: 'Mancuerna' },
+    { name: 'Fondos de tríceps',    equipment: 'Banco' },
+    { name: 'Fondos de tríceps',    equipment: 'Barras paralelas' },
+    { name: 'Patada de tríceps',    equipment: 'Mancuerna' },
+    { name: 'Patada de tríceps',    equipment: 'Cable' },
+  ]},
+  piernas:  { label: 'Piernas',  exercises: [
+    { name: 'Sentadilla',                  equipment: 'Barra' },
+    { name: 'Sentadilla hack',             equipment: 'Máquina' },
+    { name: 'Sentadilla goblet',           equipment: 'Mancuerna' },
+    { name: 'Prensa',                      equipment: 'Máquina' },
+    { name: 'Extensión de cuádriceps',     equipment: 'Máquina' },
+    { name: 'Curl femoral',                equipment: 'Máquina' },
+    { name: 'Curl femoral',                equipment: 'Mancuerna' },
+    { name: 'Peso muerto rumano',          equipment: 'Barra' },
+    { name: 'Peso muerto rumano',          equipment: 'Mancuernas' },
+    { name: 'Zancadas',                    equipment: 'Mancuernas' },
+    { name: 'Zancadas',                    equipment: 'Barra' },
+    { name: 'Elevación de pantorrillas',   equipment: 'Máquina' },
+    { name: 'Elevación de pantorrillas',   equipment: 'Peso corporal' },
+  ]},
+  gluteos:  { label: 'Glúteos',  exercises: [
+    { name: 'Hip thrust',        equipment: 'Barra' },
+    { name: 'Hip thrust',        equipment: 'Máquina' },
+    { name: 'Patada trasera',    equipment: 'Cable' },
+    { name: 'Patada trasera',    equipment: 'Máquina' },
+    { name: 'Abducción',         equipment: 'Cable' },
+    { name: 'Abducción',         equipment: 'Máquina' },
+    { name: 'Sentadilla sumo',   equipment: 'Barra' },
+    { name: 'Sentadilla sumo',   equipment: 'Mancuerna' },
+    { name: 'Puente de glúteos', equipment: 'Peso corporal' },
+  ]},
+  abdomen:  { label: 'Abdomen',  exercises: [
+    { name: 'Plancha',               equipment: 'Peso corporal' },
+    { name: 'Crunch',                equipment: 'Peso corporal' },
+    { name: 'Crunch',                equipment: 'Cable' },
+    { name: 'Elevación de piernas',  equipment: 'Peso corporal' },
+    { name: 'Rueda abdominal',       equipment: 'Rueda' },
+    { name: 'Russian twist',         equipment: 'Peso corporal' },
+    { name: 'Russian twist',         equipment: 'Mancuerna' },
+    { name: 'Oblicuos en polea',     equipment: 'Cable' },
+  ]},
+  cardio:   { label: 'Cardio',   exercises: [
+    { name: 'Caminata en cinta',    equipment: 'Máquina' },
+    { name: 'Carrera en cinta',     equipment: 'Máquina' },
+    { name: 'Bicicleta estática',   equipment: 'Máquina' },
+    { name: 'Elíptica',             equipment: 'Máquina' },
+    { name: 'Remo cardio',          equipment: 'Máquina' },
+    { name: 'Saltar cuerda',        equipment: 'Cuerda' },
+    { name: 'HIIT libre',           equipment: 'Peso corporal' },
+  ]},
+};
+
 // ─── Exercise Info Database ───────────────────────────────────
 const EXERCISE_INFO = {
   'Press de banca': {
@@ -7404,6 +7527,21 @@ function equipChipLabel(id) {
   return opt ? opt.label : (EQUIP_LABEL[id] || id);
 }
 
+// Ítem plano "Nombre · Equipo" para el catálogo y el picker universal
+function _uniExItemHtml(name, equip) {
+  const lw = getLastWeightForExercise(name);
+  const lwStr = lw && lw.weight > 0
+    ? ` <span style="font-size:11px;color:var(--text-tertiary)">· últ: ${lw.weight}${lw.unit}</span>` : '';
+  const eqLabel = EQUIP_LABEL[equip] || equip || '';
+  const eqSpan  = eqLabel ? `<span style="color:var(--text-tertiary);font-size:12px"> · ${eqLabel}</span>` : '';
+  const safeN = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const safeE = equip.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return `<div class="ex-picker-item" onclick="selectExercise('${safeN}','${safeE}')">
+    <span>${name}${eqSpan}${lwStr}</span>
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>`;
+}
+
 function exerciseRowHtml(item, equips) {
   const lw = getLastWeightForExercise(item);
   const lwStr = lw && lw.weight > 0
@@ -7432,11 +7570,11 @@ function renderCatalog(filter) {
     titleEl.textContent = 'Seleccionar ejercicio';
     exerciseDB.forEach(g => {
       g.items.filter(i => i.toLowerCase().includes(f)).forEach(item => {
-        html += exerciseRowHtml(item, EXERCISE_EQUIP[item] || ['']);
+        (EXERCISE_EQUIP[item] || ['']).forEach(eq => { html += _uniExItemHtml(item, eq); });
       });
     });
     customExercises.filter(i => i.toLowerCase().includes(f)).forEach(item => {
-      html += exerciseRowHtml(item, EQUIPMENT_OPTIONS.map(e => e.id));
+      html += _uniExItemHtml(item, '');
     });
     if (!html) html = `<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p>Sin resultados</p></div>`;
     list.innerHTML = html;
@@ -7534,9 +7672,9 @@ function renderCatalog(filter) {
       if (subItems && !subItems.includes(item)) return;
       const equips = EXERCISE_EQUIP[item] || [''];
       const filtered = locFilter ? equips.filter(e => locFilter.has(e)) : equips;
-      if (filtered.length > 0) html += exerciseRowHtml(item, filtered);
+      filtered.forEach(eq => { html += _uniExItemHtml(item, eq); });
     });
-    if (!html.includes('exercise-row')) html += `<div style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:14px">Sin ejercicios disponibles para tu ubicación</div>`;
+    if (!html.includes('ex-picker-item')) html += `<div style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:14px">Sin ejercicios disponibles para tu ubicación</div>`;
   }
   list.innerHTML = html;
 }
@@ -12150,7 +12288,7 @@ function openRoutineEditor(routineId = null) {
     if (!data) { showToast('Rutina no encontrada', 'error'); return; }
     document.getElementById('routineNameInput').value   = data.name;
     document.getElementById('routineGroupSelect').value = data.muscle_group || '';
-    _editorExercises = (data.exercises || []).map(ex => ({ name: ex.name, sets: ex.sets || 3 }));
+    _editorExercises = (data.exercises || []).map(ex => ({ name: ex.name, equipment: ex.equipment || '', sets: ex.sets || 3 }));
     _editorDays      = Array.isArray(data.scheduled_days) ? data.scheduled_days : [];
     _editorRest      = data.default_rest_seconds || 120;
     document.getElementById('routineTimeInput').value = data.scheduled_time || '';
@@ -12250,7 +12388,7 @@ function renderEditorExercises() {
       <div class="drag-handle" data-drag="${i}" onmousedown="_dragStart(event,${i})" ontouchstart="_dragStart(event,${i})">
         <span></span><span></span><span></span>
       </div>
-      <div class="editor-exercise-name">${ex.name}</div>
+      <div class="editor-exercise-name">${ex.name}${ex.equipment ? '<span style="color:var(--text-tertiary);font-size:11px;margin-left:4px">\u00b7 '+ex.equipment+'</span>' : ''}</div>
       <div class="sets-stepper">
         <button onclick="changeEditorSets(${i}, -1)">−</button>
         <div>
@@ -12349,7 +12487,7 @@ function saveRoutine() {
       const idx = routines.findIndex(r => r.id === _editingRoutineId);
       if (idx >= 0) {
         routines[idx] = { ...routines[idx], name, muscle_group: muscleGroup || null,
-          exercises: _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
+          exercises: _editorExercises.map(ex => ({ name: ex.name, equipment: ex.equipment || '', sets: ex.sets })),
           scheduled_days: _editorDays.length > 0 ? _editorDays : null,
           scheduled_time: schedTime, default_rest_seconds: _editorRest };
       }
@@ -12408,22 +12546,114 @@ function confirmDeleteRoutine() {
   }
 }
 
+// ─── UNIVERSAL EXERCISE PICKER ────────────────────────────────
+let _upContainer = null, _upCallback = null, _upOpts = {}, _upGroup = '', _upSearch = '';
+
+function renderUniversalPicker(containerId, onSelectFn, opts) {
+  _upContainer = document.getElementById(containerId);
+  if (!_upContainer) return;
+  _upCallback = onSelectFn;
+  _upOpts = opts || {};
+  _upGroup = _upOpts.initialGroup || '';
+  _upSearch = '';
+  _renderUP();
+}
+function _upSetGroup(g)  { _upGroup = g; _renderUP(); }
+function _upDoSearch(v)  { _upSearch = v; _renderUP(); }
+function _upSelect(name, equip) { if (_upCallback) _upCallback(name, equip); }
+function _upDone()  { (_upOpts.onDone  || _upOpts.onClose || function(){})(); }
+function _upClose() { (_upOpts.onClose || function(){})(); }
+function _upCustomAdd() {
+  const inp = document.getElementById('_upCustomInp');
+  const v = (inp ? inp.value : '').trim();
+  if (v) { if (inp) inp.value = ''; _upSelect(v, ''); }
+}
+function _renderUP() {
+  if (!_upContainer) return;
+  const title      = _upOpts.title    || 'Seleccionar ejercicio';
+  const showDone   = !!_upOpts.onDone;
+  const hasClose   = !!_upOpts.onClose;
+  const showCustom = _upOpts.showCustom !== false;
+
+  const groups = Object.entries(EXERCISE_CATALOG);
+  const chipHtml =
+    `<button class="ex-group-chip${_upGroup === '' ? ' active' : ''}" onclick="_upSetGroup('')">Todos</button>` +
+    groups.map(([key, g]) =>
+      `<button class="ex-group-chip${_upGroup === key ? ' active' : ''}" onclick="_upSetGroup('${key}')">${g.label}</button>`
+    ).join('');
+
+  const f = _upSearch.toLowerCase();
+  const items = [];
+  groups.forEach(function(entry) {
+    var key = entry[0], g = entry[1];
+    if (_upGroup && key !== _upGroup) return;
+    g.exercises.forEach(function(ex) {
+      if (!f || ex.name.toLowerCase().includes(f) || (ex.equipment || '').toLowerCase().includes(f))
+        items.push(ex);
+    });
+  });
+
+  const listHtml = items.length
+    ? items.map(function(ex) {
+        const eqSpan = ex.equipment
+          ? '<span style="color:var(--text-tertiary);font-size:12px"> \u00b7 ' + ex.equipment + '</span>' : '';
+        const safeN = ex.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const safeE = (ex.equipment || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return '<div class="ex-picker-item" onclick="_upSelect(\'' + safeN + '\',\'' + safeE + '\')">'
+          + '<span>' + ex.name + eqSpan + '</span>'
+          + '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>'
+          + '</div>';
+      }).join('')
+    : '<div style="text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px">Sin resultados</div>';
+
+  const closeBtn = hasClose
+    ? '<button onclick="_upClose()" style="background:var(--surface-raised);border:none;color:var(--text-secondary);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">\u00d7</button>'
+    : '';
+
+  const customHtml = showCustom
+    ? `<div style="display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0">
+        <input id="_upCustomInp" type="text" maxlength="60" placeholder="Ejercicio personalizado\u2026"
+          style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none"
+          onkeydown="if(event.key==='Enter')_upCustomAdd()">
+        <button onclick="_upCustomAdd()" style="flex-shrink:0;padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:var(--radius-sm);color:var(--primary);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ A\u00f1adir</button>
+      </div>` : '';
+
+  const doneBtn = showDone
+    ? `<div style="padding:12px 16px 4px;flex-shrink:0"><button onclick="_upDone()" style="width:100%;padding:13px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Listo</button></div>`
+    : '';
+
+  _upContainer.innerHTML =
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px;flex-shrink:0">
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary)">${title}</div>
+      ${closeBtn}
+    </div>
+    <div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">${chipHtml}</div>
+    <input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026"
+      value="${_upSearch.replace(/"/g,'&quot;')}"
+      oninput="_upDoSearch(this.value)" style="flex-shrink:0">
+    ${customHtml}
+    <div class="ex-picker-list">${listHtml}</div>
+    ${doneBtn}`;
+}
+
 // ─── EXERCISE PICKER ─────────────────────────────────────────
 
 function openExPicker() {
   _pickerGroupFilter = document.getElementById('routineGroupSelect').value;
-  // Set initial active group from routine's muscle group
+  let initGroup = '';
   if (_pickerGroupFilter && _pickerGroupFilter !== 'Full Body' && ROUTINE_GROUP_MAP[_pickerGroupFilter]) {
-    _exPickerActiveGroup = ROUTINE_GROUP_MAP[_pickerGroupFilter][0] || '';
-  } else {
-    _exPickerActiveGroup = '';
+    const g = (ROUTINE_GROUP_MAP[_pickerGroupFilter][0] || '').toLowerCase();
+    if (EXERCISE_CATALOG[g]) initGroup = g;
   }
-  document.getElementById('exPickerSearch').value = '';
-  document.getElementById('exCustomInput').value  = '';
-  renderExPickerGroupBar();
-  renderExPicker('');
+  renderUniversalPicker('exPickerSheetInner', function(name, equip) {
+    if (_editorExercises.find(function(ex){ return ex.name === name && (ex.equipment||'') === (equip||''); })) {
+      showToast('Ya está en la lista', 'info'); return;
+    }
+    _editorExercises.push({ name: name, equipment: equip || '', sets: 3 });
+    renderEditorExercises();
+    showToast('\u2713 ' + name + (equip ? ' \u00b7 ' + equip : '') + ' añadido', 'success');
+  }, { title: 'Añadir ejercicio', onClose: closeExPicker, initialGroup: initGroup, showCustom: true });
   document.getElementById('exPickerSheet').classList.add('active');
-  setTimeout(() => document.getElementById('exPickerSearch').focus(), 200);
 }
 
 function renderExPickerGroupBar() {
@@ -12445,6 +12675,20 @@ function setExPickerGroup(group) {
 
 function closeExPicker() {
   document.getElementById('exPickerSheet').classList.remove('active');
+}
+
+function openPreWorkoutPicker() {
+  renderUniversalPicker('preWkPickerInner', function(name, equip) {
+    pendingExercises.push({ name: name, equipment: equip || '' });
+    renderPendingExList();
+    updatePendingPill();
+    saveToStorage();
+    showToast('\u2713 ' + name + ' añadido a tu lista', 'success');
+  }, { title: 'Agregar ejercicios', onClose: closePreWorkoutPicker, onDone: closePreWorkoutPicker, showCustom: true });
+  document.getElementById('preWkPickerSheet').style.display = 'flex';
+}
+function closePreWorkoutPicker() {
+  document.getElementById('preWkPickerSheet').style.display = 'none';
 }
 
 function addCustomExercise() {
