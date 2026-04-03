@@ -12548,6 +12548,7 @@ function confirmDeleteRoutine() {
 
 // ─── UNIVERSAL EXERCISE PICKER ────────────────────────────────
 let _upContainer = null, _upCallback = null, _upOpts = {}, _upGroup = '', _upSearch = '';
+let _upSelectedName = '', _upSelectedEquip = '', _upEquipMap = {};
 
 function renderUniversalPicker(containerId, onSelectFn, opts) {
   _upContainer = document.getElementById(containerId);
@@ -12568,8 +12569,58 @@ function _upCustomAdd() {
   const v = (inp ? inp.value : '').trim();
   if (v) { if (inp) inp.value = ''; _upSelect(v, ''); }
 }
+
+// Toca un ejercicio → despliega selector de equipo en la parte inferior
+function _upSelectExercise(name) {
+  const equipments = _upEquipMap[name] || [];
+  // Resaltar fila seleccionada
+  document.querySelectorAll('._upExItem').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.name === name);
+  });
+  const area = document.getElementById('_upEquipArea');
+  if (!area) return;
+  if (equipments.length <= 1) {
+    // 0 ó 1 opción: agregar directamente sin mostrar el área
+    area.style.display = 'none';
+    _upSelect(name, equipments[0] || '');
+    _upSelectedName = '';
+    document.querySelectorAll('._upExItem.selected').forEach(function(el) { el.classList.remove('selected'); });
+    return;
+  }
+  _upSelectedName = name;
+  _upSelectedEquip = equipments[0];
+  const label = document.getElementById('_upEquipLabel');
+  if (label) label.textContent = name;
+  const chipsEl = document.getElementById('_upEquipChips');
+  if (chipsEl) {
+    chipsEl.innerHTML = equipments.map(function(eq) {
+      var safeEq = eq.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return '<button class="ex-group-chip' + (eq === _upSelectedEquip ? ' active' : '') + '" onclick="_upPickEquip(\'' + safeEq + '\')">' + eq + '</button>';
+    }).join('');
+  }
+  area.style.display = 'block';
+}
+function _upPickEquip(eq) {
+  _upSelectedEquip = eq;
+  document.querySelectorAll('#_upEquipChips .ex-group-chip').forEach(function(btn) {
+    btn.classList.toggle('active', btn.textContent.trim() === eq);
+  });
+}
+function _upConfirmAdd() {
+  if (!_upSelectedName) return;
+  _upSelect(_upSelectedName, _upSelectedEquip);
+  const area = document.getElementById('_upEquipArea');
+  if (area) area.style.display = 'none';
+  document.querySelectorAll('._upExItem.selected').forEach(function(el) { el.classList.remove('selected'); });
+  _upSelectedName = '';
+  _upSelectedEquip = '';
+}
+
 function _renderUP() {
   if (!_upContainer) return;
+  _upSelectedName = '';
+  _upSelectedEquip = '';
+
   const title      = _upOpts.title    || 'Seleccionar ejercicio';
   const showDone   = !!_upOpts.onDone;
   const hasClose   = !!_upOpts.onClose;
@@ -12577,30 +12628,37 @@ function _renderUP() {
 
   const groups = Object.entries(EXERCISE_CATALOG);
   const chipHtml =
-    `<button class="ex-group-chip${_upGroup === '' ? ' active' : ''}" onclick="_upSetGroup('')">Todos</button>` +
-    groups.map(([key, g]) =>
-      `<button class="ex-group-chip${_upGroup === key ? ' active' : ''}" onclick="_upSetGroup('${key}')">${g.label}</button>`
-    ).join('');
+    '<button class="ex-group-chip' + (_upGroup === '' ? ' active' : '') + '" onclick="_upSetGroup(\'\')">Todos</button>' +
+    groups.map(function(e) {
+      return '<button class="ex-group-chip' + (_upGroup === e[0] ? ' active' : '') + '" onclick="_upSetGroup(\'' + e[0] + '\')">' + e[1].label + '</button>';
+    }).join('');
 
+  // Construir mapa deduplicado: nombre → [equipos]
   const f = _upSearch.toLowerCase();
-  const items = [];
-  groups.forEach(function(entry) {
-    var key = entry[0], g = entry[1];
+  _upEquipMap = {};
+  groups.forEach(function(e) {
+    var key = e[0], g = e[1];
     if (_upGroup && key !== _upGroup) return;
     g.exercises.forEach(function(ex) {
-      if (!f || ex.name.toLowerCase().includes(f) || (ex.equipment || '').toLowerCase().includes(f))
-        items.push(ex);
+      if (!f || ex.name.toLowerCase().includes(f) || (ex.equipment || '').toLowerCase().includes(f)) {
+        if (!_upEquipMap[ex.name]) _upEquipMap[ex.name] = [];
+        if (ex.equipment && !_upEquipMap[ex.name].includes(ex.equipment))
+          _upEquipMap[ex.name].push(ex.equipment);
+      }
     });
   });
 
-  const listHtml = items.length
-    ? items.map(function(ex) {
-        const eqSpan = ex.equipment
-          ? '<span style="color:var(--text-tertiary);font-size:12px"> \u00b7 ' + ex.equipment + '</span>' : '';
-        const safeN = ex.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        const safeE = (ex.equipment || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        return '<div class="ex-picker-item" onclick="_upSelect(\'' + safeN + '\',\'' + safeE + '\')">'
-          + '<span>' + ex.name + eqSpan + '</span>'
+  const names = Object.keys(_upEquipMap);
+  const listHtml = names.length
+    ? names.map(function(name) {
+        var eqs = _upEquipMap[name];
+        var eqPreview = eqs.length
+          ? '<span style="color:var(--text-tertiary);font-size:11px;display:block;margin-top:2px">' + eqs.slice(0, 4).join(' \u00b7 ') + (eqs.length > 4 ? '\u2026' : '') + '</span>'
+          : '';
+        var safeN = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        var safeDN = name.replace(/"/g,'&quot;');
+        return '<div class="ex-picker-item _upExItem" data-name="' + safeDN + '" onclick="_upSelectExercise(\'' + safeN + '\')">'
+          + '<span>' + name + eqPreview + '</span>'
           + '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>'
           + '</div>';
       }).join('')
@@ -12611,29 +12669,34 @@ function _renderUP() {
     : '';
 
   const customHtml = showCustom
-    ? `<div style="display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0">
-        <input id="_upCustomInp" type="text" maxlength="60" placeholder="Ejercicio personalizado\u2026"
-          style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none"
-          onkeydown="if(event.key==='Enter')_upCustomAdd()">
-        <button onclick="_upCustomAdd()" style="flex-shrink:0;padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:var(--radius-sm);color:var(--primary);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ A\u00f1adir</button>
-      </div>` : '';
+    ? '<div style="display:flex;gap:8px;padding:0 16px 8px;flex-shrink:0">'
+      + '<input id="_upCustomInp" type="text" maxlength="60" placeholder="Ejercicio personalizado\u2026"'
+      + ' style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none"'
+      + ' onkeydown="if(event.key===\'Enter\')_upCustomAdd()">'
+      + '<button onclick="_upCustomAdd()" style="flex-shrink:0;padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:var(--radius-sm);color:var(--primary);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ A\u00f1adir</button>'
+      + '</div>'
+    : '';
 
   const doneBtn = showDone
-    ? `<div style="padding:12px 16px 4px;flex-shrink:0"><button onclick="_upDone()" style="width:100%;padding:13px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Listo</button></div>`
+    ? '<div style="padding:8px 16px 4px;flex-shrink:0"><button onclick="_upDone()" style="width:100%;padding:12px;background:transparent;color:var(--text-secondary);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Listo</button></div>'
     : '';
 
   _upContainer.innerHTML =
-    `<div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px;flex-shrink:0">
-      <div style="font-size:16px;font-weight:700;color:var(--text-primary)">${title}</div>
-      ${closeBtn}
-    </div>
-    <div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">${chipHtml}</div>
-    <input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026"
-      value="${_upSearch.replace(/"/g,'&quot;')}"
-      oninput="_upDoSearch(this.value)" style="flex-shrink:0">
-    ${customHtml}
-    <div class="ex-picker-list">${listHtml}</div>
-    ${doneBtn}`;
+    '<div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px;flex-shrink:0">'
+    + '<div style="font-size:16px;font-weight:700;color:var(--text-primary)">' + title + '</div>'
+    + closeBtn
+    + '</div>'
+    + '<div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">' + chipHtml + '</div>'
+    + '<input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026" value="' + _upSearch.replace(/"/g,'&quot;') + '" oninput="_upDoSearch(this.value)" style="flex-shrink:0">'
+    + customHtml
+    + '<div class="ex-picker-list">' + listHtml + '</div>'
+    + '<div id="_upEquipArea" style="flex-shrink:0;border-top:1px solid var(--border);padding:14px 16px 0;display:none">'
+    +   '<div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Equipo \u00b7 <span id="_upEquipLabel" style="color:var(--text-secondary);text-transform:none;letter-spacing:0"></span></div>'
+    +   '<div id="_upEquipChips" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>'
+    +   '<button onclick="_upConfirmAdd()" style="width:100%;padding:12px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">'
+    +     '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Agregar a la lista</button>'
+    + '</div>'
+    + doneBtn;
 }
 
 // ─── EXERCISE PICKER ─────────────────────────────────────────
