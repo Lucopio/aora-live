@@ -1714,6 +1714,11 @@ body {
 .coach-chat-btn:active { opacity: 0.85; }
 .coach-chat-btn { animation: coachPulse 2s ease-in-out 3; }
 
+/* ─── HOME DASHBOARD v2 ────────────────────────────────── */
+/* The new #coachSpotlight uses block layout; override flex set by JS */
+#coachSpotlight[style*="flex"],
+#coachSpotlight[style*="block"] { display: block !important; }
+
 /* Weekly stats grid */
 .weekly-stats-grid {
   display: grid;
@@ -2669,50 +2674,61 @@ body {
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-    <div class="home-header" style="margin-bottom:16px">
-      <div class="home-greeting-row">
-        <div>
-          <h1 id="homeUserName">AORA LIVE</h1>
-          <div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;flex-wrap:wrap">
-            <span id="homeNickname" style="font-size:15px;font-weight:700;color:var(--primary)"></span>
-            <span id="homeGreeting" style="font-size:13px;color:var(--text-secondary)">Listo para entrenar</span>
+    <!-- ① HEADER -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div id="homeDayGreeting" style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px"></div>
+        <h1 id="homeUserName" style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text-primary);line-height:1.1;margin:0">AORA LIVE</h1>
+        <div style="display:flex;align-items:baseline;gap:5px;margin-top:4px;flex-wrap:wrap">
+          <span id="homeNickname" style="font-size:15px;font-weight:700;color:var(--primary)"></span>
+          <span id="homeGreeting" style="font-size:13px;color:var(--text-secondary)">Listo para entrenar</span>
+        </div>
+      </div>
+      <div id="homeAvatarCircle" onclick="showScreen('settings')" style="width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent2);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent">?</div>
+    </div>
+
+    <!-- ② COACH CARD -->
+    <div id="coachSpotlight" style="display:none;background:var(--surface);border:1px solid rgba(123,97,255,0.25);border-radius:16px;padding:14px;margin-bottom:14px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:radial-gradient(circle at top right,rgba(123,97,255,0.08),transparent 70%);pointer-events:none"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="position:relative">
+            <div id="coachAvatarEmoji" style="width:38px;height:38px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden">🤖</div>
+            <div class="coach-online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:var(--success);border:2px solid var(--surface);border-radius:50%"></div>
+          </div>
+          <div>
+            <div id="coachSpotlightName" style="font-size:14px;font-weight:700;color:var(--text-primary)">Tu Coach</div>
+            <div style="display:flex;align-items:center;gap:5px;margin-top:1px">
+              <div class="pulse-dot"></div>
+              <span style="font-size:10px;color:var(--text-tertiary)">Entrenador IA · Activo ahora</span>
+            </div>
           </div>
         </div>
-        <span class="streak-badge" id="homeStreakBadge">🔥 0 semanas</span>
+        <div style="font-size:9px;padding:3px 8px;background:rgba(123,97,255,0.12);border:0.5px solid rgba(123,97,255,0.3);border-radius:20px;color:var(--accent2);font-weight:700">En línea</div>
       </div>
+      <div id="coachDailyMessage" style="display:none;font-size:13px;color:var(--text-secondary);line-height:1.6;background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;margin-bottom:10px;border-left:2px solid var(--accent2)"></div>
+      <button id="coachChatBtn" onclick="showCoachProfile()" style="display:none;width:100%;padding:10px;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.3);border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--accent2);cursor:pointer;text-align:center;transition:opacity 0.15s">💬 Hablar con <span id="coachChatBtnName">tu coach</span></button>
     </div>
 
-    <!-- Coach Spotlight -->
-    <div class="coach-spotlight" id="coachSpotlight" style="display:none">
-      <div class="coach-avatar-wrap">
-        <div class="coach-avatar" id="coachAvatarEmoji">🤖</div>
-        <div class="coach-online-dot"></div>
-      </div>
-      <div class="coach-info">
-        <div class="coach-name" id="coachSpotlightName">Tu Coach</div>
-        <div class="coach-status">
-          <div class="pulse-dot"></div>
-          Entrenador IA · Activo ahora
-        </div>
-      </div>
+    <!-- Coach empty state -->
+    <div id="coachEmptyState" style="display:none;background:var(--surface);border:1px dashed rgba(255,255,255,0.1);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Elige tu entrenador IA personal</div>
+      <button onclick="showScreen('coach')" style="padding:8px 20px;background:var(--accent2);color:#fff;border:none;border-radius:20px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Elegir coach →</button>
     </div>
-    <div class="coach-message" id="coachDailyMessage" style="display:none"></div>
-    <button class="coach-chat-btn" id="coachChatBtn" onclick="showCoachProfile()" style="display:none">💬 Responderle a <span id="coachChatBtnName">tu coach</span> →</button>
-    <button id="coachTalkBtn" onclick="showScreen('coach')" style="display:none;margin-top:8px;padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer">💬 Hablar con coach</button>
 
-    <!-- Weekly Stats Grid -->
-    <div class="weekly-stats-grid">
-      <div class="wsg-item">
-        <div class="wsg-value" id="weekStreak">0</div>
-        <div class="wsg-label">Racha sem.</div>
-      </div>
+    <!-- ③ STATS GRID -->
+    <div class="weekly-stats-grid" style="margin-bottom:14px">
       <div class="wsg-item">
         <div class="wsg-value" id="weekSessions">0</div>
         <div class="wsg-label">Sesiones</div>
       </div>
       <div class="wsg-item">
-        <div class="wsg-value" id="weekAdherence">—</div>
-        <div class="wsg-label">Adherencia</div>
+        <div class="wsg-value" id="weekTime">0:00</div>
+        <div class="wsg-label">Tiempo</div>
+      </div>
+      <div class="wsg-item">
+        <div class="wsg-value" id="weekStreak">0</div>
+        <div class="wsg-label">Racha sem.</div>
       </div>
     </div>
 
@@ -2725,9 +2741,8 @@ body {
       </div>
     </div>
 
-    <!-- Banner de rutina personalizada -->
+    <!-- Rutina de hoy -->
     <div id="todayWorkoutCard" style="background:linear-gradient(135deg,rgba(0,229,255,0.05),rgba(123,97,255,0.05));border:2px solid rgba(0,229,255,0.15);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;cursor:pointer;transition:all 0.2s ease" onclick="openRoutineSelector()">
-
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -2738,14 +2753,10 @@ body {
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </div>
-
-      <!-- Estado: sin rutina -->
       <div id="noRoutineState" style="display:block">
         <div style="font-size:14px;color:var(--text-secondary);line-height:1.5">Sin rutina seleccionada</div>
         <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px">Toca para elegir una rutina guardada o crear una nueva</div>
       </div>
-
-      <!-- Estado: con rutina seleccionada -->
       <div id="selectedRoutineState" style="display:none">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <div style="font-size:15px;font-weight:700;color:var(--text-primary)" id="selectedRoutineName"></div>
@@ -2754,7 +2765,6 @@ body {
         <div style="font-size:13px;color:var(--text-secondary)" id="selectedRoutineExercises"></div>
         <div id="selectedRoutineChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
       </div>
-
     </div>
 
     <button class="start-btn" onclick="openConfig()">
@@ -2762,25 +2772,21 @@ body {
       Nuevo Entrenamiento
     </button>
 
-    <!-- Rutinas Express -->
     <button onclick="openQuickWorkout()" style="width:100%;margin-bottom:10px;padding:13px 16px;background:linear-gradient(135deg,#1a2a1a,#0d1a0d);border:1px solid #2d5a2d;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;color:#4ade80;cursor:pointer;display:flex;align-items:center;gap:10px" id="quickWorkoutBtn">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       Rutinas Express · máx 30 min
     </button>
 
-    <!-- Rutinas sugeridas -->
     <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
       <div class="icon-tile-sm" style="width:28px;height:28px;border-radius:8px"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
       Rutinas por nivel (Principiante · Intermedio · Avanzado)
     </button>
 
-    <!-- Tips proactivos de IA -->
+    <!-- Tips / AI Insight (ocultos por defecto) -->
     <div id="homeTipsSection" style="display:none">
       <div class="section-title" style="margin-top:20px">💡 Para ti</div>
       <div id="homeTipsList" class="tips-section"></div>
     </div>
-
-    <!-- Weekly AI Insight Card -->
     <div id="homeAIInsightCard" style="display:none;margin-bottom:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
       <div style="background:linear-gradient(135deg,var(--accent2),var(--primary));padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:8px">
@@ -2795,13 +2801,37 @@ body {
       </div>
     </div>
 
-    <div class="section-title">Recientes</div>
-    <div id="homeRecents">
-      <div class="recent-item"><div class="recent-left"><div class="recent-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="recent-info"><h4>Entrenamiento</h4><p>Hoy, 7:15 AM - 8 ejercicios</p></div></div><div class="recent-duration">1:12:34</div></div>
-      <div class="recent-item"><div class="recent-left"><div class="recent-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="recent-info"><h4>Entrenamiento</h4><p>Ayer, 6:50 AM - 7 ejercicios</p></div></div><div class="recent-duration">58:22</div></div>
-      <div class="recent-item"><div class="recent-left"><div class="recent-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="recent-info"><h4>Entrenamiento</h4><p>Lun, 7:00 AM - 9 ejercicios</p></div></div><div class="recent-duration">1:25:10</div></div>
+    <!-- ④ FATIGA MUSCULAR -->
+    <div id="muscleFatigueSection" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px">Estado muscular hoy</span>
+        <span style="font-size:10px;color:var(--text-tertiary)">Basado en tus entrenos</span>
+      </div>
+      <div id="muscleFatigueChips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div id="muscleFatigueEmpty" style="font-size:12px;color:var(--text-tertiary);text-align:center;padding:8px 0;display:none">Registra entrenamientos para ver tu estado muscular</div>
     </div>
-    <div style="height:80px"></div>
+
+    <!-- ⑤ RACHA SEMANAL -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px">Esta semana</span>
+        <span id="streakBadgeNew" style="font-size:11px;font-weight:700;color:var(--primary)"></span>
+      </div>
+      <div id="weekDayDots" style="display:flex;gap:4px"></div>
+      <div id="weekDayLabels" style="display:flex;gap:4px;margin-top:4px"></div>
+    </div>
+
+    <!-- ⑥ TARJETA DE CONTENIDO DIARIA -->
+    <div id="dailyContentCard" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;cursor:pointer">
+      <div id="dailyContentInner" style="padding:14px"></div>
+    </div>
+
+    <!-- Elementos de compatibilidad JS (ocultos) -->
+    <div id="homeRecents" style="display:none"></div>
+    <span id="homeStreakBadge" style="display:none"></span>
+    <div id="weekAdherence" style="display:none"></div>
+
+    <div style="height:90px"></div>
   </div>
 </div>
 
@@ -4702,6 +4732,143 @@ function updateCoachScreen(coach) {
   // Legacy no-op (coach screen is now a chat UI, header updated in initCoachChat)
 }
 
+// ─── HOME DASHBOARD v2 ───────────────────────────────────────
+
+function updateHomeAvatar() {
+  const el = document.getElementById('homeAvatarCircle');
+  if (!el) return;
+  const name = userProfile.nickname || userProfile.full_name || '';
+  el.textContent = name ? name[0].toUpperCase() : '?';
+}
+
+function updateHomeDayGreeting() {
+  const el = document.getElementById('homeDayGreeting');
+  if (!el) return;
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const h = new Date().getHours();
+  const momento = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  el.textContent = days[new Date().getDay()] + ' · ' + momento;
+}
+
+function renderMuscleFatigue() {
+  const container = document.getElementById('muscleFatigueChips');
+  const empty = document.getElementById('muscleFatigueEmpty');
+  if (!container) return;
+  const MUSCLE_GROUPS = [
+    { key:'pecho',   label:'Pecho',   keywords:['pecho','pectoral','banca','chest','crossover','aperturas','fondos','pull-over','press de pecho'] },
+    { key:'espalda', label:'Espalda', keywords:['espalda','remo','dominadas','jalones','peso muerto','pullover','face pull'] },
+    { key:'piernas', label:'Piernas', keywords:['piernas','sentadilla','prensa','cuadricep','femoral','curl de','zancadas','squat','leg','hip thrust'] },
+    { key:'hombros', label:'Hombros', keywords:['hombros','press militar','elevaciones','deltoides','arnold'] },
+    { key:'biceps',  label:'Bíceps',  keywords:['biceps','curl con barra','curl con mancuernas','curl martillo','curl concentrado','curl en polea','curl inclinado','curl 21'] },
+    { key:'triceps', label:'Tríceps', keywords:['triceps','press frances','extension','fondos de triceps','patada de triceps'] },
+    { key:'gluteos', label:'Glúteos', keywords:['gluteos','glute','patada de gluteo','puente','abduccion'] },
+    { key:'abdomen', label:'Core',    keywords:['abdomen','plancha','crunch','russian','mountain','hollow','dragon flag'] },
+  ];
+  const now = Date.now();
+  const DAY_MS = 86400000;
+  const fatigueData = MUSCLE_GROUPS.map(group => {
+    let lastWorked = null;
+    savedWorkouts.forEach(w => {
+      const wDate = new Date(w.date).getTime();
+      const exList = w.exercises_detail || [];
+      const worked = exList.some(ex => {
+        const name = (ex.name || '').toLowerCase();
+        return group.keywords.some(kw => name.includes(kw));
+      });
+      if (worked && (!lastWorked || wDate > lastWorked)) lastWorked = wDate;
+    });
+    if (!lastWorked) return { ...group, state: 'fresh', daysSince: null };
+    const daysSince = Math.floor((now - lastWorked) / DAY_MS);
+    const state = daysSince <= 1 ? 'sore' : daysSince === 2 ? 'recovering' : 'fresh';
+    return { ...group, state, daysSince };
+  });
+  const withData = fatigueData.filter(g => g.daysSince !== null);
+  if (withData.length === 0) {
+    container.style.display = 'none';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  container.style.display = 'flex';
+  const STATE_CONFIG = {
+    fresh:      { dot:'#4ADE80', bg:'rgba(74,222,128,0.08)',  border:'rgba(74,222,128,0.2)',  text:'#4ADE80', label:'Fresco'    },
+    recovering: { dot:'#00E5FF', bg:'rgba(0,229,255,0.06)',   border:'rgba(0,229,255,0.15)',  text:'#00E5FF', label:'Listo'     },
+    sore:       { dot:'#F97316', bg:'rgba(249,115,22,0.08)',  border:'rgba(249,115,22,0.2)',  text:'#F97316', label:'Descansa'  },
+  };
+  container.innerHTML = fatigueData.map(g => {
+    const cfg = STATE_CONFIG[g.state];
+    return '<div style="display:flex;flex-direction:column;align-items:center;background:' + cfg.bg + ';border:0.5px solid ' + cfg.border + ';border-radius:10px;padding:8px 10px;min-width:60px;flex:1;gap:4px"><div style="width:7px;height:7px;border-radius:50%;background:' + cfg.dot + '"></div><div style="font-size:11px;font-weight:600;color:var(--text-primary)">' + g.label + '</div><div style="font-size:9px;color:' + cfg.text + ';font-weight:600">' + cfg.label + '</div></div>';
+  }).join('');
+}
+
+function renderWeekDots() {
+  const dotsEl = document.getElementById('weekDayDots');
+  const labelsEl = document.getElementById('weekDayLabels');
+  const badgeEl = document.getElementById('streakBadgeNew');
+  if (!dotsEl) return;
+  const today = new Date();
+  const todayDay = today.getDay();
+  const orderedDays = [1,2,3,4,5,6,0];
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - ((todayDay === 0 ? 7 : todayDay) - 1));
+  weekStart.setHours(0,0,0,0);
+  const dayHasWorkout = function(offset) {
+    const d = new Date(weekStart); d.setDate(weekStart.getDate() + offset);
+    const next = new Date(d); next.setDate(d.getDate() + 1);
+    return savedWorkouts.some(function(w) { const wd = new Date(w.date); return wd >= d && wd < next; });
+  };
+  const todayOffset = orderedDays.indexOf(todayDay);
+  dotsEl.innerHTML = orderedDays.map(function(_, i) {
+    const done = dayHasWorkout(i);
+    const isToday = i === todayOffset;
+    let bg, h;
+    if (isToday && done)  { bg = '#00E5FF'; h = '8px'; }
+    else if (isToday)     { bg = '#7B61FF'; h = '8px'; }
+    else if (done)        { bg = '#00E5FF'; h = '5px'; }
+    else                  { bg = 'rgba(255,255,255,0.08)'; h = '5px'; }
+    return '<div style="flex:1;height:' + h + ';border-radius:3px;background:' + bg + ';transition:all .3s"></div>';
+  }).join('');
+  labelsEl.innerHTML = ['L','M','M','J','V','S','D'].map(function(d, i) {
+    const isToday = i === todayOffset;
+    return '<div style="flex:1;text-align:center;font-size:9px;color:' + (isToday ? 'var(--primary)' : 'rgba(255,255,255,0.2)') + ';font-weight:' + (isToday ? '700' : '400') + '">' + d + '</div>';
+  }).join('');
+  let streak = 0;
+  for (let i = todayOffset; i >= 0; i--) { if (dayHasWorkout(i)) streak++; else break; }
+  if (badgeEl) badgeEl.textContent = streak > 0 ? '🔥 ' + streak + ' día' + (streak > 1 ? 's' : '') : '';
+}
+
+const HOME_DAILY_CONTENT = [
+  { tag:'Nutrición',  tagColor:'#4ADE80', tagBg:'rgba(74,222,128,0.1)',   coach:'María',  coachFlag:'🇨🇴', title:'Proteína post-entreno: cuánto y cuándo importa de verdad',              body:'El anabolic window no es de 30 minutos — tienes hasta 2 horas. Lo que sí importa es llegar a tu total diario de proteína.',                                       readTime:'3 min' },
+  { tag:'Técnica',    tagColor:'#F97316', tagBg:'rgba(249,115,22,0.1)',   coach:'Carlos', coachFlag:'🇲🇽', title:'3 errores que arruinan tu press de banca (y cómo corregirlos)',          body:'Los codos a 90° generan impingement de hombro. La solución no es bajar el peso — es cambiar el ángulo del agarre.',                                              readTime:'4 min' },
+  { tag:'Bienestar',  tagColor:'#A78BFA', tagBg:'rgba(167,139,250,0.1)', coach:'Andrea', coachFlag:'🇦🇷', title:'Sueño y recuperación muscular: lo que la ciencia realmente dice',          body:'Entre las 22h y las 2am se produce el 70% de la hormona de crecimiento. No es un mito. Tu sueño es parte del entrenamiento.',                                    readTime:'5 min' },
+  { tag:'Filosofía',  tagColor:'#00E5FF', tagBg:'rgba(0,229,255,0.08)',  coach:'Diego',  coachFlag:'🇵🇪', title:'La consistencia no es motivación — es identidad',                         body:'Los que entrenan 10 años no tienen más motivación que tú. Simplemente decidieron ser el tipo de persona que entrena.',                                            readTime:'2 min' },
+  { tag:'Nutrición',  tagColor:'#4ADE80', tagBg:'rgba(74,222,128,0.1)',   coach:'María',  coachFlag:'🇨🇴', title:'Carbohidratos antes del entreno: el combustible que no deberías evitar', body:'Si entrenas con intensidad, los carbohidratos son tu aliado. Eliminarlos no te hace más definido — te hace más lento.',                                            readTime:'3 min' },
+  { tag:'Técnica',    tagColor:'#F97316', tagBg:'rgba(249,115,22,0.1)',   coach:'Carlos', coachFlag:'🇲🇽', title:'Cómo progresar en sentadilla sin lastimarte la espalda',                  body:'La barra alta vs barra baja no es preferencia — es anatomía. Tu cadera y torso determinan cuál es mejor para ti.',                                               readTime:'4 min' },
+  { tag:'Bienestar',  tagColor:'#A78BFA', tagBg:'rgba(167,139,250,0.1)', coach:'Andrea', coachFlag:'🇦🇷', title:'Estrés crónico y ganancia muscular: el enemigo silencioso',                body:'El cortisol elevado bloquea la síntesis proteica. Si entrenas duro pero dormís mal y vivís estresado, el cuerpo no responde.',                                   readTime:'4 min' },
+  { tag:'Filosofía',  tagColor:'#00E5FF', tagBg:'rgba(0,229,255,0.08)',  coach:'Diego',  coachFlag:'🇵🇪', title:'El entrenamiento no termina cuando sales del gym',                         body:'Lo que haces las próximas 22 horas — comer, dormir, moverte — determina más el resultado que la sesión de entrenamiento.',                                       readTime:'3 min' },
+];
+
+function renderDailyContent() {
+  const el = document.getElementById('dailyContentInner');
+  if (!el) return;
+  const d = new Date();
+  const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  const item = HOME_DAILY_CONTENT[dayOfYear % HOME_DAILY_CONTENT.length];
+  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.8px">Para ti hoy</div><span style="font-size:9px;color:var(--text-tertiary)">' + item.readTime + ' de lectura</span></div><div style="display:flex;gap:6px;margin-bottom:8px"><span style="font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;background:' + item.tagBg + ';color:' + item.tagColor + '">' + item.tag + '</span><span style="font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:rgba(255,255,255,0.05);color:var(--text-tertiary)">' + item.coach + ' ' + item.coachFlag + '</span></div><div style="font-size:14px;font-weight:700;color:var(--text-primary);line-height:1.35;margin-bottom:8px">' + item.title + '</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6">' + item.body + '</div>';
+}
+
+function updateHomeDashboard() {
+  updateHomeDayGreeting();
+  updateHomeAvatar();
+  updateCoachSpotlight();
+  renderMuscleFatigue();
+  renderWeekDots();
+  renderDailyContent();
+  const coach = getSelectedCoach();
+  const emptyState = document.getElementById('coachEmptyState');
+  if (emptyState) emptyState.style.display = coach ? 'none' : 'block';
+}
+
 // Onboarding coach profile overlay
 const _OB_COACH_DESCS = {
   maria:  'María entrena con energía contagiosa y motivación constante. Su estilo HIIT funcional está diseñado para quemar calorías rápido sin perder la técnica. Directa, cálida y muy efectiva — ideal si quieres resultados visibles en poco tiempo.',
@@ -5416,7 +5583,7 @@ function showScreen(name) {
   ['workout','summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
-  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); }
+  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); }
   if (name === 'coach') { initCoachChat(); }
   if (name === 'settings') { updateAccountUI(); }
   if (name === 'workout') setTimeout(() => checkNewFeatureCoachmarks(), 800);
