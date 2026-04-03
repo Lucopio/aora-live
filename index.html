@@ -3463,6 +3463,32 @@ body {
     </div>
 
 
+    <!-- Backup & Restore -->
+    <div class="settings-group">
+      <div class="settings-group-title">Copia de seguridad</div>
+      <div class="setting-row" style="cursor:pointer" onclick="exportUserData()">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Exportar mis datos</span>
+        </div>
+        <div class="setting-value" style="color:var(--primary)">Descargar</div>
+      </div>
+      <div style="padding:0 0 4px 0;font-size:12px;color:var(--text-tertiary);line-height:1.5">
+        Guarda historial, conversaciones, rutinas y preferencias en un archivo JSON.
+      </div>
+      <div class="setting-row" style="cursor:pointer;margin-top:4px" onclick="document.getElementById('importFileInput').click()">
+        <div class="setting-left">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Restaurar copia</span>
+        </div>
+        <div class="setting-value" style="color:var(--text-secondary)">Importar</div>
+      </div>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importUserData(event)">
+      <div style="padding:0 0 8px 0;font-size:12px;color:var(--text-tertiary);line-height:1.5">
+        Restaura datos desde un archivo exportado anteriormente. Los datos actuales serán reemplazados.
+      </div>
+    </div>
+
     <!-- Debug Section -->
     <div class="settings-group" id="debugGroup" style="display:block;opacity:0.6">
       <div class="settings-group-title" style="font-size:10px">Debug</div>
@@ -11280,7 +11306,7 @@ function toggleHistoryDetail(i) {
 
 function deleteWorkout(i) {
   savedWorkouts.splice(i, 1);
-  try { localStorage.setItem('savedWorkouts', JSON.stringify(savedWorkouts)); } catch(e) {}
+  saveToStorage();
   renderHistory();
   updateHomeStats();
 }
@@ -11289,8 +11315,13 @@ function deleteWorkout(i) {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(reg => {
     // Cuando el nuevo SW toma control, recargar para servir archivos frescos
+    // Si hay workout activo, diferir el reload hasta que termine
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
+      if (!workoutStartTime) {
+        window.location.reload();
+      } else {
+        window._pendingReload = true;
+      }
     });
     // Verificar actualizaciones cada vez que la app vuelve al foco
     document.addEventListener('visibilitychange', () => {
@@ -11688,6 +11719,81 @@ async function continueWithoutAccount() {
   showScreen('home');
 }
 
+// ─── Backup & Restore ────────────────────────────────────────
+function exportUserData() {
+  try {
+    const raw = localStorage.getItem('gymtracker_data');
+    const data = raw ? JSON.parse(raw) : {};
+    // Incluir también chat history y cualquier otra key relevante
+    const chatRaw = localStorage.getItem('aora_chat_history');
+    if (chatRaw) {
+      try { data._chatHistory = JSON.parse(chatRaw); } catch(e) {}
+    }
+    const gifRaw = localStorage.getItem('aora_gif_cache');
+    if (gifRaw) {
+      try { data._gifCache = JSON.parse(gifRaw); } catch(e) {}
+    }
+    data._exportedAt = new Date().toISOString();
+    data._version = 1;
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+    a.href     = url;
+    a.download = `aora-backup-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ Copia exportada correctamente');
+  } catch(e) {
+    showToast('❌ Error al exportar datos');
+    console.error('exportUserData error:', e);
+  }
+}
+
+function importUserData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  // Reset input so the same file can be selected again
+  event.target.value = '';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || typeof data !== 'object') throw new Error('Formato inválido');
+
+      // Restaurar chat history si estaba incluido
+      if (data._chatHistory) {
+        try { localStorage.setItem('aora_chat_history', JSON.stringify(data._chatHistory)); } catch(ex) {}
+        delete data._chatHistory;
+      }
+      if (data._gifCache) {
+        try { localStorage.setItem('aora_gif_cache', JSON.stringify(data._gifCache)); } catch(ex) {}
+        delete data._gifCache;
+      }
+      // Limpiar metakeys del export antes de guardar
+      delete data._exportedAt;
+      delete data._version;
+
+      localStorage.setItem('gymtracker_data', JSON.stringify(data));
+
+      // Recargar datos en memoria
+      const loaded = loadFromStorage();
+      if (loaded.savedWorkouts) {
+        savedWorkouts = loaded.savedWorkouts;
+        renderHistory();
+        updateHomeStats();
+      }
+      showToast('✅ Datos restaurados correctamente');
+    } catch(err) {
+      showToast('❌ Archivo inválido o corrupto');
+      console.error('importUserData error:', err);
+    }
+  };
+  reader.readAsText(file);
+}
+
 async function handleLogout() {
   localStorage.removeItem('gymtracker_skip_auth');
   try { if (sb) await sb.auth.signOut(); } catch(e) { /* ignorar error de red */ }
@@ -11844,6 +11950,11 @@ endWorkout = function() {
   if (currentUser) {
     saveWorkoutToCloud(workout, exercises);
     syncLastWeightsUp();
+  }
+  // Si había un reload de SW pendiente (diferido por workout activo), ejecutarlo ahora
+  if (window._pendingReload) {
+    window._pendingReload = false;
+    setTimeout(() => window.location.reload(), 2000);
   }
 };
 
