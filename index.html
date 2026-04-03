@@ -2830,11 +2830,10 @@ body {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0;flex:1">Ejercicio</div>
         <div style="display:flex;align-items:center;gap:6px">
-          <button id="wkGifBtn" onclick="openWorkoutExerciseGif()" style="display:none;align-items:center;gap:4px;background:var(--primary-light);border:none;font-family:var(--font);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;padding:5px 9px;border-radius:8px;white-space:nowrap">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
-            Ver forma
+          <button id="wkInfoBtn" onclick="showExerciseInfo(currentExerciseName)" style="display:none;align-items:center;gap:4px;background:var(--primary-light);border:none;font-family:var(--font);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;padding:5px 9px;border-radius:8px;white-space:nowrap">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8" stroke-linecap="round" stroke-width="3"/><line x1="12" y1="11" x2="12" y2="16"/></svg>
+            Cómo hacerlo
           </button>
-          <button id="wkInfoBtn" onclick="showExerciseInfo(currentExerciseName)" style="display:none;align-items:center;justify-content:center;width:28px;height:28px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;font-size:13px;font-weight:700;color:var(--text-secondary);cursor:pointer;padding:0;flex-shrink:0" title="Técnica del ejercicio">ⓘ</button>
           <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
         </div>
       </div>
@@ -7710,8 +7709,6 @@ function _doSelectExercise(name, equip) {
   const equipLabel = equip ? EQUIP_LABEL[equip] : '';
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
   // #5 — mostrar/ocultar botón de GIF
-  const wkGifBtn = document.getElementById('wkGifBtn');
-  if (wkGifBtn) wkGifBtn.style.display = 'flex';
   const wkInfoBtn = document.getElementById('wkInfoBtn');
   if (wkInfoBtn) wkInfoBtn.style.display = EXERCISE_INFO[name] ? 'flex' : 'none';
 
