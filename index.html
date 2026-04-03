@@ -4704,7 +4704,7 @@ function getCoachMessage(coachKey, userData) {
   const coach = COACHES[coachKey];
   if (!coach) return '¡Listo para entrenar hoy?';
 
-  const saved = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const saved = (() => { try { const d = JSON.parse(localStorage.getItem('gymtracker_data') || '{}'); return d.savedWorkouts || []; } catch(e) { return []; } })();
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
 
@@ -5099,7 +5099,7 @@ function canSendMessage() { return getChatCount() < CHAT_DAILY_LIMIT; }
 
 function buildChatContext() {
   const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-  const workouts = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const workouts = (() => { try { const d = JSON.parse(localStorage.getItem('gymtracker_data') || '{}'); return d.savedWorkouts || []; } catch(e) { return []; } })();
   const sorted = workouts.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
   const recent = sorted.slice(0, 3).map(w => ({
     date: w.date,
@@ -5450,7 +5450,7 @@ function initCoachChat() {
 }
 
 function getWeekStreak() {
-  const saved = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const saved = (() => { try { const d = JSON.parse(localStorage.getItem('gymtracker_data') || '{}'); return d.savedWorkouts || []; } catch(e) { return []; } })();
   if (saved.length === 0) return 0;
   let streak = 0;
   const now = new Date();
@@ -5500,7 +5500,7 @@ function updateHomeGreeting() {
   if (badgeEl) badgeEl.textContent = '🔥 ' + streak + ' semana' + (streak !== 1 ? 's' : '');
 
   // Week adherence placeholder
-  const saved = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+  const saved = (() => { try { const d = JSON.parse(localStorage.getItem('gymtracker_data') || '{}'); return d.savedWorkouts || []; } catch(e) { return []; } })();
   const now = new Date();
   const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
   const thisWeek = saved.filter(w => new Date(w.date) >= weekStart).length;
