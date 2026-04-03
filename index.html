@@ -2135,6 +2135,15 @@ body {
 .coach-profile-quote-text { font-size:14px; color:rgba(240,242,245,0.8); line-height:1.6; font-style:italic; }
 .coach-profile-cta { width:100%; background:var(--primary); border:none; border-radius:14px; padding:16px; font-size:15px; color:#080A0F; font-weight:700; cursor:pointer; letter-spacing:-0.3px; font-family:var(--font); }
 
+/* ─── ONBOARDING COACH PHOTOS ─────────────────────────────────────────────── */
+.ob-coach-photo-wrap {
+  width: 72px; height: 72px;
+  border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  border: 2px solid rgba(0,229,255,0.2);
+  margin: 0 auto 4px;
+}
+.ob-coach-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+
 </style>
 </head>
 <body>
@@ -2547,32 +2556,32 @@ body {
       <div class="ob-subtitle">Tu coach IA se adaptará a tu estilo y objetivos</div>
       <div class="trainer-grid">
         <div class="trainer-card" onclick="obSelectCoach(this,'maria')" data-coach="maria">
-          <div class="trainer-emoji"><img src="Images/coaches/maria.png" alt="María" style="width:48px;height:48px;border-radius:50%;object-fit:cover"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/maria.png" alt="María"></div>
           <div class="trainer-flag">🇨🇴</div>
           <div class="trainer-name">María</div>
           <div class="trainer-specialty">HIIT & Funcional</div>
-          <button onclick="event.stopPropagation();showObCoachProfile('maria')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
+          <button onclick="event.stopPropagation();showCoachProfile('maria','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'carlos')" data-coach="carlos">
-          <div class="trainer-emoji">👨🏽</div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/carlos.jpg" alt="Carlos"></div>
           <div class="trainer-flag">🇲🇽</div>
           <div class="trainer-name">Carlos</div>
           <div class="trainer-specialty">Fuerza & Masa</div>
-          <button onclick="event.stopPropagation();showObCoachProfile('carlos')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
+          <button onclick="event.stopPropagation();showCoachProfile('carlos','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'andrea')" data-coach="andrea">
-          <div class="trainer-emoji">👩🏻</div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/andrea.jpg" alt="Andrea"></div>
           <div class="trainer-flag">🇦🇷</div>
           <div class="trainer-name">Andrea</div>
           <div class="trainer-specialty">Bienestar integral</div>
-          <button onclick="event.stopPropagation();showObCoachProfile('andrea')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
+          <button onclick="event.stopPropagation();showCoachProfile('andrea','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'diego')" data-coach="diego">
-          <div class="trainer-emoji">👨🏾</div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego.jpg" alt="Diego"></div>
           <div class="trainer-flag">🇵🇪</div>
           <div class="trainer-name">Diego</div>
           <div class="trainer-specialty">Resiliencia & Calistenia</div>
-          <button onclick="event.stopPropagation();showObCoachProfile('diego')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
+          <button onclick="event.stopPropagation();showCoachProfile('diego','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
       </div>
     </div>
@@ -3468,10 +3477,10 @@ body {
 <!-- COACH PROFILE SCREEN -->
 <div class="screen" id="coachProfileScreen">
   <div class="coach-profile-header">
-    <button class="coach-profile-back" onclick="showScreen('home')">
+    <button class="coach-profile-back" id="coachProfileBackBtn" onclick="showScreen('home')">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
-    <span class="coach-profile-header-title">Perfil de entrenadora</span>
+    <span class="coach-profile-header-title" id="coachProfileHeaderTitle">Perfil de entrenadora</span>
   </div>
   <div class="coach-profile-scroll">
     <div class="coach-profile-hero">
@@ -3566,25 +3575,25 @@ body {
   <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:16px;text-align:center">Cambiar entrenador</div>
   <div class="trainer-grid">
     <div class="trainer-card" onclick="selectCoachFromChat('maria')" id="changeCard_maria">
-      <div class="trainer-emoji">👩🏽</div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/maria.png" alt="María"></div>
       <div class="trainer-flag">🇨🇴</div>
       <div class="trainer-name">María</div>
       <div class="trainer-specialty">HIIT & Funcional</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('carlos')" id="changeCard_carlos">
-      <div class="trainer-emoji">👨🏽</div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/carlos.jpg" alt="Carlos"></div>
       <div class="trainer-flag">🇲🇽</div>
       <div class="trainer-name">Carlos</div>
       <div class="trainer-specialty">Fuerza & Masa</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('andrea')" id="changeCard_andrea">
-      <div class="trainer-emoji">👩🏻</div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/andrea.jpg" alt="Andrea"></div>
       <div class="trainer-flag">🇦🇷</div>
       <div class="trainer-name">Andrea</div>
       <div class="trainer-specialty">Bienestar integral</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('diego')" id="changeCard_diego">
-      <div class="trainer-emoji">👨🏾</div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego.jpg" alt="Diego"></div>
       <div class="trainer-flag">🇵🇪</div>
       <div class="trainer-name">Diego</div>
       <div class="trainer-specialty">Resiliencia & Calistenia</div>
@@ -5295,9 +5304,12 @@ function handleCoachNavTap() {
   }
 }
 
-function showCoachProfile(coachId) {
+function showCoachProfile(coachId, origin) {
   const coach = coachId ? { id: coachId, ...COACHES[coachId] } : getSelectedCoach();
   if (!coach) { showScreen('coach'); return; }
+  // Back button — regresa al origen correcto
+  const backBtn = document.getElementById('coachProfileBackBtn');
+  if (backBtn) backBtn.onclick = () => showScreen(origin === 'onboarding' ? 'onboarding' : 'coach');
 
   // Foto
   const photoEl = document.getElementById('coachProfilePhoto');
