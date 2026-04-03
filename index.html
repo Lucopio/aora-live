@@ -1968,7 +1968,7 @@ body {
   flex-shrink: 0;
   background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
-  padding: 10px 12px calc(64px + 10px + env(safe-area-inset-bottom));
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
 }
 .chat-login-prompt { text-align: center; padding: 12px 0; }
 .chat-login-prompt p { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
@@ -2384,24 +2384,32 @@ body {
       <div class="ob-subtitle">Filtramos el catálogo según el equipo disponible</div>
       <div class="ob-field">
         <div class="ob-cards" id="obLocationCards" style="grid-template-columns:1fr 1fr">
-          <div class="ob-card" onclick="obCard(this,'location','gym')" style="align-items:center;text-align:center;gap:6px">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12"/></svg>
-            <div style="font-weight:700;color:var(--text-primary)">Gym</div>
+          <div class="ob-card" onclick="obCard(this,'location','gym')" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:20px 16px">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><rect x="2" y="7" width="20" height="10" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12"/></svg>
+            </div>
+            <div style="font-weight:700;color:var(--text-primary);font-size:15px">Gym</div>
             <div style="font-size:11px;color:var(--text-secondary)">Todo el equipo</div>
           </div>
-          <div class="ob-card" onclick="obCard(this,'location','casa')" style="align-items:center;text-align:center;gap:6px">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <div style="font-weight:700;color:var(--text-primary)">Casa</div>
+          <div class="ob-card" onclick="obCard(this,'location','casa')" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:20px 16px">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,200,150,0.1);display:flex;align-items:center;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00C896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div style="font-weight:700;color:var(--text-primary);font-size:15px">Casa</div>
             <div style="font-size:11px;color:var(--text-secondary)">Corporal + mancuernas</div>
           </div>
-          <div class="ob-card" onclick="obCard(this,'location','parque')" style="align-items:center;text-align:center;gap:6px">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><path d="M17 22V12a5 5 0 0 0-10 0v10"/><path d="M12 7V2"/><path d="M7 22h10"/></svg>
-            <div style="font-weight:700;color:var(--text-primary)">Parque</div>
+          <div class="ob-card" onclick="obCard(this,'location','parque')" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:20px 16px">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,184,0,0.1);display:flex;align-items:center;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FFB800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M17 22V12a5 5 0 0 0-10 0v10"/><path d="M12 7V2"/><path d="M7 22h10"/></svg>
+            </div>
+            <div style="font-weight:700;color:var(--text-primary);font-size:15px">Parque</div>
             <div style="font-size:11px;color:var(--text-secondary)">Solo peso corporal</div>
           </div>
-          <div class="ob-card" onclick="obCard(this,'location','mixto')" style="align-items:center;text-align:center;gap:6px">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-            <div style="font-weight:700;color:var(--text-primary)">Mixto</div>
+          <div class="ob-card" onclick="obCard(this,'location','mixto')" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:20px 16px">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(123,97,255,0.1);display:flex;align-items:center;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </div>
+            <div style="font-weight:700;color:var(--text-primary);font-size:15px">Mixto</div>
             <div style="font-size:11px;color:var(--text-secondary)">Gym + casa + parque</div>
           </div>
         </div>
@@ -2499,7 +2507,7 @@ body {
       <div class="ob-subtitle">Tu coach IA se adaptará a tu estilo y objetivos</div>
       <div class="trainer-grid">
         <div class="trainer-card" onclick="obSelectCoach(this,'maria')" data-coach="maria">
-          <div class="trainer-emoji">👩🏽</div>
+          <div class="trainer-emoji"><img src="Images/coaches/maria.png" alt="María" style="width:48px;height:48px;border-radius:50%;object-fit:cover"></div>
           <div class="trainer-flag">🇨🇴</div>
           <div class="trainer-name">María</div>
           <div class="trainer-specialty">HIIT & Funcional</div>
@@ -2538,7 +2546,7 @@ body {
         </button>
       </div>
       <div style="padding:32px 24px 40px;display:flex;flex-direction:column;align-items:center;gap:20px;max-width:480px;width:100%;margin:0 auto">
-        <div id="obProfileEmoji" style="font-size:64px;line-height:1">👩🏽</div>
+        <div id="obProfileEmoji" style="font-size:64px;line-height:1;width:96px;height:96px;display:flex;align-items:center;justify-content:center">👩🏽</div>
         <div id="obProfileCountry" style="font-size:22px">🇨🇴</div>
         <div id="obProfileName" style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text-primary);text-align:center">María</div>
         <div id="obProfileSpecialty" style="font-size:14px;color:var(--primary);font-weight:600;text-align:center">HIIT & Funcional</div>
@@ -4659,7 +4667,12 @@ function showObCoachProfile(coachId) {
   const coach = COACHES[coachId];
   if (!coach) return;
   _obProfileCoachId = coachId;
-  document.getElementById('obProfileEmoji').textContent = coach.emoji;
+  const profileEmojiEl = document.getElementById('obProfileEmoji');
+  if (coach.photoUrl) {
+    profileEmojiEl.innerHTML = `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:96px;height:96px;border-radius:50%;object-fit:cover">`;
+  } else {
+    profileEmojiEl.textContent = coach.emoji;
+  }
   document.getElementById('obProfileCountry').textContent = coach.flag;
   document.getElementById('obProfileName').textContent = coach.name;
   document.getElementById('obProfileSpecialty').textContent = coach.specialty;
