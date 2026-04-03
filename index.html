@@ -6296,79 +6296,66 @@ const EXERCISE_INFO = {
   },
 };
 
-// ─── Exercise GIF Database (ExerciseDB CDN) ──────────────────
+// ─── Exercise Image Database (free-exercise-db · GitHub CDN) ─
+// Fuente: github.com/yuhonas/free-exercise-db — público, sin API key, sin cuota
+const _EX_CDN = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
 const exerciseGIFs = {
   // PECHO
-  'Press de banca':           'https://cdn.exercisedb.dev/media/K6NnTv0.gif',
-  'Press inclinado':          'https://cdn.exercisedb.dev/media/0IC2bA5.gif',
-  'Press con mancuernas':     'https://cdn.exercisedb.dev/media/02I7cT0.gif',
-  'Aperturas':                'https://cdn.exercisedb.dev/media/0IC2bA5.gif',
-  'Fondos en paralelas':      'https://cdn.exercisedb.dev/media/0K11Rp.gif',
-  'Crossover en polea':       'https://cdn.exercisedb.dev/media/MJ8dqT.gif',
-  'Press declinado':          'https://cdn.exercisedb.dev/media/02WBWH.gif',
-  'Pull-over con mancuerna':  'https://cdn.exercisedb.dev/media/3DMOdl.gif',
+  'Press de banca':           _EX_CDN+'Barbell_Bench_Press_-_Medium_Grip/0.jpg',
+  'Press inclinado':          _EX_CDN+'Barbell_Incline_Bench_Press_-_Medium_Grip/0.jpg',
+  'Press con mancuernas':     _EX_CDN+'Decline_Dumbbell_Bench_Press/0.jpg',
+  'Aperturas':                _EX_CDN+'Decline_Dumbbell_Flyes/0.jpg',
+  'Fondos en paralelas':      _EX_CDN+'Bench_Dips/0.jpg',
+  'Crossover en polea':       _EX_CDN+'Cable_Crossover/0.jpg',
+  'Press declinado':          _EX_CDN+'Decline_Barbell_Bench_Press/0.jpg',
+  'Pull-over con mancuerna':  _EX_CDN+'Bent-Arm_Dumbbell_Pullover/0.jpg',
   // ESPALDA
-  'Dominadas':                'https://cdn.exercisedb.dev/media/A4nHOA.gif',
-  'Remo con barra':           'https://cdn.exercisedb.dev/media/4FUJKD.gif',
-  'Remo con mancuerna':       'https://cdn.exercisedb.dev/media/02x4Ac.gif',
-  'Jalones al pecho':         'https://cdn.exercisedb.dev/media/3FMnNc.gif',
-  'Remo en maquina':          'https://cdn.exercisedb.dev/media/2kG3kD.gif',
-  'Peso muerto':              'https://cdn.exercisedb.dev/media/YnLzuO.gif',
-  'Face pull':                'https://cdn.exercisedb.dev/media/3UaFBP.gif',
-  'Hiperextensiones':         'https://cdn.exercisedb.dev/media/3NFKVq.gif',
+  'Dominadas':                _EX_CDN+'Weighted_Pull_Ups/0.jpg',
+  'Remo con barra':           _EX_CDN+'Bent_Over_Barbell_Row/0.jpg',
+  'Remo con mancuerna':       _EX_CDN+'Bent_Over_Two-Dumbbell_Row/0.jpg',
+  'Jalones al pecho':         _EX_CDN+'Close-Grip_Front_Lat_Pulldown/0.jpg',
+  'Peso muerto':              _EX_CDN+'Barbell_Deadlift/0.jpg',
+  'Face pull':                _EX_CDN+'Face_Pull/0.jpg',
+  'Hiperextensiones':         _EX_CDN+'Hyperextensions_Back_Extensions/0.jpg',
   // HOMBROS
-  'Press militar':            'https://cdn.exercisedb.dev/media/4B0f0A.gif',
-  'Elevaciones laterales':    'https://cdn.exercisedb.dev/media/0IC4Ac.gif',
-  'Elevaciones frontales':    'https://cdn.exercisedb.dev/media/0IC2bz.gif',
-  'Pajaros':                  'https://cdn.exercisedb.dev/media/0IC2bA.gif',
-  'Arnold press':             'https://cdn.exercisedb.dev/media/GvN4Vm.gif',
-  'Press con mancuernas sentado': 'https://cdn.exercisedb.dev/media/5b20Fl.gif',
-  'Encogimientos de hombros': 'https://cdn.exercisedb.dev/media/2F6Kek.gif',
+  'Press militar':            _EX_CDN+'Smith_Machine_Overhead_Shoulder_Press/0.jpg',
+  'Elevaciones laterales':    _EX_CDN+'Cable_Seated_Lateral_Raise/0.jpg',
+  'Elevaciones frontales':    _EX_CDN+'Front_Raise_And_Pullover/0.jpg',
+  'Pajaros':                  _EX_CDN+'Cable_Rear_Delt_Fly/0.jpg',
+  'Arnold press':             _EX_CDN+'Kettlebell_Arnold_Press/0.jpg',
+  'Encogimientos de hombros': _EX_CDN+'Barbell_Shrug/0.jpg',
   // BÍCEPS
-  'Curl con barra':           'https://cdn.exercisedb.dev/media/2MDYem.gif',
-  'Curl con mancuernas':      'https://cdn.exercisedb.dev/media/0IC2bR.gif',
-  'Curl martillo':            'https://cdn.exercisedb.dev/media/0IC2bX.gif',
-  'Curl concentrado':         'https://cdn.exercisedb.dev/media/0IC2bW.gif',
-  'Curl en polea':            'https://cdn.exercisedb.dev/media/3MHDn4.gif',
-  'Curl inclinado':           'https://cdn.exercisedb.dev/media/vKilzz3.gif',
-  'Curl en banca Scott':      'https://cdn.exercisedb.dev/media/3B4MEQ.gif',
+  'Curl con barra':           _EX_CDN+'Barbell_Curl/0.jpg',
+  'Curl con mancuernas':      _EX_CDN+'Alternate_Incline_Dumbbell_Curl/0.jpg',
+  'Curl martillo':            _EX_CDN+'Alternate_Hammer_Curl/0.jpg',
+  'Curl concentrado':         _EX_CDN+'Concentration_Curls/0.jpg',
+  'Curl en banca Scott':      _EX_CDN+'Cable_Preacher_Curl/0.jpg',
   // TRÍCEPS
-  'Extension en polea alta':  'https://cdn.exercisedb.dev/media/3mMJBO.gif',
-  'Press frances':            'https://cdn.exercisedb.dev/media/2MDYer.gif',
-  'Patada de triceps':        'https://cdn.exercisedb.dev/media/0IC2ba.gif',
-  'Fondos de triceps':        'https://cdn.exercisedb.dev/media/0K11Rq.gif',
-  'Extension con mancuerna':  'https://cdn.exercisedb.dev/media/0IC2bN.gif',
-  'Press cerrado':            'https://cdn.exercisedb.dev/media/3mMJBp.gif',
+  'Extension en polea alta':  _EX_CDN+'Reverse_Grip_Triceps_Pushdown/0.jpg',
+  'Press frances':            _EX_CDN+'Band_Skull_Crusher/0.jpg',
+  'Patada de triceps':        _EX_CDN+'Tricep_Dumbbell_Kickback/0.jpg',
+  'Fondos de triceps':        _EX_CDN+'Dips_-_Triceps_Version/0.jpg',
   // PIERNAS
-  'Sentadilla':               'https://cdn.exercisedb.dev/media/4B0f0B.gif',
-  'Prensa de piernas':        'https://cdn.exercisedb.dev/media/0IC2bK.gif',
-  'Extension de cuadriceps':  'https://cdn.exercisedb.dev/media/0IC2bL.gif',
-  'Curl de femoral':          'https://cdn.exercisedb.dev/media/0IC2bM.gif',
-  'Peso muerto rumano':       'https://cdn.exercisedb.dev/media/3mMJBr.gif',
-  'Zancadas':                 'https://cdn.exercisedb.dev/media/0IC2bJ.gif',
-  'Elevacion de gemelos':     'https://cdn.exercisedb.dev/media/0IC2bI.gif',
-  'Hip thrust':               'https://cdn.exercisedb.dev/media/0IC2bH.gif',
-  'Sentadilla bulgara':       'https://cdn.exercisedb.dev/media/4B0f0C.gif',
-  'Sentadilla sumo':          'https://cdn.exercisedb.dev/media/4B0f0D.gif',
+  'Sentadilla':               _EX_CDN+'Barbell_Full_Squat/0.jpg',
+  'Extension de cuadriceps':  _EX_CDN+'Leg_Extensions/0.jpg',
+  'Curl de femoral':          _EX_CDN+'Lying_Leg_Curls/0.jpg',
+  'Peso muerto rumano':       _EX_CDN+'Romanian_Deadlift/0.jpg',
+  'Zancadas':                 _EX_CDN+'Barbell_Lunge/0.jpg',
+  'Elevacion de gemelos':     _EX_CDN+'Rocking_Standing_Calf_Raise/0.jpg',
+  'Hip thrust':               _EX_CDN+'Barbell_Hip_Thrust/0.jpg',
+  'Sentadilla bulgara':       _EX_CDN+'Barbell_Side_Split_Squat/0.jpg',
   // GLÚTEOS
-  'Patada de gluteo en polea':'https://cdn.exercisedb.dev/media/3mMJBs.gif',
-  'Puente de gluteo':         'https://cdn.exercisedb.dev/media/0IC2bG.gif',
+  'Puente de gluteo':         _EX_CDN+'Barbell_Glute_Bridge/0.jpg',
   // ABDOMEN
-  'Plancha':                  'https://cdn.exercisedb.dev/media/0IC2bF.gif',
-  'Crunch':                   'https://cdn.exercisedb.dev/media/0IC2bE.gif',
-  'Elevacion de piernas':     'https://cdn.exercisedb.dev/media/0IC2bD.gif',
-  'Rueda abdominal':          'https://cdn.exercisedb.dev/media/3mMJBt.gif',
-  'Russian twist':            'https://cdn.exercisedb.dev/media/0IC2bC.gif',
-  'Crunch en polea':          'https://cdn.exercisedb.dev/media/3mMJBu.gif',
-  'Plancha lateral':          'https://cdn.exercisedb.dev/media/0IC2bB.gif',
-  'Mountain climbers':        'https://cdn.exercisedb.dev/media/0IC2bA1.gif',
-  // CARDIO
-  'Cuerda':                   'https://cdn.exercisedb.dev/media/0IC2bA2.gif',
-  'Burpees':                  'https://cdn.exercisedb.dev/media/0IC2bA3.gif',
-  'Saltos de caja':           'https://cdn.exercisedb.dev/media/0IC2bA4.gif',
-  // CALISTENIA
-  'Pistol squat':             'https://cdn.exercisedb.dev/media/4B0f0E.gif',
-  'Pike push-up':             'https://cdn.exercisedb.dev/media/0IC2bA6.gif',
+  'Plancha':                  _EX_CDN+'Plank/0.jpg',
+  'Crunch':                   _EX_CDN+'Ab_Crunch_Machine/0.jpg',
+  'Elevacion de piernas':     _EX_CDN+'Flat_Bench_Lying_Leg_Raise/0.jpg',
+  'Russian twist':            _EX_CDN+'Cable_Russian_Twists/0.jpg',
+  'Plancha lateral':          _EX_CDN+'Push_Up_to_Side_Plank/0.jpg',
+  'Mountain climbers':        _EX_CDN+'Mountain_Climbers/0.jpg',
+  // CARDIO / CALISTENIA
+  'Saltos de caja':           _EX_CDN+'Box_Jump_Multiple_Response/0.jpg',
+  'Pistol squat':             _EX_CDN+'Kettlebell_Pistol_Squat/0.jpg',
 };
 
 const W = 'https://upload.wikimedia.org/wikipedia/commons/';
@@ -8197,8 +8184,14 @@ const EXERCISE_EN = {
 };
 
 async function loadExerciseGif(exerciseName) {
+  // 1. Diccionario hardcodeado (CDN público, sin cuota, instantáneo)
+  if (exerciseGIFs[exerciseName]) return exerciseGIFs[exerciseName];
+
+  // 2. Cache local (solo URLs válidas — los nulls no se cachean para permitir reintentos)
   const cache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
-  if (cache[exerciseName] !== undefined) return cache[exerciseName]; // null = ya buscado, no existe
+  if (cache[exerciseName] && typeof cache[exerciseName] === 'string') return cache[exerciseName];
+
+  // 3. API RapidAPI como fallback para ejercicios fuera del diccionario
   const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
   try {
     const res = await fetch(
@@ -8207,8 +8200,10 @@ async function loadExerciseGif(exerciseName) {
     );
     const data = await res.json();
     const gifUrl = data?.[0]?.gifUrl || null;
-    cache[exerciseName] = gifUrl;
-    localStorage.setItem('aora_gif_cache', JSON.stringify(cache));
+    if (gifUrl) { // Solo cachear éxitos para no bloquear reintentos en fallos de red/quota
+      cache[exerciseName] = gifUrl;
+      localStorage.setItem('aora_gif_cache', JSON.stringify(cache));
+    }
     return gifUrl;
   } catch { return null; }
 }
@@ -10876,6 +10871,15 @@ function saveToStorage() {
 }
 
 function loadFromStorage() {
+  // Limpiar cache de GIFs envenenado (nulls de API fallida con fuente anterior rota)
+  try {
+    const gifCache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
+    const cleaned = Object.fromEntries(Object.entries(gifCache).filter(([,v]) => v && typeof v === 'string'));
+    if (Object.keys(cleaned).length !== Object.keys(gifCache).length) {
+      localStorage.setItem('aora_gif_cache', JSON.stringify(cleaned));
+    }
+  } catch(e) {}
+
   try {
     const raw = localStorage.getItem('gymtracker_data');
     if (!raw) return;
