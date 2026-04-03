@@ -5617,6 +5617,7 @@ function selectWarmupGroup(group) {
   const data = getWarmupForMuscleGroup(group);
   if (data) renderWarmupContent(group, data);
   renderWarmupDosAndDonts(group);
+  _warmupSelectedGroup = group; // guardar para pre-filtrar catálogo
 }
 
 function getWarmupForMuscleGroup(muscleGroup) {
@@ -5639,6 +5640,7 @@ function renderWarmupRecommendations() {
     titleEl.textContent  = `Calentamiento · ${muscleGroup}`;
     renderWarmupContent(muscleGroup, data);
     renderWarmupDosAndDonts(muscleGroup);
+    _warmupSelectedGroup = muscleGroup; // guardar para pre-filtrar catálogo
   } else {
     // Show group picker for manual selection
     recEl.style.display  = 'none';
@@ -7226,6 +7228,7 @@ let pendingExercises = []; // cola de ejercicios para rutina sugerida
 let currentTargetSets = 0; // series pre-configuradas en la rutina para el ejercicio actual
 let suggestedRoutine = null;
 let catalogGroup = null;  // null = lista de grupos, string = ejercicios de ese grupo
+let _warmupSelectedGroup = null; // grupo elegido en calentamiento → pre-filtra el catálogo
 let catalogSubGroup = null; // sub-grupo para Piernas
 
 const LEG_SUBGROUPS = {
@@ -7537,10 +7540,28 @@ function renderCatalog(filter) {
   list.innerHTML = html;
 }
 
+// Mapeo grupos de calentamiento → grupos de exerciseDB
+const _WARMUP_TO_CATALOG = {
+  'Pecho': 'Pecho', 'Espalda': 'Espalda', 'Hombros': 'Hombros',
+  'Bíceps': 'Biceps', 'Tríceps': 'Triceps',
+  'Piernas': 'Piernas', 'Piernas Completas': 'Piernas',
+  'Glúteos': 'Gluteos', 'Abdomen': 'Abdomen', 'Cardio': 'Cardio',
+};
+
 function openCatalog() {
-  catalogGroup = null;
   catalogSubGroup = null;
   document.getElementById('catalogSearchInput').value = '';
+
+  // Si el usuario eligió grupo en el calentamiento, pre-filtrar al catálogo de ese grupo
+  // Se consume una sola vez — aperturas de catálogo posteriores muestran todos los grupos
+  if (_warmupSelectedGroup) {
+    const mapped = _WARMUP_TO_CATALOG[_warmupSelectedGroup] || null;
+    _warmupSelectedGroup = null;
+    catalogGroup = mapped; // null si Torso u otro sin mapeo directo
+  } else {
+    catalogGroup = null;
+  }
+
   renderCatalog();
   showScreen('catalog');
   checkCoachmarks('customExercise');
