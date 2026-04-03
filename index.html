@@ -12006,8 +12006,11 @@ function loadUserRoutines() {
   _renderLastWorkoutCard();
 
   // Leer de localStorage al instante (sin red)
+  // No filtrar por user_id: es una app monousuario en localStorage.
+  // El user_id se guarda en cada rutina solo para sync con Supabase.
+  // Filtrar por user_id causa que las rutinas "desaparezcan" cuando
+  // la sesión anónima expira y Supabase asigna un nuevo user_id.
   const local = _getLocalRoutines()
-    .filter(r => !currentUser || r.user_id === currentUser.id || !r.user_id)
     .sort((a, b) => {
       const ta = a.last_used_at || a.created_at || '';
       const tb = b.last_used_at || b.created_at || '';
