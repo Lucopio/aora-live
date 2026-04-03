@@ -130,29 +130,29 @@ const BACK_MUSCLES = [
   ]},
 ];
 
-// Maps muscle IDs to exerciseDB catalog group names (null = non-interactive)
+// Maps muscle IDs to EXERCISE_CATALOG keys (null = non-interactive)
 const MUSCLE_TO_CATALOG = {
-  'chest':          'Pecho',
-  'obliques':       'Core',
-  'abs':            'Core',
-  'biceps':         'Bíceps',
-  'triceps':        'Tríceps',
+  'chest':          'pecho',
+  'obliques':       'abdomen',
+  'abs':            'abdomen',
+  'biceps':         'biceps',
+  'triceps':        'triceps',
   'neck':           null,
-  'front-deltoids': 'Hombros',
-  'back-deltoids':  'Hombros',
+  'front-deltoids': 'hombros',
+  'back-deltoids':  'hombros',
   'head':           null,
-  'abductors':      'Piernas',
-  'quadriceps':     'Piernas',
+  'abductors':      'piernas',
+  'quadriceps':     'piernas',
   'knees':          null,
-  'calves':         'Piernas',
+  'calves':         'piernas',
   'forearm':        null,
-  'trapezius':      'Espalda',
-  'upper-back':     'Espalda',
-  'lower-back':     'Espalda',
-  'gluteal':        'Glúteos',
-  'hamstring':      'Piernas',
-  'left-soleus':    'Piernas',
-  'right-soleus':   'Piernas',
+  'trapezius':      'espalda',
+  'upper-back':     'espalda',
+  'lower-back':     'espalda',
+  'gluteal':        'gluteos',
+  'hamstring':      'piernas',
+  'left-soleus':    'piernas',
+  'right-soleus':   'piernas',
 };
 
 // Maps fatigue state keys (used by renderMuscleFatigue) to muscle IDs
@@ -183,8 +183,8 @@ const MUSCLE_STATE_COLORS = {
   selected:   { fill: 'rgba(0,229,255,0.38)',   stroke: '#00E5FF' },
 };
 
-function _buildMuscleSVG(muscles, side, cid, mode) {
-  let polygons = '';
+function _buildMuscleSVG(muscles, side, cid, mode, compact) {
+  var polygons = '';
   muscles.forEach(function(m) {
     var catalog = MUSCLE_TO_CATALOG[m.id];
     var interactive = catalog != null && mode === 'picker';
@@ -200,17 +200,29 @@ function _buildMuscleSVG(muscles, side, cid, mode) {
         + extra + '/>';
     });
   });
+  var svgStyle = compact
+    ? 'height:100%;width:auto;display:block;overflow:visible'
+    : 'width:100%;display:block;overflow:visible';
   return '<svg viewBox="' + MUSCLE_VIEWBOX + '" xmlns="http://www.w3.org/2000/svg"'
-    + ' style="width:100%;display:block;overflow:visible" data-side="' + side + '">'
+    + ' style="' + svgStyle + '" data-side="' + side + '">'
     + polygons + '</svg>';
 }
 
 // Returns HTML string with two SVGs (front + back) side by side.
 // options: { mode: 'fatigue' | 'picker' }
 function buildMuscleMapHTML(containerId, options) {
-  var mode = (options && options.mode) || 'fatigue';
-  var front = _buildMuscleSVG(FRONT_MUSCLES, 'front', containerId, mode);
-  var back  = _buildMuscleSVG(BACK_MUSCLES,  'back',  containerId, mode);
+  var mode    = (options && options.mode) || 'fatigue';
+  var compact = mode === 'picker';
+  var front = _buildMuscleSVG(FRONT_MUSCLES, 'front', containerId, mode, compact);
+  var back  = _buildMuscleSVG(BACK_MUSCLES,  'back',  containerId, mode, compact);
+  if (compact) {
+    // Picker: fixed height, figures side by side centered
+    return '<div style="display:flex;gap:10px;justify-content:center;height:132px;padding:2px 0">'
+      + '<div style="height:100%">' + front + '</div>'
+      + '<div style="height:100%">' + back  + '</div>'
+      + '</div>';
+  }
+  // Fatigue: fluid width
   return '<div style="display:flex;gap:12px;width:100%;align-items:flex-start">'
     + '<div style="flex:1;max-width:46%">' + front + '</div>'
     + '<div style="flex:1;max-width:46%">' + back  + '</div>'

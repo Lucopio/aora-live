@@ -4839,7 +4839,7 @@ function renderMuscleFatigue() {
   if (empty) empty.style.display = 'none';
   mapEl.innerHTML = buildMuscleMapHTML('muscleFatigueMap', { mode: 'fatigue' });
   fatigueData.forEach(g => {
-    if (!g.daysSince) return;
+    if (g.daysSince === null || g.daysSince === undefined) return;
     const muscles = CATALOG_GROUP_TO_MUSCLES[g.key] || [];
     muscles.forEach(mId => setMuscleMapState('muscleFatigueMap', mId, g.state));
   });
@@ -12850,6 +12850,8 @@ function renderUniversalPicker(containerId, onSelectFn, opts) {
 }
 function _upSetGroup(g)  { _upGroup = g; _renderUP(); }
 function _upDoSearch(v)  { _upSearch = v; _renderUP(); }
+// Llamado desde muscleMapClick cuando el picker está activo
+function filterPickerByMuscle(catalogKey, active) { _upSetGroup(active ? catalogKey : ''); }
 function _upSelect(name, equip) { if (_upCallback) _upCallback(name, equip); }
 function _upDone()  { (_upOpts.onDone  || _upOpts.onClose || function(){})(); }
 function _upClose() { (_upOpts.onClose || function(){})(); }
@@ -12975,6 +12977,7 @@ function _renderUP() {
     + '<div style="font-size:16px;font-weight:700;color:var(--text-primary)">' + title + '</div>'
     + closeBtn
     + '</div>'
+    + '<div id="musclePickerMap" style="padding:0 16px 6px;flex-shrink:0"></div>'
     + '<div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">' + chipHtml + '</div>'
     + '<input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026" value="' + _upSearch.replace(/"/g,'&quot;') + '" oninput="_upDoSearch(this.value)" style="flex-shrink:0">'
     + customHtml
@@ -12986,6 +12989,20 @@ function _renderUP() {
     +     '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Agregar a la lista</button>'
     + '</div>'
     + doneBtn;
+  // Inyectar muscle map en el picker (4C)
+  (function() {
+    var pm = document.getElementById('musclePickerMap');
+    if (!pm || typeof buildMuscleMapHTML !== 'function') return;
+    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker' });
+    // Sincronizar músculo seleccionado con el grupo activo
+    if (_upGroup && typeof MUSCLE_TO_CATALOG !== 'undefined') {
+      Object.keys(MUSCLE_TO_CATALOG).forEach(function(mId) {
+        if (MUSCLE_TO_CATALOG[mId] === _upGroup) {
+          setMuscleMapState('musclePickerMap', mId, 'selected');
+        }
+      });
+    }
+  })();
 }
 
 // ─── EXERCISE PICKER ─────────────────────────────────────────
