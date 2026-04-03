@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#080A0F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
+  --sat: env(safe-area-inset-top, 0px);    /* safe-area top — usado por toasts y coachmarks */
   --bg: #080A0F;
   --surface: #111318;
   --surface2: #1A1D24;
@@ -2059,7 +2060,7 @@ body {
 /* Coach Alert Toast */
 .coach-alert-toast {
   position: fixed;
-  bottom: 90px;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   left: 16px;
   right: 16px;
   max-width: 398px;
@@ -4623,7 +4624,7 @@ function showToast(message, type) {
   if (!t) {
     t = document.createElement('div');
     t.id = 'uiToast';
-    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);max-width:340px;width:calc(100% - 40px);padding:12px 16px;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;text-align:center;z-index:9999;transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+    t.style.cssText = 'position:fixed;top:calc(env(safe-area-inset-top, 0px) + 16px);left:50%;transform:translateX(-50%) translateY(-80px);max-width:340px;width:calc(100% - 40px);padding:12px 16px;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;text-align:center;z-index:9999;transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
     t.onclick = e => e.stopPropagation();
     document.body.appendChild(t);
   }
@@ -10423,8 +10424,11 @@ function showHighlightCoachmark({ id, targetId, title, desc, tooltipPosition = '
   document.getElementById('hlCoachmarkDesc').textContent = desc;
   const tt = document.getElementById('highlightCoachmarkTooltip');
   const ttLeft = Math.min(rect.left, window.innerWidth - 280);
+  const safeAreaTop = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--sat')
+  ) || 0;
   if (tooltipPosition === 'above') {
-    tt.style.top  = (rect.top - padding - 140) + 'px';
+    tt.style.top  = Math.max(safeAreaTop + 8, rect.top - padding - 140) + 'px';
     tt.style.left = ttLeft + 'px';
   } else {
     tt.style.top  = (rect.bottom + padding + 8) + 'px';
