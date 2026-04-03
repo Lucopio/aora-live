@@ -4498,7 +4498,7 @@ function showToast(message, type) {
   const colors = { success:'#34A853', error:'#EA4335', warning:'#FBBC04', info:'var(--primary)' };
   const bg = colors[type] || colors.info;
   t.style.background = bg;
-  t.style.color = (type === 'warning') ? '#1a1a1a' : '#fff';
+  t.style.color = (type === 'error') ? '#fff' : '#080A0F';
   t.textContent = message;
   t.style.transform = 'translateX(-50%) translateY(0)';
   clearTimeout(window._uiToastTimer);
@@ -10145,7 +10145,7 @@ function setVoiceAlertMode(mode) {
     const on = b.dataset.val === mode;
     b.classList.toggle('active', on);
     b.style.background = on ? 'var(--primary)' : 'var(--surface2)';
-    b.style.color = on ? '#fff' : 'var(--text-primary)';
+    b.style.color = on ? '#080A0F' : 'var(--text-primary)';
   });
   saveToStorage();
 }
@@ -10209,7 +10209,7 @@ function setTrainingFocusUI(focus) {
   const active = document.getElementById(map[focus]);
   if (active) {
     active.style.background = 'var(--primary)';
-    active.style.color = 'white';
+    active.style.color = '#080A0F';
     active.style.borderColor = 'var(--primary)';
   }
 }
@@ -10869,7 +10869,8 @@ function saveToStorage() {
     coachmarksSeen,
     historyCleared,
     lastWeights,
-    customExercises
+    customExercises,
+    userProfile
   };
   try { localStorage.setItem('gymtracker_data', JSON.stringify(data)); } catch(e) {}
 }
@@ -10917,6 +10918,9 @@ function loadFromStorage() {
     if (data.historyCleared) historyCleared = true;
     if (data.lastWeights) lastWeights = data.lastWeights;
     if (Array.isArray(data.customExercises)) customExercises = data.customExercises;
+    if (data.userProfile && data.userProfile.onboarding_done) {
+      userProfile = { ...userProfile, ...data.userProfile };
+    }
 
     // Update home stats
     updateHomeStats();
@@ -11890,6 +11894,7 @@ function hideLoadingOverlay() {
 function initializeApp() {
   history.pushState({ screen: 'home' }, '');
   loadFromStorage();
+  updateProfileUI();
 
   // CRITICAL: Siempre inicializar Supabase, incluso si el usuario saltó el auth.
   // Necesario para que el chat del coach y otras features de red funcionen.
