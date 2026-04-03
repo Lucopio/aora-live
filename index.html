@@ -123,6 +123,29 @@ body {
   transition: color 0.2s; letter-spacing: 0.2px;
 }
 .nav-item.active span { color: var(--primary); font-weight: 600; }
+/* ── Workout in-progress indicators ─────────────────────────*/
+.workout-nav-dot {
+  position: absolute; top: 2px; right: 2px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--success);
+  display: none;
+  border: 2px solid var(--surface);
+  animation: wkPulse 1.6s ease-in-out infinite;
+}
+.workout-nav-dot.active { display: block; }
+@keyframes wkPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(0.72); }
+}
+.wk-running-banner {
+  display: none; align-items: center; gap: 10px;
+  background: var(--success-light);
+  border: 1px solid rgba(0,200,150,0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px; margin: 0 0 16px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.wk-running-banner.active { display: flex; }
 /* ── Iconos SVG con logo transparente ───────────────────────
    Los SVGs tienen marco blanco + logo transparente (hueco).
    El color del fondo del contenedor se ve a través del hueco.
@@ -2641,6 +2664,11 @@ body {
 <!-- HOME -->
 <div class="screen" id="homeScreen">
   <div class="screen-pad">
+    <div class="wk-running-banner" id="wkBannerHome" onclick="showScreen('workout')">
+      <span style="font-size:20px">💪</span>
+      <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
     <div class="home-header" style="margin-bottom:16px">
       <div class="home-greeting-row">
         <div>
@@ -3075,6 +3103,11 @@ body {
 <!-- INSIGHTS -->
 <div class="screen" id="insightsScreen">
   <div class="screen-pad">
+    <div class="wk-running-banner" id="wkBannerInsights" onclick="showScreen('workout')">
+      <span style="font-size:20px">💪</span>
+      <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
     <div class="history-header"><h1>Insights</h1></div>
 
     <!-- Resumen semanal -->
@@ -3191,7 +3224,7 @@ body {
 
 <!-- HISTORY -->
 <div class="screen" id="historyScreen">
-  <div class="screen-pad"><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
+  <div class="screen-pad"><div class="wk-running-banner" id="wkBannerHistory" onclick="showScreen('workout')"><span style="font-size:20px">💪</span><div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
 </div>
 
 <!-- SETTINGS -->
@@ -3490,9 +3523,10 @@ body {
 
 <!-- Bottom Nav -->
 <div class="bottom-nav" id="bottomNav">
-  <div class="nav-item active" onclick="showScreen('home')">
-    <div class="nav-icon-wrap">
+  <div class="nav-item active" onclick="workoutStartTime ? showScreen('workout') : showScreen('home')" style="position:relative">
+    <div class="nav-icon-wrap" style="position:relative">
       <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div id="workoutNavDot" class="workout-nav-dot"></div>
     </div>
     <span>Inicio</span>
     <div class="nav-active-dot"></div>
@@ -5363,6 +5397,13 @@ function updateMotivation() {
 }
 
 // ─── Nav ────────────────────────────────────────────────────
+function updateWorkoutNav() {
+  const active = !!workoutStartTime;
+  const dot = document.getElementById('workoutNavDot');
+  if (dot) dot.classList.toggle('active', active);
+  document.querySelectorAll('.wk-running-banner').forEach(b => b.classList.toggle('active', active));
+}
+
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -5379,6 +5420,7 @@ function showScreen(name) {
   if (name === 'coach') { initCoachChat(); }
   if (name === 'settings') { updateAccountUI(); }
   if (name === 'workout') setTimeout(() => checkNewFeatureCoachmarks(), 800);
+  updateWorkoutNav();
   // Registrar en el historial del navegador para que el botón atrás funcione
   if (!workoutStartTime) history.pushState({ screen: name }, '');
 }
@@ -9392,6 +9434,7 @@ function endWorkout() {
   _postWorkoutFeeling = null;
   savedWorkouts.unshift({ date: now, duration: elapsed, exercises: exerciseCount, mode: workoutMode, restCount: restCount, warmupDuration: warmupDuration, exercises_detail: allExDetail, avg_rest_ms: avgRestMs, rest_adherence: restAdherence, total_rests_tracked: totalRestsTracked, avg_rpe: sessionRPE, feeling: _postWorkoutFeeling });
   clearSessionState(); // #7 — entrenamiento terminado, limpiar estado guardado
+  workoutStartTime = null;
   // #10 — feedback semanal (solo viernes/lunes con ≥2 sesiones)
   const weeklyFB = generateWeeklyFeedback();
   renderWeeklyFeedback(weeklyFB);
@@ -12035,6 +12078,7 @@ function clearAllData() {
   currentExerciseSets = [];
   completedExercises = [];
   workoutStartTime = null;
+  updateWorkoutNav();
   lastWeights = {};
   customExercises = [];
   historyCleared = true;
