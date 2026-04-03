@@ -2669,6 +2669,7 @@ body {
     </div>
     <div class="coach-message" id="coachDailyMessage" style="display:none"></div>
     <button class="coach-chat-btn" id="coachChatBtn" onclick="showCoachProfile()" style="display:none">💬 Responderle a <span id="coachChatBtnName">tu coach</span> →</button>
+    <button id="coachTalkBtn" onclick="showScreen('coach')" style="display:none;margin-top:8px;padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer">💬 Hablar con coach</button>
 
     <!-- Weekly Stats Grid -->
     <div class="weekly-stats-grid">
@@ -4613,11 +4614,13 @@ function updateCoachSpotlight() {
   const msgEl = document.getElementById('coachDailyMessage');
   const btn = document.getElementById('coachChatBtn');
   const btnName = document.getElementById('coachChatBtnName');
+  const talkBtn = document.getElementById('coachTalkBtn');
 
   if (!coach) {
     if (spotlight) spotlight.style.display = 'none';
     if (msgEl) msgEl.style.display = 'none';
     if (btn) btn.style.display = 'none';
+    if (talkBtn) talkBtn.style.display = 'none';
     return;
   }
 
@@ -4647,6 +4650,7 @@ function updateCoachSpotlight() {
   if (msgEl) { msgEl.textContent = msg; msgEl.style.display = 'block'; }
   if (spotlight) spotlight.style.display = 'flex';
   if (btn) btn.style.display = 'block';
+  if (talkBtn) talkBtn.style.display = 'inline-block';
 
 }
 
@@ -5874,7 +5878,12 @@ function skipWarmup() {
 
 function launchWorkout() {
   // Check-in del coach al inicio del entrenamiento
-  setTimeout(() => showCoachAlertToast('checkIn'), 1500);
+  // Guard: no mostrar si el usuario fue directo al catálogo (sin rutina preseleccionada)
+  setTimeout(() => {
+    if (!document.getElementById('catalogScreen')?.classList.contains('active')) {
+      showCoachAlertToast('checkIn');
+    }
+  }, 1500);
   workoutStartTime = Date.now();
   resetRestZone();
   startTimer();
