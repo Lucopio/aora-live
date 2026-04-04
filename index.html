@@ -4304,7 +4304,7 @@ function aoraLogo(size = 'md') {
 const COACHES = {
   maria: {
     name: 'María', emoji: '👩🏽', country: 'Colombia', flag: '🇨🇴', specialty: 'HIIT & Funcional', tone: 'energética',
-    photoUrl: 'Images/coaches/maria.png',
+    photoUrl: 'https://lucopio.github.io/aora-live/Images/coaches/maria.png',
     bio: 'Entrenadora personal colombiana especializada en HIIT y entrenamiento funcional. Empecé en un pequeño gym de barrio y hoy acompaño a cientos de personas a moverse mejor.',
     approach: [
       'Celebro cada pequeño logro — los grandes cambios se construyen así.',
@@ -4318,7 +4318,7 @@ const COACHES = {
   },
   carlos: {
     name: 'Carlos', emoji: '👨🏽', country: 'México', flag: '🇲🇽', specialty: 'Fuerza & Masa', tone: 'directo',
-    photoUrl: 'Images/coaches/carlos.jpg',
+    photoUrl: 'https://lucopio.github.io/aora-live/Images/coaches/carlos.jpg',
     bio: 'Entrenador de fuerza y masa muscular mexicano. Datos, progresión y técnica. Sin excusas, sin magia — solo trabajo bien hecho.',
     approach: [
       'Periodización seria: cada semana construye sobre la anterior.',
@@ -4332,7 +4332,7 @@ const COACHES = {
   },
   andrea: {
     name: 'Andrea', emoji: '👩🏻', country: 'Argentina', flag: '🇦🇷', specialty: 'Bienestar integral', tone: 'empática',
-    photoUrl: 'Images/coaches/andrea.jpg',
+    photoUrl: 'https://lucopio.github.io/aora-live/Images/coaches/andrea.jpg',
     bio: 'Entrenadora argentina de bienestar integral. Trabajo el cuerpo y la mente juntos porque no puedes tener uno sin el otro.',
     approach: [
       'Escucho primero. Tu cuerpo me habla antes de que tú lo hagas.',
@@ -4346,7 +4346,7 @@ const COACHES = {
   },
   diego: {
     name: 'Diego', emoji: '👨🏾', country: 'Perú', flag: '🇵🇪', specialty: 'Resiliencia & Calistenia', tone: 'sereno',
-    photoUrl: 'Images/coaches/diego.jpg',
+    photoUrl: 'https://lucopio.github.io/aora-live/Images/coaches/diego.jpg',
     bio: 'Entrenador peruano de calistenia y resiliencia. Con poco puedes lograr mucho. La mentalidad es el primer músculo que hay que entrenar.',
     approach: [
       'El cuerpo como herramienta: sin gimnasio, sin excusas.',
@@ -4367,6 +4367,15 @@ function getSelectedCoach() {
     const c = JSON.parse(raw);
     return COACHES[c.id] ? { id: c.id, ...COACHES[c.id] } : null;
   } catch(e) { return null; }
+}
+
+// Helper reutilizable: genera HTML de avatar del coach (foto con fallback a emoji)
+function coachAvatarHtml(coach, size = 36) {
+  if (!coach) return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">🤖</div>`;
+  if (coach.photoUrl) {
+    return `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:center top" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">${coach.emoji}</div>`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">${coach.emoji}</div>`;
 }
 
 function saveSelectedCoach(id) {
@@ -4596,10 +4605,10 @@ function showCoachAlertToast(alertType) {
   }
 
   const warmupBtn = alertType === 'warmupSkipped'
-    ? `<button class="coach-alert-dismiss coach-alert-warmup-btn" onclick="dismissCoachAlert();showWarmup()">🔥 Ir al calentamiento</button>`
+    ? `<button class="coach-alert-dismiss coach-alert-warmup-btn" onclick="dismissCoachAlert();setTimeout(()=>showWarmup(),350)">🔥 Ir al calentamiento</button>`
     : '';
   toast.innerHTML = `
-    <div class="coach-alert-avatar">${coach.emoji}</div>
+    <div class="coach-alert-avatar">${coachAvatarHtml(coach, 40)}</div>
     <div class="coach-alert-body">
       <div class="coach-alert-name">${coach.name}</div>
       <div class="coach-alert-text">${message}</div>
@@ -9748,7 +9757,14 @@ function endWorkout() {
   document.getElementById('summaryMotivation').textContent = _coachMsg;
   const _summaryCoachEmoji = document.getElementById('summaryCoachEmoji');
   const _summaryCoachName = document.getElementById('summaryCoachName');
-  if (_summaryCoachEmoji && _coach) _summaryCoachEmoji.textContent = _coach.emoji;
+  if (_summaryCoachEmoji && _coach) {
+    if (_coach.photoUrl) {
+      _summaryCoachEmoji.style.fontSize = '';
+      _summaryCoachEmoji.innerHTML = coachAvatarHtml(_coach, 28);
+    } else {
+      _summaryCoachEmoji.textContent = _coach.emoji;
+    }
+  }
   if (_summaryCoachName && _coach) _summaryCoachName.textContent = _coach.name;
 
   _postWorkoutFeeling = null;
@@ -10405,7 +10421,9 @@ function _renderTourStep() {
   const nextBtn = document.getElementById('tourNextBtn');
 
   if (step === 0) {
-    iconEl.innerHTML  = `<span style="font-size:52px">${coach.emoji}</span>`;
+    iconEl.innerHTML  = coach.photoUrl
+      ? `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;object-position:center top">`
+      : `<span style="font-size:52px">${coach.emoji}</span>`;
     titleEl.textContent = `${cn} es tu entrenador personal`;
     const sub = document.getElementById('tourSubtitle');
     sub.style.display   = 'block';
