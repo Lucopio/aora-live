@@ -2558,28 +2558,28 @@ body {
       <div class="ob-subtitle">Tu coach IA se adaptará a tu estilo y objetivos</div>
       <div class="trainer-grid">
         <div class="trainer-card" onclick="obSelectCoach(this,'maria')" data-coach="maria">
-          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/maria.png" alt="María"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/maria.png" alt="María"></div>
           <div class="trainer-flag">🇨🇴</div>
           <div class="trainer-name">María</div>
           <div class="trainer-specialty">HIIT & Funcional</div>
           <button onclick="event.stopPropagation();showCoachProfile('maria','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'carlos')" data-coach="carlos">
-          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/carlos.jpg" alt="Carlos"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/carlos.jpg" alt="Carlos"></div>
           <div class="trainer-flag">🇲🇽</div>
           <div class="trainer-name">Carlos</div>
           <div class="trainer-specialty">Fuerza & Masa</div>
           <button onclick="event.stopPropagation();showCoachProfile('carlos','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'andrea')" data-coach="andrea">
-          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/andrea.jpg" alt="Andrea"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/andrea.jpg" alt="Andrea"></div>
           <div class="trainer-flag">🇦🇷</div>
           <div class="trainer-name">Andrea</div>
           <div class="trainer-specialty">Bienestar integral</div>
           <button onclick="event.stopPropagation();showCoachProfile('andrea','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'diego')" data-coach="diego">
-          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego.jpg" alt="Diego"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/diego.jpg" alt="Diego"></div>
           <div class="trainer-flag">🇵🇪</div>
           <div class="trainer-name">Diego</div>
           <div class="trainer-specialty">Resiliencia & Calistenia</div>
@@ -2735,7 +2735,7 @@ body {
     <!-- Coach empty state -->
     <div id="coachEmptyState" style="display:none;background:var(--surface);border:1px dashed rgba(255,255,255,0.1);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px">
       <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Elige tu entrenador IA personal</div>
-      <button onclick="showScreen('coach')" style="padding:8px 20px;background:var(--accent2);color:#fff;border:none;border-radius:20px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Elegir coach →</button>
+      <button onclick="openCoachChangeSheet()" style="padding:8px 20px;background:var(--accent2);color:#fff;border:none;border-radius:20px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Elegir coach →</button>
     </div>
 
     <!-- ③ STATS GRID — oculto en home, visible solo en workoutHub -->
@@ -3603,25 +3603,25 @@ body {
   <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:16px;text-align:center">Cambiar entrenador</div>
   <div class="trainer-grid">
     <div class="trainer-card" onclick="selectCoachFromChat('maria')" id="changeCard_maria">
-      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/maria.png" alt="María"></div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/maria.png" alt="María"></div>
       <div class="trainer-flag">🇨🇴</div>
       <div class="trainer-name">María</div>
       <div class="trainer-specialty">HIIT & Funcional</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('carlos')" id="changeCard_carlos">
-      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/carlos.jpg" alt="Carlos"></div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/carlos.jpg" alt="Carlos"></div>
       <div class="trainer-flag">🇲🇽</div>
       <div class="trainer-name">Carlos</div>
       <div class="trainer-specialty">Fuerza & Masa</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('andrea')" id="changeCard_andrea">
-      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/andrea.jpg" alt="Andrea"></div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/andrea.jpg" alt="Andrea"></div>
       <div class="trainer-flag">🇦🇷</div>
       <div class="trainer-name">Andrea</div>
       <div class="trainer-specialty">Bienestar integral</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('diego')" id="changeCard_diego">
-      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego.jpg" alt="Diego"></div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="https://lucopio.github.io/aora-live/Images/coaches/diego.jpg" alt="Diego"></div>
       <div class="trainer-flag">🇵🇪</div>
       <div class="trainer-name">Diego</div>
       <div class="trainer-specialty">Resiliencia & Calistenia</div>
@@ -4382,6 +4382,15 @@ function saveSelectedCoach(id) {
   const coach = COACHES[id];
   if (!coach) return;
   localStorage.setItem('selectedCoach', JSON.stringify({ id, ...coach }));
+  // Persistir en Supabase para sobrevivir limpiezas de caché
+  if (currentUser && sb) {
+    sb.from('profiles')
+      .update({ selected_coach_id: id })
+      .eq('id', currentUser.id)
+      .then(({ error }) => {
+        if (error) console.warn('[coach] No se pudo guardar coach en Supabase:', error);
+      });
+  }
 }
 
 // ─── COACH ALERTS SYSTEM ─────────────────────────────────────────────────────
@@ -11993,6 +12002,11 @@ async function syncFromCloud() {
         onboarding_done:  profile.onboarding_done  || false
       };
       updateProfileUI();
+      // Restaurar coach seleccionado desde Supabase si localStorage está vacío
+      if (!localStorage.getItem('selectedCoach') && profile.selected_coach_id) {
+        saveSelectedCoach(profile.selected_coach_id);
+        updateCoachSpotlight();
+      }
     }
     // Entrenamientos
     const { data: wData } = await sb.from('workouts').select('*').eq('user_id', currentUser.id).order('started_at', { ascending: false });
