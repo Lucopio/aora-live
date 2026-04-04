@@ -11514,7 +11514,7 @@ function loadFromStorage() {
     if (data.voiceAlertMode) {
       voiceAlertMode = data.voiceAlertMode;
       document.querySelectorAll('.voice-opt-btn').forEach(b => b.classList.toggle('active', b.dataset.val === voiceAlertMode));
-      document.querySelectorAll('.voice-opt-btn').forEach(b => { b.style.background = b.dataset.val === voiceAlertMode ? 'var(--primary)' : 'var(--surface2)'; b.style.color = b.dataset.val === voiceAlertMode ? '#fff' : 'var(--text-primary)'; });
+      document.querySelectorAll('.voice-opt-btn').forEach(b => { b.style.background = b.dataset.val === voiceAlertMode ? 'var(--primary)' : 'var(--surface2)'; b.style.color = b.dataset.val === voiceAlertMode ? '#080A0F' : 'var(--text-primary)'; });
     }
     if (data.trainingLocation) { trainingLocation = data.trainingLocation; if (userProfile) userProfile.training_location = trainingLocation; }
     if (typeof data.cycleEnabled === 'boolean') cycleEnabled = data.cycleEnabled;
