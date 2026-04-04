@@ -4605,7 +4605,7 @@ function showCoachAlertToast(alertType) {
   }
 
   const warmupBtn = alertType === 'warmupSkipped'
-    ? `<button class="coach-alert-dismiss coach-alert-warmup-btn" onclick="dismissCoachAlert();setTimeout(()=>showWarmup(),350)">🔥 Ir al calentamiento</button>`
+    ? `<button class="coach-alert-dismiss coach-alert-warmup-btn" onclick="dismissCoachAlert();setTimeout(()=>{showScreen('warmup');renderWarmupRecommendations();},350)">🔥 Ir al calentamiento</button>`
     : '';
   toast.innerHTML = `
     <div class="coach-alert-avatar">${coachAvatarHtml(coach, 40)}</div>
