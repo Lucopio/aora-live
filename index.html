@@ -4784,13 +4784,16 @@ function updateCoachSpotlight() {
   const btnName = document.getElementById('coachChatBtnName');
   const talkBtn = document.getElementById('coachTalkBtn');
 
+  const emptyStateEl = document.getElementById('coachEmptyState');
   if (!coach) {
     if (spotlight) spotlight.style.display = 'none';
     if (msgEl) msgEl.style.display = 'none';
     if (btn) btn.style.display = 'none';
     if (talkBtn) talkBtn.style.display = 'none';
+    if (emptyStateEl) emptyStateEl.style.display = 'block';
     return;
   }
+  if (emptyStateEl) emptyStateEl.style.display = 'none';
 
   // Update spotlight
   const avatarEl = document.getElementById('coachAvatarEmoji');
@@ -5429,7 +5432,38 @@ function initCoachChat() {
   if (loginPrompt) loginPrompt.style.display = currentUser ? 'none' : 'flex';
   if (inputWrap)   inputWrap.style.display   = currentUser ? 'block' : 'none';
 
-  if (!currentUser) return;
+  if (!currentUser) {
+    const wrap = document.getElementById('chatMessages');
+    if (wrap && wrap.innerHTML === '') {
+      const coachName = coach ? coach.name : 'tu coach';
+      wrap.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;
+          justify-content:center;height:100%;padding:40px 24px;text-align:center;gap:16px">
+          <div style="font-size:48px">💬</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary)">
+            Chatea con ${coachName}
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">
+            Inicia sesión para hablar con tu coach IA y recibir
+            orientación personalizada basada en tu entrenamiento.
+          </div>
+          <button onclick="showScreen('auth')"
+            style="margin-top:8px;padding:14px 32px;background:var(--primary);
+            color:#080A0F;border:none;border-radius:var(--radius);
+            font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer">
+            Iniciar sesión
+          </button>
+          <button onclick="continueWithoutAccount()"
+            style="padding:10px 24px;background:transparent;
+            color:var(--text-secondary);border:1px solid var(--border);
+            border-radius:var(--radius);font-family:var(--font);
+            font-size:13px;font-weight:600;cursor:pointer">
+            Continuar sin cuenta
+          </button>
+        </div>`;
+    }
+    return;
+  }
 
   updateChatCounter();
 
