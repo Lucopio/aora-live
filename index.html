@@ -2893,19 +2893,19 @@ body {
           </div>
           <input type="text" id="weightInput" value="0" inputmode="decimal" autocomplete="off" oninput="updateWeightPreview()">
           <div id="weightPreview" style="display:none;font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;font-family:var(--mono)"></div>
-          <div id="weightQuickBtns" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
-            <button onclick="adjustWeight(-5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">-5</button>
-            <button onclick="adjustWeight(-2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">-2.5</button>
-            <button onclick="adjustWeight(2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+2.5</button>
-            <button onclick="adjustWeight(5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+5</button>
-            <button onclick="adjustWeight(10)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+10</button>
-          </div>
         </div>
         <div class="set-input-group">
           <label>REPS</label>
           <input type="number" id="repsInput" value="10" min="1" inputmode="numeric">
         </div>
         <button class="add-set-btn" onclick="addSet()">+ Serie</button>
+      </div>
+      <div id="weightQuickBtns" style="display:flex;gap:4px;margin-top:8px;margin-bottom:4px">
+        <button onclick="adjustWeight(-5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−5</button>
+        <button onclick="adjustWeight(-2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−2½</button>
+        <button onclick="adjustWeight(2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+2½</button>
+        <button onclick="adjustWeight(5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+5</button>
+        <button onclick="promptCustomWeight()" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-secondary);cursor:pointer">±</button>
       </div>
       <!-- Toggle aproximación -->
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
@@ -8364,6 +8364,11 @@ function adjustWeight(delta) {
   updateWeightPreview();
 }
 
+function promptCustomWeight() {
+  const delta = parseFloat(prompt('Ajustar peso por:', '2.5'));
+  if (!isNaN(delta)) adjustWeight(delta);
+}
+
 // ─── RPE Slider ──────────────────────────────────────────────
 let _editRPEActive = false; // false = sin RPE
 
@@ -10651,9 +10656,11 @@ function dismissHighlightCoachmark() {
 
 function checkNewFeatureCoachmarks() {
   // Mostrar coachmarks en cascada con delays para no saturar
+  const _wkActive = () => document.getElementById('workoutScreen')?.classList.contains('active');
 
   // 1. Botón Coach en workout (2s) — el más importante
   setTimeout(() => {
+    if (!_wkActive()) return;
     showHighlightCoachmark({
       id: 'wk_coach_btn',
       targetId: 'workoutCoachBtn',
@@ -10666,6 +10673,7 @@ function checkNewFeatureCoachmarks() {
 
   // 2. Timer de descanso (8s) — solo si el de coach ya fue visto
   setTimeout(() => {
+    if (!_wkActive()) return;
     if (!localStorage.getItem(HL_COACHMARK_KEY_PREFIX + 'wk_coach_btn')) return;
     showHighlightCoachmark({
       id: 'wk_rest_timer',
@@ -10679,6 +10687,7 @@ function checkNewFeatureCoachmarks() {
 
   // 3. Serie de aproximación (14s) — solo si los anteriores ya fueron vistos
   setTimeout(() => {
+    if (!_wkActive()) return;
     if (!localStorage.getItem(HL_COACHMARK_KEY_PREFIX + 'wk_rest_timer')) return;
     showHighlightCoachmark({
       id: 'wk_warmup_set',
@@ -10692,6 +10701,7 @@ function checkNewFeatureCoachmarks() {
 
   // 4. Ejercicio unilateral (20s) — solo si los anteriores ya fueron vistos
   setTimeout(() => {
+    if (!_wkActive()) return;
     if (!localStorage.getItem(HL_COACHMARK_KEY_PREFIX + 'wk_warmup_set')) return;
     showHighlightCoachmark({
       id: 'wk_unilateral',
@@ -11921,44 +11931,132 @@ function exportUserData() {
 function importUserData(event) {
   const file = event.target.files[0];
   if (!file) return;
-  // Reset input so the same file can be selected again
   event.target.value = '';
 
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const data = JSON.parse(e.target.result);
-      if (!data || typeof data !== 'object') throw new Error('Formato inválido');
+      const backup = JSON.parse(e.target.result);
+      if (!backup || typeof backup !== 'object') throw new Error('Formato inválido');
+      console.log('[Import] Parsed OK. Keys:', Object.keys(backup).join(', '));
+      console.log('[Import] version:', backup.version, '_version:', backup._version,
+        'has savedWorkouts:', !!backup.savedWorkouts, 'has gymtracker_data:', !!backup.gymtracker_data);
 
-      // Restaurar chat history si estaba incluido
-      if (data._chatHistory) {
-        try { localStorage.setItem('aora_chat_history', JSON.stringify(data._chatHistory)); } catch(ex) {}
-        delete data._chatHistory;
-      }
-      if (data._gifCache) {
-        try { localStorage.setItem('aora_gif_cache', JSON.stringify(data._gifCache)); } catch(ex) {}
-        delete data._gifCache;
-      }
-      // Limpiar metakeys del export antes de guardar
-      delete data._exportedAt;
-      delete data._version;
+      let detectedVersion = null;
+      let dateLabel = '';
 
-      localStorage.setItem('gymtracker_data', JSON.stringify(data));
-
-      // Recargar datos en memoria
-      const loaded = loadFromStorage();
-      if (loaded.savedWorkouts) {
-        savedWorkouts = loaded.savedWorkouts;
-        renderHistory();
-        updateHomeStats();
+      // ── Detectar versión ──
+      if (backup.version === 2 && backup.gymtracker_data) {
+        detectedVersion = 2;
+        try { dateLabel = new Date(backup.exportedAt).toLocaleDateString('es-CO'); } catch(ex) { dateLabel = 'fecha desconocida'; }
+      } else if (backup._version === 1 || backup.savedWorkouts) {
+        detectedVersion = 1;
+        try { dateLabel = new Date(backup._exportedAt || Date.now()).toLocaleDateString('es-CO'); } catch(ex) { dateLabel = 'fecha desconocida'; }
       }
-      showToast('✅ Datos restaurados correctamente');
+
+      if (!detectedVersion) {
+        console.warn('[Import] No se detectó versión válida');
+        showToast('❌ Archivo no reconocido', 'error');
+        return;
+      }
+
+      console.log('[Import] Detected v' + detectedVersion + ', date:', dateLabel);
+      // Usar modal inline en vez de confirm() — confirm() falla en PWAs Android
+      _showImportConfirm(dateLabel, detectedVersion, backup);
+
     } catch(err) {
-      showToast('❌ Archivo inválido o corrupto');
-      console.error('importUserData error:', err);
+      showToast('❌ Error: ' + err.message, 'error');
+      console.error('[Import] Parse/detect error:', err);
     }
   };
   reader.readAsText(file);
+}
+
+function _showImportConfirm(dateLabel, version, backup) {
+  // Eliminar modal previo si existe
+  let modal = document.getElementById('importConfirmModal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'importConfirmModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);padding:24px';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:20px;padding:24px;max-width:340px;width:100%;text-align:center">
+      <div style="font-size:32px;margin-bottom:12px">📂</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">¿Restaurar backup?</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5">
+        Backup del <strong>${dateLabel}</strong> (v${version}).<br>
+        Esto reemplazará tus datos actuales.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button id="importConfirmNo" style="padding:12px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancelar</button>
+        <button id="importConfirmYes" style="padding:12px;background:var(--primary);border:none;border-radius:14px;font-family:var(--font);font-size:14px;font-weight:700;color:#080A0F;cursor:pointer">Restaurar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById('importConfirmNo').onclick = () => {
+    modal.remove();
+    console.log('[Import] Cancelled by user');
+  };
+  document.getElementById('importConfirmYes').onclick = () => {
+    modal.remove();
+    _executeImport(version, backup);
+  };
+}
+
+function _executeImport(version, backup) {
+  try {
+    if (version === 2) {
+      const keys = [
+        'gymtracker_data','aora_routines','selectedCoach',
+        'gymtracker_chat_maria','gymtracker_chat_carlos',
+        'gymtracker_chat_andrea','gymtracker_chat_diego',
+        'userProfile','gymtracker_skip_auth','aora_gif_cache'
+      ];
+      let restored = 0;
+      keys.forEach(key => {
+        if (backup[key]) { localStorage.setItem(key, backup[key]); restored++; }
+      });
+      console.log('[Import] v2 restored', restored, 'keys');
+    } else {
+      // v1 — restaurar extras
+      if (backup._chatHistory) {
+        try { localStorage.setItem('aora_chat_history', JSON.stringify(backup._chatHistory)); } catch(ex) {}
+      }
+      if (backup._gifCache) {
+        try { localStorage.setItem('aora_gif_cache', JSON.stringify(backup._gifCache)); } catch(ex) {}
+      }
+      // Reconstruir gymtracker_data limpio desde el backup v1
+      const gymData = {
+        savedWorkouts: backup.savedWorkouts || [],
+        restSeconds: backup.restSeconds || 60,
+        soundEnabled: backup.soundEnabled !== false,
+        vibrationEnabled: backup.vibrationEnabled !== false,
+        voiceAlertMode: backup.voiceAlertMode || 'ambas',
+        trainingLocation: backup.trainingLocation || 'gym',
+        cycleEnabled: backup.cycleEnabled || false,
+        cycleStartDate: backup.cycleStartDate || null,
+        workoutSessionCount: backup.workoutSessionCount || 0,
+        coachmarksSeen: backup.coachmarksSeen || {},
+        historyCleared: false,
+        lastWeights: backup.lastWeights || {},
+        customExercises: backup.customExercises || [],
+        userProfile: backup.userProfile || {}
+      };
+      localStorage.setItem('gymtracker_data', JSON.stringify(gymData));
+      console.log('[Import] v1 gymtracker_data saved, workouts:', (backup.savedWorkouts || []).length);
+      if (backup.userProfile) {
+        localStorage.setItem('userProfile', JSON.stringify(backup.userProfile));
+      }
+    }
+    showToast('✅ Datos restaurados. Recargando...', 'success');
+    setTimeout(() => window.location.reload(), 1500);
+  } catch(err) {
+    showToast('❌ Error al restaurar: ' + err.message, 'error');
+    console.error('[Import] Restore error:', err);
+  }
 }
 
 async function handleLogout() {
