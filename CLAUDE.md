@@ -254,3 +254,32 @@ grep -n "const screenMap" index.html
 - **Co-founder:** Andy (lucopio.afd@gmail.com)
 - **Cuenta GitHub:** Lucopio
 - **Cuenta Supabase:** misma cuenta
+
+## gstack — Skills de Claude Code
+
+Skills instaladas en `C:\Users\adomi\.claude\skills\gstack`.
+
+### Skills activas para Aora Live
+
+| Skill | Cuándo usarla |
+|---|---|
+| `/investigate` | Antes de tocar cualquier bug — root-cause primero, código después |
+| `/careful` | Activar antes de cambios destructivos (borrar secciones del monolito, reset de localStorage, DROP TABLE) |
+| `/freeze` | Bloquear edits fuera del scope durante una tanda — evita que Claude Code "arregle" JS adyacente |
+| `/guard` | `/careful` + `/freeze` juntos — para tandas de alto riesgo |
+| `/review` | Antes de hacer merge/push a `main` — detecta bugs que pasan el ojo humano |
+| `/supabase` | Para cambios en Edge Functions o schema de BD |
+
+### Skills disponibles pero no prioritarias
+
+`/retro`, `/document-release`, `/cso`, `/plan-eng-review`, `/design-review`
+
+### Skills NO relevantes para este proyecto
+
+`/browse`, `/qa` (requieren browser headless — no funciona en Windows sin display), `/ship` (deploy es `git push` directo), `/plan-ceo-review`, `/office-hours` (visión ya definida)
+
+### Regla de uso
+
+**Siempre correr `/investigate` antes de implementar cualquier bug fix.** El monolito de 10K+ líneas tiene dependencias no obvias — nunca asumir el root cause sin trazar el flujo primero.
+
+**Activar `/freeze` al inicio de cada tanda** con el directorio o función objetivo para evitar cambios accidentales fuera del scope.
