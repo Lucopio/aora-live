@@ -1956,6 +1956,7 @@ body {
   flex: 1; overflow-y: auto; padding: 16px 16px 8px;
   scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
   display: flex; flex-direction: column; gap: 4px;
+  overscroll-behavior: contain;
 }
 .chat-messages::-webkit-scrollbar { width: 0; }
 
@@ -2008,6 +2009,7 @@ body {
 
 .chat-input-area {
   flex-shrink: 0;
+  position: sticky; bottom: 0;
   background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
   padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
@@ -2891,6 +2893,13 @@ body {
           </div>
           <input type="text" id="weightInput" value="0" inputmode="decimal" autocomplete="off" oninput="updateWeightPreview()">
           <div id="weightPreview" style="display:none;font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;font-family:var(--mono)"></div>
+          <div id="weightQuickBtns" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+            <button onclick="adjustWeight(-5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">-5</button>
+            <button onclick="adjustWeight(-2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">-2.5</button>
+            <button onclick="adjustWeight(2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+2.5</button>
+            <button onclick="adjustWeight(5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+5</button>
+            <button onclick="adjustWeight(10)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+10</button>
+          </div>
         </div>
         <div class="set-input-group">
           <label>REPS</label>
@@ -2985,6 +2994,11 @@ body {
           </div>
         </div>
         <div class="rest-bar-track"><div class="rest-bar-fill" id="restBarFill"></div></div>
+        <div id="restExtendRow" style="display:flex;gap:6px;width:100%;margin-top:10px">
+          <button onclick="extendRest(10)" style="flex:1;padding:8px 4px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+10s</button>
+          <button onclick="extendRest(20)" style="flex:1;padding:8px 4px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+20s</button>
+          <button onclick="extendRest(30)" style="flex:1;padding:8px 4px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+30s</button>
+        </div>
       </div>
     </div>
 
@@ -3749,6 +3763,15 @@ body {
     </div>
     <button id="rpeSkipBtn" onclick="skipRPEEdit()" style="margin-top:8px;background:none;border:none;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-tertiary);cursor:pointer;padding:0">Sin RPE</button>
   </div>
+  <div id="editApproxRow" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border)">
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:2px">Serie de aproximación</div>
+      <div style="font-size:11px;color:var(--text-secondary)">No cuenta para el volumen total</div>
+    </div>
+    <div id="editApproxToggle" onclick="toggleEditApprox()" style="width:44px;height:26px;border-radius:13px;background:var(--border);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0">
+      <div id="editApproxThumb" style="width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:transform 0.2s"></div>
+    </div>
+  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <button onclick="closeEditSet()" style="padding:14px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cancelar</button>
     <button onclick="saveEditedSet()" style="padding:14px;background:var(--primary);border:none;border-radius:14px;font-family:var(--font);font-size:14px;font-weight:700;color:#080A0F;cursor:pointer">Guardar</button>
@@ -4463,28 +4486,24 @@ const COACH_ALERTS = {
   },
   checkIn: {
     maria: [
-      "¡Hola! ¿Cómo amaneciste hoy? Cuéntame cómo estás antes de arrancar. 💪",
-      "¡Buenas! ¿Cómo está el cuerpo hoy? ¿Dormiste bien anoche?",
-      "¡Ey! ¿Cómo estuvo el día? Aquí estoy contigo para este entrenamiento. 🔥",
-      "¿Lista/listo para esto? ¿Cómo te sientes hoy — energía alta, media, o estás empujando?"
+      "¡Vamos parcera! 💪 Estoy aquí contigo en cada serie. Dale con todo.",
+      "¡Eso es! Arrancamos. Recuerda: técnica primero, peso después. 🔥",
+      "¡Aquí vamos! Cada rep que hagas hoy cuenta. Yo te acompaño."
     ],
     carlos: [
-      "¿Cómo está el cuerpo hoy? Sueño, alimentación, estrés — esos factores afectan el rendimiento.",
-      "Antes de arrancar: ¿cómo dormiste? ¿Comiste bien hoy? Eso define el techo de hoy.",
-      "Check rápido: energía de 1 a 10, ¿cómo estás?",
-      "¿Cómo está la recuperación desde el último entreno?"
+      "Entrenamiento iniciado. Foco total. Registra cada serie.",
+      "Comenzamos. Sin distracciones. Los datos de hoy construyen el progreso de mañana.",
+      "Sesión activa. Ejecuta el plan. Ajustamos sobre la marcha si es necesario."
     ],
     andrea: [
-      "Hola 🌸 ¿Cómo llegás hoy? Cuerpo, mente — todo cuenta. ¿Cómo estás?",
-      "Antes de empezar: ¿cómo dormiste? ¿Cómo está la cabeza hoy?",
-      "¿Qué tal el día hasta acá? Me interesa saber cómo llegás al entreno.",
-      "¿Cómo está tu energía hoy? Sin presión — lo que sientas está bien."
+      "Hola 😊 Estoy aquí para acompañarte. Escuchá tu cuerpo y disfrutá el proceso.",
+      "Empezamos juntos. Respirá, conectá con tu cuerpo y dale con intención.",
+      "Aquí estoy. Tomátelo serie a serie, sin apuro. ¿Cómo te sentís hoy?"
     ],
     diego: [
-      "¿Cómo llegás hoy?",
-      "Antes de empezar — ¿cómo está el cuerpo?",
-      "¿Dormiste bien? ¿Comiste? El entrenamiento de hoy depende de eso.",
-      "¿Cómo está la cabeza hoy?"
+      "Comenzamos. Presente. Consciente. Efectivo.",
+      "El entrenamiento es ahora. Nada más importa en este momento.",
+      "Inicia. El resto se construye serie a serie."
     ]
   },
   inactivity: {
@@ -4623,6 +4642,7 @@ function showCoachAlertToast(alertType) {
       <div class="coach-alert-text">${message}</div>
       <div class="coach-alert-actions">
         <button class="coach-alert-dismiss" onclick="dismissCoachAlert()">Entendido ✓</button>
+        <button class="coach-alert-dismiss" style="color:var(--primary);font-weight:700" onclick="dismissCoachAlert();setTimeout(()=>{showScreen('coach');setTimeout(()=>{const input=document.getElementById('chatInput');if(input&&!input.disabled){input.focus();input.scrollIntoView({behavior:'smooth',block:'nearest'});}},400);},200)">Hablar →</button>
         ${warmupBtn}
       </div>
     </div>
@@ -8336,6 +8356,14 @@ function _showWeightPreview(inputId, previewId) {
 function updateWeightPreview() { _showWeightPreview('weightInput', 'weightPreview'); }
 function updateEditWeightPreview() { _showWeightPreview('editSetWeight', 'editWeightPreview'); }
 
+function adjustWeight(delta) {
+  const input = document.getElementById('weightInput');
+  const current = parseWeightExpr(input.value) || 0;
+  const next = Math.max(0, Math.round((current + delta) * 100) / 100);
+  input.value = next;
+  updateWeightPreview();
+}
+
 // ─── RPE Slider ──────────────────────────────────────────────
 let _editRPEActive = false; // false = sin RPE
 
@@ -8484,6 +8512,20 @@ function deleteSet(index) {
 
 // ─── Edit Set (#8) ───────────────────────────────────────────
 let _editSetIndex = -1;
+let _editApproxValue = false;
+
+function toggleEditApprox() {
+  _editApproxValue = !_editApproxValue;
+  const toggle = document.getElementById('editApproxToggle');
+  const thumb  = document.getElementById('editApproxThumb');
+  if (_editApproxValue) {
+    toggle.style.background = '#FBBC04';
+    thumb.style.transform   = 'translateX(18px)';
+  } else {
+    toggle.style.background = 'var(--border)';
+    thumb.style.transform   = 'translateX(0)';
+  }
+}
 
 function selectEditSide(side) {
   document.getElementById('editSideL').style.cssText += side === 'left'
@@ -8506,6 +8548,19 @@ function editSet(index) {
   document.getElementById('editSetWeight').value = s.weight || 0;
   document.getElementById('editSetReps').value = s.reps || 0;
   initRPESlider(s.rpe);
+  // Inicializar toggle de aproximación
+  _editApproxValue = !!s.is_warmup_set;
+  const eaToggle = document.getElementById('editApproxToggle');
+  const eaThumb  = document.getElementById('editApproxThumb');
+  if (eaToggle && eaThumb) {
+    if (_editApproxValue) {
+      eaToggle.style.background = '#FBBC04';
+      eaThumb.style.transform   = 'translateX(18px)';
+    } else {
+      eaToggle.style.background = 'var(--border)';
+      eaThumb.style.transform   = 'translateX(0)';
+    }
+  }
   // Mostrar selector de lado si es ejercicio unilateral o la serie ya tiene lado
   const sideRow = document.getElementById('editSetSideRow');
   if (s.side || isUnilateral) {
@@ -8541,6 +8596,8 @@ function saveEditedSet() {
     const lSelected = document.getElementById('editSideL').dataset.selected === '1';
     currentExerciseSets[_editSetIndex].side = lSelected ? 'left' : 'right';
   }
+  // Guardar estado de aproximación
+  currentExerciseSets[_editSetIndex].is_warmup_set = _editApproxValue;
   closeEditSet();
   renderSets();
 }
@@ -9433,6 +9490,19 @@ function adjustRest(seconds) {
   restStartedAt -= seconds * 1000; // simula que el descanso empezó antes
   countdownRemaining = Math.max(0, restSeconds - Math.round((Date.now() - restStartedAt) / 1000));
   closeAdjustRestSheet();
+}
+
+function extendRest(seconds) {
+  if (!isResting) return;
+  countdownRemaining += seconds;
+  if (_restTargetSet) {
+    _restTargetSet.rest_extended_seconds = (_restTargetSet.rest_extended_seconds || 0) + seconds;
+  }
+  const sub = document.getElementById('restSub');
+  if (sub) {
+    sub.textContent = `+${seconds}s agregados`;
+    setTimeout(() => { if (isResting) sub.textContent = 'Siguiente ejercicio pronto'; }, 1500);
+  }
 }
 
 function updateAvgRestPill() {
