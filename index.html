@@ -8354,18 +8354,18 @@ function addSet() {
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
   // Series de aproximación: guardar descanso previo si había uno, luego iniciar nuevo
   if (thisIsWarmup) { if (isResting) skipRest(); startRestTimer(); return; }
-  // Lógica unilateral: solo descansar después de completar ambos lados
+  // Lógica unilateral: pedir RPE a cada lado por separado
   if (isUnilateral) {
     if (_unilateralPendingSide) {
-      // Segundo lado completado → ahora sí mostrar RPE e iniciar descanso
+      // Segundo lado completado → pedir RPE e iniciar descanso normalmente
       _unilateralPendingSide = false;
       if (isResting && restStartedAt) restStartedAt += _estimateSetMs(reps);
       showRPESelection();
     } else {
-      // Primer lado completado → solo cambiar lado, NO descansar
+      // Primer lado completado → pedir RPE pero NO iniciar descanso
       _unilateralPendingSide = true;
-      renderSets();
-      return;
+      window._unilateralRPEPending = true;
+      showRPESelection();
     }
     return;
   }
@@ -9439,6 +9439,20 @@ function confirmRPESelection() {
 }
 
 function selectRPE(value) {
+  // Guard: primer lado unilateral → guardar RPE y cambiar lado sin iniciar descanso
+  if (window._unilateralRPEPending) {
+    window._unilateralRPEPending = false;
+    if (currentExerciseSets.length > 0) {
+      const targetIdx = [...currentExerciseSets].map((s, i) => ({s, i}))
+        .filter(({s}) => !s.is_warmup_set && (s.rpe === null || s.rpe === undefined))
+        .pop()?.i ?? (currentExerciseSets.length - 1);
+      currentExerciseSets[targetIdx].rpe = value;
+    }
+    document.getElementById('rpeOverlay').style.display = 'none';
+    document.getElementById('rpeSheet').style.display = 'none';
+    renderSets();
+    return; // NO iniciar descanso — esperar el segundo lado
+  }
   if (currentExerciseSets.length > 0) {
     const targetIdx = [...currentExerciseSets].map((s, i) => ({s, i}))
       .filter(({s}) => !s.is_warmup_set && (s.rpe === null || s.rpe === undefined))
@@ -9484,6 +9498,15 @@ function selectRPE(value) {
 }
 
 function skipRPESelection() {
+  // Guard: primer lado unilateral → cerrar sheet y cambiar lado sin iniciar descanso
+  if (window._unilateralRPEPending) {
+    window._unilateralRPEPending = false;
+    // rpe ya es null por defecto en el set recién agregado
+    document.getElementById('rpeOverlay').style.display = 'none';
+    document.getElementById('rpeSheet').style.display = 'none';
+    renderSets();
+    return; // NO iniciar descanso — esperar el segundo lado
+  }
   document.getElementById('rpeOverlay').style.display = 'none';
   document.getElementById('rpeSheet').style.display = 'none';
   if (!setJustDeleted) {
