@@ -5098,23 +5098,19 @@ function closeCoachChangeSheet() {
 function selectCoachFromChat(coachId) {
   const prevCoach = getSelectedCoach();
 
-  // Transferir contexto si el coach nuevo no tiene historial
+  // Siempre arrancar sesión fresca con el nuevo coach, con contexto del anterior
   if (prevCoach && prevCoach.id && prevCoach.id !== coachId) {
     const prevHistory = getChatHistory(prevCoach.id);
-    const newHistory  = getChatHistory(coachId);
+    const newCoach = COACHES[coachId];
 
-    if (prevHistory.length > 0 && newHistory.length === 0) {
-      const newCoach = COACHES[coachId];
-      // Llevar los últimos 8 mensajes del coach anterior al nuevo (contexto para el LLM)
-      const contextMsgs = prevHistory.slice(-8);
-      // Saludo de traspaso del nuevo coach
-      const handoffMsg = {
-        role: 'assistant',
-        content: `¡Hola! Soy ${newCoach.name} 👋 ${prevCoach.name} me puso al día con todo lo que han trabajado juntos — ya estoy al tanto de tus objetivos y tu rutina. Desde mi enfoque en ${newCoach.specialty}, ¿en qué te puedo ayudar hoy?`,
-        ts: new Date().toISOString()
-      };
-      saveChatHistory(coachId, [...contextMsgs, handoffMsg]);
-    }
+    // Contexto oculto (el LLM lo ve, el usuario no) + saludo de traspaso
+    const contextMsgs = prevHistory.slice(-8).map(m => ({ ...m, hidden: true }));
+    const handoffMsg = {
+      role: 'assistant',
+      content: `¡Hola! Soy ${newCoach.name} ${newCoach.flag} ${prevCoach.name} me puso al día con todo lo que han trabajado juntos — ya sé de tus objetivos y tu progreso. Desde mi enfoque en ${newCoach.specialty}, ¿quieres que retomemos donde lo dejaron, o prefieres empezar algo nuevo?`,
+      ts: new Date().toISOString()
+    };
+    saveChatHistory(coachId, [...contextMsgs, handoffMsg]);
   }
 
   saveSelectedCoach(coachId);
@@ -5517,7 +5513,7 @@ function initCoachChat() {
       appendChatBubble('coach', welcome);
     } else {
       history.forEach(m => {
-        if (m.role === 'user' || m.role === 'assistant') {
+        if ((m.role === 'user' || m.role === 'assistant') && !m.hidden) {
           appendChatBubble(m.role === 'assistant' ? 'coach' : 'user', m.content);
         }
       });
