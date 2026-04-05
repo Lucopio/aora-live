@@ -8433,13 +8433,20 @@ function setWeightQMode(mode) {
   _wqMode = mode;
   const btnAdd = document.getElementById('wqModeAdd');
   const btnMul = document.getElementById('wqModeMul');
-  if (!btnAdd || !btnMul) return;
+  const row = document.getElementById('weightQuickBtns');
+  if (!btnAdd || !btnMul || !row) return;
   if (mode === 'add') {
     btnAdd.style.background = 'rgba(0,229,255,0.12)'; btnAdd.style.borderColor = 'var(--primary)'; btnAdd.style.color = 'var(--primary)';
     btnMul.style.background = 'transparent'; btnMul.style.borderColor = 'var(--border)'; btnMul.style.color = 'var(--text-tertiary)';
+    row.innerHTML = [2.5,5,10,20,45].map(v =>
+      `<button onclick="appendWeightChip(${v})" style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">${v}</button>`
+    ).join('');
   } else {
     btnMul.style.background = 'rgba(123,97,255,0.12)'; btnMul.style.borderColor = 'var(--accent2)'; btnMul.style.color = 'var(--accent2)';
     btnAdd.style.background = 'transparent'; btnAdd.style.borderColor = 'var(--border)'; btnAdd.style.color = 'var(--text-tertiary)';
+    row.innerHTML = [2,3,4,5].map(v =>
+      `<button onclick="appendWeightChip(${v})" style="flex:1;min-width:0;padding:7px 2px;background:rgba(123,97,255,0.08);border:1px solid rgba(123,97,255,0.25);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent2);cursor:pointer">×${v}</button>`
+    ).join('');
   }
 }
 
