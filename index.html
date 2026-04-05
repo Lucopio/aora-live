@@ -2905,12 +2905,20 @@ body {
         </div>
         <button class="add-set-btn" onclick="addSet()">+ Serie</button>
       </div>
-      <div id="weightQuickBtns" style="display:flex;gap:4px;margin-top:8px;margin-bottom:4px">
-        <button onclick="adjustWeight(-5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−5</button>
-        <button onclick="adjustWeight(-2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−2½</button>
-        <button onclick="adjustWeight(2.5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+2½</button>
-        <button onclick="adjustWeight(5)" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--success);cursor:pointer">+5</button>
-        <button onclick="promptCustomWeight()" style="flex:1;min-width:0;padding:6px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-secondary);cursor:pointer">±</button>
+      <!-- Weight stacking buttons: toggle between + and × mode -->
+      <div style="margin-top:8px;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <button id="wqModeAdd" onclick="setWeightQMode('add')" style="padding:3px 10px;border-radius:6px;border:1.5px solid var(--primary);background:rgba(0,229,255,0.12);font-family:var(--mono);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer">+ Sumar</button>
+          <button id="wqModeMul" onclick="setWeightQMode('mul')" style="padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);background:transparent;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-tertiary);cursor:pointer">× Multiplicar</button>
+          <button onclick="clearWeightExpr()" style="margin-left:auto;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:transparent;font-family:var(--mono);font-size:11px;color:var(--text-tertiary);cursor:pointer">C</button>
+        </div>
+        <div id="weightQuickBtns" style="display:flex;gap:4px">
+          <button onclick="appendWeightChip(2.5)" style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">2.5</button>
+          <button onclick="appendWeightChip(5)"   style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">5</button>
+          <button onclick="appendWeightChip(10)"  style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">10</button>
+          <button onclick="appendWeightChip(20)"  style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">20</button>
+          <button onclick="appendWeightChip(45)"  style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">45</button>
+        </div>
       </div>
       <!-- Toggle aproximación -->
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
@@ -3000,8 +3008,8 @@ body {
         <div class="rest-bar-track"><div class="rest-bar-fill" id="restBarFill"></div></div>
         <div id="restExtendRow" style="display:flex;gap:5px;width:100%;margin-top:10px">
           <button onclick="adjustRest(30)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−30</button>
-          <button onclick="adjustRest(10)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−10</button>
-          <button onclick="extendRest(10)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+10</button>
+          <button onclick="adjustRest(15)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−15</button>
+          <button onclick="extendRest(15)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+15</button>
           <button onclick="extendRest(30)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+30</button>
         </div>
         <div style="width:100%;margin-top:6px">
@@ -8417,6 +8425,43 @@ function adjustWeight(delta) {
 function promptCustomWeight() {
   const delta = parseFloat(prompt('Ajustar peso por:', '2.5'));
   if (!isNaN(delta)) adjustWeight(delta);
+}
+
+let _wqMode = 'add'; // 'add' | 'mul'
+
+function setWeightQMode(mode) {
+  _wqMode = mode;
+  const btnAdd = document.getElementById('wqModeAdd');
+  const btnMul = document.getElementById('wqModeMul');
+  if (!btnAdd || !btnMul) return;
+  if (mode === 'add') {
+    btnAdd.style.background = 'rgba(0,229,255,0.12)'; btnAdd.style.borderColor = 'var(--primary)'; btnAdd.style.color = 'var(--primary)';
+    btnMul.style.background = 'transparent'; btnMul.style.borderColor = 'var(--border)'; btnMul.style.color = 'var(--text-tertiary)';
+  } else {
+    btnMul.style.background = 'rgba(123,97,255,0.12)'; btnMul.style.borderColor = 'var(--accent2)'; btnMul.style.color = 'var(--accent2)';
+    btnAdd.style.background = 'transparent'; btnAdd.style.borderColor = 'var(--border)'; btnAdd.style.color = 'var(--text-tertiary)';
+  }
+}
+
+function appendWeightChip(val) {
+  const input = document.getElementById('weightInput');
+  const cur = parseWeightExpr(input.value) || 0;
+  let next;
+  if (cur === 0) {
+    next = val;
+  } else if (_wqMode === 'mul') {
+    next = Math.round(cur * val * 100) / 100;
+  } else {
+    next = Math.round((cur + val) * 100) / 100;
+  }
+  input.value = String(next);
+  updateWeightPreview();
+}
+
+function clearWeightExpr() {
+  const input = document.getElementById('weightInput');
+  input.value = '0';
+  updateWeightPreview();
 }
 
 // ─── RPE Slider ──────────────────────────────────────────────
