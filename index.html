@@ -5462,10 +5462,12 @@ function initCoachChat() {
   if (subEl)   subEl.textContent   = coach ? (coach.specialty + ' · ' + coach.flag) : 'Entrenador personal';
 
   // Show/hide login prompt
+  // Skip-auth users always get the input — sendCoachMessage() recovers the session on its own
+  const hasSession = !!currentUser || !!localStorage.getItem('gymtracker_skip_auth');
   const loginPrompt = document.getElementById('chatLoginPrompt');
   const inputWrap   = document.getElementById('chatInputWrap');
-  if (loginPrompt) loginPrompt.style.display = currentUser ? 'none' : 'flex';
-  if (inputWrap)   inputWrap.style.display   = currentUser ? 'block' : 'none';
+  if (loginPrompt) loginPrompt.style.display = hasSession ? 'none' : 'flex';
+  if (inputWrap)   inputWrap.style.display   = hasSession ? 'block' : 'none';
 
   if (!currentUser) {
     const wrap = document.getElementById('chatMessages');
@@ -11797,6 +11799,9 @@ function initSupabase() {
             showWelcomeScreens();
           }
         }
+        // Si el coach screen ya estaba activo y el input estaba oculto, restaurarlo
+        const coachEl = document.getElementById('coachScreen');
+        if (coachEl && coachEl.classList.contains('active')) initCoachChat();
         // Sync completo en background (workouts, pesos, ejercicios) — sin bloquear la UI
         if (!prevUser) syncFromCloud().catch(() => {});
       } else if (event !== 'INITIAL_SESSION') {
