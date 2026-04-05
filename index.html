@@ -3087,9 +3087,9 @@ body {
 
   <!-- Feedback semanal (#10) -->
   <div id="summaryWeeklyFeedback" style="display:none;margin:0 20px 12px;border-radius:16px;overflow:hidden;border:1.5px solid var(--border)">
-    <div style="background:var(--primary);padding:12px 16px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:20px">📊</span>
-      <span style="font-size:13px;font-weight:700;color:white">Análisis Semanal</span>
+    <div style="background:var(--surface2);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1" y="11" width="4" height="8" rx="1" fill="var(--primary)"/><rect x="7" y="7" width="4" height="12" rx="1" fill="var(--primary)"/><rect x="13" y="4" width="4" height="15" rx="1" fill="var(--primary)"/></svg>
+      <span style="font-size:13px;font-weight:700;color:var(--primary)">Análisis Semanal</span>
     </div>
     <div id="summaryWeeklyContent" style="padding:14px 16px;background:var(--surface)"></div>
   </div>
@@ -3105,7 +3105,7 @@ body {
     </div>
   </div>
 
-  <div id="postWorkoutFeeling" style="margin:0 0 20px">
+  <div id="postWorkoutFeeling" style="display:none;margin:0 0 20px">
     <div style="font-size:13px;font-weight:700;color:var(--text-secondary);text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
       ¿Cómo te fue hoy?
     </div>
@@ -9751,107 +9751,97 @@ function skipRPESelection() {
 // ─── End Workout ────────────────────────────────────────────
 function getCoachSummaryMessage(coachId, effectiveSets, totalSets, sessionRPE, durationMs) {
   const durationMin = Math.round((durationMs || 0) / 60000);
-  const pct = totalSets > 0 ? Math.round((effectiveSets / totalSets) * 100) : 0;
+  const isVeryShort = durationMin < 15 || effectiveSets < 3;
+  const isExcellent = durationMin >= 35 && effectiveSets >= 10;
+  const isDecent    = !isExcellent && durationMin >= 20 && effectiveSets >= 6;
 
   const pools = {
     maria: {
+      muy_corta: [
+        `¡Ey, algo es algo! ${effectiveSets} series hoy. ¿Tuviste poco tiempo o el cuerpo no acompañó? Cuéntame. 💬`,
+        `${durationMin} minutos es un comienzo. La próxima semana lo retomamos con todo. ¡Tú puedes! 🌟`,
+        `No siempre el día da para más. Lo que importa es que apareciste. ¡Eso ya cuenta, parcera!`
+      ],
+      media: [
+        `Trabajo decente. ${effectiveSets} series en ${durationMin} minutos. ¿Cómo estuvo la energía hoy? 💙`,
+        `No fue el mejor día pero tampoco el peor. ${effectiveSets} series suman. ¡Mañana más!`,
+        `Consistencia es la clave. Hoy apareciste y eso importa. Descansa bien esta noche. 🌙`
+      ],
+      decente: [
+        `${effectiveSets} series efectivas y ${durationMin} minutos de trabajo real. ¡Buen ritmo, sigamos construyendo! 💪`,
+        `Sólido. ${durationMin} minutos bien enfocados. Proteína post-entrenamiento y a descansar. 🥗`,
+        `¡Me gusta! Constancia sobre perfección. Hoy sumaste y mañana vas a notar la diferencia.`
+      ],
       excelente: [
-        `¡Eso es lo que quiero ver! ${effectiveSets} series efectivas — tu cuerpo va a crecer con esto. 💪`,
-        `${pct}% de series efectivas. Parcera, eso no es suerte, es trabajo bien hecho. ¡Sigamos así!`,
-        `RPE ${sessionRPE} de promedio y ${effectiveSets} series que contaron de verdad. ¡Brutal!`
-      ],
-      bueno: [
-        `Buen trabajo hoy. ${effectiveSets} series efectivas es una base sólida. Descansa bien esta noche.`,
-        `${durationMin} minutos de trabajo real. ¿Comiste proteína después? Ese detalle importa. 🥗`,
-        `Consistencia es la clave. Hoy sumaste. Mañana sumas más.`
-      ],
-      mejorar: [
-        `Veo que algunas series quedaron por debajo del umbral de adaptación. ¿Cómo estuvo la energía hoy?`,
-        `El volumen estuvo bajo hoy — puede ser fatiga acumulada. Noche de sueño profundo, ¿sí?`,
-        `No todos los días son perfectos. Lo que importa es que viniste. ¿Qué necesitas para la próxima?`
-      ],
-      alimentacion: [
-        `Recuerda: en las próximas 2 horas es la ventana de recuperación. Proteína + carbos. ¡No te lo saltes!`,
-        `El entrenamiento terminó pero la recuperación apenas empieza. Hidratación y comida, ¿cómo vas?`
-      ],
-      estres: [
-        `El ejercicio ya hizo su parte con el cortisol. Ahora toca descansar de verdad — sin pantallas antes de dormir.`,
-        `Entrenar con estrés es doble trabajo. ¿Cómo está la cabeza fuera del gym?`
+        `¡Eso es lo que quiero ver! ${effectiveSets} series efectivas en ${durationMin} minutos. ¡Tu cuerpo va a crecer con esto! 💪`,
+        `${durationMin} minutos de trabajo de calidad. RPE ${sessionRPE} de promedio. Parcera, eso no es suerte, ¡es disciplina!`,
+        `¡Brutal! ${effectiveSets} series que contaron de verdad. Ahora toca la recuperación. Duerme bien esta noche. 🌙`
       ]
     },
     carlos: {
+      muy_corta: [
+        `${effectiveSets} series. ${durationMin} minutos. El estímulo de adaptación fue mínimo. ¿Energía, tiempo o motivación? Identifica la variable.`,
+        `Sesión corta. No es catastrófico si es puntual. Si se repite, revisa tus variables de recuperación.`,
+        `${durationMin} minutos no genera suficiente volumen para adaptación. ¿Qué cortó la sesión?`
+      ],
+      media: [
+        `Volumen moderado. ${effectiveSets} series en ${durationMin} minutos. ¿Qué limitó la intensidad hoy?`,
+        `Por debajo del óptimo, pero en rango aceptable. La próxima, más intensidad desde el primer ejercicio.`,
+        `${effectiveSets} series que contaron. El resto fue calentamiento. ¿Sueño, nutrición o estrés? Revisa la variable que falló.`
+      ],
+      decente: [
+        `${effectiveSets} series efectivas. Eficiencia correcta. El volumen está dentro del rango productivo.`,
+        `${durationMin} minutos con ${effectiveSets} series útiles. Base sólida. La próxima, busca superar ese número.`,
+        `Trabajo decente. El volumen existe. Asegúrate de que la proteína post-entrenamiento también. 30-40g en la próxima hora.`
+      ],
       excelente: [
-        `${effectiveSets} series efectivas sobre ${totalSets} totales. ${pct}% de eficiencia. Eso es lo que busco.`,
-        `RPE ${sessionRPE} promedio con ${effectiveSets} series productivas. Los datos hablan.`,
-        `Sesión sólida. ${durationMin} minutos bien invertidos. Recuperación ahora es obligatoria.`
-      ],
-      bueno: [
-        `Trabajo decente. Pero sé que puedes llegar a más del ${pct}% de efectividad. ¿Qué limitó hoy?`,
-        `${effectiveSets} series que contaron. El resto fue calentamiento. La próxima, más intensidad desde el inicio.`,
-        `${durationMin} minutos. El volumen existe. Asegúrate de que la proteína también.`
-      ],
-      mejorar: [
-        `Bajo rendimiento hoy. ¿Sueño? ¿Nutrición? ¿Estrés? El cuerpo no miente. Revisa las variables.`,
-        `Menos del 50% de series efectivas. Esto no se solucionará entrenando más — revisa la recuperación.`,
-        `El problema no siempre está en el gym. ¿Cuántas horas dormiste?`
-      ],
-      alimentacion: [
-        `Ventana anabólica activa. 30-40g de proteína en la próxima hora. No es opcional.`,
-        `Post-entrenamiento: proteína + carbos de rápida absorción. Los datos respaldan esto.`
-      ],
-      estres: [
-        `El cortisol interfiere con la síntesis proteica. Si el estrés es alto, el entrenamiento rinde menos. Gestiona eso.`,
-        `Sueño de calidad = más testosterona = más músculo. Esa ecuación no cambia.`
+        `${effectiveSets} series efectivas en ${durationMin} minutos. RPE ${sessionRPE} promedio. Eficiencia: óptima. Los datos hablan.`,
+        `Sesión sólida. ${durationMin} minutos bien invertidos. Ese volumen genera adaptación real. Recuperación obligatoria ahora.`,
+        `${effectiveSets} sobre ${totalSets > 0 ? totalSets : effectiveSets} series productivas. El trabajo está hecho. Proteína y sueño cierran el ciclo.`
       ]
     },
     andrea: {
+      muy_corta: [
+        `A veces el cuerpo necesita que lo escuches más que que lo exijas. ${durationMin} minutos fue lo que había hoy, y estuvo bien.`,
+        `${effectiveSets} series es lo que el día pudo dar. Sin juicio. ¿Cómo se siente el cuerpo ahora mismo? 💙`,
+        `No siempre la sesión tiene que ser larga para ser valiosa. Lo que importa es que estuviste presente.`
+      ],
+      media: [
+        `Buen esfuerzo. Escucha lo que tu cuerpo te dice en las próximas horas.`,
+        `${effectiveSets} series de calidad. No fue perfecta, pero sí auténtica. ¿Algo fuera del gym que influyó hoy?`,
+        `Cada sesión suma aunque no sea perfecta. Tu cuerpo agradece que hayas venido. 💙`
+      ],
+      decente: [
+        `${effectiveSets} series de trabajo real en ${durationMin} minutos. Buen equilibrio entre esfuerzo y escucha corporal.`,
+        `Buen esfuerzo hoy. ${durationMin} minutos bien invertidos. ¿Tomaste suficiente agua durante el entrenamiento? 💧`,
+        `Consistencia sin prisa. ${effectiveSets} series que construyeron algo real. El descanso ahora es parte del proceso. 🌟`
+      ],
       excelente: [
-        `¡Qué sesión más completa! ${effectiveSets} series en las que tu cuerpo realmente trabajó. Eso se siente. 🌟`,
-        `${pct}% de intensidad efectiva. Pero lo más importante: ¿cómo se siente tu cuerpo ahora mismo?`,
-        `Bellísimo trabajo hoy. Ahora el descanso es parte del proceso — no lo saltes.`
-      ],
-      bueno: [
-        `Buen esfuerzo hoy. Escucha lo que tu cuerpo te dice en las próximas horas.`,
-        `${effectiveSets} series de calidad. ¿Tomaste suficiente agua durante el entrenamiento?`,
-        `Consistencia sin prisa. Cada sesión suma, aunque no sea perfecta. 💙`
-      ],
-      mejorar: [
-        `A veces el cuerpo necesita más descanso que esfuerzo. ¿Cómo dormiste anoche?`,
-        `Días así existen. Lo importante es que escuchaste tu cuerpo y terminaste. Eso tiene valor.`,
-        `¿Hay algo fuera del gym que esté pesando? El estrés afecta el rendimiento más de lo que creemos.`
-      ],
-      alimentacion: [
-        `La recuperación empieza ahora. Algo nutritivo en la próxima hora — no tiene que ser perfecto, solo real.`,
-        `Tu cuerpo acaba de trabajar duro. Dale lo que necesita: agua, proteína, y descanso. 🥗`
-      ],
-      estres: [
-        `El entrenamiento libera tensión, pero el descanso la procesa. Esta noche, duerme sin culpa.`,
-        `¿Cómo está la mente fuera del gym? El bienestar es todo el sistema, no solo el músculo.`
+        `¡Qué sesión más completa! ${effectiveSets} series en ${durationMin} minutos donde tu cuerpo realmente trabajó. Eso se siente. 🌟`,
+        `${durationMin} minutos de trabajo profundo. Pero lo más importante: ¿cómo se siente tu cuerpo ahora mismo?`,
+        `Bellísimo trabajo. Ahora el descanso es parte del proceso. El cuerpo integra mientras duerme. 💙`
       ]
     },
     diego: {
+      muy_corta: [
+        `${durationMin} minutos. ${effectiveSets} series. El guerrero reconoce cuando el día no es para forzar. Está bien.`,
+        `No toda batalla se gana con más fuerza. A veces saber parar es la victoria. ¿Qué pasó hoy?`,
+        `Sesión corta. El proceso continúa mañana. Lo que importa es que no te detuviste por completo.`
+      ],
+      media: [
+        `No cada día es la cima. Hoy fue trabajo base. Eso también cuenta en el largo plazo.`,
+        `${effectiveSets} series útiles. El progreso no siempre es visible, pero es real.`,
+        `La constancia en los días ordinarios es lo que separa al atleta del aficionado. Hoy sumaste.`
+      ],
+      decente: [
+        `${effectiveSets} series en ${durationMin} minutos. Trabajo sólido. El proceso avanza, aunque no siempre se siente así.`,
+        `Suficiente para construir. La constancia no necesita ser espectacular para ser efectiva.`,
+        `${durationMin} minutos de trabajo real. ${effectiveSets} series útiles. El guerrero que avanza paso a paso llega lejos.`
+      ],
       excelente: [
-        `${effectiveSets} series que contaron. El resto fue preparación. Así se construye.`,
-        `RPE ${sessionRPE}. Intensidad con control. Eso es madurez atlética.`,
-        `Buen trabajo. El cuerpo creció hoy. Ahora dejar que lo procese.`
-      ],
-      bueno: [
-        `Suficiente para hoy. La constancia no necesita ser espectacular para ser efectiva.`,
-        `${durationMin} minutos. ${effectiveSets} series útiles. El proceso avanza.`,
-        `No cada día es la cima. Hoy fue trabajo base. Eso también cuenta.`
-      ],
-      mejorar: [
-        `El guerrero que no descansa bien, pelea mal. ¿Qué está restando energía fuera del gym?`,
-        `Pocas series efectivas. No es el entrenamiento — es lo que rodeó al entrenamiento. Revisa.`,
-        `El progreso no siempre es hacia arriba. A veces es hacia adentro. ¿Qué aprendiste hoy?`
-      ],
-      alimentacion: [
-        `El cuerpo reconstruye con lo que le das. Proteína y descanso. Sin atajos.`,
-        `Nutrición post-entrenamiento: simple y real. Lo que la naturaleza provee.`
-      ],
-      estres: [
-        `La mente en silencio construye más que el cuerpo en movimiento constante. Descansa bien.`,
-        `El estrés es carga invisible. El cuerpo la siente aunque tú no la veas.`
+        `${effectiveSets} series en ${durationMin} minutos. RPE ${sessionRPE}. Intensidad con control. Eso es madurez atlética.`,
+        `Buen trabajo. El cuerpo creció hoy. Ahora déjalo procesar. El descanso es parte del entrenamiento.`,
+        `${effectiveSets} series que contaron. El resto fue preparación. Así se construye fuerza real. Sin atajos.`
       ]
     }
   };
@@ -9859,25 +9849,46 @@ function getCoachSummaryMessage(coachId, effectiveSets, totalSets, sessionRPE, d
   const pool = pools[coachId] || pools.maria;
   const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  if (pct >= 70 && sessionRPE >= 7) return rand(pool.excelente);
-  if (pct >= 40) {
-    const extras = [...pool.alimentacion, ...pool.estres];
-    return Math.random() > 0.5 ? rand(pool.bueno) : rand(extras);
-  }
-  const lowPool = [...pool.mejorar, ...pool.estres];
-  return rand(lowPool);
+  if (isVeryShort) return rand(pool.muy_corta);
+  if (isExcellent)  return rand(pool.excelente);
+  if (isDecent)     return rand(pool.decente);
+  return rand(pool.media);
 }
 
 let _postWorkoutFeeling = null;
 
-function selectFeeling(btn, val) {
-  _postWorkoutFeeling = val;
-  document.querySelectorAll('.feeling-btn').forEach(b => {
-    const isSelected = b === btn;
+function selectFeeling(value) {
+  _postWorkoutFeeling = value;
+  document.querySelectorAll('.feeling-modal-btn').forEach(b => {
+    const isSelected = parseInt(b.dataset.val) === value;
     b.style.borderColor = isSelected ? 'var(--primary)' : 'var(--border)';
-    b.style.background = isSelected ? 'rgba(0,229,255,0.08)' : 'var(--bg)';
+    b.style.background = isSelected ? 'var(--primary-light)' : 'var(--bg)';
     b.querySelector('span:last-child').style.color = isSelected ? 'var(--primary)' : 'var(--text-secondary)';
   });
+  if (savedWorkouts && savedWorkouts.length > 0) {
+    savedWorkouts[0].feeling = value;
+    saveToStorage();
+  }
+  setTimeout(() => {
+    const ov = document.getElementById('feelingModalOverlay');
+    if (ov) ov.style.display = 'none';
+  }, 500);
+}
+
+function showFeelingModal() {
+  document.querySelectorAll('.feeling-modal-btn').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.background = 'var(--bg)';
+    const lbl = b.querySelector('span:last-child');
+    if (lbl) lbl.style.color = 'var(--text-secondary)';
+  });
+  const ov = document.getElementById('feelingModalOverlay');
+  if (ov) ov.style.display = 'flex';
+}
+
+function skipFeeling() {
+  const ov = document.getElementById('feelingModalOverlay');
+  if (ov) ov.style.display = 'none';
 }
 
 function endWorkout() {
@@ -9998,6 +10009,7 @@ function endWorkout() {
   const weeklyFB = generateWeeklyFeedback();
   renderWeeklyFeedback(weeklyFB);
   showScreen('summary');
+  setTimeout(() => showFeelingModal(), 800);
 }
 
 // ─── Weekly Feedback (#10) ──────────────────────────────────
@@ -13929,5 +13941,38 @@ function _markRoutineUsed(routineId) {
 
 </script>
 <script src="muscle-map.js"></script>
+
+<!-- ¿Cómo te fue? — Modal -->
+<div id="feelingModalOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface);border-radius:24px 24px 0 0;padding:28px 20px 36px;width:100%;max-width:480px">
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:6px">¿Cómo te fue hoy?</div>
+      <div style="font-size:13px;color:var(--text-secondary)">Tu valoración ayuda a personalizar tus próximas sesiones</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-bottom:24px">
+      <button onclick="selectFeeling(1)" class="feeling-modal-btn" data-val="1" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;cursor:pointer;font-family:var(--font);transition:all 0.15s;flex:1">
+        <span style="font-size:26px">😞</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text-secondary)">Difícil</span>
+      </button>
+      <button onclick="selectFeeling(2)" class="feeling-modal-btn" data-val="2" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;cursor:pointer;font-family:var(--font);transition:all 0.15s;flex:1">
+        <span style="font-size:26px">😕</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text-secondary)">Regular</span>
+      </button>
+      <button onclick="selectFeeling(3)" class="feeling-modal-btn" data-val="3" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;cursor:pointer;font-family:var(--font);transition:all 0.15s;flex:1">
+        <span style="font-size:26px">😊</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text-secondary)">Bien</span>
+      </button>
+      <button onclick="selectFeeling(4)" class="feeling-modal-btn" data-val="4" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;cursor:pointer;font-family:var(--font);transition:all 0.15s;flex:1">
+        <span style="font-size:26px">😄</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text-secondary)">¡Muy bien!</span>
+      </button>
+      <button onclick="selectFeeling(5)" class="feeling-modal-btn" data-val="5" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;cursor:pointer;font-family:var(--font);transition:all 0.15s;flex:1">
+        <span style="font-size:26px">🤩</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text-secondary)">¡Brutal!</span>
+      </button>
+    </div>
+    <button onclick="skipFeeling()" style="display:block;width:100%;background:none;border:none;color:var(--text-tertiary);font-size:13px;padding:8px;cursor:pointer;font-family:var(--font)">Saltar</button>
+  </div>
+</div>
 </body>
 </html>
