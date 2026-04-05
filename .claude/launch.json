@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "gymtracker",
+      "name": "aora-live",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["G:/Mi unidad/Otros proyectos/AoraLive/aora-live/aora-live/serve.js"],
+      "runtimeArgs": ["G:/Mi unidad/Otros proyectos/AoraLive/aora-live/serve.js"],
       "port": 3000
     }
   ]

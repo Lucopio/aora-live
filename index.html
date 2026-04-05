@@ -1915,7 +1915,10 @@ body {
   display: flex;
   animation: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 64px;
   overflow: hidden;
 }
 
@@ -2077,7 +2080,7 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  z-index: 500;
+  z-index: 900;
   transform: translateY(120%);
   transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
@@ -3934,14 +3937,16 @@ body {
       </div>
     </div>
   </div>
-  <button id="preWkExBtn" onclick="openPreWorkoutPicker()" style="width:100%;padding:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Agregar ejercicios a mi rutina de hoy
-  </button>
-  <button class="sheet-cta" id="startWorkoutBtn" onclick="startWorkout()" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-    Comenzar Entrenamiento
-  </button>
+  <div style="border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 16px rgba(52,168,83,0.3)">
+    <button id="preWkExBtn" onclick="openPreWorkoutPicker()" style="width:100%;padding:13px;background:var(--surface2);border:none;border-bottom:2px solid var(--success);border-radius:0;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;margin-bottom:0;display:flex;align-items:center;justify-content:center;gap:8px">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Agregar ejercicios a mi rutina de hoy
+    </button>
+    <button class="sheet-cta" id="startWorkoutBtn" onclick="startWorkout()" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()" style="border-radius:0;box-shadow:none">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Comenzar Entrenamiento
+    </button>
+  </div>
 </div>
 
 <!-- PRE-WORKOUT EXERCISE PICKER SHEET -->
@@ -4650,7 +4655,7 @@ function showCoachAlertToast(alertType) {
       <div class="coach-alert-text">${message}</div>
       <div class="coach-alert-actions">
         <button class="coach-alert-dismiss" onclick="dismissCoachAlert()">Entendido ✓</button>
-        <button class="coach-alert-dismiss" style="color:var(--primary);font-weight:700" onclick="dismissCoachAlert();setTimeout(()=>{showScreen('coach');setTimeout(()=>{const input=document.getElementById('chatInput');if(input&&!input.disabled){input.focus();input.scrollIntoView({behavior:'smooth',block:'nearest'});}},400);},200)">Hablar →</button>
+        <button class="coach-alert-dismiss" style="color:var(--primary);font-weight:700" onclick="hablarConCoach()">Hablar →</button>
         ${warmupBtn}
       </div>
     </div>
@@ -4680,15 +4685,33 @@ function dismissCoachAlert() {
   toast.classList.remove('visible');
   clearTimeout(window._coachAlertTimeout);
   clearTimeout(window._coachDismissTimer);
+  const cb = window._afterCoachAlertDismiss;
+  window._afterCoachAlertDismiss = null;
   window._coachDismissTimer = setTimeout(() => {
     if (!toast.classList.contains('visible')) {
       toast.style.height = '0';
       toast.style.padding = '0';
       toast.style.overflow = 'hidden';
     }
+    if (cb) cb();
   }, 380);
   const overlay = document.getElementById('coachAlertOverlay');
   if (overlay) overlay.style.display = 'none';
+}
+
+function hablarConCoach() {
+  window._afterCoachAlertDismiss = null;
+  window._pendingReturnConfig = true;
+  const mm = document.getElementById('modeModal');
+  if (mm) mm.classList.remove('active');
+  dismissCoachAlert();
+  setTimeout(() => {
+    showScreen('coach');
+    setTimeout(() => {
+      const input = document.getElementById('chatInput');
+      if (input && !input.disabled) { input.focus(); input.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+    }, 400);
+  }, 200);
 }
 
 // ─── Generic UI toast (non-coach) ────────────────────────────
@@ -5777,11 +5800,20 @@ function showScreen(name) {
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['workout','summary','catalog','warmup','auth','onboarding','welcome','coach','coachProfile'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['workout','summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); }
-  if (name === 'workoutHub') updateWorkoutHub();
+  if (name === 'workoutHub') {
+    updateWorkoutHub();
+    if (window._pendingReturnConfig) {
+      window._pendingReturnConfig = false;
+      setTimeout(() => {
+        document.getElementById('configOverlay').classList.add('active');
+        setTimeout(() => { document.getElementById('configSheet').classList.add('active'); suggestRoutineForToday(); }, 10);
+      }, 300);
+    }
+  }
   if (name === 'coach') {
     initCoachChat();
     if (workoutStartTime) {
@@ -5807,9 +5839,19 @@ function openConfig() {
     showRoutinePreview();
     return;
   }
-  document.getElementById('configOverlay').classList.add('active');
-  setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
-  suggestRoutineForToday();
+  const coach = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽' };
+  const msgs = {
+    maria:  'Lo primero: define tu tiempo de descanso. El descanso bien cronometrado es parte del entrenamiento. 💪',
+    carlos: 'Antes de empezar, configura el descanso entre series. El descanso no es opcional — es donde ocurre la recuperación.',
+    andrea: 'Primero, establecé tu tiempo de descanso. Escuchá a tu cuerpo y elegí un tiempo que te permita recuperarte bien.',
+    diego:  'El guerrero que descansa bien, lucha mejor. Elige tu tiempo de descanso con intención.'
+  };
+  window._pendingSetFeedbackMsg = msgs[coach.id] || msgs.maria;
+  window._afterCoachAlertDismiss = () => {
+    document.getElementById('configOverlay').classList.add('active');
+    setTimeout(() => { document.getElementById('configSheet').classList.add('active'); suggestRoutineForToday(); }, 10);
+  };
+  showCoachAlertToast('setFeedback');
 }
 function closeConfig() {
   document.getElementById('configSheet').classList.remove('active');
@@ -5825,21 +5867,11 @@ function selectPreset(btn, seconds) {
 // ─── Workout ────────────────────────────────────────────────
 function startWorkout() {
   restSeconds = parseInt(document.getElementById('customRestInput').value) || 60;
+  window._pendingReturnConfig = false;
   closeConfig();
-  // Mensaje de bienvenida del coach antes de mostrar el modo
-  const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
-  const msgs = {
-    maria:  '¡Listo, parcera! Lo primero: define tu tiempo de descanso. Recuerda que el descanso bien cronometrado es parte del entrenamiento. 💪',
-    carlos: 'Bien. Antes de empezar, configura el descanso entre series. El descanso no es opcional — es donde ocurre la recuperación.',
-    andrea: 'Perfecto, vamos a empezar. Primero establece tu tiempo de descanso. Escucha a tu cuerpo y elige un tiempo que te permita recuperarte bien.',
-    diego:  'El guerrero que descansa bien, lucha mejor. Elige tu tiempo de descanso con intención.'
-  };
-  const msg = msgs[coach.id] || msgs.maria;
-  window._pendingSetFeedbackMsg = msg;
-  showCoachAlertToast('setFeedback');
   setTimeout(() => {
     document.getElementById('modeModal').classList.add('active');
-  }, 600);
+  }, 350);
 }
 
 // ─── Warmup ──────────────────────────────────────────────────
@@ -8092,7 +8124,7 @@ function renderCatalog(filter) {
       if (subItems && !subItems.includes(item)) return;
       const equips = EXERCISE_EQUIP[item] || [''];
       const filtered = locFilter ? equips.filter(e => locFilter.has(e)) : equips;
-      filtered.forEach(eq => { html += _uniExItemHtml(item, eq); });
+      if (filtered.length > 0) html += exerciseRowHtml(item, filtered);
     });
     if (!html.includes('ex-picker-item')) html += `<div style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:14px">Sin ejercicios disponibles para tu ubicación</div>`;
   }
@@ -8125,6 +8157,7 @@ function openCatalog() {
   showScreen('catalog');
   checkCoachmarks('customExercise');
   initCatalogBodyMap();
+  setTimeout(() => { document.documentElement.scrollTop = 0; }, 50);
 }
 
 function backToCatalogGroups() {
@@ -8132,7 +8165,15 @@ function backToCatalogGroups() {
   catalogSubGroup = null;
   document.getElementById('catalogSearchInput').value = '';
   renderCatalog();
+  setTimeout(() => { document.documentElement.scrollTop = 0; }, 0);
   _resetCatalogMapHighlight();
+  if (typeof setMuscleMapState === 'function' && typeof CATALOG_GROUP_TO_MUSCLES !== 'undefined') {
+    Object.values(CATALOG_GROUP_TO_MUSCLES).flat().forEach(mId => setMuscleMapState('catalogBodyMap', mId, 'neutral'));
+  }
+  const lbl = document.getElementById('catalogMapLabel');
+  if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
+  const btn = document.getElementById('catalogMapResetBtn');
+  if (btn) btn.style.display = 'none';
 }
 
 function showCatalogGroup(group) {
@@ -10772,7 +10813,8 @@ function speakCoachText(text) {
   const coach = getSelectedCoach();
   const coachId = coach ? coach.id : 'maria';
   window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
+  const cleanText = text.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]/gu, '').replace(/\s{2,}/g, ' ').trim();
+  const utt = new SpeechSynthesisUtterance(cleanText);
   const params = COACH_TTS[coachId] || COACH_TTS.maria;
   utt.lang = 'es-MX';
   utt.rate = params.rate;
@@ -13268,8 +13310,34 @@ function renderUniversalPicker(containerId, onSelectFn, opts) {
 }
 function _upSetGroup(g)  { _upGroup = g; _renderUP(); }
 function _upDoSearch(v)  { _upSearch = v; _renderUP(); }
-// Llamado desde muscleMapClick cuando el picker está activo
-function filterPickerByMuscle(catalogKey, active) { _upSetGroup(active ? catalogKey : ''); }
+// Llamado desde muscleMapClick cuando el picker o el catálogo están activos
+function filterPickerByMuscle(catalogKey, active) {
+  const catalogScreen = document.getElementById('catalogScreen');
+  if (catalogScreen && catalogScreen.classList.contains('active')) {
+    const keyMap = {
+      pecho:'Pecho', espalda:'Espalda', biceps:'Biceps', triceps:'Triceps',
+      hombros:'Hombros', piernas:'Piernas', gluteos:'Gluteos', abdomen:'Abdomen'
+    };
+    const grp = keyMap[catalogKey];
+    if (active && grp) {
+      // Deselect other muscle groups so only the tapped one stays highlighted
+      if (typeof CATALOG_GROUP_TO_MUSCLES !== 'undefined') {
+        Object.entries(CATALOG_GROUP_TO_MUSCLES).forEach(([key, muscles]) => {
+          if (key !== catalogKey) muscles.forEach(mId => setMuscleMapState('catalogBodyMap', mId, 'neutral'));
+        });
+      }
+      showCatalogGroup(grp);
+      const lbl = document.getElementById('catalogMapLabel');
+      if (lbl) lbl.textContent = `Filtrado: ${grp}`;
+      const btn = document.getElementById('catalogMapResetBtn');
+      if (btn) btn.style.display = 'inline-block';
+    } else {
+      backToCatalogGroups();
+    }
+    return;
+  }
+  _upSetGroup(active ? catalogKey : '');
+}
 function _upSelect(name, equip) { if (_upCallback) _upCallback(name, equip); }
 function _upDone()  { (_upOpts.onDone  || _upOpts.onClose || function(){})(); }
 function _upClose() { (_upOpts.onClose || function(){})(); }
@@ -13685,6 +13753,20 @@ function _buildBodySvgHtml(sex, prefix, catalogMode) {
     <path id="${p}b-isquiotibiales"${ca('Piernas')} fill="${MUS}" d="M${hipL-2},168 L50,168 L49,215 L${hipL-3},215 Z M50,168 L${hipR+2},168 L${hipR+3},215 L51,215 Z"/>
     <path id="${p}b-pantorrillas"${ca('Piernas')} fill="${MUS}" d="M${hipL-3},213 L49,213 L47,242 L${hipL-5},242 Z M51,213 L${hipR+3},213 L${hipR+5},242 L53,242 Z"/>`;
 
+  if (catalogMode === 'large') {
+    const w = '120';
+    return `<div style="display:flex;justify-content:center;gap:16px;align-items:flex-start">
+      <div style="text-align:center">
+        <div style="font-size:9px;font-family:var(--mono);color:var(--text-tertiary);letter-spacing:0.08em;margin-bottom:4px">FRONTAL</div>
+        <svg id="${p}svgFront" viewBox="${vb}" style="width:${w}px;height:auto;display:block;margin:0 auto">${frontInner}</svg>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:9px;font-family:var(--mono);color:var(--text-tertiary);letter-spacing:0.08em;margin-bottom:4px">POSTERIOR</div>
+        <svg id="${p}svgBack" viewBox="${vb}" style="width:${w}px;height:auto;display:block;margin:0 auto">${backInner}</svg>
+      </div>
+    </div>`;
+  }
+
   if (catalogMode) {
     return `<svg id="${p}svgFront" viewBox="${vb}" style="width:${svgW}px;height:auto;display:block;margin:0 auto">${frontInner}</svg>`;
   }
@@ -13738,10 +13820,9 @@ function renderMuscleRecoveryCard() {
 function initCatalogBodyMap() {
   const mapDiv = document.getElementById('catalogBodyMap');
   if (!mapDiv) return;
-  let sex = 'M';
-  try { sex = JSON.parse(localStorage.getItem('gymtracker_profile') || '{}').sex || 'M'; } catch(e) {}
+  if (typeof buildMuscleMapHTML !== 'function') return;
   const container = document.getElementById('catalogBodyMapSvg');
-  if (container) container.innerHTML = _buildBodySvgHtml(sex, 'cat-', true);
+  if (container) container.innerHTML = buildMuscleMapHTML('catalogBodyMap', { mode: 'catalog' });
   mapDiv.style.display = 'block';
   const lbl = document.getElementById('catalogMapLabel');
   if (lbl) lbl.textContent = 'Toca un músculo para filtrar';

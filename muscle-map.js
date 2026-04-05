@@ -187,7 +187,7 @@ function _buildMuscleSVG(muscles, side, cid, mode, compact) {
   var polygons = '';
   muscles.forEach(function(m) {
     var catalog = MUSCLE_TO_CATALOG[m.id];
-    var interactive = catalog != null && mode === 'picker';
+    var interactive = catalog != null && (mode === 'picker' || mode === 'catalog');
     var c = MUSCLE_STATE_COLORS.neutral;
     m.points.forEach(function(pts, idx) {
       var pid = 'mm-' + cid + '-' + m.id + '-' + idx;
@@ -209,12 +209,19 @@ function _buildMuscleSVG(muscles, side, cid, mode, compact) {
 }
 
 // Returns HTML string with two SVGs (front + back) side by side.
-// options: { mode: 'fatigue' | 'picker' }
+// options: { mode: 'fatigue' | 'picker' | 'catalog' }
 function buildMuscleMapHTML(containerId, options) {
   var mode    = (options && options.mode) || 'fatigue';
-  var compact = mode === 'picker';
+  var compact = mode === 'picker' || mode === 'catalog';
   var front = _buildMuscleSVG(FRONT_MUSCLES, 'front', containerId, mode, compact);
   var back  = _buildMuscleSVG(BACK_MUSCLES,  'back',  containerId, mode, compact);
+  if (mode === 'catalog') {
+    // Catalog: fixed height (bigger than picker), interactive muscles
+    return '<div style="display:flex;gap:12px;justify-content:center;height:180px;padding:4px 0">'
+      + '<div style="height:100%">' + front + '</div>'
+      + '<div style="height:100%">' + back  + '</div>'
+      + '</div>';
+  }
   if (compact) {
     // Picker: fixed height, figures side by side centered
     return '<div style="display:flex;gap:10px;justify-content:center;height:132px;padding:2px 0">'
