@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-visual">
 <meta name="theme-color" content="#080A0F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1909,12 +1909,15 @@ body {
 #coachScreen {
   display: none;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
   background: var(--bg);
 }
-#coachScreen.active { display: flex; animation: none; }
+#coachScreen.active {
+  display: flex;
+  animation: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
 
 .coach-chat-header {
   display: flex; align-items: center; gap: 12px;
@@ -2009,7 +2012,6 @@ body {
 
 .chat-input-area {
   flex-shrink: 0;
-  position: sticky; bottom: 0;
   background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
   padding: 10px 12px calc(12px + env(safe-area-inset-bottom));

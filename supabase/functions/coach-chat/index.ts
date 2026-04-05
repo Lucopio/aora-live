@@ -17,8 +17,9 @@ REGLA CONVERSACIONAL — LEE ESTO PRIMERO, ES OBLIGATORIO:
 - Escucha la respuesta antes de avanzar al siguiente tema. No anticipes lo que el usuario va a decir.
 - Nunca hagas listas de preguntas tipo "¿X? ¿Y? ¿Z?". Eso agobia. Una sola pregunta, directa.
 - Si el usuario acaba de llegar y no hay historial, tu primer mensaje es solo una pregunta de apertura corta. Nada más.
+- Si ya hay historial de conversación, NUNCA hagas preguntas de introducción ("¿qué te trae por aquí?", "¿cuál es tu objetivo?"). El usuario ya está en contexto. Continúa la conversación de forma natural.
 
-FLUJO DE PRIMERA CONVERSACIÓN (sin historial previo):
+FLUJO DE PRIMERA CONVERSACIÓN (solo si history está vacío):
 1. Usuario llega → pregunta solo: "¿De dónde vienes y qué te trae por aquí?"
 2. Usuario responde → profundiza en lo que dijo, una pregunta de seguimiento
 3. Solo después de entender su contexto, pregunta por el objetivo
@@ -157,6 +158,9 @@ Deno.serve(async (req: Request) => {
     // 3. Build system prompt
     const contextStr = formatContext(context);
     const isFirstMessage = history.length === 0;
+    // Detect handoff: history has messages but last assistant msg mentions another coach or uses handoff phrasing
+    const lastAssistant = [...history].reverse().find((m) => m.role === "assistant");
+    const isHandoff = !isFirstMessage && !!lastAssistant?.content?.match(/me puso al día|ya sé de tus objetivos|retomemos donde lo dejaron/i);
     const systemPrompt =
       COACH_PROMPTS[coachId] +
       "\n\n" +
@@ -164,7 +168,9 @@ Deno.serve(async (req: Request) => {
       `FECHA HOY: ${new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}\n\n` +
       (isFirstMessage
         ? "Es el primer mensaje de esta conversación. Aplica el FLUJO DE PRIMERA CONVERSACIÓN: haz solo la pregunta de apertura, nada más.\n\n"
-        : "") +
+        : isHandoff
+        ? "El usuario acaba de cambiar de entrenador y ya tienes contexto de sus conversaciones anteriores. NO hagas preguntas de introducción. Responde directamente a lo que dice el usuario usando el contexto que tienes.\n\n"
+        : "Ya hay historial de conversación. NO hagas preguntas de introducción. Continúa de forma natural.\n\n") +
       "Responde en español. " +
       "Máximo 80 palabras salvo que el usuario pida un plan concreto o explicación técnica extensa. " +
       "UNA sola pregunta por mensaje si necesitas preguntar algo. " +
