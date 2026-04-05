@@ -5103,14 +5103,16 @@ function selectCoachFromChat(coachId) {
     const prevHistory = getChatHistory(prevCoach.id);
     const newCoach = COACHES[coachId];
 
-    // Contexto oculto (el LLM lo ve, el usuario no) + saludo de traspaso
-    const contextMsgs = prevHistory.slice(-8).map(m => ({ ...m, hidden: true }));
-    const handoffMsg = {
-      role: 'assistant',
-      content: `¡Hola! Soy ${newCoach.name} ${newCoach.flag} ${prevCoach.name} me puso al día con todo lo que han trabajado juntos — ya sé de tus objetivos y tu progreso. Desde mi enfoque en ${newCoach.specialty}, ¿quieres que retomemos donde lo dejaron, o prefieres empezar algo nuevo?`,
-      ts: new Date().toISOString()
-    };
-    saveChatHistory(coachId, [...contextMsgs, handoffMsg]);
+    // Solo hacer handoff si hay conversación real con el coach anterior
+    if (prevHistory.length > 0) {
+      const contextMsgs = prevHistory.slice(-8).map(m => ({ ...m, hidden: true }));
+      const handoffMsg = {
+        role: 'assistant',
+        content: `¡Hola! Soy ${newCoach.name} ${newCoach.flag} ${prevCoach.name} me puso al día con todo lo que han trabajado juntos — ya sé de tus objetivos y tu progreso. Desde mi enfoque en ${newCoach.specialty}, ¿quieres que retomemos donde lo dejaron, o prefieres empezar algo nuevo?`,
+        ts: new Date().toISOString()
+      };
+      saveChatHistory(coachId, [...contextMsgs, handoffMsg]);
+    }
   }
 
   saveSelectedCoach(coachId);
@@ -5465,7 +5467,8 @@ function initCoachChat() {
   if (loginPrompt) loginPrompt.style.display = hasSession ? 'none' : 'flex';
   if (inputWrap)   inputWrap.style.display   = hasSession ? 'block' : 'none';
 
-  if (!currentUser) {
+  // Sin sesión y no es skip_auth → mostrar prompt de login y salir
+  if (!currentUser && !localStorage.getItem('gymtracker_skip_auth')) {
     const wrap = document.getElementById('chatMessages');
     if (wrap && wrap.innerHTML === '') {
       const coachName = coach ? coach.name : 'tu coach';
@@ -11803,7 +11806,14 @@ function initSupabase() {
       } else if (event !== 'INITIAL_SESSION') {
         updateAccountUI();
         hideLoadingOverlay();
-        showScreen('auth');
+        if (!localStorage.getItem('gymtracker_skip_auth')) {
+          showScreen('auth');
+        } else {
+          // Sesión anónima expirada: recrear silenciosamente sin interrumpir la navegación
+          sb.auth.signInAnonymously().then(({ data, error }) => {
+            if (!error && data?.user) { currentUser = data.user; }
+          }).catch(() => {});
+        }
       }
     });
     sb.auth.getSession().then(({ data: { session } }) => {
