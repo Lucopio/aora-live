@@ -1919,7 +1919,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 64px;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   overflow: hidden;
 }
 
@@ -2018,7 +2018,7 @@ body {
   flex-shrink: 0;
   background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
-  padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  padding: 10px 12px 12px;
 }
 .chat-login-prompt { text-align: center; padding: 12px 0; }
 .chat-login-prompt p { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
