@@ -3010,10 +3010,10 @@ body {
         </div>
         <div class="rest-bar-track"><div class="rest-bar-fill" id="restBarFill"></div></div>
         <div id="restExtendRow" style="display:flex;gap:5px;width:100%;margin-top:10px">
-          <button onclick="adjustRest(30)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−30</button>
-          <button onclick="adjustRest(15)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger);cursor:pointer">−15</button>
-          <button onclick="extendRest(15)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+15</button>
-          <button onclick="extendRest(30)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer">+30</button>
+          <button onclick="adjustRest(30)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#CC0033;cursor:pointer">−30</button>
+          <button onclick="adjustRest(15)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#CC0033;cursor:pointer">−15</button>
+          <button onclick="extendRest(15)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#007A8A;cursor:pointer">+15</button>
+          <button onclick="extendRest(30)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#007A8A;cursor:pointer">+30</button>
         </div>
         <div style="width:100%;margin-top:6px">
           <button onclick="openAdjustRestSheet()" style="width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--text-tertiary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
@@ -5916,6 +5916,11 @@ function getSmartRestSeconds() {
   if (window._userOverrodeRest) return restSeconds;
   const group = detectPrimaryMuscleGroup();
   if (!group) return restSeconds;
+  // Cardio y Calistenia: si el usuario ya tiene un descanso > 60s configurado,
+  // respetar su preferencia en lugar de forzar los 45s del grupo
+  if ((group === 'Cardio' || group === 'Calistenia') && restSeconds > 60) {
+    return restSeconds;
+  }
   return REST_BY_MUSCLE_GROUP[group] || restSeconds;
 }
 
@@ -9100,7 +9105,7 @@ function showExerciseInfo(name) {
   const gifEl = document.getElementById('ex-info-gif');
   if (gifEl) gifEl.style.display = 'none';
   loadExerciseGif(name).then(url => {
-    if (url && gifEl) { gifEl.src = url; gifEl.style.display = 'block'; }
+    if (url && gifEl) { gifEl.src = url; gifEl.style.display = 'block'; forceGifAnimation(gifEl); }
   });
 
   // #12 — Do's and Don'ts
@@ -9140,6 +9145,14 @@ function _resetGifSheet() {
   document.getElementById('exGifError').style.display = 'none';
 }
 
+// Bust browser cache para forzar re-animación del GIF
+function forceGifAnimation(imgEl) {
+  if (!imgEl || !imgEl.src) return;
+  const src = imgEl.src.split('?')[0];
+  imgEl.src = '';
+  setTimeout(() => { imgEl.src = src + '?t=' + Date.now(); }, 50);
+}
+
 function openExerciseGif() {
   const name = document.getElementById('exInfoName').textContent;
   document.getElementById('exGifTitle').textContent = name + ' — Forma correcta';
@@ -9156,7 +9169,8 @@ function openExerciseGif() {
   document.body.style.overflow = 'hidden';
   window._currentGifExName = name;
   loadExerciseGif(name).then(url => {
-    if (url) { document.getElementById('exGifImg').src = url; }
+    const img = document.getElementById('exGifImg');
+    if (url) { img.src = url; forceGifAnimation(img); }
     else { document.getElementById('exGifLoading').style.display = 'none'; document.getElementById('exGifError').style.display = 'flex'; }
   });
 }
@@ -9189,7 +9203,8 @@ function openWorkoutExerciseGif() {
   document.body.style.overflow = 'hidden';
   window._currentGifExName = currentExerciseName;
   loadExerciseGif(currentExerciseName).then(url => {
-    if (url) { document.getElementById('exGifImg').src = url; }
+    const img = document.getElementById('exGifImg');
+    if (url) { img.src = url; forceGifAnimation(img); }
     else { document.getElementById('exGifLoading').style.display = 'none'; document.getElementById('exGifError').style.display = 'flex'; }
   });
 }
@@ -11965,6 +11980,10 @@ saveAndExit = function() {
   saveToStorage();
   updateHomeStats();
   renderHomeTips(); // Muestra cualquier tip ya generado
+  updateCoachSpotlight();
+  renderMuscleRecoveryCard();
+  if (typeof updateHomeDashboard === 'function') updateHomeDashboard();
+  updateHomeGreeting();
 };
 const _origClearAll = clearAllHistory;
 clearAllHistory = function() { _origClearAll(); saveToStorage(); };
