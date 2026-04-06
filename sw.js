@@ -12,7 +12,10 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
+  // NO llamar skipWaiting() aquí: forzar activación inmediata mientras
+  // hay tabs abiertos dispara controllerchange y puede interrumpir un
+  // workout activo. El nuevo SW se activará naturalmente en la próxima
+  // apertura de la app (cuando no haya clientes con el SW anterior).
 });
 
 // Activate: clean old caches
