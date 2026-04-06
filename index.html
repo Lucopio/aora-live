@@ -11978,12 +11978,17 @@ saveAndExit = function() {
   _postWorkoutFeeling = null;
   _origSaveAndExit();
   saveToStorage();
-  updateHomeStats();
-  renderHomeTips(); // Muestra cualquier tip ya generado
-  updateCoachSpotlight();
-  renderMuscleRecoveryCard();
-  if (typeof updateHomeDashboard === 'function') updateHomeDashboard();
-  updateHomeGreeting();
+  // Diferir el refresh del home: _origSaveAndExit llama showScreen('home')
+  // internamente, por lo que el DOM todavía no está pintado cuando llegamos aquí.
+  // El setTimeout garantiza que corren DESPUÉS de que el home screen ya es visible.
+  setTimeout(() => {
+    updateHomeStats();
+    renderHomeTips();
+    updateCoachSpotlight();
+    renderMuscleRecoveryCard();
+    if (typeof updateHomeDashboard === 'function') updateHomeDashboard();
+    updateHomeGreeting();
+  }, 150);
 };
 const _origClearAll = clearAllHistory;
 clearAllHistory = function() { _origClearAll(); saveToStorage(); };
