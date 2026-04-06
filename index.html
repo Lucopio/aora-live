@@ -4088,13 +4088,15 @@ body {
       <input type="text" id="catalogSearchInput" placeholder="Buscar ejercicio..." oninput="filterExercises(this.value)">
     </div>
     <!-- Catalog Body Mini-map -->
-    <div id="catalogBodyMap" style="display:none;padding:8px 0 4px">
+    <div id="catalogBodyMap" style="display:none;padding:12px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px">
       <div style="text-align:center">
         <div id="catalogBodyMapSvg"></div>
-        <div id="catalogMapLabel" style="margin-top:5px;font-size:11px;color:var(--text-tertiary);font-family:var(--font)">Toca un músculo para filtrar</div>
-        <button id="catalogMapResetBtn" onclick="resetCatalogMapFilter()" style="display:none;margin-top:4px;background:rgba(0,229,255,0.1);border:1px solid #00E5FF;color:#00E5FF;border-radius:12px;padding:4px 14px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer">Ver todos</button>
+        <span id="catalogMapLabel" style="display:block;margin-top:6px;font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;font-family:var(--font)">Toca un músculo para filtrar</span>
+        <button id="catalogMapResetBtn" onclick="resetCatalogMapFilter()" style="display:none;margin-top:8px;padding:6px 16px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--primary);cursor:pointer">Ver todos</button>
       </div>
     </div>
+    <!-- Chips de grupos musculares (alternativa táctil) -->
+    <div id="catalogGroupChips" style="display:none;gap:6px;overflow-x:auto;padding:0 0 10px;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
 
     <div id="exerciseList"></div>
 
@@ -5839,6 +5841,18 @@ function openConfig() {
     showRoutinePreview();
     return;
   }
+  // Si hay sesión recuperable en localStorage, mostrar banner primero
+  // Esto evita que el overlay del coach alert bloquee el botón "Continuar"
+  if (document.getElementById('recoverBanner')) return;
+  try {
+    const _raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    if (_raw) {
+      const _s = JSON.parse(_raw);
+      if (_s.workoutStartTime && (Date.now() - _s.lastSaved) <= 12 * 3600000) {
+        restoreSessionState(); return;
+      }
+    }
+  } catch(e) {}
   const coach = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽' };
   const msgs = {
     maria:  'Lo primero: define tu tiempo de descanso. El descanso bien cronometrado es parte del entrenamiento. 💪',
@@ -12822,7 +12836,7 @@ function restoreSessionState() {
     // Mostrar banner de recuperación en lugar de restaurar automáticamente
     const banner = document.createElement('div');
     banner.id = 'recoverBanner';
-    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--accent2);color:white;padding:14px 16px;z-index:800;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font);box-shadow:0 2px 8px rgba(0,0,0,0.4)';
+    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--accent2);color:white;padding:14px 16px;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--font);box-shadow:0 2px 8px rgba(0,0,0,0.4)';
     banner.innerHTML = `<span style="font-size:13px;font-weight:600">⚡ Tienes un entrenamiento en progreso</span><div style="display:flex;gap:8px"><button onclick="recoverSession()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer">Continuar</button><button onclick="discardSession()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:none;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px;cursor:pointer">Descartar</button></div>`;
     document.body.appendChild(banner);
     banner._state = state;
@@ -13918,9 +13932,25 @@ function initCatalogBodyMap() {
   if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
   const btn = document.getElementById('catalogMapResetBtn');
   if (btn) btn.style.display = 'none';
+
+  // Chips de grupos musculares — alternativa táctil al SVG
+  const chipsDiv = document.getElementById('catalogGroupChips');
+  if (chipsDiv) {
+    const groups = ['Pecho','Espalda','Hombros','Biceps','Triceps',
+                    'Piernas','Gluteos','Abdomen','Cardio','Calistenia','Personalizados'];
+    chipsDiv.innerHTML = groups.map(g =>
+      `<button onclick="catalogMapClick('${g}')"
+        style="padding:6px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent">${g}</button>`
+    ).join('');
+    chipsDiv.style.display = 'flex';
+  }
 }
 
 function catalogMapClick(group) {
+  if (group === 'Personalizados') {
+    showCatalogGroup('Personalizados');
+    return;
+  }
   _resetCatalogMapHighlight();
   const regions = MUSCLE_REGION_MAP[group] || [];
   regions.forEach(id => {
@@ -13930,7 +13960,9 @@ function catalogMapClick(group) {
   const lbl = document.getElementById('catalogMapLabel');
   if (lbl) lbl.textContent = `Tocando: ${group}`;
   const btn = document.getElementById('catalogMapResetBtn');
-  if (btn) btn.style.display = 'inline-block';
+  if (btn) {
+    btn.style.cssText = 'display:inline-block;margin-top:8px;padding:6px 16px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--primary);cursor:pointer;';
+  }
   showCatalogGroup(group);
 }
 
