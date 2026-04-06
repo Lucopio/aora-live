@@ -604,14 +604,14 @@ body {
 .summary-header h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); }
 .summary-header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
 
-.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.summary-stat { background: var(--bg); border-radius: var(--radius-sm); padding: 20px; text-align: center; }
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 20px 16px; }
+.summary-stat { background: var(--bg); border-radius: var(--radius-sm); padding: 14px 8px; text-align: center; overflow: hidden; }
 .summary-stat .s-icon {
   width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
 }
-.summary-stat .s-value { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--text-primary); }
-.summary-stat .s-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-stat .s-value { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.summary-stat .s-label { font-size: 10px; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Motivation summary card */
 .summary-motivation {
@@ -3046,27 +3046,25 @@ body {
     <p id="summaryDate"></p>
   </div>
   <div class="summary-grid">
+    <!-- Fila 1: siempre visibles -->
     <div class="summary-stat"><div class="s-icon" style="background:var(--primary-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumDuration">--</div><div class="s-label" id="sumDurationLabel">Duracion</div></div>
-    <div class="summary-stat" id="sumRestStat" style="display:none"><div class="s-icon" style="background:rgba(0,229,255,0.1)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumAvgRest">--</div><div class="s-label">Descanso prom</div></div>
     <div class="summary-stat"><div class="s-icon" style="background:var(--success-light)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="s-value" id="sumExercises">--</div><div class="s-label">Ejercicios</div></div>
     <div class="summary-stat" id="sumEffectiveStat" style="display:none">
-      <div class="s-icon" style="background:rgba(0,200,150,0.12)">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
+      <div class="s-icon" style="background:rgba(0,200,150,0.12)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="s-value" id="sumEffectiveSets">--</div>
       <div class="s-label">Series efectivas</div>
     </div>
-  </div>
-  <!-- Warmup row (shown only when warmupDuration > 0) -->
-  <div class="summary-warmup-row" id="summaryWarmupRow" style="display:none">
-    <div class="wu-icon">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <!-- Fila 2: condicionales -->
+    <div class="summary-stat" id="sumRestStat" style="display:none"><div class="s-icon" style="background:rgba(0,229,255,0.1)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="s-value" id="sumAvgRest">--</div><div class="s-label">Descanso prom</div></div>
+    <div class="summary-stat" id="summaryRPERow" style="display:none">
+      <div class="s-icon" style="background:rgba(255,107,53,0.12)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10"/><path d="M12 6v6l4 2"/></svg></div>
+      <div class="s-value"><span id="sumRPEAvg">--</span><span style="font-size:11px;color:var(--text-secondary);font-weight:400">/10</span></div>
+      <div class="s-label">RPE promedio</div>
     </div>
-    <div class="wu-info">
-      <div class="wu-value" id="sumWarmup">--</div>
-      <div class="wu-label">Calentamiento previo</div>
+    <div class="summary-stat" id="summaryWarmupRow" style="display:none">
+      <div class="s-icon" style="background:rgba(255,184,0,0.12)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <div class="s-value" id="sumWarmup">--</div>
+      <div class="s-label">Calentamiento</div>
     </div>
   </div>
 
@@ -3076,15 +3074,6 @@ body {
       <span style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px" id="summaryCoachName"></span>
     </div>
     <div class="sm-text" id="summaryMotivation">Gran trabajo hoy. La constancia es lo que construye resultados.</div>
-  </div>
-
-  <!-- RPE Promedio (visible solo si hay datos) -->
-  <div id="summaryRPERow" style="display:none;padding:14px 16px;background:var(--bg);border-radius:12px;margin-bottom:12px;align-items:center;gap:12px">
-    <div style="font-size:26px">🔥</div>
-    <div>
-      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">RPE Promedio</div>
-      <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--text-primary)"><span id="sumRPEAvg">—</span><span style="font-size:13px;color:var(--text-secondary);font-weight:500"> / 10</span></div>
-    </div>
   </div>
 
   <!-- Feedback semanal (#10) -->
@@ -5895,6 +5884,26 @@ function detectPrimaryMuscleGroup() {
   return found ? found.group : null;
 }
 
+const REST_BY_MUSCLE_GROUP = {
+  'Piernas':    180,
+  'Gluteos':    180,
+  'Espalda':    150,
+  'Pecho':      120,
+  'Hombros':    120,
+  'Biceps':      90,
+  'Triceps':     90,
+  'Abdomen':     60,
+  'Cardio':      45,
+  'Calistenia':  90,
+};
+
+function getSmartRestSeconds() {
+  if (window._userOverrodeRest) return restSeconds;
+  const group = detectPrimaryMuscleGroup();
+  if (!group) return restSeconds;
+  return REST_BY_MUSCLE_GROUP[group] || restSeconds;
+}
+
 // Abandon workout flow
 function showAbandonConfirm() {
   document.getElementById('abandonModal').classList.add('active');
@@ -6351,6 +6360,7 @@ function skipWarmup() {
 }
 
 function launchWorkout() {
+  window._userOverrodeRest = false;
   // Check-in del coach al inicio del entrenamiento
   // Guard: no mostrar si el usuario fue directo al catálogo (sin rutina preseleccionada)
   setTimeout(() => {
@@ -9436,8 +9446,9 @@ function startRestTimer() {
   restStartedAt = Date.now();
   // Capturar referencia al set que inició el descanso; persiste aunque el usuario cambie de ejercicio
   _restTargetSet = currentExerciseSets.length > 0 ? currentExerciseSets[currentExerciseSets.length - 1] : null;
-  countdownRemaining = restSeconds;
-  const total = restSeconds;
+  const smartRest = getSmartRestSeconds();
+  countdownRemaining = smartRest;
+  const total = smartRest;
   const circ = 2 * Math.PI * 34;
   let halfwayAlertFired = false; // se activa una sola vez al llegar al 50%
 
@@ -9462,7 +9473,7 @@ function startRestTimer() {
   msg.textContent = 'Descansando...';
   sub.textContent = 'Siguiente ejercicio pronto';
   const baseDisplay = document.getElementById('restBaseDisplay');
-  if (baseDisplay) baseDisplay.textContent = restSeconds;
+  if (baseDisplay) baseDisplay.textContent = smartRest;
 
   update();
   clearInterval(countdownInterval);
@@ -9517,6 +9528,13 @@ function startRestTimer() {
       sub.textContent = `+${over}s extra`;
     }
   }, 1000);
+
+  if (!window._userOverrodeRest) {
+    const group = detectPrimaryMuscleGroup();
+    if (group && REST_BY_MUSCLE_GROUP[group]) {
+      if (sub) sub.textContent = `${group} · ${smartRest}s recomendado`;
+    }
+  }
 
   function update() {
     const p = 1 - (countdownRemaining / total);
@@ -9579,6 +9597,7 @@ function openAdjustRestSheet() {
   document.getElementById('adjustRestSheet').style.display = 'block';
 }
 function setRestBaseline(seconds) {
+  window._userOverrodeRest = true;
   restSeconds = seconds;
   document.getElementById('restIdleSeconds').textContent = seconds;
   document.getElementById('customRestInput').value = seconds;
@@ -9950,7 +9969,7 @@ function endWorkout() {
   const warmupRow = document.getElementById('summaryWarmupRow');
   if (warmupDuration > 0) {
     document.getElementById('sumWarmup').textContent = formatTimeMM(warmupDuration);
-    warmupRow.style.display = 'flex';
+    warmupRow.style.display = '';
   } else {
     warmupRow.style.display = 'none';
   }
@@ -9981,7 +10000,7 @@ function endWorkout() {
   const rpeRow = document.getElementById('summaryRPERow');
   if (sessionRPE != null) {
     document.getElementById('sumRPEAvg').textContent = sessionRPE;
-    rpeRow.style.display = 'flex';
+    rpeRow.style.display = '';
   } else {
     rpeRow.style.display = 'none';
   }
@@ -13676,8 +13695,12 @@ function showRoutinePreview() {
   // Marcar rutina como usada (async, no bloquea)
   _markRoutineUsed(routine.id);
 
-  // Aplicar descanso de la rutina si está configurado, si no usar el último valor usado
-  if (routine.default_rest_seconds) restSeconds = routine.default_rest_seconds;
+  // Aplicar descanso de la rutina si está configurado; si no, usar grupo muscular como fallback
+  if (routine.default_rest_seconds) {
+    restSeconds = routine.default_rest_seconds;
+  } else if (routine.muscle_group && REST_BY_MUSCLE_GROUP[routine.muscle_group]) {
+    restSeconds = REST_BY_MUSCLE_GROUP[routine.muscle_group];
+  }
   // Siempre saltarse el config sheet — restSeconds ya tiene un valor válido
   const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
   showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! Descanso: ${restSeconds}s`, 'info');
