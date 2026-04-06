@@ -6279,12 +6279,10 @@ function renderWarmupContent(muscleGroup, data) {
     const safeName  = ex.name.replace(/'/g, "\\'");
     const ytBtn = safeVideo
       ? `<button class="wu-maria-btn" onclick="event.stopPropagation();openWarmupGif('${safeVideo}','${safeName}')">▶ Ver con María</button>`
-      : safeGif
-        ? `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupGif('${safeGif}','${safeName}')">
+      : `<button class="wu-yt-btn" onclick="event.stopPropagation();openWarmupGifDynamic('${safeName}')">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
         Ver cómo hacerlo
-      </button>`
-        : '';
+      </button>`;
     return `
     <div class="wu-ex-item" id="wuEx${i}" onclick="toggleWarmupExercise(${i})">
       <div class="wu-ex-check" id="wuCheck${i}">
@@ -8934,6 +8932,68 @@ const EXERCISE_EN = {
   'Pistol squat':'pistol squat','Pike push-up':'pike push up','Archer push-up':'archer push up',
 };
 
+// ─── Warmup exercise name → ExerciseDB query (español→inglés) ─
+const WARMUP_EXERCISE_EN = {
+  // Rotaciones / movilidad
+  'Rotaciones de brazos (ambos sentidos)': 'arm circles',
+  'Arm circles (ambas direcciones)':       'arm circles',
+  'Rotaciones de hombro':                  'shoulder circles',
+  'Círculos de cadera':                    'hip circles',
+  'Rotaciones de cuello':                  'neck rolls',
+  'Movilidad de tobillo':                  'ankle circles',
+  'Rotaciones de muñeca':                  'wrist circles',
+  // Pecho / Hombros
+  'Stretch de pecho en pared':             'chest opener stretch',
+  'Press ligero (barra vacía o banda)':    'barbell bench press',
+  'Fondos en banco (asistidos)':           'bench dip',
+  'Aperturas con banda':                   'band pull apart',
+  'Flexiones de pared':                    'wall push up',
+  // Espalda
+  'Cat-Cow (movimiento de columna)':       'cat cow stretch',
+  'Dead bugs (boca arriba, brazos y piernas)': 'dead bug',
+  'Jalón al pecho muy ligero':             'lat pulldown',
+  'Band pull-aparts (banda elástica)':     'band pull apart',
+  'Extensiones de espalda':                'back extension',
+  'Rotación torácica':                     'thoracic rotation',
+  'Superman':                              'superman exercise',
+  // Piernas
+  'Sentadilla con peso corporal':          'bodyweight squat',
+  'Estocada sin peso':                     'bodyweight lunge',
+  'Peso muerto sin peso':                  'romanian deadlift',
+  'Puente de glúteo':                      'glute bridge',
+  'Patada de glúteo':                      'donkey kick',
+  'Elevación de rodilla':                  'high knee',
+  'Leg swings (adelante y atrás)':         'leg swing',
+  'Sentadilla profunda muy ligera':        'bodyweight squat',
+  'Puente de cadera':                      'glute bridge',
+  // Brazos
+  'Extensiones de codo sin peso':          'tricep stretch',
+  'Curl con barra vacía o banda':          'bicep curl',
+  'Flexiones (o en rodillas)':             'push up',
+  'Dips en banco sin peso':                'bench dip',
+  // Core
+  'Plancha sobre antebrazos':              'plank',
+  'Rotación de tronco':                    'trunk rotation',
+  'Elevación de piernas acostado':         'leg raise',
+  'Bird-dog':                              'bird dog',
+  // Cardio / Activación
+  'Saltos de caja pequeños':               'box jump',
+  'Trote en el lugar':                     'jogging in place',
+  'Saltos de tijera':                      'jumping jack',
+  'Jumping jacks':                         'jumping jack',
+  'Burpees lentos':                        'burpee',
+  'Cuerda lenta':                          'jump rope',
+  'Rodillas al pecho corriendo':           'high knee',
+  // Hombros
+  'Press aéreo sin peso':                  'overhead press',
+  'Rotaciones internas y externas con banda': 'band shoulder rotation',
+  // Glúteos
+  'Clamshells con banda':                  'clamshell exercise',
+  'Patadas de glúteo con banda':           'donkey kick',
+  'Side steps con banda':                  'lateral band walk',
+  'Step-ups sin peso':                     'step up',
+};
+
 async function loadExerciseGif(exerciseName) {
   // 1. Diccionario hardcodeado (CDN público, sin cuota, instantáneo)
   if (exerciseGIFs[exerciseName]) return exerciseGIFs[exerciseName];
@@ -8957,6 +9017,74 @@ async function loadExerciseGif(exerciseName) {
     }
     return gifUrl;
   } catch { return null; }
+}
+
+// ─── Warmup GIF system (caché separada para no consumir quota del catálogo) ─
+const WARMUP_CACHE_KEY = 'aora_warmup_gif_cache';
+
+async function loadWarmupGif(exerciseName) {
+  // 1. Caché separada de calentamiento
+  try {
+    const cache = JSON.parse(localStorage.getItem(WARMUP_CACHE_KEY) || '{}');
+    if (cache[exerciseName] && typeof cache[exerciseName] === 'string') return cache[exerciseName];
+  } catch(e) {}
+
+  // 2. ExerciseDB — query traducido via WARMUP_EXERCISE_EN, fallback a nombre en minúsculas
+  const query = WARMUP_EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
+  try {
+    const res = await fetch(
+      `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(query)}?limit=1`,
+      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '3d6f244f7fmsh4b183857ca45654p1a8daajsnf9338e4161b8' } }
+    );
+    const data = await res.json();
+    const gifUrl = data?.[0]?.gifUrl || null;
+    if (gifUrl) {
+      try {
+        const cache = JSON.parse(localStorage.getItem(WARMUP_CACHE_KEY) || '{}');
+        cache[exerciseName] = gifUrl;
+        localStorage.setItem(WARMUP_CACHE_KEY, JSON.stringify(cache));
+      } catch(e) {}
+      return gifUrl;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function openWarmupGifDynamic(exerciseName) {
+  document.getElementById('wuGifTitle').textContent = exerciseName;
+  const img   = document.getElementById('wuGifImg');
+  const video = document.getElementById('wuGifVideo');
+  const hint  = document.getElementById('wuGifHint');
+
+  // Ocultar media, mostrar spinner
+  img.style.display   = 'none';
+  img.src             = '';
+  video.pause();
+  video.src           = '';
+  video.style.display = 'none';
+  hint.textContent    = 'Cargando animación...';
+
+  // Abrir sheet inmediatamente (el usuario ve que algo está pasando)
+  const overlay = document.getElementById('wuGifOverlay');
+  const sheet   = document.getElementById('wuGifSheet');
+  overlay.style.display = 'block';
+  sheet.style.display   = 'block';
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheet.style.transform  = 'translateX(-50%) translateY(0)';
+  });
+  document.body.style.overflow = 'hidden';
+
+  // Cargar GIF en background
+  const url = await loadWarmupGif(exerciseName);
+  if (url) {
+    img.src           = url;
+    img.style.display = 'block';
+    hint.textContent  = 'Animación en bucle · Toca fuera para cerrar';
+  } else {
+    hint.innerHTML = `Sin animación disponible · <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + ' ejercicio')}" target="_blank" style="color:var(--primary)">Buscar en YouTube</a>`;
+  }
 }
 
 function showExerciseInfo(name) {
