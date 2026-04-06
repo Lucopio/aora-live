@@ -4088,12 +4088,13 @@ body {
       <input type="text" id="catalogSearchInput" placeholder="Buscar ejercicio..." oninput="filterExercises(this.value)">
     </div>
     <!-- Catalog Body Mini-map -->
-    <div id="catalogBodyMap" style="display:none;padding:12px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px">
-      <div style="text-align:center">
-        <div id="catalogBodyMapSvg"></div>
-        <span id="catalogMapLabel" style="display:block;margin-top:6px;font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;font-family:var(--font)">Toca un músculo para filtrar</span>
-        <button id="catalogMapResetBtn" onclick="resetCatalogMapFilter()" style="display:none;margin-top:8px;padding:6px 16px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--primary);cursor:pointer">Ver todos</button>
+    <div id="catalogBodyMap" style="display:none;padding:10px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 4px">
+        <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px">Filtrar por músculo</span>
+        <button id="catalogMapResetBtn" onclick="resetCatalogMapFilter()" style="display:none;padding:4px 12px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:20px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--primary);cursor:pointer">Ver todos</button>
       </div>
+      <div id="catalogBodyMapSvg"></div>
+      <span id="catalogMapLabel" style="display:block;margin-top:6px;font-size:12px;color:var(--text-tertiary);text-align:center;font-family:var(--font)">Toca un músculo · o usa los chips de abajo</span>
     </div>
     <!-- Chips de grupos musculares (alternativa táctil) -->
     <div id="catalogGroupChips" style="display:none;gap:6px;overflow-x:auto;padding:0 0 10px;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
@@ -8206,7 +8207,7 @@ function backToCatalogGroups() {
     Object.values(CATALOG_GROUP_TO_MUSCLES).flat().forEach(mId => setMuscleMapState('catalogBodyMap', mId, 'neutral'));
   }
   const lbl = document.getElementById('catalogMapLabel');
-  if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
+  if (lbl) lbl.textContent = 'Toca un músculo · o usa los chips de abajo';
   const btn = document.getElementById('catalogMapResetBtn');
   if (btn) btn.style.display = 'none';
 }
@@ -13929,7 +13930,7 @@ function initCatalogBodyMap() {
   if (container) container.innerHTML = buildMuscleMapHTML('catalogBodyMap', { mode: 'catalog' });
   mapDiv.style.display = 'block';
   const lbl = document.getElementById('catalogMapLabel');
-  if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
+  if (lbl) lbl.textContent = 'Toca un músculo · o usa los chips de abajo';
   const btn = document.getElementById('catalogMapResetBtn');
   if (btn) btn.style.display = 'none';
 
@@ -13972,7 +13973,7 @@ function _resetCatalogMapHighlight() {
     if (el) { el.setAttribute('fill', 'rgba(255,255,255,0.10)'); el.setAttribute('opacity', '1'); }
   });
   const lbl = document.getElementById('catalogMapLabel');
-  if (lbl) lbl.textContent = 'Toca un músculo para filtrar';
+  if (lbl) lbl.textContent = 'Toca un músculo · o usa los chips de abajo';
   const btn = document.getElementById('catalogMapResetBtn');
   if (btn) btn.style.display = 'none';
 }

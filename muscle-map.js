@@ -217,7 +217,7 @@ function buildMuscleMapHTML(containerId, options) {
   var back  = _buildMuscleSVG(BACK_MUSCLES,  'back',  containerId, mode, compact);
   if (mode === 'catalog') {
     // Catalog: fixed height (bigger than picker), interactive muscles
-    return '<div style="display:flex;gap:12px;justify-content:center;height:180px;padding:4px 0">'
+    return '<div style="display:flex;gap:16px;justify-content:center;height:300px;padding:4px 0">'
       + '<div style="height:100%">' + front + '</div>'
       + '<div style="height:100%">' + back  + '</div>'
       + '</div>';
@@ -270,3 +270,12 @@ function muscleMapHover(containerId, muscleId, entering) {
     el.style.opacity = entering ? '0.65' : '1';
   });
 }
+
+// Auto-init: muscle-map.js loads after initializeApp() runs.
+// If homeScreen is already active, re-trigger renderMuscleFatigue().
+(function() {
+  var hs = document.getElementById('homeScreen');
+  if (hs && hs.classList.contains('active') && typeof renderMuscleFatigue === 'function') {
+    renderMuscleFatigue();
+  }
+})();
