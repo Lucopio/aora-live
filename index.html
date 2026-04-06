@@ -2076,7 +2076,7 @@ body {
   right: 16px;
   max-width: 398px;
   margin: 0 auto;
-  background: var(--surface);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 14px 16px;
@@ -4667,6 +4667,7 @@ function showCoachAlertToast(alertType) {
   toast.style.height = '';
   toast.style.padding = '';
   toast.style.overflow = '';
+  toast.style.background = 'var(--surface)';
   toast.classList.remove('visible');
   // Crear/reusar overlay de fondo
   let toastOverlay = document.getElementById('coachAlertOverlay');
@@ -4695,6 +4696,7 @@ function dismissCoachAlert() {
       toast.style.height = '0';
       toast.style.padding = '0';
       toast.style.overflow = 'hidden';
+      toast.style.background = 'transparent';
     }
     if (cb) cb();
   }, 380);
