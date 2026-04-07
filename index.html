@@ -2962,11 +2962,20 @@ body {
       <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
       <!-- Cambiar tiempo base -->
       <p style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Cambiar descanso base</p>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px">
         <button onclick="setRestBaseline(45)"  class="adj-base-btn" data-val="45"  style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">45s</button>
         <button onclick="setRestBaseline(60)"  class="adj-base-btn" data-val="60"  style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">60s</button>
         <button onclick="setRestBaseline(90)"  class="adj-base-btn" data-val="90"  style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">90s</button>
         <button onclick="setRestBaseline(120)" class="adj-base-btn" data-val="120" style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">120s</button>
+        <button onclick="setRestBaseline(150)" class="adj-base-btn" data-val="150" style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">150s</button>
+        <button onclick="setRestBaseline(180)" class="adj-base-btn" data-val="180" style="padding:12px 4px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-primary);cursor:pointer">180s</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;margin-bottom:18px">
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">Personalizado:</span>
+        <input type="number" id="adjRestCustomInput" value="" placeholder="ej. 210" min="10" max="600" inputmode="numeric"
+          style="flex:1;padding:10px 12px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:10px;font-family:var(--font);font-size:15px;font-weight:700;color:var(--text-primary);text-align:center"
+          oninput="applyAdjRestCustom(this.value)">
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">seg</span>
       </div>
       <!-- Restar al timer activo -->
       <p style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Restar al timer actual</p>
@@ -6381,6 +6390,7 @@ function skipWarmup() {
 
 function launchWorkout() {
   window._userOverrodeRest = false;
+  window._smartRestToastShown = false;
   // Check-in del coach al inicio del entrenamiento
   // Guard: no mostrar si el usuario fue directo al catálogo (sin rutina preseleccionada)
   setTimeout(() => {
@@ -9689,10 +9699,18 @@ function startRestTimer() {
     }
   }, 1000);
 
-  if (!window._userOverrodeRest) {
-    const group = detectPrimaryMuscleGroup();
-    if (group && REST_BY_MUSCLE_GROUP[group]) {
+  const group = detectPrimaryMuscleGroup();
+  if (group && REST_BY_MUSCLE_GROUP[group]) {
+    const suggested = REST_BY_MUSCLE_GROUP[group];
+    if (window._userOverrodeRest && suggested !== restSeconds) {
+      if (sub) sub.textContent = `${group} · Tu config: ${restSeconds}s · Sugerido: ${suggested}s`;
+    } else if (!window._userOverrodeRest) {
       if (sub) sub.textContent = `${group} · ${smartRest}s recomendado`;
+      // Toast informativo la primera vez que el sistema aplica descanso diferente
+      if (smartRest !== restSeconds && !window._smartRestToastShown) {
+        window._smartRestToastShown = true;
+        showToast(`Descanso ajustado a ${smartRest}s para ${group}`, 'info');
+      }
     }
   }
 
@@ -9753,6 +9771,12 @@ function openAdjustRestSheet() {
     b.style.color       = active ? 'var(--text-primary)' : 'var(--text-secondary)';
     b.style.fontWeight  = active ? '800' : '700';
   });
+  // Pre-llenar input custom si el valor actual no está entre los presets
+  const presetVals = [45, 60, 90, 120, 150, 180];
+  const customInput = document.getElementById('adjRestCustomInput');
+  if (customInput) {
+    customInput.value = presetVals.includes(restSeconds) ? '' : restSeconds;
+  }
   document.getElementById('adjustRestOverlay').style.display = 'block';
   document.getElementById('adjustRestSheet').style.display = 'block';
 }
@@ -9771,6 +9795,17 @@ function setRestBaseline(seconds) {
   saveToStorage();
   showToast(`Descanso cambiado a ${seconds}s`, 'success');
   closeAdjustRestSheet();
+}
+function applyAdjRestCustom(val) {
+  const seconds = Math.max(10, Math.min(600, parseInt(val) || 0));
+  if (seconds < 10) return;
+  // Deseleccionar todos los presets
+  document.querySelectorAll('.adj-base-btn').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.color       = 'var(--text-secondary)';
+    b.style.fontWeight  = '700';
+  });
+  setRestBaseline(seconds);
 }
 function closeAdjustRestSheet() {
   document.getElementById('adjustRestOverlay').style.display = 'none';
