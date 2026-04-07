@@ -9676,8 +9676,9 @@ function startRestTimer() {
       const halfPoint = Math.round(total / 2);
       if (countdownRemaining === halfPoint && !halfwayAlertFired && total > 15) {
         halfwayAlertFired = true;
-        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([60, 40, 60]);
-        playBeep(440, 80);
+        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([80, 50, 80, 50, 120]);
+        playBeep(660, 120);
+        setTimeout(() => playBeep(880, 180), 180);
         speakCoach('mid');
       }
       if (countdownRemaining === 10 && total > 15) {
@@ -10640,13 +10641,13 @@ function renderWeeklyFeedback(feedback) {
 
   let html = `<p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">${feedback.sessions} sesiones esta semana</p>`;
   if (feedback.strengths.length) {
-    html += `<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:#1E6830;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Puntos fuertes</div>`;
-    html += feedback.strengths.map(s => `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px"><span style="color:#34A853;font-size:14px;flex-shrink:0">✓</span><span style="font-size:13px;color:var(--text-primary)">${s}</span></div>`).join('');
+    html += `<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Puntos fuertes</div>`;
+    html += feedback.strengths.map(s => `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px"><span style="color:var(--success);font-size:14px;flex-shrink:0">✓</span><span style="font-size:13px;color:var(--text-primary)">${s}</span></div>`).join('');
     html += `</div>`;
   }
   if (feedback.improvements.length) {
-    html += `<div><div style="font-size:11px;font-weight:700;color:#B45309;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Para mejorar</div>`;
-    html += feedback.improvements.map(i => `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px"><span style="color:#FBBC04;font-size:14px;flex-shrink:0">⚠</span><span style="font-size:13px;color:var(--text-primary)">${i}</span></div>`).join('');
+    html += `<div><div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Para mejorar</div>`;
+    html += feedback.improvements.map(i => `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px"><span style="color:var(--warning);font-size:14px;flex-shrink:0">⚠</span><span style="font-size:13px;color:var(--text-primary)">${i}</span></div>`).join('');
     html += `</div>`;
   }
   if (!feedback.strengths.length && !feedback.improvements.length) {
@@ -11089,6 +11090,7 @@ function playBeep(freq, dur) {
   try {
     const c = getAudioContext();
     const o = c.createOscillator(), g = c.createGain(), comp = c.createDynamicsCompressor();
+    comp.threshold.value = -6; comp.ratio.value = 2;
     o.connect(g); g.connect(comp); comp.connect(c.destination);
     o.frequency.value = freq; o.type = 'triangle';
     g.gain.setValueAtTime(1.0, c.currentTime);
