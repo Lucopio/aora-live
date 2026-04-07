@@ -9126,7 +9126,7 @@ async function loadExerciseGif(exerciseName) {
 
   // 2. Cache local (solo URLs válidas — los nulls no se cachean para permitir reintentos)
   const cache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
-  if (cache[exerciseName] && typeof cache[exerciseName] === 'string') return cache[exerciseName];
+  if (cache[exerciseName] && typeof cache[exerciseName] === 'string' && cache[exerciseName].startsWith('http')) return cache[exerciseName];
 
   // 3. API RapidAPI como fallback para ejercicios fuera del diccionario
   const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
@@ -9152,7 +9152,7 @@ async function loadWarmupGif(exerciseName) {
   // 1. Caché separada de calentamiento
   try {
     const cache = JSON.parse(localStorage.getItem(WARMUP_CACHE_KEY) || '{}');
-    if (cache[exerciseName] && typeof cache[exerciseName] === 'string') return cache[exerciseName];
+    if (cache[exerciseName] && typeof cache[exerciseName] === 'string' && cache[exerciseName].startsWith('http')) return cache[exerciseName];
   } catch(e) {}
 
   // 2. ExerciseDB — query traducido via WARMUP_EXERCISE_EN, fallback a nombre en minúsculas
@@ -12051,14 +12051,16 @@ function saveToStorage() {
 }
 
 function loadFromStorage() {
-  // Limpiar cache de GIFs envenenado (nulls de API fallida con fuente anterior rota)
-  try {
-    const gifCache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
-    const cleaned = Object.fromEntries(Object.entries(gifCache).filter(([,v]) => v && typeof v === 'string'));
-    if (Object.keys(cleaned).length !== Object.keys(gifCache).length) {
-      localStorage.setItem('aora_gif_cache', JSON.stringify(cleaned));
-    }
-  } catch(e) {}
+  // Limpiar ambos cachés de GIFs — eliminar nulls, strings vacíos y no-URLs
+  ['aora_gif_cache', 'aora_warmup_gif_cache'].forEach(key => {
+    try {
+      const cache = JSON.parse(localStorage.getItem(key) || '{}');
+      const cleaned = Object.fromEntries(
+        Object.entries(cache).filter(([, v]) => v && typeof v === 'string' && v.startsWith('http'))
+      );
+      localStorage.setItem(key, JSON.stringify(cleaned));
+    } catch(e) {}
+  });
 
   try {
     const raw = localStorage.getItem('gymtracker_data');
