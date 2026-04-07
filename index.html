@@ -4086,7 +4086,7 @@ body {
     <div id="wuGifError" style="display:none;flex-direction:column;align-items:center;gap:12px;padding:20px;text-align:center">
       <div style="font-size:32px">🎬</div>
       <div style="font-size:13px;color:var(--text-secondary)">Sin animación disponible</div>
-      <button onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(document.getElementById('wuGifTitle').textContent+' ejercicio'),'_blank')" style="padding:10px 20px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar en YouTube</button>
+      <button onclick="openWarmupYouTube()" style="padding:10px 20px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar en YouTube</button>
     </div>
     <img id="wuGifImg" src="" alt="" style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
     <video id="wuGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"
@@ -6241,6 +6241,7 @@ function renderGroupPicker() {
 
 function openWarmupGif(url, name) {
   document.getElementById('wuGifTitle').textContent = name;
+  window._wuCurrentExercise = name;
 
   const img     = document.getElementById('wuGifImg');
   const video   = document.getElementById('wuGifVideo');
@@ -6249,22 +6250,32 @@ function openWarmupGif(url, name) {
   const error   = document.getElementById('wuGifError');
   const isVideo = url.toLowerCase().endsWith('.mp4');
 
-  // Siempre ocultar spinner y error al abrir con URL directa
-  if (loading) loading.style.display = 'none';
-  if (error)   error.style.display   = 'none';
+  if (error) error.style.display = 'none';
 
   if (isVideo) {
-    img.style.display   = 'none';
-    img.src             = '';
-    video.style.display = 'block';
-    video.src           = url;
+    img.style.display    = 'none';
+    img.src              = '';
+    video.controls       = false;
+    video.style.display  = 'block';
+    // Mostrar spinner mientras el video carga
+    if (loading) loading.style.display = 'flex';
+    video.oncanplay = function() {
+      if (loading) loading.style.display = 'none';
+      video.oncanplay = null;
+    };
+    video.src = url;
     video.load();
-    video.play().catch(() => {});
-    hint.textContent    = '▶ Video en bucle · Toca fuera para cerrar';
+    video.play().catch(() => {
+      // Autoplay bloqueado — mostrar controles para que el usuario toque play
+      video.controls = true;
+      if (loading) loading.style.display = 'none';
+    });
+    hint.textContent = '▶ Toca para reproducir · Toca fuera para cerrar';
   } else {
     video.pause();
     video.src           = '';
     video.style.display = 'none';
+    if (loading) loading.style.display = 'none';
     img.style.display   = 'block';
     img.src             = url;
     hint.textContent    = 'Animación en bucle · Toca fuera para cerrar';
@@ -9165,8 +9176,14 @@ async function loadWarmupGif(exerciseName) {
   return null;
 }
 
+function openWarmupYouTube() {
+  const name = window._wuCurrentExercise || '';
+  window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(name + ' ejercicio técnica'), '_blank');
+}
+
 async function openWarmupGifDynamic(exerciseName) {
   document.getElementById('wuGifTitle').textContent = exerciseName;
+  window._wuCurrentExercise = exerciseName;
   const img     = document.getElementById('wuGifImg');
   const video   = document.getElementById('wuGifVideo');
   const hint    = document.getElementById('wuGifHint');
