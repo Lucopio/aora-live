@@ -3825,6 +3825,9 @@ body {
     <img id="exGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px;display:none"
       onload="this.style.display='block';document.getElementById('exGifLoading').style.display='none'"
       onerror="this.style.display='none';document.getElementById('exGifLoading').style.display='none';document.getElementById('exGifError').style.display='flex'">
+    <video id="exGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"
+      oncanplay="this.style.display='block';document.getElementById('exGifLoading').style.display='none'"
+      onerror="this.style.display='none';document.getElementById('exGifLoading').style.display='none';document.getElementById('exGifError').style.display='flex'"></video>
   </div>
   <div style="padding:10px 16px;text-align:center">
     <p style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
@@ -9120,29 +9123,56 @@ const WARMUP_EXERCISE_EN = {
   'Elevacion de piernas':                  'leg raise',
 };
 
-async function loadExerciseGif(exerciseName) {
-  // 1. Diccionario hardcodeado (CDN público, sin cuota, instantáneo)
-  if (exerciseGIFs[exerciseName]) return exerciseGIFs[exerciseName];
+async function loadExerciseMedia(exerciseName) {
+  const CACHE_KEY = 'aora_gif_cache';
+  const cacheKey  = exerciseName.toLowerCase();
 
-  // 2. Cache local (solo URLs válidas — los nulls no se cachean para permitir reintentos)
-  const cache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
-  if (cache[exerciseName] && typeof cache[exerciseName] === 'string' && cache[exerciseName].startsWith('http')) return cache[exerciseName];
-
-  // 3. API RapidAPI como fallback para ejercicios fuera del diccionario
-  const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
+  // 1. Caché local — aceptar objeto {type,url} o string legacy
   try {
-    const res = await fetch(
-      `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(query)}?limit=1`,
-      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508' } }
+    const cache  = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    const cached = cache[cacheKey];
+    if (cached && typeof cached === 'object' && cached.type) return cached;
+    if (cached && typeof cached === 'string' && cached.startsWith('http')) return { type: 'image', url: cached };
+  } catch(e) {}
+
+  // 2. Nueva API AscendAPI (videos + imágenes)
+  const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
+  const HEADERS = {
+    'x-rapidapi-host': 'edb-with-videos-and-images-by-ascendapi.p.rapidapi.com',
+    'x-rapidapi-key':  '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508'
+  };
+  try {
+    // Paso 1 — buscar por nombre
+    const searchRes  = await fetch(
+      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/search?search=${encodeURIComponent(query)}`,
+      { headers: HEADERS }
     );
-    const data = await res.json();
-    const gifUrl = data?.[0]?.gifUrl || null;
-    if (gifUrl) { // Solo cachear éxitos para no bloquear reintentos en fallos de red/quota
-      cache[exerciseName] = gifUrl;
-      localStorage.setItem('aora_gif_cache', JSON.stringify(cache));
+    const searchData = await searchRes.json();
+    const exerciseId = searchData?.data?.[0]?.exerciseId;
+    if (!exerciseId) return null;
+
+    // Paso 2 — obtener detalle con videoUrl
+    const detailRes  = await fetch(
+      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/${exerciseId}`,
+      { headers: HEADERS }
+    );
+    const detail = (await detailRes.json())?.data;
+    if (!detail) return null;
+
+    let result = null;
+    if (detail.videoUrl)              result = { type: 'video', url: detail.videoUrl };
+    else if (detail.imageUrls?.['480p']) result = { type: 'image', url: detail.imageUrls['480p'] };
+    else if (detail.imageUrl)         result = { type: 'image', url: detail.imageUrl };
+
+    if (result) {
+      try {
+        const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+        cache[cacheKey] = result;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+      } catch(e) {}
     }
-    return gifUrl;
-  } catch { return null; }
+    return result;
+  } catch(e) { console.error('[loadExerciseMedia]', e); return null; }
 }
 
 // ─── Warmup GIF system (caché separada para no consumir quota del catálogo) ─
@@ -9155,23 +9185,35 @@ async function loadWarmupGif(exerciseName) {
     if (cache[exerciseName] && typeof cache[exerciseName] === 'string' && cache[exerciseName].startsWith('http')) return cache[exerciseName];
   } catch(e) {}
 
-  // 2. ExerciseDB — query traducido via WARMUP_EXERCISE_EN, fallback a nombre en minúsculas
+  // 2. Nueva API AscendAPI — video preferido sobre imagen
   const query = WARMUP_EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
+  const HEADERS = {
+    'x-rapidapi-host': 'edb-with-videos-and-images-by-ascendapi.p.rapidapi.com',
+    'x-rapidapi-key':  '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508'
+  };
   try {
-    const res = await fetch(
-      `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(query)}?limit=1`,
-      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508' } }
+    const searchRes  = await fetch(
+      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/search?search=${encodeURIComponent(query)}`,
+      { headers: HEADERS }
     );
-    const data = await res.json();
-    const gifUrl = data?.[0]?.gifUrl || null;
-    if (gifUrl) {
+    const exerciseId = (await searchRes.json())?.data?.[0]?.exerciseId;
+    if (!exerciseId) return null;
+
+    const detailRes = await fetch(
+      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/${exerciseId}`,
+      { headers: HEADERS }
+    );
+    const detail = (await detailRes.json())?.data;
+    const url = detail?.videoUrl || detail?.imageUrls?.['480p'] || detail?.imageUrl || null;
+
+    if (url) {
       try {
         const cache = JSON.parse(localStorage.getItem(WARMUP_CACHE_KEY) || '{}');
-        cache[exerciseName] = gifUrl;
+        cache[exerciseName] = url;
         localStorage.setItem(WARMUP_CACHE_KEY, JSON.stringify(cache));
       } catch(e) {}
-      return gifUrl;
     }
+    return url;
   } catch(e) {}
   return null;
 }
@@ -9233,11 +9275,27 @@ function showExerciseInfo(name) {
   document.getElementById('exInfoMuscles').innerHTML = (info.muscles || []).map(m => `<span class="ex-info-muscle-chip">${m}</span>`).join('');
   document.getElementById('exInfoDesc').textContent = info.desc || '';
 
-  // GIF desde ExerciseDB API (caché localStorage)
+  // Media desde AscendAPI (video preferido, fallback imagen)
   const gifEl = document.getElementById('ex-info-gif');
-  if (gifEl) gifEl.style.display = 'none';
-  loadExerciseGif(name).then(url => {
-    if (url && gifEl) { gifEl.src = url; gifEl.style.display = 'block'; forceGifAnimation(gifEl); }
+  if (gifEl) { gifEl.style.display = 'none'; gifEl.src = ''; }
+  // Limpiar video inline anterior si existía
+  const prevVideo = document.getElementById('ex-info-video-inline');
+  if (prevVideo) prevVideo.remove();
+  loadExerciseMedia(name).then(media => {
+    if (!media) return;
+    if (media.type === 'video') {
+      const videoEl = document.createElement('video');
+      videoEl.id = 'ex-info-video-inline';
+      videoEl.src = media.url;
+      videoEl.autoplay = true; videoEl.muted = true;
+      videoEl.loop = true; videoEl.playsInline = true;
+      if (gifEl) videoEl.style.cssText = gifEl.style.cssText;
+      videoEl.style.display = 'block';
+      if (gifEl) gifEl.parentNode.insertBefore(videoEl, gifEl);
+      videoEl.load(); videoEl.play().catch(() => { videoEl.controls = true; });
+    } else if (gifEl) {
+      gifEl.src = media.url; gifEl.style.display = 'block'; forceGifAnimation(gifEl);
+    }
   });
 
   // #12 — Do's and Don'ts
@@ -9271,8 +9329,10 @@ function closeExerciseInfo() {
 }
 
 function _resetGifSheet() {
-  const img = document.getElementById('exGifImg');
+  const img   = document.getElementById('exGifImg');
+  const video = document.getElementById('exGifVideo');
   img.style.display = 'none'; img.src = '';
+  if (video) { video.pause(); video.removeAttribute('src'); video.style.display = 'none'; }
   document.getElementById('exGifLoading').style.display = 'flex';
   document.getElementById('exGifError').style.display = 'none';
 }
@@ -9300,10 +9360,23 @@ function openExerciseGif() {
   });
   document.body.style.overflow = 'hidden';
   window._currentGifExName = name;
-  loadExerciseGif(name).then(url => {
-    const img = document.getElementById('exGifImg');
-    if (url) { img.src = url; forceGifAnimation(img); }
-    else { document.getElementById('exGifLoading').style.display = 'none'; document.getElementById('exGifError').style.display = 'flex'; }
+  loadExerciseMedia(name).then(media => {
+    const img   = document.getElementById('exGifImg');
+    const video = document.getElementById('exGifVideo');
+    if (!media) {
+      document.getElementById('exGifLoading').style.display = 'none';
+      document.getElementById('exGifError').style.display = 'flex';
+      return;
+    }
+    document.getElementById('exGifLoading').style.display = 'none';
+    if (media.type === 'video') {
+      img.style.display = 'none';
+      video.src = media.url; video.style.display = 'block';
+      video.load(); video.play().catch(() => { video.controls = true; });
+    } else {
+      video.style.display = 'none';
+      img.src = media.url; forceGifAnimation(img);
+    }
   });
 }
 
@@ -9334,10 +9407,23 @@ function openWorkoutExerciseGif() {
   });
   document.body.style.overflow = 'hidden';
   window._currentGifExName = currentExerciseName;
-  loadExerciseGif(currentExerciseName).then(url => {
-    const img = document.getElementById('exGifImg');
-    if (url) { img.src = url; forceGifAnimation(img); }
-    else { document.getElementById('exGifLoading').style.display = 'none'; document.getElementById('exGifError').style.display = 'flex'; }
+  loadExerciseMedia(currentExerciseName).then(media => {
+    const img   = document.getElementById('exGifImg');
+    const video = document.getElementById('exGifVideo');
+    if (!media) {
+      document.getElementById('exGifLoading').style.display = 'none';
+      document.getElementById('exGifError').style.display = 'flex';
+      return;
+    }
+    document.getElementById('exGifLoading').style.display = 'none';
+    if (media.type === 'video') {
+      img.style.display = 'none';
+      video.src = media.url; video.style.display = 'block';
+      video.load(); video.play().catch(() => { video.controls = true; });
+    } else {
+      video.style.display = 'none';
+      img.src = media.url; forceGifAnimation(img);
+    }
   });
 }
 
