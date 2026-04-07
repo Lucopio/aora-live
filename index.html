@@ -2875,6 +2875,52 @@ body {
       </div>
     </div>
 
+    <!-- REST ZONE -->
+    <div class="rest-zone" id="restZone">
+      <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
+        <div class="icon-tile-sm" style="background:var(--surface2);border-color:var(--border)"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary);opacity:0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="rest-idle-text">
+          <h4>Iniciar Descanso</h4>
+          <p>Temporizador: <span id="restIdleSeconds">60</span>s configurados</p>
+        </div>
+      </div>
+      <div class="rest-active" id="restActive">
+        <div class="rest-active-header">
+          <div class="rest-active-label" id="restActiveLabel"><div class="rest-dot"></div>DESCANSO</div>
+          <div style="display: flex; gap: 8px;">
+            <button class="skip-link" onclick="markRestReady()" style="background: var(--surface2); color:var(--text-primary); font-weight: 600; border: 1px solid var(--border);">Listo</button>
+            <button class="skip-link" onclick="skipRest()">Saltar</button>
+          </div>
+        </div>
+        <div class="rest-countdown-row">
+          <div class="rest-ring-container">
+            <svg viewBox="0 0 80 80">
+              <circle class="ring-bg" cx="40" cy="40" r="34"/>
+              <circle class="ring-progress" id="ringProgress" cx="40" cy="40" r="34" stroke-dasharray="213.63" stroke-dashoffset="0"/>
+            </svg>
+            <div class="rest-ring-number" id="ringNumber">60</div>
+          </div>
+          <div class="rest-info">
+            <div class="rest-message-text" id="restMsgText">Descansando...</div>
+            <div class="rest-sub" id="restSub">Siguiente ejercicio pronto</div>
+          </div>
+        </div>
+        <div class="rest-bar-track"><div class="rest-bar-fill" id="restBarFill"></div></div>
+        <div id="restExtendRow" style="display:flex;gap:5px;width:100%;margin-top:10px">
+          <button onclick="adjustRest(30)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#CC0033;cursor:pointer">−30</button>
+          <button onclick="adjustRest(15)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#CC0033;cursor:pointer">−15</button>
+          <button onclick="extendRest(15)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#007A8A;cursor:pointer">+15</button>
+          <button onclick="extendRest(30)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#007A8A;cursor:pointer">+30</button>
+        </div>
+        <div style="width:100%;margin-top:6px">
+          <button onclick="openAdjustRestSheet()" style="width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--text-tertiary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            Cambiar descanso configurado · <span id="restBaseDisplay"></span>s
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -2994,52 +3040,6 @@ body {
         <button onclick="adjustRest(30)" style="padding:14px 8px;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:18px;font-weight:800;color:var(--text-primary);cursor:pointer">−30s</button>
       </div>
       <button onclick="closeAdjustRestSheet()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Cerrar</button>
-    </div>
-
-    <!-- REST ZONE -->
-    <div class="rest-zone" id="restZone">
-      <div class="rest-idle" id="restIdle" onclick="startRestTimer()">
-        <div class="icon-tile-sm" style="background:var(--surface2);border-color:var(--border)"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary);opacity:0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div class="rest-idle-text">
-          <h4>Iniciar Descanso</h4>
-          <p>Temporizador: <span id="restIdleSeconds">60</span>s configurados</p>
-        </div>
-      </div>
-      <div class="rest-active" id="restActive">
-        <div class="rest-active-header">
-          <div class="rest-active-label" id="restActiveLabel"><div class="rest-dot"></div>DESCANSO</div>
-          <div style="display: flex; gap: 8px;">
-            <button class="skip-link" onclick="markRestReady()" style="background: var(--surface2); color:var(--text-primary); font-weight: 600; border: 1px solid var(--border);">Listo</button>
-            <button class="skip-link" onclick="skipRest()">Saltar</button>
-          </div>
-        </div>
-        <div class="rest-countdown-row">
-          <div class="rest-ring-container">
-            <svg viewBox="0 0 80 80">
-              <circle class="ring-bg" cx="40" cy="40" r="34"/>
-              <circle class="ring-progress" id="ringProgress" cx="40" cy="40" r="34" stroke-dasharray="213.63" stroke-dashoffset="0"/>
-            </svg>
-            <div class="rest-ring-number" id="ringNumber">60</div>
-          </div>
-          <div class="rest-info">
-            <div class="rest-message-text" id="restMsgText">Descansando...</div>
-            <div class="rest-sub" id="restSub">Siguiente ejercicio pronto</div>
-          </div>
-        </div>
-        <div class="rest-bar-track"><div class="rest-bar-fill" id="restBarFill"></div></div>
-        <div id="restExtendRow" style="display:flex;gap:5px;width:100%;margin-top:10px">
-          <button onclick="adjustRest(30)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#CC0033;cursor:pointer">−30</button>
-          <button onclick="adjustRest(15)" style="flex:1;padding:9px 2px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#CC0033;cursor:pointer">−15</button>
-          <button onclick="extendRest(15)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#007A8A;cursor:pointer">+15</button>
-          <button onclick="extendRest(30)" style="flex:1;padding:9px 2px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;color:#007A8A;cursor:pointer">+30</button>
-        </div>
-        <div style="width:100%;margin-top:6px">
-          <button onclick="openAdjustRestSheet()" style="width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--text-tertiary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-            Cambiar descanso configurado · <span id="restBaseDisplay"></span>s
-          </button>
-        </div>
-      </div>
     </div>
 
     <div class="workout-actions">
@@ -8823,6 +8823,24 @@ function closeEditSet() {
 
 function nextExercise() {
   _unilateralPendingSide = false;
+
+  // Descanso de transición entre ejercicios (solo si hay sets hechos y no hay descanso activo)
+  if (!isResting && workoutMode === 'full' && currentExerciseSets.length > 0) {
+    const group = detectPrimaryMuscleGroup();
+    const baseRest = window._userOverrodeRest
+      ? restSeconds
+      : (REST_BY_MUSCLE_GROUP[group] || restSeconds);
+    const transitionRest = Math.max(90, baseRest + 30);
+    const _savedRest = restSeconds;
+    restSeconds = transitionRest;
+    startRestTimer();
+    restSeconds = _savedRest; // restaurar inmediatamente — no alterar config global
+    setTimeout(() => {
+      const sub = document.getElementById('restSub');
+      if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
+    }, 100);
+  }
+
   // No cancelar el descanso: el timer es global a la sesión y debe persistir entre ejercicios.
   // _restTargetSet sigue apuntando al último set del ejercicio anterior (que va a completedExercises),
   // por lo que markRestReady() guardará la duración correctamente al tocar "Listo".
