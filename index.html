@@ -3813,7 +3813,7 @@ body {
     <button onclick="closeExerciseGif()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
   </div>
   <div style="background:var(--bg);text-align:center;padding:8px;min-height:200px;display:flex;align-items:center;justify-content:center;position:relative">
-    <div id="exGifLoading" style="position:absolute;display:flex;flex-direction:column;align-items:center;gap:10px;color:#666">
+    <div id="exGifLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:#666">
       <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#333" stroke-width="3"/><path d="M16 4 A12 12 0 0 1 28 16" fill="none" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="0.8s" repeatCount="indefinite"/></path></svg>
       <span style="font-size:12px">Cargando animación…</span>
     </div>
@@ -4078,9 +4078,19 @@ body {
     <button onclick="closeWarmupGif()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
   </div>
   <!-- Media container: GIF o MP4 -->
-  <div style="background:var(--bg);text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center">
-    <img id="wuGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
-    <video id="wuGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"></video>
+  <div style="background:var(--bg);text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center;position:relative">
+    <div id="wuGifLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:#666">
+      <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#333" stroke-width="3"/><path d="M16 4 A12 12 0 0 1 28 16" fill="none" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="0.8s" repeatCount="indefinite"/></path></svg>
+      <span style="font-size:12px">Cargando animación…</span>
+    </div>
+    <div id="wuGifError" style="display:none;flex-direction:column;align-items:center;gap:12px;padding:20px;text-align:center">
+      <div style="font-size:32px">🎬</div>
+      <div style="font-size:13px;color:var(--text-secondary)">Sin animación disponible</div>
+      <button onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(document.getElementById('wuGifTitle').textContent+' ejercicio'),'_blank')" style="padding:10px 20px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar en YouTube</button>
+    </div>
+    <img id="wuGifImg" src="" alt="" style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
+    <video id="wuGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"
+      onerror="this.style.display='none';document.getElementById('wuGifLoading').style.display='none';document.getElementById('wuGifError').style.display='flex'"></video>
   </div>
   <!-- Footer hint -->
   <div style="padding:10px 16px;text-align:center">
@@ -6232,10 +6242,16 @@ function renderGroupPicker() {
 function openWarmupGif(url, name) {
   document.getElementById('wuGifTitle').textContent = name;
 
-  const img   = document.getElementById('wuGifImg');
-  const video = document.getElementById('wuGifVideo');
-  const hint  = document.getElementById('wuGifHint');
+  const img     = document.getElementById('wuGifImg');
+  const video   = document.getElementById('wuGifVideo');
+  const hint    = document.getElementById('wuGifHint');
+  const loading = document.getElementById('wuGifLoading');
+  const error   = document.getElementById('wuGifError');
   const isVideo = url.toLowerCase().endsWith('.mp4');
+
+  // Siempre ocultar spinner y error al abrir con URL directa
+  if (loading) loading.style.display = 'none';
+  if (error)   error.style.display   = 'none';
 
   if (isVideo) {
     img.style.display   = 'none';
@@ -6273,13 +6289,18 @@ function closeWarmupGif() {
     // Liberar imagen
     const img = document.getElementById('wuGifImg');
     img.src = '';
-    img.style.display = 'block'; // reset para próxima apertura
+    img.style.display = 'none'; // reset
     // Liberar video: pausar + vaciar src evita que el navegador siga decodificando
     const video = document.getElementById('wuGifVideo');
     video.pause();
     video.removeAttribute('src');
     video.load(); // libera buffers del decoder
     video.style.display = 'none';
+    // Resetear estados de loading/error
+    const wuL = document.getElementById('wuGifLoading');
+    const wuE = document.getElementById('wuGifError');
+    if (wuL) wuL.style.display = 'none';
+    if (wuE) wuE.style.display = 'none';
     sheet.style.display = 'none';
     document.getElementById('wuGifOverlay').style.display = 'none';
     document.body.style.overflow = '';
@@ -9146,17 +9167,21 @@ async function loadWarmupGif(exerciseName) {
 
 async function openWarmupGifDynamic(exerciseName) {
   document.getElementById('wuGifTitle').textContent = exerciseName;
-  const img   = document.getElementById('wuGifImg');
-  const video = document.getElementById('wuGifVideo');
-  const hint  = document.getElementById('wuGifHint');
+  const img     = document.getElementById('wuGifImg');
+  const video   = document.getElementById('wuGifVideo');
+  const hint    = document.getElementById('wuGifHint');
+  const loading = document.getElementById('wuGifLoading');
+  const error   = document.getElementById('wuGifError');
 
   // Ocultar media, mostrar spinner
-  img.style.display   = 'none';
-  img.src             = '';
+  img.style.display     = 'none';
+  img.src               = '';
   video.pause();
-  video.src           = '';
-  video.style.display = 'none';
-  hint.textContent    = 'Cargando animación...';
+  video.src             = '';
+  video.style.display   = 'none';
+  if (loading) loading.style.display = 'flex';
+  if (error)   error.style.display   = 'none';
+  hint.textContent      = '';
 
   // Abrir sheet inmediatamente (el usuario ve que algo está pasando)
   const overlay = document.getElementById('wuGifOverlay');
@@ -9172,12 +9197,13 @@ async function openWarmupGifDynamic(exerciseName) {
 
   // Cargar GIF en background
   const url = await loadWarmupGif(exerciseName);
+  if (loading) loading.style.display = 'none';
   if (url) {
     img.src           = url;
     img.style.display = 'block';
     hint.textContent  = 'Animación en bucle · Toca fuera para cerrar';
   } else {
-    hint.innerHTML = `Sin animación disponible · <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + ' ejercicio')}" target="_blank" style="color:var(--primary)">Buscar en YouTube</a>`;
+    if (error) error.style.display = 'flex';
   }
 }
 
