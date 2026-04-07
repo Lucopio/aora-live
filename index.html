@@ -11793,15 +11793,19 @@ if ('serviceWorker' in navigator) {
     // Cuando el nuevo SW toma control, recargar para servir archivos frescos
     // Si hay workout activo, diferir el reload hasta que termine
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('[SW] controllerchange — workoutActive:', !!workoutStartTime);
       if (!workoutStartTime) {
         window.location.reload();
       } else {
         window._pendingReload = true;
+        console.log('[SW] Reload diferido hasta fin de workout');
       }
     });
-    // Verificar actualizaciones cada vez que la app vuelve al foco
+    // Verificar actualizaciones solo cuando la app vuelve al foco Y no hay workout activo
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') reg.update();
+      if (document.visibilityState === 'visible' && !workoutStartTime) {
+        reg.update();
+      }
     });
   }).catch(e => console.log('SW failed', e));
 }
