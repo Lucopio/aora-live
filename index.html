@@ -4085,6 +4085,10 @@ body {
 <div class="screen fullscreen" id="catalogScreen">
   <div class="catalog-screen">
     <div class="catalog-top-bar">
+      <button id="catalogBackBtn" onclick="cancelCatalogChange()" style="display:none;background:none;border:none;padding:6px 8px;cursor:pointer;color:var(--text-secondary);align-items:center;gap:4px;font-family:var(--font);font-size:13px;font-weight:600">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Volver
+      </button>
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="catalog-timer-sm" id="catalogTimerSm">00:00:00</div>
     </div>
@@ -8209,6 +8213,10 @@ function openCatalog() {
   checkCoachmarks('customExercise');
   initCatalogBodyMap();
   setTimeout(() => { document.documentElement.scrollTop = 0; }, 50);
+  const backBtn = document.getElementById('catalogBackBtn');
+  if (backBtn) {
+    backBtn.style.display = (workoutStartTime && currentExerciseName) ? 'flex' : 'none';
+  }
 }
 
 function backToCatalogGroups() {
@@ -8783,6 +8791,10 @@ function nextExercise() {
     selectExercise(next.name, next.equipment, next.targetSets || 0);
   } else {
     if (!supersetActive) supersetGroupCounter = 0;
+    // Scroll al top para que el usuario note el cambio de ejercicio
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const ws = document.getElementById('workoutScreen');
+    if (ws) ws.scrollTop = 0;
     openCatalog();
   }
 }
@@ -9546,6 +9558,13 @@ function startScienceRoutine(level, time, dayIdx) {
   setTimeout(() => openConfig(), 400);
 }
 
+function cancelCatalogChange() {
+  // Volver al workout sin seleccionar ejercicio nuevo
+  if (workoutStartTime) {
+    showScreen('workout');
+  }
+}
+
 function changeExercise() {
   // Guardar series actuales antes de cambiar ejercicio
   if (currentExerciseName && currentExerciseSets.length > 0) {
@@ -9561,6 +9580,9 @@ function changeExercise() {
   const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
   openCatalog();
+  // Mostrar botón Volver — openCatalog() lo oculta porque currentExerciseName ya es ''
+  const backBtn = document.getElementById('catalogBackBtn');
+  if (backBtn) backBtn.style.display = 'flex';
 }
 
 function startTimer() {
