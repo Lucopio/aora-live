@@ -9133,7 +9133,7 @@ async function loadExerciseGif(exerciseName) {
   try {
     const res = await fetch(
       `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(query)}?limit=1`,
-      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '3d6f244f7fmsh4b183857ca45654p1a8daajsnf9338e4161b8' } }
+      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508' } }
     );
     const data = await res.json();
     const gifUrl = data?.[0]?.gifUrl || null;
@@ -9160,7 +9160,7 @@ async function loadWarmupGif(exerciseName) {
   try {
     const res = await fetch(
       `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(query)}?limit=1`,
-      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '3d6f244f7fmsh4b183857ca45654p1a8daajsnf9338e4161b8' } }
+      { headers: { 'x-rapidapi-host': 'exercisedb.p.rapidapi.com', 'x-rapidapi-key': '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508' } }
     );
     const data = await res.json();
     const gifUrl = data?.[0]?.gifUrl || null;
