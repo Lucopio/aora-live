@@ -2921,6 +2921,7 @@ body {
 
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
+      <!-- 1. Nombre del ejercicio + botones -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0;flex:1">Ejercicio</div>
         <div style="display:flex;align-items:center;gap:6px">
@@ -2931,18 +2932,7 @@ body {
           <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
         </div>
       </div>
-      <div class="sets-list" id="setsList"></div>
-      <!-- Unilateral toggle -->
-      <div class="unilateral-row">
-        <button class="unilateral-btn" id="unilateralBtn" onclick="toggleUnilateral()">
-          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-          Unilateral
-        </button>
-        <div class="side-selector" id="sideSelector" style="display:none">
-          <button class="side-btn active" id="sideL" onclick="setSide('left')">Izq</button>
-          <button class="side-btn" id="sideR" onclick="setSide('right')">Der</button>
-        </div>
-      </div>
+      <!-- 2. Inputs de peso + reps + botón Serie -->
       <div class="set-inputs">
         <div class="set-input-group">
           <div class="weight-label-row">
@@ -2961,7 +2951,7 @@ body {
         </div>
         <button class="add-set-btn" onclick="addSet()">+ Serie</button>
       </div>
-      <!-- Weight stacking buttons: toggle between + and × mode -->
+      <!-- 3. Botones rápidos de peso (+ Sumar / × Multiplicar) -->
       <div style="margin-top:8px;margin-bottom:4px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
           <button id="wqModeAdd" onclick="setWeightQMode('add')" style="padding:3px 10px;border-radius:6px;border:1.5px solid var(--primary);background:rgba(0,229,255,0.12);font-family:var(--mono);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer">+ Sumar</button>
@@ -2976,13 +2966,26 @@ body {
           <button onclick="appendWeightChip(45)"  style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">45</button>
         </div>
       </div>
-      <!-- Toggle aproximación -->
+      <!-- 4. Toggle aproximación + Unilateral -->
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
         <button id="warmupSetToggle" onclick="toggleWarmupSet()" style="display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all 0.15s">
           <span style="width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);display:inline-block" id="warmupSetDot"></span>
           Serie de aproximación
         </button>
       </div>
+      <!-- Unilateral toggle -->
+      <div class="unilateral-row">
+        <button class="unilateral-btn" id="unilateralBtn" onclick="toggleUnilateral()">
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          Unilateral
+        </button>
+        <div class="side-selector" id="sideSelector" style="display:none">
+          <button class="side-btn active" id="sideL" onclick="setSide('left')">Izq</button>
+          <button class="side-btn" id="sideR" onclick="setSide('right')">Der</button>
+        </div>
+      </div>
+      <!-- 5. Series realizadas (al final) -->
+      <div class="sets-list" id="setsList"></div>
     </div>
 
     <!-- RPE SELECTION SHEET -->
@@ -13209,6 +13212,8 @@ async function obSave() {
     try {
       clearTimeout(timeoutId); // Cancel timeout since we're navigating
       const targetScreen = _obIsEdit ? 'settings' : 'home';
+      // Skip the coach profile intro (user already picked their coach in onboarding)
+      if (!_obIsEdit) localStorage.setItem('aora_coach_nav_count', '2');
       showScreen(targetScreen);
 
       // E5: Activate tutorial mode for first-time users
