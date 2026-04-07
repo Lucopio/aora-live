@@ -3822,12 +3822,8 @@ body {
       <div style="font-size:13px;color:var(--text-secondary)">No encontramos animación para este ejercicio</div>
       <button id="exGifYtBtn" onclick="openExerciseYouTube()" style="padding:10px 20px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar en YouTube</button>
     </div>
-    <img id="exGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px;display:none"
-      onload="this.style.display='block';document.getElementById('exGifLoading').style.display='none'"
-      onerror="this.style.display='none';document.getElementById('exGifLoading').style.display='none';document.getElementById('exGifError').style.display='flex'">
-    <video id="exGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"
-      oncanplay="this.style.display='block';document.getElementById('exGifLoading').style.display='none'"
-      onerror="this.style.display='none';document.getElementById('exGifLoading').style.display='none';document.getElementById('exGifError').style.display='flex'"></video>
+    <img id="exGifImg" src="" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px;display:none">
+    <video id="exGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"></video>
   </div>
   <div style="padding:10px 16px;text-align:center">
     <p style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
@@ -9123,7 +9119,7 @@ const WARMUP_EXERCISE_EN = {
   'Elevacion de piernas':                  'leg raise',
 };
 
-async function loadExerciseMedia(exerciseName) {
+async function loadExerciseGif(exerciseName) {
   const CACHE_KEY = 'aora_gif_cache';
   const cacheKey  = exerciseName.toLowerCase();
 
@@ -9131,38 +9127,43 @@ async function loadExerciseMedia(exerciseName) {
   try {
     const cache  = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
     const cached = cache[cacheKey];
-    if (cached && typeof cached === 'object' && cached.type) return cached;
-    if (cached && typeof cached === 'string' && cached.startsWith('http')) return { type: 'image', url: cached };
+    if (cached && typeof cached === 'object' && cached.type && cached.url) return cached;
+    if (cached && typeof cached === 'string' && cached.startsWith('http')) return { type: 'gif', url: cached };
   } catch(e) {}
 
-  // 2. Nueva API AscendAPI (videos + imágenes)
+  // 2. ExerciseDB API (GIFs animados)
   const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
   const HEADERS = {
-    'x-rapidapi-host': 'edb-with-videos-and-images-by-ascendapi.p.rapidapi.com',
+    'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
     'x-rapidapi-key':  '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508'
   };
   try {
-    // Paso 1 — buscar por nombre
+    // Paso 1 — buscar por nombre, obtener exerciseId
     const searchRes  = await fetch(
-      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/search?search=${encodeURIComponent(query)}`,
+      `https://exercisedb.p.rapidapi.com/exercises/search?search=${encodeURIComponent(query)}&limit=1`,
       { headers: HEADERS }
     );
     const searchData = await searchRes.json();
-    const exerciseId = searchData?.data?.[0]?.exerciseId;
-    if (!exerciseId) return null;
-
-    // Paso 2 — obtener detalle con videoUrl
-    const detailRes  = await fetch(
-      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/${exerciseId}`,
-      { headers: HEADERS }
-    );
-    const detail = (await detailRes.json())?.data;
-    if (!detail) return null;
+    const hit = Array.isArray(searchData) ? searchData[0] : null;
+    if (!hit) return null;
 
     let result = null;
-    if (detail.videoUrl)              result = { type: 'video', url: detail.videoUrl };
-    else if (detail.imageUrls?.['480p']) result = { type: 'image', url: detail.imageUrls['480p'] };
-    else if (detail.imageUrl)         result = { type: 'image', url: detail.imageUrl };
+    // Intentar obtener media directa del resultado de búsqueda
+    if (hit.videoUrl)    result = { type: 'video', url: hit.videoUrl };
+    else if (hit.gifUrl) result = { type: 'gif',   url: hit.gifUrl   };
+
+    // Paso 2 — si no hay media, pedir detalle por ID
+    if (!result && hit.id) {
+      const detailRes = await fetch(
+        `https://exercisedb.p.rapidapi.com/exercises/${hit.id}`,
+        { headers: HEADERS }
+      );
+      const detail = await detailRes.json();
+      if (detail?.videoUrl)    result = { type: 'video', url: detail.videoUrl };
+      else if (detail?.gifUrl) result = { type: 'gif',   url: detail.gifUrl   };
+      else if (detail?.imageUrls?.['480p']) result = { type: 'image', url: detail.imageUrls['480p'] };
+      else if (detail?.imageUrl)           result = { type: 'image', url: detail.imageUrl };
+    }
 
     if (result) {
       try {
@@ -9172,7 +9173,7 @@ async function loadExerciseMedia(exerciseName) {
       } catch(e) {}
     }
     return result;
-  } catch(e) { console.error('[loadExerciseMedia]', e); return null; }
+  } catch(e) { console.error('[loadExerciseGif]', e); return null; }
 }
 
 // ─── Warmup GIF system (caché separada para no consumir quota del catálogo) ─
@@ -9275,18 +9276,18 @@ function showExerciseInfo(name) {
   document.getElementById('exInfoMuscles').innerHTML = (info.muscles || []).map(m => `<span class="ex-info-muscle-chip">${m}</span>`).join('');
   document.getElementById('exInfoDesc').textContent = info.desc || '';
 
-  // Media desde AscendAPI (video preferido, fallback imagen)
+  // Media via ExerciseDB (GIF animado, video o imagen)
   const gifEl = document.getElementById('ex-info-gif');
   if (gifEl) { gifEl.style.display = 'none'; gifEl.src = ''; }
   // Limpiar video inline anterior si existía
   const prevVideo = document.getElementById('ex-info-video-inline');
   if (prevVideo) prevVideo.remove();
-  loadExerciseMedia(name).then(media => {
-    if (!media) return;
-    if (media.type === 'video') {
+  loadExerciseGif(name).then(result => {
+    if (!result) return;
+    if (result.type === 'video') {
       const videoEl = document.createElement('video');
       videoEl.id = 'ex-info-video-inline';
-      videoEl.src = media.url;
+      videoEl.src = result.url;
       videoEl.autoplay = true; videoEl.muted = true;
       videoEl.loop = true; videoEl.playsInline = true;
       if (gifEl) videoEl.style.cssText = gifEl.style.cssText;
@@ -9294,7 +9295,8 @@ function showExerciseInfo(name) {
       if (gifEl) gifEl.parentNode.insertBefore(videoEl, gifEl);
       videoEl.load(); videoEl.play().catch(() => { videoEl.controls = true; });
     } else if (gifEl) {
-      gifEl.src = media.url; gifEl.style.display = 'block'; forceGifAnimation(gifEl);
+      gifEl.src = result.url; gifEl.style.display = 'block';
+      if (result.type === 'gif') forceGifAnimation(gifEl);
     }
   });
 
@@ -9329,12 +9331,34 @@ function closeExerciseInfo() {
 }
 
 function _resetGifSheet() {
-  const img   = document.getElementById('exGifImg');
-  const video = document.getElementById('exGifVideo');
+  const img = document.getElementById('exGifImg');
+  const vid = document.getElementById('exGifVideo');
   img.style.display = 'none'; img.src = '';
-  if (video) { video.pause(); video.removeAttribute('src'); video.style.display = 'none'; }
+  if (vid) { vid.pause(); vid.src = ''; vid.load(); vid.style.display = 'none'; }
   document.getElementById('exGifLoading').style.display = 'flex';
   document.getElementById('exGifError').style.display = 'none';
+}
+
+function _showExGifResult(result) {
+  const img = document.getElementById('exGifImg');
+  const vid = document.getElementById('exGifVideo');
+  document.getElementById('exGifLoading').style.display = 'none';
+  if (!result) {
+    document.getElementById('exGifError').style.display = 'flex';
+    return;
+  }
+  if (result.type === 'video') {
+    img.style.display = 'none';
+    vid.src = result.url;
+    vid.style.display = 'block';
+    vid.load();
+    vid.play().catch(() => { vid.controls = true; });
+  } else {
+    vid.style.display = 'none';
+    img.src = result.url;
+    img.style.display = 'block';
+    if (result.type === 'gif') forceGifAnimation(img);
+  }
 }
 
 // Bust browser cache para forzar re-animación del GIF
@@ -9360,24 +9384,7 @@ function openExerciseGif() {
   });
   document.body.style.overflow = 'hidden';
   window._currentGifExName = name;
-  loadExerciseMedia(name).then(media => {
-    const img   = document.getElementById('exGifImg');
-    const video = document.getElementById('exGifVideo');
-    if (!media) {
-      document.getElementById('exGifLoading').style.display = 'none';
-      document.getElementById('exGifError').style.display = 'flex';
-      return;
-    }
-    document.getElementById('exGifLoading').style.display = 'none';
-    if (media.type === 'video') {
-      img.style.display = 'none';
-      video.src = media.url; video.style.display = 'block';
-      video.load(); video.play().catch(() => { video.controls = true; });
-    } else {
-      video.style.display = 'none';
-      img.src = media.url; forceGifAnimation(img);
-    }
-  });
+  loadExerciseGif(name).then(result => _showExGifResult(result));
 }
 
 function closeExerciseGif() {
@@ -9407,24 +9414,7 @@ function openWorkoutExerciseGif() {
   });
   document.body.style.overflow = 'hidden';
   window._currentGifExName = currentExerciseName;
-  loadExerciseMedia(currentExerciseName).then(media => {
-    const img   = document.getElementById('exGifImg');
-    const video = document.getElementById('exGifVideo');
-    if (!media) {
-      document.getElementById('exGifLoading').style.display = 'none';
-      document.getElementById('exGifError').style.display = 'flex';
-      return;
-    }
-    document.getElementById('exGifLoading').style.display = 'none';
-    if (media.type === 'video') {
-      img.style.display = 'none';
-      video.src = media.url; video.style.display = 'block';
-      video.load(); video.play().catch(() => { video.controls = true; });
-    } else {
-      video.style.display = 'none';
-      img.src = media.url; forceGifAnimation(img);
-    }
-  });
+  loadExerciseGif(currentExerciseName).then(result => _showExGifResult(result));
 }
 
 function openExerciseYouTube() {
@@ -12142,7 +12132,12 @@ function loadFromStorage() {
     try {
       const cache = JSON.parse(localStorage.getItem(key) || '{}');
       const cleaned = Object.fromEntries(
-        Object.entries(cache).filter(([, v]) => v && typeof v === 'string' && v.startsWith('http'))
+        Object.entries(cache).filter(([, v]) => {
+          if (!v) return false;
+          if (typeof v === 'string') return v.startsWith('http');
+          if (typeof v === 'object') return v.type && v.url && typeof v.url === 'string' && v.url.startsWith('http');
+          return false;
+        })
       );
       localStorage.setItem(key, JSON.stringify(cleaned));
     } catch(e) {}
