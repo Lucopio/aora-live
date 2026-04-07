@@ -5332,7 +5332,46 @@ async function _getCoachToken() {
   return null;
 }
 
+// ── Coach debounce — acumula mensajes antes de llamar al coach ──────────────
+let _coachMsgQueue = [];
+let _coachDebounceTimer = null;
+const COACH_DEBOUNCE_MS = 4000;
+
 async function sendCoachMessage() {
+  // ── 0. Leer input y validar ──────────────────────────────────────────────
+  const input = document.getElementById('chatInput');
+  const text = (input?.value || '').trim();
+  if (!text) return;
+
+  if (!canSendMessage()) { updateChatCounter(); return; }
+
+  // Mostrar burbuja de usuario inmediatamente
+  input.value = '';
+  input.style.height = 'auto';
+  appendChatBubble('user', text);
+  _coachMsgQueue.push(text);
+
+  // Mostrar "escribiendo..." solo si no hay uno ya
+  if (!document.getElementById('chatTyping')) showTypingIndicator();
+
+  // Indicador visual de cola cuando hay más de un mensaje esperando
+  const counter = document.getElementById('chatCounter');
+  if (counter && _coachMsgQueue.length > 1) {
+    counter.textContent = `${_coachMsgQueue.length} mensajes en cola · respondiendo en ${COACH_DEBOUNCE_MS / 1000}s...`;
+    counter.style.color = 'var(--primary)';
+  }
+
+  // Resetear timer — cada nuevo mensaje reinicia la espera
+  clearTimeout(_coachDebounceTimer);
+  _coachDebounceTimer = setTimeout(async () => {
+    const messages = [..._coachMsgQueue];
+    _coachMsgQueue = [];
+    const combinedText = messages.join('\n\n');
+    await _sendCoachMessageCore(combinedText);
+  }, COACH_DEBOUNCE_MS);
+}
+
+async function _sendCoachMessageCore(text) {
   // ── 1. Recuperar sesión si currentUser es null (usuarios sin cuenta) ──────
   if (!currentUser && sb && localStorage.getItem('gymtracker_skip_auth')) {
     try {
@@ -5349,29 +5388,21 @@ async function sendCoachMessage() {
   }
 
   if (!currentUser) {
+    hideTypingIndicator();
     showToast('Sin sesión. Recarga la app.', 'error');
     appendChatBubble('system', '⚠️ Sin sesión activa — recarga la app e intenta de nuevo.');
     return;
   }
-  if (!canSendMessage()) { updateChatCounter(); return; }
-
-  const input = document.getElementById('chatInput');
-  const text = (input?.value || '').trim();
-  if (!text) return;
 
   const coach = getSelectedCoach();
   if (!coach) {
+    hideTypingIndicator();
     showToast('Selecciona un entrenador primero', 'error');
     return;
   }
 
-  input.value = '';
-  input.style.height = 'auto';
-  appendChatBubble('user', text);
-
   const history = getChatHistory(coach.id);
   const historyToSend = history.slice(-20).map(m => ({ role: m.role, content: m.content }));
-  showTypingIndicator();
 
   try {
     // ── 2. Obtener token — resiliente contra getSession() bloqueado ──────────
@@ -5408,7 +5439,6 @@ async function sendCoachMessage() {
     history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
     saveChatHistory(coach.id, history);
     incrementChatCount();
-    updateChatCounter();
 
   } catch(err) {
     hideTypingIndicator();
@@ -5416,6 +5446,11 @@ async function sendCoachMessage() {
     const msg = String(err.message || err);
     showToast(msg, 'error');
     appendChatBubble('system', '⚠️ ' + msg);
+  } finally {
+    // Restaurar contador al estado normal
+    const counter = document.getElementById('chatCounter');
+    if (counter) counter.style.color = '';
+    updateChatCounter();
   }
 }
 
