@@ -4077,23 +4077,31 @@ body {
     <button onclick="closeWarmupGif()" style="background:#333;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
   </div>
   <!-- Media container: GIF o MP4 -->
-  <div style="background:var(--bg);text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center;position:relative">
+  <!-- Media container: GIF, MP4, o YouTube -->
+  <div id="wuMediaContainer" style="background:var(--bg);text-align:center;padding:8px;min-height:160px;display:flex;align-items:center;justify-content:center;position:relative">
     <div id="wuGifLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:#666">
       <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#333" stroke-width="3"/><path d="M16 4 A12 12 0 0 1 28 16" fill="none" stroke="#00E5FF" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="0.8s" repeatCount="indefinite"/></path></svg>
-      <span style="font-size:12px">Cargando animación…</span>
+      <span style="font-size:12px">Cargando...</span>
     </div>
-    <div id="wuGifError" style="display:none;flex-direction:column;align-items:center;gap:12px;padding:20px;text-align:center">
-      <div style="font-size:32px">🎬</div>
-      <div style="font-size:13px;color:var(--text-secondary)">Sin animación disponible</div>
-      <button onclick="openWarmupYouTube()" style="padding:10px 20px;background:var(--primary);color:#000;border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar en YouTube</button>
+    <img id="wuGifImg" src="" alt="" style="display:none;max-width:100%;max-height:55vh;object-fit:contain;border-radius:8px">
+    <video id="wuGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:55vh;object-fit:contain;border-radius:8px"></video>
+    <!-- YouTube inline viewer (se muestra cuando no hay media) -->
+    <div id="wuYouTubeWrap" style="display:none;width:100%;flex-direction:column;align-items:center;gap:10px">
+      <iframe id="wuYouTubeFrame"
+        style="width:100%;height:220px;border:none;border-radius:10px;background:#000"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+      <button id="wuYouTubeExtBtn"
+        onclick="window.open(document.getElementById('wuYouTubeExtBtn').dataset.url,'_blank')"
+        style="display:none;padding:10px 20px;background:var(--surface2);color:var(--text-secondary);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:12px;cursor:pointer">
+        Abrir en YouTube ↗
+      </button>
     </div>
-    <img id="wuGifImg" src="" alt="" style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px">
-    <video id="wuGifVideo" autoplay muted playsinline loop style="display:none;max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px"
-      onerror="this.style.display='none';document.getElementById('wuGifLoading').style.display='none';document.getElementById('wuGifError').style.display='flex'"></video>
   </div>
   <!-- Footer hint -->
   <div style="padding:10px 16px;text-align:center">
-    <p id="wuGifHint" style="font-size:11px;color:#666;margin:0">Animación en bucle &nbsp;·&nbsp; Toca fuera para cerrar</p>
+    <p id="wuGifHint" style="font-size:11px;color:#666;margin:0">Toca fuera para cerrar</p>
   </div>
 </div>
 
@@ -6306,7 +6314,11 @@ function closeWarmupGif() {
     video.removeAttribute('src');
     video.load(); // libera buffers del decoder
     video.style.display = 'none';
-    // Resetear estados de loading/error
+    // Detener YouTube y resetear estados
+    const ytFrame = document.getElementById('wuYouTubeFrame');
+    if (ytFrame) { ytFrame.src = ''; }
+    const ytWrap = document.getElementById('wuYouTubeWrap');
+    if (ytWrap)  { ytWrap.style.display = 'none'; }
     const wuL = document.getElementById('wuGifLoading');
     const wuE = document.getElementById('wuGifError');
     if (wuL) wuL.style.display = 'none';
@@ -9239,9 +9251,13 @@ async function openWarmupGifDynamic(exerciseName) {
   video.pause();
   video.src             = '';
   video.style.display   = 'none';
+  const ytWrap  = document.getElementById('wuYouTubeWrap');
+  const ytFrame = document.getElementById('wuYouTubeFrame');
+  if (ytWrap)  { ytWrap.style.display  = 'none'; }
+  if (ytFrame) { ytFrame.src = ''; }
   if (loading) loading.style.display = 'flex';
   if (error)   error.style.display   = 'none';
-  hint.textContent      = '';
+  hint.textContent      = 'Cargando...';
 
   // Abrir sheet inmediatamente (el usuario ve que algo está pasando)
   const overlay = document.getElementById('wuGifOverlay');
@@ -9261,9 +9277,25 @@ async function openWarmupGifDynamic(exerciseName) {
   if (url) {
     img.src           = url;
     img.style.display = 'block';
-    hint.textContent  = 'Animación en bucle · Toca fuera para cerrar';
+    hint.textContent  = 'Toca fuera para cerrar';
   } else {
-    if (error) error.style.display = 'flex';
+    // Mostrar YouTube inline viewer como fallback
+    hint.textContent = 'Toca fuera para cerrar';
+    const ytWrapFb   = document.getElementById('wuYouTubeWrap');
+    const ytFrameFb  = document.getElementById('wuYouTubeFrame');
+    const ytExtBtn   = document.getElementById('wuYouTubeExtBtn');
+    const searchQuery = encodeURIComponent(exerciseName + ' ejercicio cómo hacerlo');
+    const ytSearchUrl = 'https://www.youtube.com/results?search_query=' + searchQuery;
+    const embedUrl    = 'https://www.youtube.com/embed?listType=search&list=' + searchQuery;
+    if (ytWrapFb)  { ytWrapFb.style.display = 'flex'; }
+    if (ytFrameFb) {
+      ytFrameFb.src = embedUrl;
+      ytFrameFb.onerror = () => {
+        ytFrameFb.style.display = 'none';
+        if (ytExtBtn) { ytExtBtn.style.display = 'block'; ytExtBtn.dataset.url = ytSearchUrl; }
+      };
+    }
+    if (ytExtBtn) { ytExtBtn.dataset.url = ytSearchUrl; }
   }
 }
 
