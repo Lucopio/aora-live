@@ -429,7 +429,7 @@ body {
 /* WORKOUT */
 .workout-screen {
   background: var(--surface); display: flex; flex-direction: column;
-  align-items: center; padding: 16px 20px max(56px, calc(24px + env(safe-area-inset-bottom, 0px))); min-height: 100vh;
+  align-items: center; padding: 16px 20px max(120px, calc(88px + env(safe-area-inset-bottom, 0px))); min-height: 100vh;
 }
 
 .workout-abandon-btn {
@@ -2932,6 +2932,16 @@ body {
           <button onclick="changeExercise()" style="background:none;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Cambiar</button>
         </div>
       </div>
+      <!-- 1b. Nota del ejercicio -->
+      <div id="exerciseNoteRow" onclick="openExerciseNoteSheet()" style="display:none;align-items:center;gap:6px;padding:7px 10px;background:rgba(255,184,0,0.07);border:1px solid rgba(255,184,0,0.2);border-radius:10px;margin-bottom:12px;cursor:pointer">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--warning)" stroke-width="2" style="flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span id="exerciseNoteText" style="font-size:12px;color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--text-tertiary)" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div id="exerciseNoteAddBtn" onclick="openExerciseNoteSheet()" style="display:flex;align-items:center;gap:5px;padding:5px 0 10px;cursor:pointer">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span style="font-size:11px;color:var(--text-tertiary);font-weight:600">Añadir nota del ejercicio</span>
+      </div>
       <!-- 2. Inputs de peso + reps + botón Serie -->
       <div class="set-inputs">
         <div class="set-input-group">
@@ -3010,6 +3020,19 @@ body {
       </div>
       <button id="rpeConfirmBtn" onclick="confirmRPESelection()" style="width:100%;padding:14px;background:var(--primary);border:none;border-radius:12px;font-family:var(--font);font-size:15px;font-weight:700;color:#080A0F;cursor:pointer;margin-bottom:10px">Confirmar</button>
       <button onclick="skipRPESelection()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer">Saltar sin registrar</button>
+    </div>
+
+    <!-- EXERCISE NOTE SHEET -->
+    <div id="exNoteOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140" onclick="closeExerciseNoteSheet()"></div>
+    <div id="exNoteSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 36px;z-index:150">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px" id="exNoteSheetTitle">Nota del ejercicio</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:14px">Máquina, posición, ajustes, sensaciones — visible cada vez que hagas este ejercicio.</div>
+      <textarea id="exNoteInput" placeholder="Ej: Máquina #3, agarre neutro, rodillas a 90°..." style="width:100%;min-height:100px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px;font-family:var(--font);font-size:13px;color:var(--text-primary);resize:vertical;box-sizing:border-box;outline:none"></textarea>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button onclick="closeExerciseNoteSheet()" style="flex:1;padding:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-secondary);cursor:pointer">Cancelar</button>
+        <button onclick="saveExerciseNote()" style="flex:2;padding:13px;background:var(--primary);border:none;border-radius:12px;font-family:var(--font);font-size:13px;font-weight:700;color:#000;cursor:pointer">Guardar nota</button>
+      </div>
     </div>
 
     <!-- ADJUST REST SHEET -->
@@ -5446,6 +5469,25 @@ async function _sendCoachMessageCore(text) {
       clearTimeout(fetchTimeout);
     }
 
+    // ── 3b. Si 401, refrescar sesión y reintentar una vez ────────────────────
+    if (res.status === 401 && sb) {
+      try {
+        const { data: refreshed } = await sb.auth.refreshSession();
+        const newToken = refreshed?.session?.access_token;
+        if (newToken) {
+          const ctrl2 = new AbortController();
+          const timeout2 = setTimeout(() => ctrl2.abort(), 20000);
+          try {
+            res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
+              method: 'POST', signal: ctrl2.signal,
+              headers: { 'Authorization': 'Bearer ' + newToken, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coachId: coach.id, message: text, history: historyToSend, context: buildChatContext() })
+            });
+          } finally { clearTimeout(timeout2); }
+        }
+      } catch(e) { /* si falla el refresh, continuamos con la respuesta 401 original */ }
+    }
+
     let data;
     const rawText = await res.text();
     hideTypingIndicator();
@@ -5877,7 +5919,7 @@ function showScreen(name) {
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['workout','summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); }
@@ -7990,6 +8032,7 @@ let _unilateralPendingSide = false; // true cuando se registró el primer lado y
 let activeSide = 'left';
 let lastWeights = {}; // { "Ejercicio · equipo": { weight, unit, reps } }
 let customExercises = []; // ejercicios personalizados guardados entre sesiones
+let exerciseNotes = {}; // { "Nombre ejercicio": "nota del usuario" }
 let supersetActive = false;
 let supersetGroupCounter = 0;
 let pendingExercises = []; // cola de ejercicios para rutina sugerida
@@ -8440,15 +8483,72 @@ function setWeightUnit(unit) {
   const val = parseFloat(input.value) || 0;
   if (val > 0) {
     if (unit === 'lb') {
-      input.value = Math.round(val * 2.20462 * 2) / 2; // redondea a 0.5 lb
+      input.value = Math.round(val * 2.20462 * 2) / 2;
     } else {
-      input.value = Math.round(val * 0.453592 * 2) / 2; // redondea a 0.5 kg
+      input.value = Math.round(val * 0.453592 * 2) / 2;
     }
   }
+  // Convert already-registered sets in the current exercise to the new unit
+  currentExerciseSets.forEach(s => {
+    if (s.unit && s.unit !== unit && s.weight > 0) {
+      s.weight = unit === 'lb'
+        ? Math.round(s.weight * 2.20462 * 2) / 2
+        : Math.round(s.weight * 0.453592 * 2) / 2;
+      s.unit = unit;
+    }
+  });
   weightUnit = unit;
   document.getElementById('unitKg').classList.toggle('active', unit === 'kg');
   document.getElementById('unitLb').classList.toggle('active', unit === 'lb');
   document.getElementById('weightLabel').textContent = `PESO (${unit})`;
+  renderSets();
+}
+
+function _renderExerciseNote(name) {
+  const note = exerciseNotes[name] || '';
+  const row    = document.getElementById('exerciseNoteRow');
+  const addBtn = document.getElementById('exerciseNoteAddBtn');
+  const txt    = document.getElementById('exerciseNoteText');
+  if (!row || !addBtn || !txt) return;
+  if (note) {
+    txt.textContent = note;
+    row.style.display = 'flex';
+    addBtn.style.display = 'none';
+  } else {
+    row.style.display = 'none';
+    addBtn.style.display = 'flex';
+  }
+}
+
+function openExerciseNoteSheet() {
+  const name = currentExerciseName;
+  if (!name) return;
+  const titleEl = document.getElementById('exNoteSheetTitle');
+  if (titleEl) titleEl.textContent = `Nota · ${name}`;
+  const input = document.getElementById('exNoteInput');
+  if (input) input.value = exerciseNotes[name] || '';
+  document.getElementById('exNoteOverlay').style.display = 'block';
+  document.getElementById('exNoteSheet').style.display = 'block';
+  setTimeout(() => input?.focus(), 100);
+}
+
+function closeExerciseNoteSheet() {
+  document.getElementById('exNoteOverlay').style.display = 'none';
+  document.getElementById('exNoteSheet').style.display = 'none';
+}
+
+function saveExerciseNote() {
+  const name = currentExerciseName;
+  if (!name) return;
+  const val = (document.getElementById('exNoteInput')?.value || '').trim();
+  if (val) {
+    exerciseNotes[name] = val;
+  } else {
+    delete exerciseNotes[name];
+  }
+  saveToStorage();
+  _renderExerciseNote(name);
+  closeExerciseNoteSheet();
 }
 
 function selectExercise(name, equip, targetSets = 0) {
@@ -8544,6 +8644,7 @@ function _doSelectExercise(name, equip) {
   const wp = document.getElementById('weightPreview');
   if (wp) wp.style.display = 'none';
   renderSets();
+  _renderExerciseNote(name);
   showScreen('workout');
 }
 
@@ -9962,7 +10063,7 @@ function startRestTimer() {
     if (countdownRemaining > 0) {
       // Alerta a mitad del descanso: vibración + pitido + voz (una sola vez)
       const halfPoint = Math.round(total / 2);
-      if (countdownRemaining === halfPoint && !halfwayAlertFired && total > 15) {
+      if (countdownRemaining <= halfPoint && !halfwayAlertFired && total > 15) {
         halfwayAlertFired = true;
         if (vibrationEnabled && navigator.vibrate) navigator.vibrate([80, 50, 80, 50, 120]);
         playBeep(660, 120);
@@ -10985,6 +11086,8 @@ function discardAndExit() {
   if (workoutStartTime && (completedExercises.length > 0 || currentExerciseSets.length > 0)) {
     if (!confirm('¿Salir sin guardar? Perderás el progreso de esta sesión.')) return;
   }
+  // finishWorkout() already added this session to savedWorkouts — remove it
+  if (savedWorkouts.length > 0) savedWorkouts.shift();
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
   warmupAlertFired = false;
@@ -12225,6 +12328,7 @@ function saveToStorage() {
     historyCleared,
     lastWeights,
     customExercises,
+    exerciseNotes,
     userProfile
   };
   try { localStorage.setItem('gymtracker_data', JSON.stringify(data)); } catch(e) {}
@@ -12289,6 +12393,7 @@ function loadFromStorage() {
     if (data.historyCleared) historyCleared = true;
     if (data.lastWeights) lastWeights = data.lastWeights;
     if (Array.isArray(data.customExercises)) customExercises = data.customExercises;
+    if (data.exerciseNotes && typeof data.exerciseNotes === 'object') exerciseNotes = data.exerciseNotes;
     if (data.userProfile && data.userProfile.onboarding_done) {
       userProfile = { ...userProfile, ...data.userProfile };
     }
@@ -14258,8 +14363,10 @@ function showRoutinePreview() {
   // Aplicar descanso de la rutina si está configurado; si no, usar grupo muscular como fallback
   if (routine.default_rest_seconds) {
     restSeconds = routine.default_rest_seconds;
+    window._userOverrodeRest = true;
   } else if (routine.muscle_group && REST_BY_MUSCLE_GROUP[routine.muscle_group]) {
     restSeconds = REST_BY_MUSCLE_GROUP[routine.muscle_group];
+    window._userOverrodeRest = true;
   }
   // Siempre saltarse el config sheet — restSeconds ya tiene un valor válido
   const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
