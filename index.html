@@ -5990,6 +5990,7 @@ function renderConfigGroups() {
 }
 
 function selectConfigGroup(group) {
+  window._configSelectedGroup = group;
   document.querySelectorAll('.cfg-group-btn').forEach(b => {
     b.style.borderColor = 'var(--border)';
     b.style.color       = 'var(--text-secondary)';
@@ -6031,9 +6032,12 @@ function startWorkout() {
 function detectPrimaryMuscleGroup() {
   // Check current exercise first, then first in pending queue (pre-loaded routines)
   const name = currentExerciseName || pendingExercises[0]?.name || null;
-  if (!name) return null;
-  const found = exerciseDB.find(g => g.items.includes(name));
-  return found ? found.group : null;
+  if (name) {
+    const found = exerciseDB.find(g => g.items.includes(name));
+    if (found) return found.group;
+  }
+  // Fall back to group selected in configSheet
+  return window._configSelectedGroup || null;
 }
 
 const REST_BY_MUSCLE_GROUP = {
