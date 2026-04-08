@@ -3931,17 +3931,21 @@ body {
 <div class="overlay" id="configOverlay" onclick="closeConfig()"></div>
 <div class="bottom-sheet" id="configSheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-title">Configurar descanso</div>
-  <div class="sheet-subtitle">Define el tiempo de descanso entre ejercicios</div>
+  <div class="sheet-title">¿Qué vas a entrenar hoy?</div>
+  <div class="sheet-subtitle">Selecciona el grupo muscular para tu sesión</div>
+  <!-- Muscle group grid -->
+  <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:20px"></div>
+  <!-- Rest section -->
+  <div id="configRestLabel" style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:10px;min-height:16px"></div>
   <div class="rest-presets">
-    <button class="preset-btn active" onclick="selectPreset(this, 60)">60<span>seg</span></button>
+    <button class="preset-btn" onclick="selectPreset(this, 60)">60<span>seg</span></button>
     <button class="preset-btn" onclick="selectPreset(this, 90)">90<span>seg</span></button>
-    <button class="preset-btn" onclick="selectPreset(this, 120)">120<span>seg</span></button>
+    <button class="preset-btn active" onclick="selectPreset(this, 120)">120<span>seg</span></button>
     <button class="preset-btn" onclick="selectPreset(this, 180)">180<span>seg</span></button>
   </div>
   <div class="custom-input-row">
     <label>Personalizado:</label>
-    <input class="custom-input" id="customRestInput" type="number" value="60" min="10" max="600">
+    <input class="custom-input" id="customRestInput" type="number" value="120" min="10" max="600">
     <label>seg</label>
   </div>
   <!-- Sugerencia de rutina del mismo día de la semana -->
@@ -4020,8 +4024,8 @@ body {
     <!-- Recomendación dinámica -->
     <div id="warmupRecommendation" style="display:none;width:100%;text-align:left;margin-top:8px">
 
-      <!-- Do's and Don'ts Box -->
-      <div id="warmupDosBox" style="display:none; margin-bottom: 20px;">
+      <!-- Do's and Don'ts Box (hidden) -->
+      <div id="warmupDosBox" style="display:none!important; margin-bottom: 20px;">
         <div style="background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(123,97,255,0.08)); border: 1px solid rgba(0,229,255,0.2); border-radius: var(--radius); padding: 16px; margin-top: 12px;">
 
           <!-- Qué HACER -->
@@ -5933,15 +5937,19 @@ function openConfig() {
   } catch(e) {}
   const coach = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽' };
   const msgs = {
-    maria:  'Lo primero: define tu tiempo de descanso. El descanso bien cronometrado es parte del entrenamiento. 💪',
-    carlos: 'Antes de empezar, configura el descanso entre series. El descanso no es opcional — es donde ocurre la recuperación.',
-    andrea: 'Primero, establecé tu tiempo de descanso. Escuchá a tu cuerpo y elegí un tiempo que te permita recuperarte bien.',
-    diego:  'El guerrero que descansa bien, lucha mejor. Elige tu tiempo de descanso con intención.'
+    maria:  '¡Vamos! Dime qué grupo muscular vas a trabajar hoy y te ayudo a configurar el descanso perfecto. 💪',
+    carlos: 'Antes de empezar: selecciona el grupo muscular. El descanso óptimo depende de lo que vas a entrenar.',
+    andrea: 'Primero definamos qué vas a trabajar hoy. Cada grupo muscular necesita un tiempo de recuperación diferente.',
+    diego:  'El entrenamiento inteligente empieza antes del primer ejercicio. Elige tu grupo y ajusta el descanso con intención.'
   };
   window._pendingSetFeedbackMsg = msgs[coach.id] || msgs.maria;
   window._afterCoachAlertDismiss = () => {
     document.getElementById('configOverlay').classList.add('active');
-    setTimeout(() => { document.getElementById('configSheet').classList.add('active'); suggestRoutineForToday(); }, 10);
+    setTimeout(() => {
+      document.getElementById('configSheet').classList.add('active');
+      renderConfigGroups();
+      suggestRoutineForToday();
+    }, 10);
   };
   showCoachAlertToast('setFeedback');
 }
@@ -5954,11 +5962,63 @@ function selectPreset(btn, seconds) {
   btn.classList.add('active');
   restSeconds = seconds;
   document.getElementById('customRestInput').value = seconds;
+  window._userOverrodeRest = true;
+}
+
+function renderConfigGroups() {
+  const groups = [
+    { key: 'Piernas',   abbr: 'Piernas',  icon: '🦵' },
+    { key: 'Gluteos',   abbr: 'Glúteos',  icon: '🍑' },
+    { key: 'Espalda',   abbr: 'Espalda',  icon: '🔙' },
+    { key: 'Pecho',     abbr: 'Pecho',    icon: '💪' },
+    { key: 'Hombros',   abbr: 'Hombros',  icon: '🏋️' },
+    { key: 'Biceps',    abbr: 'Bíceps',   icon: '💪' },
+    { key: 'Triceps',   abbr: 'Tríceps',  icon: '👊' },
+    { key: 'Abdomen',   abbr: 'Abdomen',  icon: '⚡' },
+    { key: 'Cardio',    abbr: 'Cardio',   icon: '🏃' },
+    { key: 'Calistenia',abbr: 'Calist.',  icon: '🤸' },
+  ];
+  const grid = document.getElementById('configGroupGrid');
+  if (!grid) return;
+  grid.innerHTML = groups.map(g => `
+    <button class="cfg-group-btn" data-group="${g.key}" onclick="selectConfigGroup('${g.key}')"
+      style="padding:8px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-size:10px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .15s;line-height:1.2">
+      <span style="font-size:15px;line-height:1">${g.icon}</span>
+      <span>${g.abbr}</span>
+    </button>
+  `).join('');
+}
+
+function selectConfigGroup(group) {
+  document.querySelectorAll('.cfg-group-btn').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.color       = 'var(--text-secondary)';
+    b.style.background  = 'var(--surface2)';
+  });
+  const btn = document.querySelector(`.cfg-group-btn[data-group="${group}"]`);
+  if (btn) {
+    btn.style.borderColor = 'var(--primary)';
+    btn.style.color       = 'var(--primary)';
+    btn.style.background  = 'var(--primary-light)';
+  }
+  const suggested = REST_BY_MUSCLE_GROUP[group] || 90;
+  restSeconds = suggested;
+  window._userOverrodeRest = false;
+  // Highlight matching preset
+  const presetVals = [60, 90, 120, 180];
+  document.querySelectorAll('.preset-btn').forEach((b, i) => {
+    b.classList.toggle('active', presetVals[i] === suggested);
+  });
+  const ci = document.getElementById('customRestInput');
+  if (ci) ci.value = suggested;
+  const label = document.getElementById('configRestLabel');
+  if (label) label.textContent = `Descanso sugerido para ${group}: ${suggested}s`;
 }
 
 // ─── Workout ────────────────────────────────────────────────
 function startWorkout() {
   restSeconds = parseInt(document.getElementById('customRestInput').value) || 60;
+  window._userOverrodeRest = true;
   window._pendingReturnConfig = false;
   closeConfig();
   setTimeout(() => {
@@ -6194,7 +6254,6 @@ function selectWarmupGroup(group) {
   document.querySelector(`.wu-group-btn[data-group="${group}"]`)?.classList.add('active');
   const data = getWarmupForMuscleGroup(group);
   if (data) renderWarmupContent(group, data);
-  renderWarmupDosAndDonts(group);
   _warmupSelectedGroup = group; // guardar para pre-filtrar catálogo
 }
 
@@ -6217,7 +6276,6 @@ function renderWarmupRecommendations() {
     picker.style.display = 'none';
     titleEl.textContent  = `Calentamiento · ${muscleGroup}`;
     renderWarmupContent(muscleGroup, data);
-    renderWarmupDosAndDonts(muscleGroup);
     _warmupSelectedGroup = muscleGroup; // guardar para pre-filtrar catálogo
   } else {
     // Show group picker for manual selection
@@ -6481,7 +6539,6 @@ function skipWarmup() {
 }
 
 function launchWorkout() {
-  window._userOverrodeRest = false;
   window._smartRestToastShown = false;
   // Check-in del coach al inicio del entrenamiento
   // Guard: no mostrar si el usuario fue directo al catálogo (sin rutina preseleccionada)
@@ -9278,9 +9335,17 @@ async function openWarmupGifDynamic(exerciseName) {
   const url = await loadWarmupGif(exerciseName);
   if (loading) loading.style.display = 'none';
   if (url) {
-    img.src           = url;
-    img.style.display = 'block';
-    hint.textContent  = 'Toca fuera para cerrar';
+    hint.textContent = 'Toca fuera para cerrar';
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+    if (isVideo) {
+      video.src             = url;
+      video.style.display   = 'block';
+      video.load();
+      video.play().catch(() => { video.controls = true; });
+    } else {
+      img.src           = url;
+      img.style.display = 'block';
+    }
   } else {
     // Mostrar YouTube inline viewer como fallback
     hint.textContent = 'Toca fuera para cerrar';
