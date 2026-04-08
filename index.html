@@ -3955,21 +3955,32 @@ body {
 <div class="bottom-sheet" id="configSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-title">¿Qué vas a entrenar hoy?</div>
-  <div class="sheet-subtitle">Selecciona el grupo muscular para tu sesión</div>
+  <div class="sheet-subtitle">Selecciona uno o varios grupos musculares</div>
   <!-- Muscle group grid -->
   <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:20px"></div>
-  <!-- Rest section -->
-  <div id="configRestLabel" style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:10px;min-height:16px"></div>
-  <div class="rest-presets">
-    <button class="preset-btn" onclick="selectPreset(this, 60)">60<span>seg</span></button>
-    <button class="preset-btn" onclick="selectPreset(this, 90)">90<span>seg</span></button>
-    <button class="preset-btn active" onclick="selectPreset(this, 120)">120<span>seg</span></button>
-    <button class="preset-btn" onclick="selectPreset(this, 180)">180<span>seg</span></button>
+  <!-- Smart rest info — visible cuando 2+ grupos seleccionados -->
+  <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente</span>
+    </div>
+    <div id="configSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
+    <button onclick="toggleConfigFixedRest()" id="configFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
   </div>
-  <div class="custom-input-row">
-    <label>Personalizado:</label>
-    <input class="custom-input" id="customRestInput" type="number" value="120" min="10" max="600">
-    <label>seg</label>
+  <!-- Rest label + presets — visible siempre en 1 grupo, opcional en multi -->
+  <div id="configRestLabel" style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:10px;min-height:16px"></div>
+  <div id="configRestPresets">
+    <div class="rest-presets">
+      <button class="preset-btn" onclick="selectPreset(this, 60)">60<span>seg</span></button>
+      <button class="preset-btn" onclick="selectPreset(this, 90)">90<span>seg</span></button>
+      <button class="preset-btn active" onclick="selectPreset(this, 120)">120<span>seg</span></button>
+      <button class="preset-btn" onclick="selectPreset(this, 180)">180<span>seg</span></button>
+    </div>
+    <div class="custom-input-row">
+      <label>Personalizado:</label>
+      <input class="custom-input" id="customRestInput" type="number" value="120" min="10" max="600">
+      <label>seg</label>
+    </div>
   </div>
   <!-- Sugerencia de rutina del mismo día de la semana -->
   <div id="routineSuggestBanner" style="display:none">
@@ -6008,6 +6019,16 @@ function selectPreset(btn, seconds) {
 }
 
 function renderConfigGroups() {
+  // Reset selection state each time the sheet opens
+  window._configSelectedGroups = [];
+  window._configSelectedGroup = null;
+  window._userOverrodeRest = false;
+  const label = document.getElementById('configRestLabel');
+  if (label) label.textContent = '';
+  const smartInfo = document.getElementById('configSmartRestInfo');
+  if (smartInfo) smartInfo.style.display = 'none';
+  const presets = document.getElementById('configRestPresets');
+  if (presets) presets.style.display = 'block';
   const groups = [
     { key: 'Piernas',   abbr: 'Piernas',  icon: '🦵' },
     { key: 'Gluteos',   abbr: 'Glúteos',  icon: '🍑' },
@@ -6032,36 +6053,90 @@ function renderConfigGroups() {
 }
 
 function selectConfigGroup(group) {
-  window._configSelectedGroup = group;
-  document.querySelectorAll('.cfg-group-btn').forEach(b => {
-    b.style.borderColor = 'var(--border)';
-    b.style.color       = 'var(--text-secondary)';
-    b.style.background  = 'var(--surface2)';
-  });
-  const btn = document.querySelector(`.cfg-group-btn[data-group="${group}"]`);
-  if (btn) {
-    btn.style.borderColor = 'var(--primary)';
-    btn.style.color       = 'var(--primary)';
-    btn.style.background  = 'var(--primary-light)';
+  if (!window._configSelectedGroups) window._configSelectedGroups = [];
+  // Toggle group in/out of selection
+  const idx = window._configSelectedGroups.indexOf(group);
+  if (idx >= 0) {
+    window._configSelectedGroups.splice(idx, 1);
+  } else {
+    window._configSelectedGroups.push(group);
   }
-  const suggested = REST_BY_MUSCLE_GROUP[group] || 90;
-  restSeconds = suggested;
-  window._userOverrodeRest = false;
-  // Highlight matching preset
-  const presetVals = [60, 90, 120, 180];
-  document.querySelectorAll('.preset-btn').forEach((b, i) => {
-    b.classList.toggle('active', presetVals[i] === suggested);
+  // Primary group for warmup fallback = first selected
+  window._configSelectedGroup = window._configSelectedGroups[0] || null;
+
+  // Update chip visuals
+  document.querySelectorAll('.cfg-group-btn').forEach(b => {
+    const sel = window._configSelectedGroups.includes(b.dataset.group);
+    b.style.borderColor = sel ? 'var(--primary)' : 'var(--border)';
+    b.style.color       = sel ? 'var(--primary)' : 'var(--text-secondary)';
+    b.style.background  = sel ? 'var(--primary-light)' : 'var(--surface2)';
   });
-  const ci = document.getElementById('customRestInput');
-  if (ci) ci.value = suggested;
+
+  const count = window._configSelectedGroups.length;
   const label = document.getElementById('configRestLabel');
-  if (label) label.textContent = `Descanso sugerido para ${group}: ${suggested}s`;
+  const smartInfo = document.getElementById('configSmartRestInfo');
+  const smartDetail = document.getElementById('configSmartRestDetail');
+  const presets = document.getElementById('configRestPresets');
+  const fixedBtn = document.getElementById('configFixedRestBtn');
+
+  if (count === 0) {
+    if (label) label.textContent = '';
+    if (smartInfo) smartInfo.style.display = 'none';
+    if (presets) presets.style.display = 'block';
+    window._userOverrodeRest = false;
+  } else if (count === 1) {
+    // Single group — suggest fixed rest
+    const suggested = REST_BY_MUSCLE_GROUP[group] || 90;
+    restSeconds = suggested;
+    window._userOverrodeRest = false;
+    const presetVals = [60, 90, 120, 180];
+    document.querySelectorAll('.preset-btn').forEach((b, i) => {
+      b.classList.toggle('active', presetVals[i] === suggested);
+    });
+    const ci = document.getElementById('customRestInput');
+    if (ci) ci.value = suggested;
+    if (label) label.textContent = `Descanso sugerido para ${group}: ${suggested}s`;
+    if (smartInfo) smartInfo.style.display = 'none';
+    if (presets) presets.style.display = 'block';
+  } else {
+    // Multi-group — smart rest mode
+    window._userOverrodeRest = false;
+    const detail = window._configSelectedGroups
+      .map(g => `<span style="display:inline-block;margin-right:8px">● ${g}: <b style="color:var(--primary)">${REST_BY_MUSCLE_GROUP[g] || 90}s</b></span>`)
+      .join('');
+    if (smartDetail) smartDetail.innerHTML = detail + '<div style="margin-top:4px;opacity:0.7">El timer se ajusta automáticamente según el ejercicio.</div>';
+    if (label) label.textContent = '';
+    if (smartInfo) smartInfo.style.display = 'block';
+    if (fixedBtn) fixedBtn.textContent = 'Prefiero tiempo fijo';
+    if (presets) presets.style.display = 'none'; // hidden by default in smart mode
+  }
+}
+
+function toggleConfigFixedRest() {
+  const presets = document.getElementById('configRestPresets');
+  const btn     = document.getElementById('configFixedRestBtn');
+  const label   = document.getElementById('configRestLabel');
+  if (!presets) return;
+  if (presets.style.display === 'none') {
+    presets.style.display = 'block';
+    if (btn) btn.textContent = 'Usar descanso inteligente';
+    if (label) label.textContent = 'Tiempo fijo para toda la sesión:';
+    window._userOverrodeRest = true; // user explicitly wants fixed
+  } else {
+    presets.style.display = 'none';
+    if (btn) btn.textContent = 'Prefiero tiempo fijo';
+    if (label) label.textContent = '';
+    window._userOverrodeRest = false; // back to smart mode
+  }
 }
 
 // ─── Workout ────────────────────────────────────────────────
 function startWorkout() {
-  restSeconds = parseInt(document.getElementById('customRestInput').value) || 60;
-  window._userOverrodeRest = true;
+  // En modo multi-grupo con descanso inteligente, NO forzar _userOverrodeRest
+  // _userOverrodeRest ya fue gestionado por selectConfigGroup / toggleConfigFixedRest
+  if (window._userOverrodeRest) {
+    restSeconds = parseInt(document.getElementById('customRestInput').value) || 60;
+  }
   window._pendingReturnConfig = false;
   closeConfig();
   setTimeout(() => {
