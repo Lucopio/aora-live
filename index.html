@@ -1511,42 +1511,124 @@ body {
 .ob-btn-next { flex: 1; padding: 15px; background: var(--primary); color:#080A0F; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
 .ob-btn-next:active { opacity: 0.85; }
 
+/* Onboarding Chat Screen */
+#obChatScreen { background: var(--bg); }
+.obc-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+.obc-header { padding: 14px 18px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.obc-av { width: 38px; height: 38px; border-radius: 50%; background: rgba(0,229,255,0.12); border: 1.5px solid rgba(0,229,255,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.obc-av img { width: 100%; height: 100%; object-fit: cover; }
+.obc-info { flex: 1; }
+.obc-name { font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.obc-status { font-size: 10px; color: var(--primary); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+.obc-online { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+.obc-prog-dots { display: flex; gap: 3px; }
+.obc-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: background 0.2s; }
+.obc-dot.done { background: var(--primary); }
+.obc-dot.active { background: rgba(0,229,255,0.4); }
+.obc-feed { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
+.obc-feed::-webkit-scrollbar { display: none; }
+.obc-msg-row { display: flex; gap: 8px; align-items: flex-end; }
+.obc-msg-row.user { flex-direction: row-reverse; }
+.obc-msg-av { width: 28px; height: 28px; border-radius: 50%; background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.obc-msg-av img { width: 100%; height: 100%; object-fit: cover; }
+.obc-user-av { width: 28px; height: 28px; border-radius: 50%; background: rgba(123,97,255,0.15); border: 1px solid rgba(123,97,255,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--accent2); }
+.obc-bubble { padding: 10px 13px; border-radius: 14px; font-size: 13px; line-height: 1.55; max-width: 240px; }
+.obc-bubble.coach { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); border-radius: 4px 14px 14px 14px; border: 1px solid var(--border); }
+.obc-bubble.user-msg { background: rgba(123,97,255,0.18); color: var(--text-primary); border: 1px solid rgba(123,97,255,0.25); border-radius: 14px 4px 14px 14px; font-weight: 500; }
+.obc-bubble.ai-rec { background: rgba(0,229,255,0.07); color: rgba(255,255,255,0.9); border: 1px solid rgba(0,229,255,0.2); border-radius: 4px 14px 14px 14px; }
+.obc-bubble.ai-rec strong { color: var(--primary); }
+.obc-bubble.coach strong { color: var(--primary); }
+.obc-ai-tag { display: inline-flex; align-items: center; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 99px; background: rgba(0,229,255,0.15); color: var(--primary); margin-left: 6px; vertical-align: middle; letter-spacing: 0.3px; }
+.obc-typing { display: flex; gap: 3px; align-items: center; padding: 10px 13px; background: rgba(255,255,255,0.07); border-radius: 4px 14px 14px 14px; border: 1px solid var(--border); width: fit-content; }
+.obc-dot-t { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.35); animation: obcBlink 1.2s infinite; }
+.obc-dot-t:nth-child(2) { animation-delay: 0.2s; }
+.obc-dot-t:nth-child(3) { animation-delay: 0.4s; }
+@keyframes obcBlink { 0%,80%,100%{opacity:.3;transform:scale(1)} 40%{opacity:1;transform:scale(1.2)} }
+.obc-bottom { padding: 10px 14px 36px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); display: flex; flex-direction: column; gap: 8px; }
+.obc-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.obc-chip { padding: 8px 14px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 99px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.15s; font-family: var(--font); user-select: none; }
+.obc-chip:active { transform: scale(0.97); }
+.obc-chip.selected { background: rgba(0,229,255,0.12); border-color: rgba(0,229,255,0.4); color: var(--primary); }
+.obc-name-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--text-primary); font-family: var(--font); outline: none; -webkit-appearance: none; box-sizing: border-box; }
+.obc-name-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
+.obc-name-input:focus { border-color: rgba(0,229,255,0.4); }
+.obc-physical-row { display: flex; gap: 8px; }
+.obc-physical-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.obc-physical-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 0.5px; text-transform: uppercase; }
+.obc-physical-input { padding: 11px 12px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--text-primary); font-family: var(--mono); outline: none; -webkit-appearance: none; text-align: center; width: 100%; box-sizing: border-box; }
+.obc-physical-input:focus { border-color: rgba(0,229,255,0.4); }
+.obc-btn { width: 100%; padding: 13px; background: var(--primary); color: #080A0F; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: var(--font); transition: opacity 0.15s; }
+.obc-btn:active { opacity: 0.85; }
+.obc-btn:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.25); cursor: default; }
+.obc-btn.green { background: #16A34A; color: #fff; }
+.obc-coach-tour { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; }
+.obc-tour-item { display: flex; align-items: center; gap: 10px; padding: 10px 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; }
+.obc-tour-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.obc-tour-icon.cyan { background: rgba(0,229,255,0.12); }
+.obc-tour-icon.violet { background: rgba(123,97,255,0.12); }
+.obc-tour-icon.green { background: rgba(0,200,150,0.1); }
+.obc-tour-icon svg { width: 16px; height: 16px; }
+.obc-tour-txt { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+.obc-tour-txt small { display: block; font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-top: 1px; }
+
 /* Welcome Screen Redesign */
 #welcomeScreen { background: var(--bg); }
-.w-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.welcome-slide { display: none; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.w-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+.welcome-slide { display: none; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
 .welcome-slide.active { display: flex; animation: wSlideIn 0.3s cubic-bezier(0.4,0,0.2,1); }
 @keyframes wSlideIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
-.w-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 44px 24px 20px; }
-.w-hero { font-size: 60px; margin-bottom: 18px; line-height: 1; text-align: center; }
-.w-title { font-size: 24px; font-weight: 800; color: var(--text-primary); line-height: 1.25; margin-bottom: 10px; text-align: center; letter-spacing: -0.4px; }
-.w-subtitle { font-size: 14px; color: var(--text-secondary); line-height: 1.6; text-align: center; margin-bottom: 22px; }
-.w-stats { display: flex; gap: 12px; width: 100%; margin-bottom: 14px; }
-.w-stat-card { flex: 1; background: var(--surface2); border-radius: 16px; padding: 18px 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
-.w-stat-num { font-size: 28px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; }
-.w-stat-lbl { font-size: 11px; color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
-.w-note { font-size: 11px; color: var(--text-tertiary); text-align: center; line-height: 1.5; padding: 0 8px; }
-.w-items { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-.w-item { display: flex; gap: 14px; align-items: flex-start; background: var(--surface2); border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-.w-item-icon { font-size: 26px; flex-shrink: 0; line-height: 1.2; margin-top: 1px; }
-.w-item-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; line-height: 1.3; }
-.w-item-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-.w-chat { background: var(--surface2); border-radius: 16px; padding: 16px; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin: 8px 0 14px; border-left: 3px solid var(--primary); }
-.w-chat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.w-chat-av { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-.w-chat-nm { font-size: 12px; font-weight: 700; color: var(--primary); }
-.w-chat-msg { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
-.w-nav { padding: 14px 24px 30px; background: var(--bg); flex-shrink: 0; }
-.w-prog { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.w-prog-bar { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.w-prog-fill { height: 100%; background: var(--primary); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); border-radius: 3px; }
-.w-prog-txt { font-size: 12px; color: var(--text-tertiary); font-weight: 700; white-space: nowrap; }
+.w-content { flex: 1; display: flex; flex-direction: column; padding: 36px 24px 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.w-nav { padding: 14px 24px 36px; background: var(--bg); flex-shrink: 0; border-top: 1px solid var(--border); }
+.w-prog { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.w-prog-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
+.w-prog-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.3s ease; }
+.w-prog-txt { font-size: 11px; color: var(--text-tertiary); font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
 .w-btns { display: flex; gap: 12px; }
 .w-btn-skip { flex: 1; padding: 13px 16px; background: transparent; color: var(--text-tertiary); border: 1.5px solid var(--border); border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
 .w-btn-skip:active { opacity: 0.7; }
-.w-btn-next { flex: 1.6; padding: 13px 16px; background: var(--primary); color:#080A0F; border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(66,133,244,0.3); transition: transform 0.15s, box-shadow 0.15s; }
+.w-btn-next { flex: 1.6; padding: 13px 16px; background: var(--primary); color: #080A0F; border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.15s; }
 .w-btn-next:active { transform: scale(0.97); }
-.w-btn-next.w-final { background: #16A34A; box-shadow: 0 4px 14px rgba(22,163,74,0.3); }
+.w-btn-next.w-final { background: #16A34A; }
+
+/* Slide 1 */
+.w-logomark { display: flex; align-items: center; gap: 7px; margin-bottom: 24px; }
+.w-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+.w-logo-txt { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--text-tertiary); }
+.w-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
+.w-headline { font-size: 24px; font-weight: 800; color: var(--text-primary); line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 10px; font-family: var(--font-display); }
+.w-headline span { color: var(--primary); }
+.w-subline { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
+.w-pillars { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+.w-pillar { display: flex; align-items: center; gap: 10px; padding: 11px 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; }
+.w-pillar-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.w-pillar-icon.cyan { background: rgba(0,229,255,0.15); }
+.w-pillar-icon.violet { background: rgba(123,97,255,0.15); }
+.w-pillar-icon.green { background: rgba(0,200,150,0.12); }
+.w-pillar-icon svg { width: 15px; height: 15px; }
+.w-pillar-txt { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.35; }
+.w-pillar-txt small { display: block; font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-top: 1px; }
+.w-stats-row { display: flex; gap: 8px; }
+.w-stat-card { flex: 1; padding: 10px 8px; background: rgba(0,229,255,0.06); border: 1px solid rgba(0,229,255,0.15); border-radius: 10px; text-align: center; }
+.w-stat-num { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; font-family: var(--mono); }
+.w-stat-lbl { font-size: 10px; color: var(--text-tertiary); line-height: 1.4; margin-top: 2px; }
+
+/* Slide 2 — coaches */
+.w-coaches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.w-coach-card { background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.w-coach-card:active { transform: scale(0.97); }
+.w-coach-card.selected { border-color: var(--primary); background: rgba(0,229,255,0.07); }
+.w-coach-av { width: 58px; height: 58px; border-radius: 50%; background: rgba(255,255,255,0.08); overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; transition: border-color 0.15s; }
+.w-coach-card.selected .w-coach-av { border-color: var(--primary); }
+.w-coach-av img { width: 100%; height: 100%; object-fit: cover; }
+.w-coach-flag { font-size: 14px; }
+.w-coach-name { font-size: 14px; font-weight: 800; color: var(--text-primary); }
+.w-coach-spec { font-size: 10.5px; color: var(--text-secondary); text-align: center; line-height: 1.35; }
+.w-coach-tag { font-size: 9.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; margin-top: 2px; }
+.w-coach-tag.cyan { background: rgba(0,229,255,0.15); color: var(--primary); }
+.w-coach-tag.violet { background: rgba(123,97,255,0.15); color: var(--accent2); }
+.w-coach-tag.green { background: rgba(0,200,150,0.12); color: var(--success); }
+.w-coach-tag.orange { background: rgba(255,184,0,0.12); color: var(--warning); }
+.w-slide2-hint { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-top: 12px; }
 
 /* E4: Tutorial Hints System */
 .tutorial-hint-overlay { position: fixed; inset: 0; z-index: 999; }
@@ -2257,117 +2339,89 @@ body {
 <div class="screen fullscreen" id="welcomeScreen">
   <div class="w-wrap">
 
-    <!-- Slide 1: Bienvenido -->
+    <!-- Slide 1: Propuesta de valor -->
     <div class="welcome-slide active" id="welcomeSlide1">
       <div class="w-content">
-        <div class="w-hero">⚡</div>
-        <h1 class="w-title">Entrena con intención.<br>Descansa con propósito.</h1>
-        <p class="w-subtitle">La mayoría pierde resultados por ignorar el descanso. AORA LIVE lo cambia.</p>
-        <div class="w-stats">
-          <div class="w-stat-card">
-            <div class="w-stat-num">+31%</div>
-            <div class="w-stat-lbl">más fuerza<br>en 8 semanas</div>
+        <div class="w-logomark">
+          <div class="w-logo-dot"></div>
+          <span class="w-logo-txt">AORA LIVE</span>
+        </div>
+        <div class="w-eyebrow">Tu entrenador IA, siempre contigo</div>
+        <h1 class="w-headline">Entrena más inteligente.<br><span>Progresa cada semana.</span></h1>
+        <p class="w-subline">Coaching personalizado que analiza tu entrenamiento de forma global — para que alcances tus metas a corto, mediano y largo plazo.</p>
+        <div class="w-pillars">
+          <div class="w-pillar">
+            <div class="w-pillar-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="w-pillar-txt">Control de descanso inteligente<small>Recomendamos el descanso óptimo por grupo muscular para maximizar fuerza y recuperación</small></div>
           </div>
-          <div class="w-stat-card">
-            <div class="w-stat-num">2×</div>
-            <div class="w-stat-lbl">recuperación<br>óptima</div>
+          <div class="w-pillar">
+            <div class="w-pillar-icon violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div class="w-pillar-txt">RPE: la intensidad que importa<small>Medimos el esfuerzo de cada serie para que siempre estés avanzando hacia tu objetivo</small></div>
+          </div>
+          <div class="w-pillar">
+            <div class="w-pillar-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00C896" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="w-pillar-txt">Tu coach IA disponible 24/7<small>Resuelve dudas, ajusta tu plan y te acompaña en cada entrenamiento en tiempo real</small></div>
           </div>
         </div>
-        <p class="w-note">Basado en usuarios que registran sus descansos consistentemente</p>
+        <div class="w-stats-row">
+          <div class="w-stat-card"><div class="w-stat-num">+31%</div><div class="w-stat-lbl">más fuerza en<br>8 semanas</div></div>
+          <div class="w-stat-card"><div class="w-stat-num">2×</div><div class="w-stat-lbl">recuperación<br>óptima</div></div>
+          <div class="w-stat-card"><div class="w-stat-num">4</div><div class="w-stat-lbl">coaches IA<br>disponibles</div></div>
+        </div>
       </div>
     </div>
 
-    <!-- Slide 2: ¿Qué es AORA LIVE? -->
+    <!-- Slide 2: Elige tu coach -->
     <div class="welcome-slide" id="welcomeSlide2">
       <div class="w-content">
-        <h2 class="w-title">¿Qué es AORA LIVE?</h2>
-        <div class="w-items">
-          <div class="w-item">
-            <span class="w-item-icon">📋</span>
-            <div>
-              <div class="w-item-title">Registra cada serie y repetición</div>
-              <div class="w-item-desc">Con notas de carga y esfuerzo percibido</div>
-            </div>
+        <div class="w-eyebrow">Conoce a tu equipo</div>
+        <h2 class="w-headline">Elige el coach<br><span>que va contigo</span></h2>
+        <p class="w-subline">Cada uno tiene un estilo único. Puedes cambiar cuando quieras.</p>
+        <div class="w-coaches-grid">
+          <div class="w-coach-card" id="wCoachMaria" onclick="wSelectCoach('maria', this)">
+            <div class="w-coach-av"><img src="Images/coaches/maria.png" alt="María" onerror="this.style.display='none'"></div>
+            <div class="w-coach-flag">🇨🇴</div>
+            <div class="w-coach-name">María</div>
+            <div class="w-coach-spec">HIIT · Funcional</div>
+            <div class="w-coach-tag cyan">Intensidad</div>
           </div>
-          <div class="w-item">
-            <span class="w-item-icon">⏱️</span>
-            <div>
-              <div class="w-item-title">El descanso importa más de lo que crees</div>
-              <div class="w-item-desc">Demasiado poco = menos fuerza. Demasiado = sesiones eternas. AORA LIVE encuentra tu punto exacto.</div>
-            </div>
+          <div class="w-coach-card" id="wCoachCarlos" onclick="wSelectCoach('carlos', this)">
+            <div class="w-coach-av"><img src="Images/coaches/carlos.png" alt="Carlos" onerror="this.style.display='none'"></div>
+            <div class="w-coach-flag">🇲🇽</div>
+            <div class="w-coach-name">Carlos</div>
+            <div class="w-coach-spec">Fuerza · Hipertrofia</div>
+            <div class="w-coach-tag violet">Músculo</div>
           </div>
-          <div class="w-item">
-            <span class="w-item-icon">📊</span>
-            <div>
-              <div class="w-item-title">Recomendaciones que evolucionan contigo</div>
-              <div class="w-item-desc">La IA analiza tus patrones y te sugiere ajustes reales</div>
-            </div>
+          <div class="w-coach-card" id="wCoachAndrea" onclick="wSelectCoach('andrea', this)">
+            <div class="w-coach-av"><img src="Images/coaches/andrea.png" alt="Andrea" onerror="this.style.display='none'"></div>
+            <div class="w-coach-flag">🇦🇷</div>
+            <div class="w-coach-name">Andrea</div>
+            <div class="w-coach-spec">Bienestar · Movilidad</div>
+            <div class="w-coach-tag green">Equilibrio</div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 3: Cómo funciona -->
-    <div class="welcome-slide" id="welcomeSlide3">
-      <div class="w-content">
-        <h2 class="w-title">Cómo funciona</h2>
-        <div class="w-items">
-          <div class="w-item">
-            <span class="w-item-icon">🏋️</span>
-            <div>
-              <div class="w-item-title">Inicia un entrenamiento</div>
-              <div class="w-item-desc">Elige ejercicios o usa tus rutinas guardadas</div>
-            </div>
-          </div>
-          <div class="w-item">
-            <span class="w-item-icon">⏸️</span>
-            <div>
-              <div class="w-item-title">Registra el descanso entre series</div>
-              <div class="w-item-desc">El timer corre automático. Tú decides cuándo sigues.</div>
-            </div>
-          </div>
-          <div class="w-item">
-            <span class="w-item-icon">🤖</span>
-            <div>
-              <div class="w-item-title">Tu asistente analiza todo</div>
-              <div class="w-item-desc">Después de cada sesión, recibe insights y recomendaciones personalizadas</div>
-            </div>
-          </div>
-          <div class="w-item">
-            <span class="w-item-icon">📈</span>
-            <div>
-              <div class="w-item-title">Ve tu progreso semana a semana</div>
-              <div class="w-item-desc">Gráficas claras de volumen, descanso y mejora real</div>
-            </div>
+          <div class="w-coach-card" id="wCoachDiego" onclick="wSelectCoach('diego', this)">
+            <div class="w-coach-av"><img src="Images/coaches/diego.png" alt="Diego" onerror="this.style.display='none'"></div>
+            <div class="w-coach-flag">🇵🇪</div>
+            <div class="w-coach-name">Diego</div>
+            <div class="w-coach-spec">Calistenia · Resiliencia</div>
+            <div class="w-coach-tag orange">Cuerpo libre</div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Slide 4: Tu asistente personal -->
-    <div class="welcome-slide" id="welcomeSlide4">
-      <div class="w-content">
-        <div class="w-hero">🤖</div>
-        <h2 class="w-title">No entrenas solo.<br>Tienes un coach en el bolsillo.</h2>
-        <p class="w-subtitle">Después de cada entrenamiento, tu asistente IA analiza tus datos y te habla directo:</p>
-        <div class="w-chat">
-          <div class="w-chat-head">
-            <div class="w-chat-av">🤖</div>
-            <span class="w-chat-nm">Asistente AORA LIVE</span>
-          </div>
-          <p class="w-chat-msg">Descansaste 38s entre series de sentadilla — menos de lo ideal. Esta semana subiste 5kg de volumen. Te sugiero bajar intensidad el jueves.</p>
-        </div>
-        <p class="w-note">Cuanto más registres, más inteligente se vuelve.</p>
+        <p class="w-slide2-hint">Toca un coach para seleccionarlo</p>
       </div>
     </div>
 
     <!-- Navegación compartida -->
     <div class="w-nav">
       <div class="w-prog">
-        <div class="w-prog-bar">
-          <div class="w-prog-fill" id="welcomeProgressFill" style="width:25%"></div>
-        </div>
-        <span class="w-prog-txt"><span id="welcomeSlideNum">1</span> de 4</span>
+        <div class="w-prog-bar"><div class="w-prog-fill" id="welcomeProgressFill" style="width:50%"></div></div>
+        <span class="w-prog-txt"><span id="welcomeSlideNum">1</span> de 2</span>
       </div>
       <div class="w-btns">
         <button class="w-btn-skip" onclick="skipWelcome()">Saltar</button>
@@ -2375,6 +2429,24 @@ body {
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ONBOARDING CHAT -->
+<div class="screen fullscreen" id="obChatScreen">
+  <div class="obc-wrap">
+    <div class="obc-header">
+      <div class="obc-av" id="obcCoachAv">
+        <img id="obcCoachImg" src="" alt="" onerror="this.style.display='none'">
+      </div>
+      <div class="obc-info">
+        <div class="obc-name" id="obcCoachName">Tu coach</div>
+        <div class="obc-status"><div class="obc-online"></div><span id="obcStatusTxt">Conociéndote</span></div>
+      </div>
+      <div class="obc-prog-dots" id="obcProgDots"></div>
+    </div>
+    <div class="obc-feed" id="obcFeed"></div>
+    <div class="obc-bottom" id="obcBottom"></div>
   </div>
 </div>
 
@@ -5940,7 +6012,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, coach: 1, workoutHub: 2, insights: 3, settings: 4 };
   if (map[name] !== undefined) { const ni = document.querySelectorAll('.nav-item')[map[name]]; if (ni) ni.classList.add('active'); }
-  const screenMap = { home:'homeScreen', coach:'coachScreen', coachProfile:'coachProfileScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen', workoutHub:'workoutHubScreen' };
+  const screenMap = { home:'homeScreen', coach:'coachScreen', coachProfile:'coachProfileScreen', workout:'workoutScreen', summary:'summaryScreen', history:'historyScreen', insights:'insightsScreen', settings:'settingsScreen', catalog:'catalogScreen', warmup:'warmupScreen', auth:'authScreen', onboarding:'onboardingScreen', welcome:'welcomeScreen', workoutHub:'workoutHubScreen', obChat:'obChatScreen' };
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
@@ -13173,6 +13245,559 @@ const _origToggleSync = toggleSetting;
 toggleSetting = function(el) { _origToggleSync(el); syncPrefs(); };
 
 // ═══════════════════════════════════════════════════════════
+// ONBOARDING CHAT CONVERSACIONAL
+// ═══════════════════════════════════════════════════════════
+
+const OBC_TOTAL_STEPS = 11;
+
+const OBC_INTROS = {
+  maria:  { name: 'María',  flag: '🇨🇴', greeting: '¡Hola! Soy <strong>María</strong>, tu entrenadora personal. Antes de empezar necesito conocerte un poco. ¿Cómo prefieres que te llame?' },
+  carlos: { name: 'Carlos', flag: '🇲🇽', greeting: '¡Qué tal! Soy <strong>Carlos</strong>, tu entrenador personal. Vamos a armar tu plan juntos. ¿Cómo te llamo?' },
+  andrea: { name: 'Andrea', flag: '🇦🇷', greeting: '¡Hola! Soy <strong>Andrea</strong>, tu entrenadora. Me alegra que estés aquí. ¿Cómo prefieres que te llame?' },
+  diego:  { name: 'Diego',  flag: '🇵🇪', greeting: '¡Buenas! Soy <strong>Diego</strong>, tu entrenador. Vamos a conocernos para empezar con el pie derecho. ¿Cómo te llamo?' }
+};
+
+let _obcStep = 0;
+let _obcData = {
+  nickname: null, experience: null, goal: null, days_per_week: null,
+  session_duration: null, weight: null, height: null, age: null,
+  sex: null, menstrual_tracking: false, injuries: null,
+  routine_choice: null
+};
+
+function showObChat() {
+  const coach = userProfile.selectedCoach || localStorage.getItem('selectedCoach') || 'maria';
+  const intro = OBC_INTROS[coach] || OBC_INTROS.maria;
+
+  document.getElementById('obcCoachName').textContent = intro.name;
+  const img = document.getElementById('obcCoachImg');
+  img.src = `Images/coaches/${coach}.png`;
+  img.alt = intro.name;
+  img.style.display = '';
+
+  _obcStep = 0;
+  _obcData = { nickname:null, experience:null, goal:null, days_per_week:null, session_duration:null, weight:null, height:null, age:null, sex:null, menstrual_tracking:false, injuries:null, routine_choice:null };
+  document.getElementById('obcFeed').innerHTML = '';
+  _obcUpdateDots();
+
+  showScreen('obChat');
+
+  setTimeout(() => {
+    _obcShowTyping(() => {
+      _obcAddCoachBubble(intro.greeting);
+      _obcStep = 1;
+      _obcUpdateDots();
+      _obcRenderBottom();
+    });
+  }, 400);
+}
+
+function _obcUpdateDots() {
+  const container = document.getElementById('obcProgDots');
+  if (!container) return;
+  container.innerHTML = Array.from({length: OBC_TOTAL_STEPS}, (_, i) => {
+    let cls = 'obc-dot';
+    if (i < _obcStep) cls += ' done';
+    else if (i === _obcStep) cls += ' active';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+}
+
+function _obcAddCoachBubble(html, isAI) {
+  isAI = isAI || false;
+  const coach = userProfile.selectedCoach || 'maria';
+  const feed = document.getElementById('obcFeed');
+  const aiTag = isAI ? '<span class="obc-ai-tag">✦ IA</span>' : '';
+  const row = document.createElement('div');
+  row.className = 'obc-msg-row';
+  row.innerHTML = `
+    <div class="obc-msg-av"><img src="Images/coaches/${coach}.png" alt="" onerror="this.style.display='none'"></div>
+    <div class="obc-bubble ${isAI ? 'ai-rec' : 'coach'}">${html}${aiTag}</div>`;
+  feed.appendChild(row);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function _obcAddUserBubble(text) {
+  const feed = document.getElementById('obcFeed');
+  const initials = (_obcData.nickname || 'T')[0].toUpperCase();
+  const row = document.createElement('div');
+  row.className = 'obc-msg-row user';
+  row.innerHTML = `
+    <div class="obc-user-av">${initials}</div>
+    <div class="obc-bubble user-msg">${text}</div>`;
+  feed.appendChild(row);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function _obcShowTyping(callback) {
+  const feed = document.getElementById('obcFeed');
+  const coach = userProfile.selectedCoach || 'maria';
+  const typingRow = document.createElement('div');
+  typingRow.className = 'obc-msg-row';
+  typingRow.id = 'obcTypingRow';
+  typingRow.innerHTML = `
+    <div class="obc-msg-av"><img src="Images/coaches/${coach}.png" alt="" onerror="this.style.display='none'"></div>
+    <div class="obc-typing"><div class="obc-dot-t"></div><div class="obc-dot-t"></div><div class="obc-dot-t"></div></div>`;
+  feed.appendChild(typingRow);
+  feed.scrollTop = feed.scrollHeight;
+  setTimeout(() => {
+    const tr = document.getElementById('obcTypingRow');
+    if (tr) tr.remove();
+    callback();
+  }, 900);
+}
+
+function _obcRenderBottom() {
+  const bottom = document.getElementById('obcBottom');
+  bottom.innerHTML = '';
+
+  if (_obcStep === 1) {
+    bottom.innerHTML = `
+      <input class="obc-name-input" id="obcNameInput" type="text" placeholder="Tu nombre o apodo..." maxlength="30">
+      <button class="obc-btn" id="obcBtn" disabled onclick="obcSubmitName()">Continuar →</button>`;
+    const inp = document.getElementById('obcNameInput');
+    inp.addEventListener('input', () => {
+      document.getElementById('obcBtn').disabled = inp.value.trim().length === 0;
+    });
+    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter' && inp.value.trim()) obcSubmitName(); });
+    setTimeout(() => inp.focus(), 100);
+
+  } else if (_obcStep === 2) {
+    _obcRenderChips([
+      {label:'Menos de 6 meses', val:'beginner'},
+      {label:'6 meses – 2 años', val:'intermediate'},
+      {label:'Más de 2 años', val:'advanced'}
+    ], function(val) { _obcData.experience = val; obcNext(); });
+
+  } else if (_obcStep === 3) {
+    _obcRenderChips([
+      {label:'💪 Ganar músculo', val:'muscle'},
+      {label:'🔥 Perder grasa', val:'fat_loss'},
+      {label:'⚡ Ganar fuerza', val:'strength'},
+      {label:'🧘 Mantenerme', val:'maintenance'}
+    ], function(val) { _obcData.goal = val; obcNext(); });
+
+  } else if (_obcStep === 4) {
+    _obcRenderChips([
+      {label:'2 días', val:2},
+      {label:'3 días', val:3},
+      {label:'4 días', val:4},
+      {label:'5+ días', val:5}
+    ], function(val) { _obcData.days_per_week = val; obcNext(); });
+
+  } else if (_obcStep === 5) {
+    _obcRenderChips([
+      {label:'45 min', val:45},
+      {label:'60 min', val:60},
+      {label:'75 min', val:75},
+      {label:'90 min', val:90}
+    ], function(val) { _obcData.session_duration = val; obcNext(); });
+
+  } else if (_obcStep === 6) {
+    bottom.innerHTML = `
+      <div class="obc-physical-row">
+        <div class="obc-physical-field">
+          <span class="obc-physical-label">Peso (kg)</span>
+          <input class="obc-physical-input" id="obcWeight" type="number" placeholder="70" min="30" max="250">
+        </div>
+        <div class="obc-physical-field">
+          <span class="obc-physical-label">Talla (cm)</span>
+          <input class="obc-physical-input" id="obcHeight" type="number" placeholder="170" min="100" max="230">
+        </div>
+        <div class="obc-physical-field">
+          <span class="obc-physical-label">Edad</span>
+          <input class="obc-physical-input" id="obcAge" type="number" placeholder="25" min="13" max="90">
+        </div>
+      </div>
+      <button class="obc-btn" id="obcBtn" onclick="obcSubmitPhysical()">Continuar →</button>`;
+
+  } else if (_obcStep === 7) {
+    _obcRenderChips([
+      {label:'Hombre', val:'male'},
+      {label:'Mujer', val:'female'},
+      {label:'Prefiero no decirlo', val:'undisclosed'}
+    ], function(val) { _obcData.sex = val; obcNext(); });
+
+  } else if (_obcStep === 8) {
+    if (_obcData.sex !== 'female') {
+      _obcData.menstrual_tracking = false;
+      _obcStep = 8;
+      obcNext();
+      return;
+    }
+    _obcRenderChips([
+      {label:'Sí, actívalo 🌙', val:true},
+      {label:'Ahora no', val:false}
+    ], function(val) { _obcData.menstrual_tracking = val; obcNext(); });
+
+  } else if (_obcStep === 9) {
+    _obcRenderChips([
+      {label:'Ninguna', val:'none'},
+      {label:'Espalda', val:'back'},
+      {label:'Rodillas', val:'knees'},
+      {label:'Hombros', val:'shoulders'},
+      {label:'Otra', val:'other'}
+    ], function(val) { _obcData.injuries = val; obcNext(); });
+
+  } else if (_obcStep === 10) {
+    _obcRenderChips([
+      {label:'Quiero la tuya', val:'suggested'},
+      {label:'Tengo la mía', val:'custom'}
+    ], function(val) { _obcData.routine_choice = val; obcNext(); });
+
+  } else if (_obcStep === 11) {
+    bottom.innerHTML = `<button class="obc-btn" disabled>Generando tu plan...</button>`;
+    _obcGenerateAIRecommendation();
+  }
+}
+
+function _obcRenderChips(options, onSelect) {
+  const bottom = document.getElementById('obcBottom');
+  const chips = document.createElement('div');
+  chips.className = 'obc-chips';
+  chips.innerHTML = options.map(function(o) { return `<div class="obc-chip" data-val='${JSON.stringify(o.val)}'>${o.label}</div>`; }).join('');
+  bottom.appendChild(chips);
+  chips.querySelectorAll('.obc-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      chips.querySelectorAll('.obc-chip').forEach(function(c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+      setTimeout(function() {
+        _obcAddUserBubble(chip.textContent);
+        onSelect(JSON.parse(chip.dataset.val));
+      }, 200);
+    });
+  });
+}
+
+function obcSubmitName() {
+  const val = document.getElementById('obcNameInput') ? document.getElementById('obcNameInput').value.trim() : '';
+  if (!val) return;
+  _obcData.nickname = val;
+  _obcAddUserBubble(val);
+  obcNext();
+}
+
+function obcSubmitPhysical() {
+  const w = parseFloat(document.getElementById('obcWeight') ? document.getElementById('obcWeight').value : '');
+  const h = parseFloat(document.getElementById('obcHeight') ? document.getElementById('obcHeight').value : '');
+  const a = parseInt(document.getElementById('obcAge') ? document.getElementById('obcAge').value : '');
+  if (!w || !h || !a) { showToast('Por favor completa todos los datos', 'warning'); return; }
+  _obcData.weight = w;
+  _obcData.height = h;
+  _obcData.age = a;
+  _obcAddUserBubble(`${w}kg · ${h}cm · ${a} años`);
+  obcNext();
+}
+
+const OBC_QUESTIONS = {
+  2: function(d) { return `¡Perfecto, <strong>${d.nickname}</strong>! Cuéntame — ¿cuánto tiempo llevas entrenando con pesas?`; },
+  3: function(d) { return `Muy bien. ¿Cuál es tu objetivo principal ahora mismo?`; },
+  4: function(d) { return `¿Cuántos días a la semana puedes entrenar?`; },
+  5: function(d) { return `¿Cuánto tiempo tienes disponible por sesión?`; },
+  6: function(d) { return `Dame tus datos físicos para personalizar las cargas — peso, talla y edad.`; },
+  7: function(d) { return `Genial. Una pregunta importante — ¿con qué sexo te identificas? Esto me ayuda a personalizar mejor tu plan.`; },
+  8: function(d) { return `¿Quieres que ajustemos tu plan según las fases de tu ciclo menstrual? En semanas de alta energía podemos subir la intensidad, y cuando tu cuerpo necesita más recuperación, lo respetamos.`; },
+  9: function(d) { return `¿Tienes alguna lesión o limitación física que deba tener en cuenta?`; },
+  10: function(d) { return `Ya casi terminamos. ¿Prefieres que yo te sugiera una rutina según tu perfil, o ya tienes una rutina propia que quieres usar?`; },
+  11: function(d) { return null; }
+};
+
+function obcNext() {
+  _obcStep++;
+  _obcUpdateDots();
+  document.getElementById('obcBottom').innerHTML = '';
+
+  if (_obcStep === 8 && _obcData.sex !== 'female') {
+    _obcData.menstrual_tracking = false;
+    _obcStep++;
+  }
+
+  var questionFn = OBC_QUESTIONS[_obcStep];
+  if (_obcStep === 11) {
+    _obcShowTyping(function() {
+      _obcRenderBottom();
+    });
+    return;
+  }
+  if (questionFn) {
+    _obcShowTyping(function() {
+      _obcAddCoachBubble(questionFn(_obcData));
+      _obcRenderBottom();
+    });
+  }
+}
+
+async function _obcGenerateAIRecommendation() {
+  const coach = userProfile.selectedCoach || 'maria';
+  const expLabels = { beginner: 'principiante', intermediate: 'intermedio', advanced: 'avanzado' };
+  const goalLabels = { muscle: 'ganar músculo', fat_loss: 'perder grasa', strength: 'ganar fuerza', maintenance: 'mantenerte' };
+
+  const onboardingMessage = [
+    `[ONBOARDING] Acabo de completar mi perfil. Datos:`,
+    `- Nombre: ${_obcData.nickname}`,
+    `- Nivel: ${expLabels[_obcData.experience] || _obcData.experience}`,
+    `- Objetivo: ${goalLabels[_obcData.goal] || _obcData.goal}`,
+    `- Días por semana: ${_obcData.days_per_week}`,
+    `- Tiempo por sesión: ${_obcData.session_duration} minutos`,
+    `- Peso: ${_obcData.weight}kg, Talla: ${_obcData.height}cm, Edad: ${_obcData.age} años`,
+    `- Lesiones: ${_obcData.injuries || 'ninguna'}`,
+    `- Rutina: ${_obcData.routine_choice === 'custom' ? 'tengo mi propia rutina' : 'quiero que me sugieras una'}`,
+    `Por favor dame en UN solo mensaje (máximo 80 palabras): tu recomendación de rutina específica, 1-2 tips clave según mi objetivo, y pregúntame si activamos el plan. Usa lenguaje natural y cálido.`
+  ].join('\n');
+
+  try {
+    const token = await _getCoachToken();
+    if (!token) throw new Error('sin token');
+
+    const ctrl = new AbortController();
+    const fetchTimeout = setTimeout(() => ctrl.abort(), 20000);
+    let res;
+    try {
+      res = await fetch(`${SB_URL}/functions/v1/coach-chat`, {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coachId: coach,
+          message: onboardingMessage,
+          history: [],
+          context: {
+            profile: {
+              name: _obcData.nickname,
+              age: _obcData.age,
+              sex: _obcData.sex,
+              goal: _obcData.goal,
+              experience: _obcData.experience,
+              training_days: _obcData.days_per_week,
+              session_duration: _obcData.session_duration,
+              injuries: _obcData.injuries
+            },
+            isOnboarding: true,
+            recentWorkouts: [],
+            weekSessions: 0
+          }
+        })
+      });
+    } finally {
+      clearTimeout(fetchTimeout);
+    }
+
+    const rawText = await res.text();
+    let data;
+    try { data = JSON.parse(rawText); } catch(e) { throw new Error('respuesta inválida'); }
+    if (!res.ok || !data.response) throw new Error('respuesta vacía');
+
+    _obcShowTyping(function() {
+      _obcAddCoachBubble(data.response, true);
+      _obcRenderActivationButton();
+    });
+  } catch(e) {
+    console.warn('[obc-ai] fallback activado:', e.message);
+    const fallback = _obcBuildFallbackMessage();
+    _obcShowTyping(function() {
+      _obcAddCoachBubble(fallback, false);
+      _obcRenderActivationButton();
+    });
+  }
+}
+
+function _obcBuildFallbackMessage() {
+  const coach = userProfile.selectedCoach || 'maria';
+  const goalLabels = { muscle: 'ganar músculo', fat_loss: 'perder grasa', strength: 'ganar fuerza', maintenance: 'mantenerte' };
+  const routineMap = {
+    beginner: { muscle: 'Full Body 3×/semana', fat_loss: 'Full Body 3×/semana + cardio', strength: 'Full Body 3×/semana', maintenance: 'Full Body 2-3×/semana' },
+    intermediate: { muscle: 'Push / Pull / Legs', fat_loss: 'Push / Pull / Legs + HIIT', strength: 'Fuerza 4×/semana', maintenance: 'Push / Pull / Legs' },
+    advanced: { muscle: 'Split 4-5 días', fat_loss: 'Split 4 días + cardio', strength: 'Periodización 5×/semana', maintenance: 'Split 4 días' }
+  };
+  const routine = routineMap[_obcData.experience] && routineMap[_obcData.experience][_obcData.goal] ? routineMap[_obcData.experience][_obcData.goal] : 'Full Body 3×/semana';
+  const custom = _obcData.routine_choice === 'custom';
+  if (custom) {
+    return `<strong>${_obcData.nickname}</strong>, trabajamos con tu rutina. Voy a ayudarte a optimizar los tiempos de descanso y ajustarla progresivamente. ¿Arrancamos?`;
+  }
+  return `Con lo que me contaste — <strong>${_obcData.days_per_week} días, ${_obcData.session_duration} min, objetivo ${goalLabels[_obcData.goal]}</strong> — te recomiendo una <strong>${routine}</strong>. Voy a estar aquí después de cada sesión para ajustar lo que necesites. ¿Activamos el plan?`;
+}
+
+function _obcRenderActivationButton() {
+  const bottom = document.getElementById('obcBottom');
+  bottom.innerHTML = `<button class="obc-btn green" onclick="obcActivatePlan()">¡Activar mi plan! →</button>`;
+}
+
+async function obcActivatePlan() {
+  const coach = userProfile.selectedCoach || localStorage.getItem('selectedCoach') || 'maria';
+  const btn = document.querySelector('.obc-btn.green');
+  if (btn) { btn.disabled = true; btn.textContent = 'Activando...'; }
+
+  const expLabels = { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' };
+  userProfile = Object.assign({}, userProfile, {
+    nickname: _obcData.nickname,
+    full_name: _obcData.nickname,
+    age: _obcData.age,
+    sex: _obcData.sex,
+    body_weight: _obcData.weight,
+    body_weight_unit: 'kg',
+    height_cm: _obcData.height,
+    training_days: _obcData.days_per_week,
+    session_duration: _obcData.session_duration,
+    experience: _obcData.experience,
+    training_goal: _obcData.goal,
+    injuries: _obcData.injuries,
+    menstrual_tracking: _obcData.menstrual_tracking,
+    selectedCoach: coach,
+    routine_source: _obcData.routine_choice,
+    onboarding_done: true
+  });
+  localStorage.setItem('aora_user_profile', JSON.stringify(userProfile));
+  localStorage.setItem('selectedCoach', coach);
+  localStorage.setItem('gymtracker_nickname', _obcData.nickname || '');
+
+  if (_obcData.routine_choice === 'suggested') {
+    _obcCreateSuggestedRoutine();
+  }
+
+  if (typeof currentUser !== 'undefined' && currentUser && typeof sb !== 'undefined' && sb) {
+    try {
+      await sb.from('profiles').upsert({
+        id: currentUser.id,
+        full_name: _obcData.nickname,
+        nickname: _obcData.nickname,
+        age: _obcData.age,
+        sex: _obcData.sex,
+        body_weight: _obcData.weight,
+        height_cm: _obcData.height,
+        training_days: _obcData.days_per_week,
+        experience: _obcData.experience,
+        training_goal: _obcData.goal,
+        onboarding_done: true
+      });
+    } catch(e) { console.warn('Supabase sync failed silently', e); }
+  }
+
+  _obcShowCoachTour();
+}
+
+function _obcCreateSuggestedRoutine() {
+  const routineTemplates = {
+    beginner: {
+      muscle:      { name: 'Full Body — Ganar músculo',    days: 3, exercises: [{name:'Sentadilla',sets:3,reps:10,rest:90},{name:'Press de banca',sets:3,reps:10,rest:90},{name:'Remo con barra',sets:3,reps:10,rest:90},{name:'Press militar',sets:3,reps:10,rest:90},{name:'Curl de bíceps',sets:3,reps:12,rest:60},{name:'Extensión de tríceps',sets:3,reps:12,rest:60}] },
+      fat_loss:    { name: 'Full Body — Perder grasa',     days: 3, exercises: [{name:'Sentadilla',sets:3,reps:15,rest:60},{name:'Peso muerto rumano',sets:3,reps:12,rest:60},{name:'Press de banca',sets:3,reps:12,rest:60},{name:'Jalón al pecho',sets:3,reps:12,rest:60},{name:'Plancha',sets:3,reps:1,rest:45},{name:'Burpees',sets:3,reps:10,rest:60}] },
+      strength:    { name: 'Full Body — Ganar fuerza',     days: 3, exercises: [{name:'Sentadilla',sets:4,reps:5,rest:180},{name:'Press de banca',sets:4,reps:5,rest:180},{name:'Peso muerto',sets:3,reps:5,rest:180},{name:'Press militar',sets:3,reps:6,rest:120}] },
+      maintenance: { name: 'Full Body — Mantenimiento',    days: 3, exercises: [{name:'Sentadilla',sets:3,reps:10,rest:90},{name:'Press de banca',sets:3,reps:10,rest:90},{name:'Remo con barra',sets:3,reps:10,rest:90},{name:'Press militar',sets:3,reps:10,rest:90}] }
+    },
+    intermediate: {
+      muscle:      { name: 'Push / Pull / Legs — Músculo', days: 3, exercises: [{name:'Press de banca',sets:4,reps:10,rest:90},{name:'Press inclinado',sets:3,reps:10,rest:90},{name:'Remo con barra',sets:4,reps:10,rest:90},{name:'Jalón al pecho',sets:3,reps:10,rest:90},{name:'Sentadilla',sets:4,reps:10,rest:90},{name:'Prensa de piernas',sets:3,reps:12,rest:90}] },
+      fat_loss:    { name: 'Push / Pull / Legs — Grasa',   days: 4, exercises: [{name:'Press de banca',sets:4,reps:12,rest:60},{name:'Remo con barra',sets:4,reps:12,rest:60},{name:'Sentadilla',sets:4,reps:12,rest:60},{name:'Peso muerto rumano',sets:3,reps:12,rest:60},{name:'Plancha',sets:3,reps:1,rest:45}] },
+      strength:    { name: 'Fuerza — Intermedio',           days: 4, exercises: [{name:'Sentadilla',sets:5,reps:5,rest:180},{name:'Press de banca',sets:5,reps:5,rest:180},{name:'Peso muerto',sets:3,reps:5,rest:180},{name:'Press militar',sets:4,reps:6,rest:120},{name:'Remo con barra',sets:4,reps:6,rest:120}] },
+      maintenance: { name: 'Push / Pull / Legs — Mantener',days: 3, exercises: [{name:'Press de banca',sets:3,reps:10,rest:90},{name:'Remo con barra',sets:3,reps:10,rest:90},{name:'Sentadilla',sets:3,reps:10,rest:90},{name:'Press militar',sets:3,reps:10,rest:90}] }
+    },
+    advanced: {
+      muscle:      { name: 'Split 4 días — Hipertrofia',   days: 4, exercises: [{name:'Press de banca',sets:5,reps:8,rest:90},{name:'Press inclinado',sets:4,reps:10,rest:90},{name:'Aperturas con mancuerna',sets:3,reps:12,rest:75},{name:'Remo con barra',sets:5,reps:8,rest:90},{name:'Jalón al pecho',sets:4,reps:10,rest:90},{name:'Sentadilla',sets:5,reps:8,rest:120},{name:'Peso muerto rumano',sets:4,reps:10,rest:90}] },
+      fat_loss:    { name: 'Split 4 días — Definición',    days: 4, exercises: [{name:'Press de banca',sets:4,reps:12,rest:60},{name:'Remo con barra',sets:4,reps:12,rest:60},{name:'Sentadilla',sets:4,reps:12,rest:60},{name:'Peso muerto',sets:3,reps:10,rest:75},{name:'Plancha',sets:3,reps:1,rest:45}] },
+      strength:    { name: 'Periodización — Fuerza',       days: 5, exercises: [{name:'Sentadilla',sets:5,reps:4,rest:240},{name:'Press de banca',sets:5,reps:4,rest:240},{name:'Peso muerto',sets:4,reps:4,rest:240},{name:'Press militar',sets:4,reps:5,rest:180},{name:'Remo con barra',sets:4,reps:5,rest:180}] },
+      maintenance: { name: 'Split 4 días — Mantenimiento', days: 4, exercises: [{name:'Press de banca',sets:3,reps:10,rest:90},{name:'Remo con barra',sets:3,reps:10,rest:90},{name:'Sentadilla',sets:3,reps:10,rest:90},{name:'Press militar',sets:3,reps:10,rest:90},{name:'Peso muerto rumano',sets:3,reps:10,rest:90}] }
+    }
+  };
+
+  const level = _obcData.experience || 'beginner';
+  const goal  = _obcData.goal || 'muscle';
+  const template = (routineTemplates[level] && routineTemplates[level][goal]) ? routineTemplates[level][goal] : routineTemplates.beginner.muscle;
+
+  const newRoutine = {
+    id: 'routine_ob_' + Date.now(),
+    name: template.name,
+    muscle_group: null,
+    exercises: template.exercises.map(function(ex, i) {
+      return {
+        id: 'ex_ob_' + i + '_' + Date.now(),
+        name: ex.name,
+        sets: ex.sets,
+        reps: ex.reps,
+        rest_seconds: ex.rest,
+        notes: ''
+      };
+    }),
+    scheduled_days: _obcData.days_per_week,
+    use_count: 0,
+    created_at: new Date().toISOString(),
+    source: 'onboarding_ai'
+  };
+
+  const existingRoutines = _getLocalRoutines();
+  existingRoutines.unshift(newRoutine);
+  _saveLocalRoutines(existingRoutines);
+}
+
+function _obcShowCoachTour() {
+  const coach = userProfile.selectedCoach || 'maria';
+  const name = _obcData.nickname || '';
+  const isCustom = _obcData.routine_choice === 'custom';
+
+  const feed = document.getElementById('obcFeed');
+  feed.scrollTop = feed.scrollHeight;
+
+  _obcShowTyping(function() {
+    const tourMsg = isCustom
+      ? `¡Listo <strong>${name}</strong>! Cuando entres a la app, carga tu rutina en la sección de Entrenamiento para que pueda analizarla. Aquí te explico cómo funciona todo:`
+      : `¡Listo <strong>${name}</strong>! Tu plan está activado. Aquí te cuento cómo sacarle el máximo provecho:`;
+
+    _obcAddCoachBubble(tourMsg);
+
+    setTimeout(function() {
+      const feedEl = document.getElementById('obcFeed');
+      const tourRow = document.createElement('div');
+      tourRow.className = 'obc-msg-row';
+      tourRow.innerHTML = `
+        <div style="width:28px;flex-shrink:0"></div>
+        <div class="obc-coach-tour">
+          <div class="obc-tour-item">
+            <div class="obc-tour-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="obc-tour-txt">Registra cada serie<small>Anoto tus cargas, reps y esfuerzo en cada sesión</small></div>
+          </div>
+          <div class="obc-tour-item">
+            <div class="obc-tour-icon violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="obc-tour-txt">El timer de descanso es clave<small>Te indico cuándo es el momento exacto para tu próxima serie</small></div>
+          </div>
+          <div class="obc-tour-item">
+            <div class="obc-tour-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00C896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div class="obc-tour-txt">Análisis después de cada sesión<small>Te hablo directo con insights y lo que debes ajustar</small></div>
+          </div>
+        </div>`;
+      feedEl.appendChild(tourRow);
+      feedEl.scrollTop = feedEl.scrollHeight;
+
+      setTimeout(function() {
+        const bottomEl = document.getElementById('obcBottom');
+        bottomEl.innerHTML = `<button class="obc-btn green" onclick="obcEnterApp()">¡Ir a la app! →</button>`;
+        if (isCustom) {
+          setTimeout(function() {
+            bottomEl.innerHTML += '<div style="margin-top:8px;padding:11px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;">📋 <strong style="color:var(--primary)">Recuerda</strong> — carga tu rutina antes de tu primera sesión para que pueda analizarla</div>';
+          }, 300);
+        }
+      }, 400);
+    }, 600);
+  });
+}
+
+function obcEnterApp() {
+  localStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
+  if (typeof updateProfileUI === 'function') updateProfileUI();
+  if (typeof loadHomeData === 'function') loadHomeData();
+  showScreen('home');
+
+  if (_obcData.routine_choice === 'custom') {
+    setTimeout(function() {
+      const coachName = OBC_INTROS[userProfile.selectedCoach] ? OBC_INTROS[userProfile.selectedCoach].name : 'tu coach';
+      showToast('📋 Carga tu rutina — ' + coachName + ' está lista para analizarla', 'info', 5000);
+    }, 1000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // ONBOARDING
 // ═══════════════════════════════════════════════════════════
 let _obStep = 1;
@@ -13199,35 +13824,55 @@ function showWelcomeScreens() {
   updateWelcomeSlide();
 }
 
+let _wSelectedCoach = null;
+
+function wSelectCoach(coach, el) {
+  _wSelectedCoach = coach;
+  document.querySelectorAll('.w-coach-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const hint = document.querySelector('.w-slide2-hint');
+  if (hint) hint.textContent = '¡Perfecto! Toca Siguiente para continuar';
+  const btn = document.getElementById('welcomeBtnNext');
+  if (btn) { btn.textContent = '¡Empecemos! →'; btn.classList.add('w-final'); }
+}
+
 function updateWelcomeSlide() {
   document.querySelectorAll('.welcome-slide').forEach(s => s.classList.remove('active'));
   document.getElementById(`welcomeSlide${_welcomeStep}`).classList.add('active');
   document.getElementById('welcomeSlideNum').textContent = _welcomeStep;
-  document.getElementById('welcomeProgressFill').style.width = (_welcomeStep * 25) + '%';
-
+  document.getElementById('welcomeProgressFill').style.width = (_welcomeStep * 50) + '%';
   const nextBtn = document.getElementById('welcomeBtnNext');
-  if (_welcomeStep === 4) {
-    nextBtn.textContent = '¡Empecemos! →';
-    nextBtn.classList.add('w-final');
-  } else {
+  if (_welcomeStep === 1) {
     nextBtn.textContent = 'Siguiente →';
     nextBtn.classList.remove('w-final');
+  } else if (_welcomeStep === 2) {
+    if (_wSelectedCoach) {
+      nextBtn.textContent = '¡Empecemos! →';
+      nextBtn.classList.add('w-final');
+    } else {
+      nextBtn.textContent = 'Siguiente →';
+      nextBtn.classList.remove('w-final');
+    }
   }
 }
 
 function nextWelcomeSlide() {
-  if (_welcomeStep < 4) {
+  if (_welcomeStep < 2) {
     _welcomeStep++;
     updateWelcomeSlide();
   } else {
+    if (_wSelectedCoach) {
+      userProfile.selectedCoach = _wSelectedCoach;
+      localStorage.setItem('selectedCoach', _wSelectedCoach);
+    }
     localStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
-    showOnboarding(false);
+    showObChat();
   }
 }
 
 function skipWelcome() {
   localStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
-  showOnboarding(false);
+  showObChat();
 }
 
 function showOnboarding(editMode) {
