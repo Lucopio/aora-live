@@ -9363,7 +9363,7 @@ const EXERCISE_EN = {
   'Press declinado':'decline bench press','Pull-over con mancuerna':'dumbbell pullover',
   'Press en máquina':'machine chest press','Dominadas':'pull up',
   'Remo con barra':'barbell row','Remo con mancuerna':'dumbbell row',
-  'Jalones al pecho':'lat pulldown','Remo en maquina':'seated cable row',
+  'Jalones al pecho':'lat pulldown','Jalón al pecho':'lat pulldown','Remo en maquina':'seated cable row',
   'Peso muerto':'deadlift','Remo en T':'t bar row','Face pull':'face pull',
   'Jalones con agarre neutro':'neutral grip pulldown','Pullover en polea':'cable pullover',
   'Hiperextensiones':'back extension','Press militar':'overhead press',
@@ -9416,7 +9416,7 @@ const WARMUP_EXERCISE_EN = {
   // Espalda
   'Cat-Cow (movimiento de columna)':       'cat cow stretch',
   'Dead bugs (boca arriba, brazos y piernas)': 'dead bug',
-  'Jalón al pecho muy ligero':             'lat pulldown',
+  'Jalón al pecho muy ligero':             'chin up', // API no tiene jalón con cable — chin-up tiene el mismo patrón de movimiento
   'Band pull-aparts (banda elástica)':     'band pull apart',
   'Extensiones de espalda':                'back extension',
   'Rotación torácica':                     'thoracic rotation',
@@ -9501,7 +9501,7 @@ const EXERCISE_IDS = {
   'dumbbell lunge':        'exr_41n2hYXWwoxiUk57',
   'plank':                 'exr_41n2hXQw5yAbbXL8',
   'leg raise':             'exr_41n2hMZCmZBvQApL',
-  'lat pulldown':          'exr_41n2hadPLLFRGvFk',
+  'lat pulldown':          'exr_41n2hXszY7TgwKy4', // Chin-Up (mejor sustituto disponible — mismo patrón de jalón)
 };
 
 async function loadExerciseGif(exerciseName) {
@@ -10142,9 +10142,13 @@ function startScienceRoutine(level, time, dayIdx) {
   });
 
   pendingExercises = day.exercises.map(e => ({ name: e.name, equipment: e.equipment || '' }));
+  window._userOverrodeRest = true;
   _updateTodayWorkoutCard();
   closeRoutinesSheet();
-  setTimeout(() => openConfig(), 400);
+  // Ir directo al modeModal — descanso ya configurado, no necesita configSheet
+  setTimeout(() => {
+    document.getElementById('modeModal').classList.add('active');
+  }, 400);
 }
 
 function cancelCatalogChange() {
@@ -12535,6 +12539,31 @@ function saveToStorage() {
 }
 
 function loadFromStorage() {
+  // ─── Cache bust v2: borrar entradas con ID incorrecto (exr_41n2hadPLLFRGvFk = "Sliding Floor Pulldown on Towel")
+  const WRONG_EXERCISE_ID = 'exr_41n2hadPLLFRGvFk';
+  const BAD_GIF_KEYS      = ['jalones al pecho', 'jalón al pecho', 'jalón al pecho muy ligero', 'jalones al pecho (muy ligero)'];
+  try {
+    const wCache = JSON.parse(localStorage.getItem('aora_gif_cache') || '{}');
+    let wChanged = false;
+    BAD_GIF_KEYS.forEach(k => { if (wCache[k]) { delete wCache[k]; wChanged = true; } });
+    // También borrar cualquier entrada que contenga la URL del ejercicio incorrecto
+    Object.keys(wCache).forEach(k => {
+      const v = wCache[k];
+      const url = typeof v === 'string' ? v : v?.url || '';
+      if (url.includes(WRONG_EXERCISE_ID)) { delete wCache[k]; wChanged = true; }
+    });
+    if (wChanged) localStorage.setItem('aora_gif_cache', JSON.stringify(wCache));
+  } catch(e) {}
+  try {
+    const wuCache = JSON.parse(localStorage.getItem('aora_warmup_gif_cache') || '{}');
+    let wuChanged = false;
+    BAD_GIF_KEYS.forEach(k => { if (wuCache[k]) { delete wuCache[k]; wuChanged = true; } });
+    Object.keys(wuCache).forEach(k => {
+      if ((wuCache[k] || '').includes(WRONG_EXERCISE_ID)) { delete wuCache[k]; wuChanged = true; }
+    });
+    if (wuChanged) localStorage.setItem('aora_warmup_gif_cache', JSON.stringify(wuCache));
+  } catch(e) {}
+
   // Limpiar ambos cachés de GIFs — eliminar nulls, strings vacíos y no-URLs
   ['aora_gif_cache', 'aora_warmup_gif_cache'].forEach(key => {
     try {
@@ -13721,10 +13750,15 @@ function _obcCreateSuggestedRoutine() {
   const goal  = _obcData.goal || 'muscle';
   const template = (routineTemplates[level] && routineTemplates[level][goal]) ? routineTemplates[level][goal] : routineTemplates.beginner.muscle;
 
+  // Calcular descanso representativo de la plantilla (moda del primer ejercicio)
+  const templateRest = template.exercises[0]?.rest || 90;
+
   const newRoutine = {
     id: 'routine_ob_' + Date.now(),
     name: template.name,
     muscle_group: null,
+    muscle_groups: [],
+    default_rest_seconds: templateRest,
     exercises: template.exercises.map(function(ex, i) {
       return {
         id: 'ex_ob_' + i + '_' + Date.now(),
