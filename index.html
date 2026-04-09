@@ -2878,6 +2878,7 @@ body {
       </div>
       <div id="weekDayDots" style="display:flex;gap:4px"></div>
       <div id="weekDayLabels" style="display:flex;gap:4px;margin-top:4px"></div>
+      <div id="weekFirstTip" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(0,229,255,0.05);border-left:2px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.6"></div>
     </div>
 
     <!-- ⑥ TARJETA DE CONTENIDO DIARIA -->
@@ -3438,9 +3439,9 @@ body {
       Rutinas Express · máx 30 min
     </button>
 
-    <button onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
+    <button id="routinesByLevelBtn" onclick="showRoutinesSheet()" style="width:100%;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px">
       <div class="icon-tile-sm" style="width:28px;height:28px;border-radius:8px"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--text-secondary)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-      Rutinas por nivel (Principiante · Intermedio · Avanzado)
+      <span id="routinesByLevelBtnText">Rutinas por nivel (Principiante · Intermedio · Avanzado)</span>
     </button>
 
     <div class="section-title" style="margin-bottom:12px">Recientes</div>
@@ -5118,7 +5119,7 @@ function renderMuscleFatigue() {
   const withData = fatigueData.filter(g => g.daysSince !== null);
   if (withData.length === 0) {
     mapEl.innerHTML = buildMuscleMapHTML('muscleFatigueMap', { mode: 'fatigue' });
-    if (empty) empty.style.display = 'none';
+    if (empty) empty.style.display = 'block'; // mostrar guía cuando no hay datos
     return;
   }
   if (empty) empty.style.display = 'none';
@@ -5164,6 +5165,26 @@ function renderWeekDots() {
   let streak = 0;
   for (let i = todayOffset; i >= 0; i--) { if (dayHasWorkout(i)) streak++; else break; }
   if (badgeEl) badgeEl.textContent = streak > 0 ? '🔥 ' + streak + ' día' + (streak > 1 ? 's' : '') : '';
+
+  // Tip del coach para usuario nuevo (sin entrenamientos aún)
+  const tipEl = document.getElementById('weekFirstTip');
+  if (tipEl) {
+    if (savedWorkouts.length === 0) {
+      const coach = getSelectedCoach() || { name: 'Tu coach', emoji: '🤖' };
+      const nick = userProfile.nickname ? userProfile.nickname + ', r' : 'R';
+      const coachTips = {
+        maria:  `${nick}egistra cada entrenamiento para que pueda personalizar tu plan. Y recuerda: hidratación antes, durante y después — es parte del entreno. 💧`,
+        carlos: `${nick}egistra cada sesión. Sin datos no hay progreso medible. La hidratación no es opcional — 500ml antes de entrenar, mínimo.`,
+        andrea: `${nick}egistrar tus entrenamientos te permite ver patrones reales de progreso. Y nunca subestimes el agua — el rendimiento cae 10% con solo 2% de deshidratación.`,
+        diego:  `${nick}egistra tu primer entrenamiento hoy. La constancia se construye con registros. Agua: tu mejor aliada antes de cualquier sesión.`
+      };
+      const msg = coachTips[coach.id] || coachTips.maria;
+      tipEl.innerHTML = '<strong>' + coach.name + ':</strong> ' + msg;
+      tipEl.style.display = 'block';
+    } else {
+      tipEl.style.display = 'none';
+    }
+  }
 }
 
 const HOME_DAILY_CONTENT = [
@@ -5228,6 +5249,28 @@ function updateWorkoutHub() {
     const recLabel = isRO ? (w.restCount || 0) + ' descansos' : w.exercises + ' ejercicios';
     return '<div class="recent-item"><div class="recent-left"><div class="recent-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="recent-info"><h4>' + (isRO ? 'Solo descansos' : 'Entrenamiento') + '</h4><p>' + dayStr + ', ' + timeStr + ' - ' + recLabel + '</p></div></div><div class="recent-duration">' + formatTimeMM(w.duration) + '</div></div>';
   }).join('');
+
+  // Sincronizar banner de rutina con la selección actual
+  updateRoutineBanner(currentSelectedRoutine);
+
+  // Ajustar visibilidad del botón "Rutinas por nivel" según si ya hay rutina del coach
+  const levelBtn = document.getElementById('routinesByLevelBtn');
+  const levelBtnText = document.getElementById('routinesByLevelBtnText');
+  if (levelBtn && levelBtnText) {
+    const hasCoachRoutine = currentSelectedRoutine && (currentSelectedRoutine.source === 'onboarding_ai' || currentSelectedRoutine.source === 'coach');
+    if (hasCoachRoutine) {
+      levelBtn.style.padding = '8px 16px';
+      levelBtn.style.fontSize = '12px';
+      levelBtn.style.opacity = '0.55';
+      levelBtn.style.marginBottom = '16px';
+      levelBtnText.textContent = 'Explorar otras rutinas →';
+    } else {
+      levelBtn.style.padding = '';
+      levelBtn.style.fontSize = '';
+      levelBtn.style.opacity = '';
+      levelBtnText.textContent = 'Rutinas por nivel (Principiante · Intermedio · Avanzado)';
+    }
+  }
 }
 
 // Onboarding coach profile overlay
@@ -5278,8 +5321,23 @@ function obSelectCoach(el, coachId) {
 }
 
 function selectCoachFromScreen(coachId) {
+  _migrateCoachHistory(coachId);
   saveSelectedCoach(coachId);
   updateCoachSpotlight();
+}
+
+// Al cambiar de coach, migrar el historial al nuevo para mantener el contexto
+function _migrateCoachHistory(newCoachId) {
+  try {
+    const prevCoach = getSelectedCoach();
+    if (!prevCoach || prevCoach.id === newCoachId) return;
+    const prevHistory = getChatHistory(prevCoach.id);
+    if (!prevHistory.length) return;
+    const newHistory = getChatHistory(newCoachId);
+    if (newHistory.length > 0) return; // el nuevo coach ya tiene conversación propia
+    // Copiar historial anterior al nuevo coach para mantener continuidad
+    saveChatHistory(newCoachId, prevHistory);
+  } catch(e) {}
 }
 
 // ─── COACH CHANGE SHEET ────────────────────────────────────────────────────
@@ -12646,6 +12704,15 @@ function loadFromStorage() {
       }
     }
   } catch(e) {}
+
+  // Auto-seleccionar la rutina del onboarding si existe y no hay ninguna seleccionada
+  try {
+    if (!currentSelectedRoutine) {
+      const routines = _getLocalRoutines();
+      const obRoutine = routines.find(r => r.source === 'onboarding_ai');
+      if (obRoutine) currentSelectedRoutine = obRoutine;
+    }
+  } catch(e) {}
 }
 
 function updateHomeStats() {
@@ -13318,6 +13385,7 @@ let _obcData = {
   sex: null, menstrual_tracking: false, injuries: null,
   routine_choice: null
 };
+let _obcHistory = []; // mensajes del onboarding — se guardan en el chat del coach al activar el plan
 
 function showObChat() {
   const coach = userProfile.selectedCoach || localStorage.getItem('selectedCoach') || 'maria';
@@ -13331,6 +13399,7 @@ function showObChat() {
 
   _obcStep = 0;
   _obcData = { nickname:null, experience:null, goal:null, days_per_week:null, session_duration:null, weight:null, height:null, age:null, sex:null, menstrual_tracking:false, injuries:null, routine_choice:null };
+  _obcHistory = [];
   document.getElementById('obcFeed').innerHTML = '';
   _obcUpdateDots();
 
@@ -13359,6 +13428,7 @@ function _obcUpdateDots() {
 
 function _obcAddCoachBubble(html, isAI) {
   isAI = isAI || false;
+  _obcHistory.push({ role: 'assistant', content: html });
   const coach = userProfile.selectedCoach || 'maria';
   const feed = document.getElementById('obcFeed');
   const aiTag = isAI ? '<span class="obc-ai-tag">✦ IA</span>' : '';
@@ -13372,6 +13442,7 @@ function _obcAddCoachBubble(html, isAI) {
 }
 
 function _obcAddUserBubble(text) {
+  _obcHistory.push({ role: 'user', content: text });
   const feed = document.getElementById('obcFeed');
   const initials = (_obcData.nickname || 'T')[0].toUpperCase();
   const row = document.createElement('div');
@@ -13716,6 +13787,17 @@ async function obcActivatePlan() {
   localStorage.setItem('gymtracker_nickname', _obcData.nickname || '');
   saveToStorage(); // persistir en gymtracker_data para que loadFromStorage() lo recupere al reiniciar
 
+  // Guardar conversación del onboarding en el chat del coach
+  if (_obcHistory.length > 0) {
+    try {
+      const existingHistory = getChatHistory(coach);
+      // El onboarding va primero (es la conversación más antigua)
+      const merged = [..._obcHistory, ...existingHistory].slice(-30);
+      saveChatHistory(coach, merged);
+      _obcHistory = [];
+    } catch(e) {}
+  }
+
   if (_obcData.routine_choice === 'suggested') {
     _obcCreateSuggestedRoutine();
   }
@@ -13795,6 +13877,9 @@ function _obcCreateSuggestedRoutine() {
   const existingRoutines = _getLocalRoutines();
   existingRoutines.unshift(newRoutine);
   _saveLocalRoutines(existingRoutines);
+
+  // Auto-seleccionar la rutina recién creada
+  currentSelectedRoutine = newRoutine;
 }
 
 function _obcShowCoachTour() {
