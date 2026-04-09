@@ -5697,6 +5697,10 @@ function showCoachProfile(coachId, origin) {
   if (ctaName) ctaName.textContent = coach.name;
 
   showScreen('coachProfile');
+  // Mantener el nav oculto si venimos del flujo de onboarding/welcome
+  if (origin === 'welcome' || origin === 'onboarding') {
+    document.getElementById('bottomNav').classList.add('hidden');
+  }
 }
 
 function initCoachChat() {
