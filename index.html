@@ -13673,7 +13673,7 @@ async function obcActivatePlan() {
     onboarding_done: true
   });
   localStorage.setItem('aora_user_profile', JSON.stringify(userProfile));
-  localStorage.setItem('selectedCoach', coach);
+  saveSelectedCoach(coach);
   localStorage.setItem('gymtracker_nickname', _obcData.nickname || '');
 
   if (_obcData.routine_choice === 'suggested') {
@@ -13889,7 +13889,7 @@ function nextWelcomeSlide() {
   } else {
     if (_wSelectedCoach) {
       userProfile.selectedCoach = _wSelectedCoach;
-      localStorage.setItem('selectedCoach', _wSelectedCoach);
+      saveSelectedCoach(_wSelectedCoach);
     }
     localStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
     showObChat();
