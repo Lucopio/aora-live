@@ -6022,7 +6022,7 @@ function showScreen(name) {
   const el = document.getElementById(screenMap[name]);
   if (el) el.classList.add('active');
   const nav = document.getElementById('bottomNav');
-  ['summary','catalog','warmup','auth','onboarding','welcome'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  ['summary','catalog','warmup','auth','onboarding','welcome','obChat'].includes(name) ? nav.classList.add('hidden') : nav.classList.remove('hidden');
   if (name === 'history') renderHistory();
   if (name === 'insights') { renderInsights(); loadLastAIInsights(); updateAnalyticsScreen(); }
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); }
