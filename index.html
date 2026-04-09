@@ -13457,13 +13457,7 @@ function _obcRenderBottom() {
   } else if (_obcStep === 11) {
     if (_obcData.routine_choice === 'custom') {
       const name = _obcData.nickname || '';
-      _obcAddCoachBubble(
-        `¡Perfecto <strong>${name}</strong>! Vamos a trabajar con tu rutina. Para sacarle el máximo provecho:<br><br>` +
-        `📋 <strong>Ingrésala en Rutinas</strong> — ve a la sección de entrenamiento, crea una rutina con tus ejercicios habituales y ya podremos analizarla juntos en cada sesión.<br><br>` +
-        `📊 <strong>Registra cada serie</strong> con peso, repeticiones y esfuerzo para que vea tu progresión real semana a semana.<br><br>` +
-        `⏱ <strong>Activa el timer de descanso</strong> — te voy a sugerir los tiempos óptimos para cada grupo muscular y así maximizas la recuperación entre series.<br><br>` +
-        `Con estos datos puedo darte recomendaciones precisas y ajustar tu rutina cuando lo necesites.`
-      );
+      _obcAddCoachBubble(`Perfecto <strong>${name}</strong>, vamos a trabajar con tu rutina para sacarle el máximo provecho.`);
       bottom.innerHTML = `<button class="obc-btn green" onclick="obcActivatePlan()">¡Entendido, ir a la app! →</button>`;
     } else {
       bottom.innerHTML = `<button class="obc-btn" disabled>Generando tu plan...</button>`;
@@ -13762,7 +13756,7 @@ function _obcShowCoachTour() {
 
   _obcShowTyping(function() {
     const tourMsg = isCustom
-      ? `¡Listo <strong>${name}</strong>! Cuando entres a la app, carga tu rutina en la sección de Entrenamiento para que pueda analizarla. Aquí te explico cómo funciona todo:`
+      ? `¡Listo <strong>${name}</strong>! Aquí te cuento cómo funciona la app:`
       : `¡Listo <strong>${name}</strong>! Tu plan está activado. Aquí te cuento cómo sacarle el máximo provecho:`;
 
     _obcAddCoachBubble(tourMsg);
@@ -13796,15 +13790,21 @@ function _obcShowCoachTour() {
       feedEl.appendChild(tourRow);
       feedEl.scrollTop = feedEl.scrollHeight;
 
-      setTimeout(function() {
-        const bottomEl = document.getElementById('obcBottom');
-        bottomEl.innerHTML = `<button class="obc-btn green" onclick="obcEnterApp()">¡Ir a la app! →</button>`;
-        if (isCustom) {
-          setTimeout(function() {
-            bottomEl.innerHTML += '<div style="margin-top:8px;padding:11px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;">📋 <strong style="color:var(--primary)">Recuerda</strong> — carga tu rutina antes de tu primera sesión para que pueda analizarla</div>';
-          }, 300);
-        }
-      }, 400);
+      if (isCustom) {
+        // Para custom: bubble del coach con el recordatorio de la rutina, luego el botón
+        setTimeout(function() {
+          _obcShowTyping(function() {
+            _obcAddCoachBubble(`📋 Y cuando estés listo — carga tu rutina en la sección <strong>Rutinas</strong> para que pueda analizarla durante cada sesión de entrenamiento.`);
+            const bottomEl = document.getElementById('obcBottom');
+            bottomEl.innerHTML = `<button class="obc-btn green" onclick="obcEnterApp()">¡Ir a la app! →</button>`;
+          });
+        }, 400);
+      } else {
+        setTimeout(function() {
+          const bottomEl = document.getElementById('obcBottom');
+          bottomEl.innerHTML = `<button class="obc-btn green" onclick="obcEnterApp()">¡Ir a la app! →</button>`;
+        }, 400);
+      }
     }, 600);
   });
 }
