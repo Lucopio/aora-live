@@ -9371,6 +9371,34 @@ const WARMUP_EXERCISE_EN = {
   'Elevacion de piernas':                  'leg raise',
 };
 
+// ─── AscendAPI exerciseIds hardcodeados (evita llamada de búsqueda) ──────────
+const EXERCISE_IDS = {
+  // Exactos
+  'bench press':           'exr_41n2hxnFMotsXTj3',
+  'pull up':               'exr_41n2hU4y6EaYXFhr',
+  'chest dip':             'exr_41n2hkK8hGAcSnW7',
+  'romanian deadlift':     'exr_41n2hn8rpbYihzEW',
+  'bulgarian split squat': 'exr_41n2hpLLs1uU5atr',
+  'standing calf raise':   'exr_41n2hdWu3oaCGdWT',
+  'lateral raise':         'exr_41n2hjuGpcex14w7',
+  'arnold press':          'exr_41n2hMRXm49mM62z',
+  'hammer curl':           'exr_41n2hGioS8HumEF7',
+  'skull crusher':         'exr_41n2hdHtZrMPkcqY',
+  'tricep dip':            'exr_41n2hndkoGHD1ogh',
+  'crunch':                'exr_41n2hskeb9dXgBoC',
+  'russian twist':         'exr_41n2hWVVEwU54UtF',
+  'burpee':                'exr_41n2hqYdxG87hXz1',
+  // Mejor match disponible
+  'barbell squat':         'exr_41n2hmGR8WuVfe1U',
+  'overhead press':        'exr_41n2hs6camM22yBG',
+  'barbell row':           'exr_41n2hY9EdwkdGz9a',
+  'barbell hip thrust':    'exr_41n2hxxePSdr5oN1',
+  'dumbbell lunge':        'exr_41n2hYXWwoxiUk57',
+  'plank':                 'exr_41n2hXQw5yAbbXL8',
+  'leg raise':             'exr_41n2hMZCmZBvQApL',
+  'lat pulldown':          'exr_41n2hadPLLFRGvFk',
+};
+
 async function loadExerciseGif(exerciseName) {
   const CACHE_KEY = 'aora_gif_cache';
   const cacheKey  = exerciseName.toLowerCase();
@@ -9383,39 +9411,30 @@ async function loadExerciseGif(exerciseName) {
     if (cached && typeof cached === 'string' && cached.startsWith('http')) return { type: 'gif', url: cached };
   } catch(e) {}
 
-  // 2. ExerciseDB API (GIFs animados)
-  const query = EXERCISE_EN[exerciseName] || exerciseName.toLowerCase();
-  const HEADERS = {
-    'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
-    'x-rapidapi-key':  '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508'
-  };
+  // 2. AscendAPI — exerciseId hardcodeado o null (search endpoint bloqueado por CORS)
+  const ASCEND_KEY  = '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508';
+  const ASCEND_HOST = 'exercisedb.p.rapidapi.com';
+  const engName = (EXERCISE_EN[exerciseName] || exerciseName).toLowerCase();
+  const hardcodedId = EXERCISE_IDS[engName];
+
+  if (!hardcodedId) return null;
+
   try {
-    // Paso 1 — buscar por nombre, obtener exerciseId
-    const searchRes  = await fetch(
-      `https://exercisedb.p.rapidapi.com/exercises/search?search=${encodeURIComponent(query)}&limit=1`,
-      { headers: HEADERS }
+    const detailRes = await fetch(
+      `https://exercisedb.p.rapidapi.com/exercises/${hardcodedId}`,
+      { headers: { 'x-rapidapi-host': ASCEND_HOST, 'x-rapidapi-key': ASCEND_KEY } }
     );
-    const searchData = await searchRes.json();
-    const hit = Array.isArray(searchData) ? searchData[0] : null;
-    if (!hit) return null;
+    const detail = await detailRes.json();
+    const ex = detail?.data || detail;
 
-    let result = null;
-    // Intentar obtener media directa del resultado de búsqueda
-    if (hit.videoUrl)    result = { type: 'video', url: hit.videoUrl };
-    else if (hit.gifUrl) result = { type: 'gif',   url: hit.gifUrl   };
+    const videoUrl = ex?.videoUrl || null;
+    const imageUrl = ex?.imageUrls?.['480p'] || ex?.imageUrl || null;
 
-    // Paso 2 — si no hay media, pedir detalle por ID
-    if (!result && hit.id) {
-      const detailRes = await fetch(
-        `https://exercisedb.p.rapidapi.com/exercises/${hit.id}`,
-        { headers: HEADERS }
-      );
-      const detail = await detailRes.json();
-      if (detail?.videoUrl)    result = { type: 'video', url: detail.videoUrl };
-      else if (detail?.gifUrl) result = { type: 'gif',   url: detail.gifUrl   };
-      else if (detail?.imageUrls?.['480p']) result = { type: 'image', url: detail.imageUrls['480p'] };
-      else if (detail?.imageUrl)           result = { type: 'image', url: detail.imageUrl };
-    }
+    const result = videoUrl
+      ? { type: 'video', url: videoUrl }
+      : imageUrl
+        ? { type: 'image', url: imageUrl }
+        : null;
 
     if (result) {
       try {
@@ -9423,9 +9442,11 @@ async function loadExerciseGif(exerciseName) {
         cache[cacheKey] = result;
         localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
       } catch(e) {}
+      return result;
     }
-    return result;
-  } catch(e) { console.error('[loadExerciseGif]', e); return null; }
+  } catch(e) { console.error('[loadExerciseGif]', e); }
+
+  return null;
 }
 
 // ─── Warmup GIF system (caché separada para no consumir quota del catálogo) ─
