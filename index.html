@@ -4308,15 +4308,32 @@ body {
     <!-- Descanso entre series -->
     <div style="margin-bottom:24px">
       <div class="editor-field-label">Descanso entre series</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorRestChips">
-        <!-- rendered by renderEditorRestChips() -->
+      <div style="font-size:12px;color:var(--text-secondary);margin:6px 0 12px">Selecciona los grupos que vas a trabajar</div>
+      <!-- Group chips grid -->
+      <div id="editorGroupChips" style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px"></div>
+      <!-- Smart rest info (visible cuando 2+ grupos) -->
+      <div id="editorSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente</span>
+        </div>
+        <div id="editorSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
+        <button onclick="toggleEditorFixedRest()" id="editorFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
       </div>
-      <!-- Input personalizado, visible solo cuando se elige "Otro" -->
-      <div id="editorRestCustomRow" style="display:none;margin-top:10px;display:none;align-items:center;gap:10px">
-        <input id="editorRestCustomInput" type="number" min="10" max="600" placeholder="Ej: 75"
-          style="width:90px;background:var(--surface2);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font);font-size:15px;font-weight:700;color:var(--text-primary);outline:none;color-scheme:dark"
-          oninput="applyCustomRest(this.value)">
-        <span style="font-size:13px;color:var(--text-secondary)">segundos</span>
+      <!-- Rest suggestion label -->
+      <div id="editorRestLabel" style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:10px;min-height:16px"></div>
+      <!-- Rest presets wrapper -->
+      <div id="editorRestPresets">
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="editorRestChips">
+          <!-- rendered by renderEditorRestChips() -->
+        </div>
+        <!-- Input personalizado, visible solo cuando se elige "Otro" -->
+        <div id="editorRestCustomRow" style="display:none;margin-top:10px;align-items:center;gap:10px">
+          <input id="editorRestCustomInput" type="number" min="10" max="600" placeholder="Ej: 75"
+            style="width:90px;background:var(--surface2);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font);font-size:15px;font-weight:700;color:var(--text-primary);outline:none;color-scheme:dark"
+            oninput="applyCustomRest(this.value)">
+          <span style="font-size:13px;color:var(--text-secondary)">segundos</span>
+        </div>
       </div>
     </div>
 
@@ -8347,34 +8364,36 @@ function renderCatalog(filter) {
   if (!catalogGroup) {
     titleEl.textContent = 'Seleccionar ejercicio';
     const MUSCLE_GROUP_COLORS = {
-      'Pecho':       { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)' },
-      'Espalda':     { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)' },
-      'Piernas':     { color: '#7B61FF', bg: 'rgba(123,97,255,0.10)' },
-      'Glúteos':     { color: '#7B61FF', bg: 'rgba(123,97,255,0.10)' },
-      'Gluteos':     { color: '#7B61FF', bg: 'rgba(123,97,255,0.10)' },
-      'Hombros':     { color: '#FFB800', bg: 'rgba(255,184,0,0.10)' },
-      'Biceps':      { color: '#FFB800', bg: 'rgba(255,184,0,0.10)' },
-      'Triceps':     { color: '#FFB800', bg: 'rgba(255,184,0,0.10)' },
-      'Abdomen':     { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
-      'Cardio':      { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
-      'Calistenia':  { color: '#00C896', bg: 'rgba(0,200,150,0.10)' },
+      'Pecho':       { color: '#FF6B9D', bg: 'rgba(255,107,157,0.10)' },
+      'Espalda':     { color: '#00B8CC', bg: 'rgba(0,184,204,0.10)'   },
+      'Piernas':     { color: '#34D399', bg: 'rgba(52,211,153,0.10)'  },
+      'Glúteos':     { color: '#F472B6', bg: 'rgba(244,114,182,0.10)' },
+      'Gluteos':     { color: '#F472B6', bg: 'rgba(244,114,182,0.10)' },
+      'Hombros':     { color: '#FFB800', bg: 'rgba(255,184,0,0.10)'   },
+      'Biceps':      { color: '#FF9B42', bg: 'rgba(255,155,66,0.10)'  },
+      'Triceps':     { color: '#A78BFA', bg: 'rgba(167,139,250,0.10)' },
+      'Abdomen':     { color: '#00C896', bg: 'rgba(0,200,150,0.10)'   },
+      'Cardio':      { color: '#EF4444', bg: 'rgba(239,68,68,0.10)'   },
+      'Calistenia':  { color: '#60A5FA', bg: 'rgba(96,165,250,0.10)'  },
     };
     function muscleGroupSvg(g, color) {
-      const c = color || 'var(--text-tertiary)';
+      const c = color || '#8A8F9E';
+      const B = '#5C6380'; const B2 = '#4A4F6A'; const B3 = '#6B7094';
+      const SK = '#3A3D52'; const BG = '#464B6B';
       const svgs = {
-        'Pecho':      `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-        'Espalda':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>`,
-        'Hombros':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-        'Biceps':     `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="6" y1="19" x2="18" y2="19"/></svg>`,
-        'Triceps':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`,
-        'Piernas':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
-        'Glúteos':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-        'Gluteos':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-        'Abdomen':    `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-        'Cardio':     `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-        'Calistenia': `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>`,
+        'Pecho': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M8 14 C8 10 11 8 22 8 C33 8 36 10 36 14 L36 36 C36 38 30 40 22 40 C14 40 8 38 8 36Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M17 8 C17 6 19 5 22 5 C25 5 27 6 27 8 L29 12 C26 13 22 13 22 13 C22 13 18 13 15 12Z" fill="${B}" stroke="${SK}" stroke-width="1.1"/><path d="M9 16 C9 13 11 11 15 11 C18 11 21 13 21 16 L21 26 C18 28 12 27 10 25 C8 23 9 16 9 16Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M35 16 C35 13 33 11 29 11 C26 11 23 13 23 16 L23 26 C26 28 32 27 34 25 C36 23 35 16 35 16Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 14 C11 17 11 21 13 24" stroke="${SK}" stroke-width="0.8" stroke-linecap="round" opacity="0.7"/><path d="M32 14 C33 17 33 21 31 24" stroke="${SK}" stroke-width="0.8" stroke-linecap="round" opacity="0.7"/><line x1="22" y1="11" x2="22" y2="28" stroke="${SK}" stroke-width="1.1" stroke-linecap="round"/><path d="M14 28 C14 28 16 30 22 30 C28 30 30 28 30 28 L30 36 C28 38 22 39 22 39 C22 39 16 38 14 36Z" fill="${B2}" stroke="${SK}" stroke-width="1"/><line x1="22" y1="28" x2="22" y2="38" stroke="${SK}" stroke-width="0.8" opacity="0.7"/><path d="M15 31 C18 32 26 32 29 31" stroke="${SK}" stroke-width="0.7" opacity="0.5"/><path d="M8 14 C6 15 5 17 5 20 C5 23 6 25 8 26 L9 20Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M36 14 C38 15 39 17 39 20 C39 23 38 25 36 26 L35 20Z" fill="${B}" stroke="${SK}" stroke-width="1"/></svg>`,
+        'Espalda': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M8 14 C8 10 12 8 22 8 C32 8 36 10 36 14 L38 32 C38 36 32 40 22 40 C12 40 6 36 6 32Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M18 8 C18 6 20 5 22 5 C24 5 26 6 26 8 L28 12 L22 14 L16 12Z" fill="${B}" stroke="${SK}" stroke-width="1.1"/><path d="M9 14 C9 12 13 10 22 10 C31 10 35 12 35 14 L32 19 C28 17 22 16 22 16 C22 16 16 17 12 19Z" fill="${B2}" stroke="${SK}" stroke-width="1.1"/><path d="M8 20 C6 23 6 28 8 32 C10 35 14 37 18 37 L22 38 L22 18 C18 18 11 19 8 20Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M36 20 C38 23 38 28 36 32 C34 35 30 37 26 37 L22 38 L22 18 C26 18 33 19 36 20Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><line x1="22" y1="10" x2="22" y2="38" stroke="${SK}" stroke-width="1.3" stroke-linecap="round"/><path d="M10 23 C9 27 10 31 12 34" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M34 23 C35 27 34 31 32 34" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M16 16 C16 16 19 17 22 17 C25 17 28 16 28 16 L26 22 L22 23 L18 22Z" fill="${B3}" stroke="${SK}" stroke-width="0.9"/></svg>`,
+        'Hombros': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M13 16 C13 14 16 12 22 12 C28 12 31 14 31 16 L31 38 C28 40 22 40 22 40 C22 40 16 40 13 38Z" fill="${BG}" stroke="${SK}" stroke-width="1.2"/><path d="M18 12 C18 9 20 8 22 8 C24 8 26 9 26 12 L28 15 C26 16 22 16 22 16 C22 16 18 16 16 15Z" fill="${B}" stroke="${SK}" stroke-width="1.1"/><path d="M13 16 C10 15 6 15 5 19 C4 23 5 28 8 30 C10 32 13 31 13 30 L13 16Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M31 16 C34 15 38 15 39 19 C40 23 39 28 36 30 C34 32 31 31 31 30 L31 16Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 19 C6 22 6 26 8 29" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M37 19 C38 22 38 26 36 29" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M13 16 C15 13 18 12 22 12 C26 12 29 13 31 16 L29 19 C26 17 22 17 22 17 C22 17 18 17 15 19Z" fill="${B2}" stroke="${SK}" stroke-width="1"/><path d="M13 22 C13 20 15 18 19 18 L22 19 L22 28 C18 28 13 26 13 22Z" fill="${B3}" stroke="${SK}" stroke-width="0.9" opacity="0.8"/><path d="M31 22 C31 20 29 18 25 18 L22 19 L22 28 C26 28 31 26 31 22Z" fill="${B3}" stroke="${SK}" stroke-width="0.9" opacity="0.8"/></svg>`,
+        'Biceps': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M8 8 C8 6 11 5 18 6 C22 7 24 9 24 11 L22 16 C19 15 14 14 11 14 C9 14 8 12 8 8Z" fill="${B}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M10 14 C8 16 7 20 8 25 C9 29 11 31 14 32 L18 33 L20 32 C22 30 23 27 22 23 C21 19 19 16 16 14Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 16 C8 18 8 23 10 27 C11 29 13 31 16 31 C19 31 21 29 21 26 C21 22 19 18 16 16 C14 15 11 15 10 16Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M10 19 C9 22 10 25 12 27" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M14 17 C13 20 13 24 15 27" stroke="${SK}" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/><path d="M14 32 C13 34 12 37 13 40 L16 42 C19 42 21 40 21 38 C21 35 20 33 18 32Z" fill="${B}" stroke="${SK}" stroke-width="1.1"/><ellipse cx="17" cy="33" rx="4" ry="2.5" fill="${B2}" stroke="${SK}" stroke-width="1"/><path d="M11 18 C10 21 10 25 12 28" stroke="rgba(255,255,255,0.2)" stroke-width="1.1" stroke-linecap="round"/></svg>`,
+        'Triceps': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M36 8 C36 6 33 5 26 6 C22 7 20 9 20 11 L22 16 C25 15 30 14 33 14 C35 14 36 12 36 8Z" fill="${B}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M34 14 C36 16 37 20 36 25 C35 29 33 31 30 32 L26 33 L24 32 C22 30 21 27 22 23 C23 19 25 16 28 14Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M34 16 C36 18 36 23 34 27 C33 29 31 31 28 31 L26 31 L26 16 C29 15 32 15 34 16Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M26 16 L26 31 C24 30 23 28 22 25 C21 22 22 18 24 16Z" fill="${c}" stroke="${SK}" stroke-width="1" stroke-linejoin="round" opacity="0.7"/><path d="M34 18 C35 21 35 26 33 29" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M30 16 C31 20 31 25 29 29" stroke="${SK}" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/><path d="M30 32 C31 34 32 37 31 40 L28 42 C25 42 23 40 23 38 C23 35 24 33 26 32Z" fill="${B}" stroke="${SK}" stroke-width="1.1"/><ellipse cx="27" cy="33" rx="4" ry="2.5" fill="${B2}" stroke="${SK}" stroke-width="1"/><path d="M33 18 C34 22 34 26 32 30" stroke="rgba(255,255,255,0.2)" stroke-width="1.1" stroke-linecap="round"/></svg>`,
+        'Piernas': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M8 8 C8 6 12 5 22 5 C32 5 36 6 36 8 L37 14 C34 16 28 17 22 17 C16 17 10 16 7 14Z" fill="${B2}" stroke="${SK}" stroke-width="1.2"/><path d="M7 14 C5 17 5 25 7 32 C8 36 11 39 15 40 L19 40 L19 14Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M37 14 C39 17 39 25 37 32 C36 36 33 39 29 40 L25 40 L25 14Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 16 C6 19 6 26 8 32 C9 36 12 38 16 39 L19 39 L19 15 C15 15 10 15 8 16Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M36 16 C38 19 38 26 36 32 C35 36 32 38 28 39 L25 39 L25 15 C29 15 34 15 36 16Z" fill="${c}" stroke="${SK}" stroke-width="1.2" stroke-linejoin="round"/><path d="M13 18 C12 23 12 29 14 34" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M31 18 C32 23 32 29 30 34" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><ellipse cx="14" cy="40" rx="5.5" ry="3" fill="${B2}" stroke="${SK}" stroke-width="1.1"/><ellipse cx="30" cy="40" rx="5.5" ry="3" fill="${B2}" stroke="${SK}" stroke-width="1.1"/></svg>`,
+        'Glúteos': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M8 8 C8 6 12 5 22 5 C32 5 36 6 36 8 L37 14 C34 15 28 16 22 16 C16 16 10 15 7 14Z" fill="${B2}" stroke="${SK}" stroke-width="1.2"/><path d="M7 16 C5 20 5 28 7 34 C8 37 11 40 15 41 L19 41 L19 16Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M37 16 C39 20 39 28 37 34 C36 37 33 40 29 41 L25 41 L25 16Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M8 14 C7 17 7 22 9 25 C11 28 15 29 19 28 L19 14 C15 13 10 13 8 14Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M36 14 C37 17 37 22 35 25 C33 28 29 29 25 28 L25 14 C29 13 34 13 36 14Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><line x1="22" y1="14" x2="22" y2="29" stroke="${SK}" stroke-width="1.2" stroke-linecap="round"/><path d="M10 16 C9 19 9 23 11 26" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M34 16 C35 19 35 23 33 26" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M9 28 C8 32 8 36 10 39" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/><path d="M35 28 C36 32 36 36 34 39" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/></svg>`,
+        'Gluteos': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M8 8 C8 6 12 5 22 5 C32 5 36 6 36 8 L37 14 C34 15 28 16 22 16 C16 16 10 15 7 14Z" fill="${B2}" stroke="${SK}" stroke-width="1.2"/><path d="M7 16 C5 20 5 28 7 34 C8 37 11 40 15 41 L19 41 L19 16Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M37 16 C39 20 39 28 37 34 C36 37 33 40 29 41 L25 41 L25 16Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M8 14 C7 17 7 22 9 25 C11 28 15 29 19 28 L19 14 C15 13 10 13 8 14Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M36 14 C37 17 37 22 35 25 C33 28 29 29 25 28 L25 14 C29 13 34 13 36 14Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><line x1="22" y1="14" x2="22" y2="29" stroke="${SK}" stroke-width="1.2" stroke-linecap="round"/><path d="M10 16 C9 19 9 23 11 26" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M34 16 C35 19 35 23 33 26" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/></svg>`,
+        'Abdomen': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M9 10 C9 8 13 6 22 6 C31 6 35 8 35 10 L36 30 C36 34 30 38 22 38 C14 38 8 34 8 30Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M8 12 C6 13 5 15 5 18 C5 21 6 23 8 24 L9 15Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M36 12 C38 13 39 15 39 18 C39 21 38 23 36 24 L35 15Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M9 14 C9 12 12 10 17 10 C19 10 21 11 21 13 L21 21 C18 22 12 21 10 19 C8 17 9 14 9 14Z" fill="${B3}" stroke="${SK}" stroke-width="1" opacity="0.9"/><path d="M35 14 C35 12 32 10 27 10 C25 10 23 11 23 13 L23 21 C26 22 32 21 34 19 C36 17 35 14 35 14Z" fill="${B3}" stroke="${SK}" stroke-width="1" opacity="0.9"/><rect x="16" y="21" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="23" y="21" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="16" y="27" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="23" y="27" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="17" y="33" width="4" height="4" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.85"/><rect x="23" y="33" width="4" height="4" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.85"/><path d="M9 22 C8 25 9 29 11 32 C13 34 15 35 17 34 L16 27 C13 25 10 23 9 22Z" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.8"/><path d="M35 22 C36 25 35 29 33 32 C31 34 29 35 27 34 L28 27 C31 25 34 23 35 22Z" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.8"/><line x1="22" y1="20" x2="22" y2="37" stroke="${SK}" stroke-width="1.1" stroke-linecap="round"/><path d="M16 26 L28 26" stroke="${SK}" stroke-width="0.8" opacity="0.6"/><path d="M16 32 L28 32" stroke="${SK}" stroke-width="0.8" opacity="0.6"/></svg>`,
+        'Cardio': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M22 37 C22 37 4 26 4 15 C4 10 8 7 13 7 C17 7 20 9 22 13 C24 9 27 7 31 7 C36 7 40 10 40 15 C40 26 22 37 22 37Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M22 37 C22 37 4 26 4 15 C4 10 8 7 13 7 C17 7 20 9 22 13 L22 37Z" fill="${c}" stroke="${SK}" stroke-width="1.2"/><path d="M22 13 C24 9 27 7 31 7 C36 7 40 10 40 15 C40 26 22 37 22 37 L22 13Z" fill="${c}" stroke="${SK}" stroke-width="1.2" opacity="0.7"/><path d="M22 13 C21 20 20 27 22 37" stroke="${SK}" stroke-width="1" stroke-linecap="round"/><path d="M18 8 C18 5 20 4 22 4 C24 4 26 5 26 8" stroke="${c}" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M9 14 C8 17 8 21 10 25" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/><path d="M6 41 L10 41 L13 37 L16 44 L19 38 L22 41 L28 41" stroke="${c}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`,
+        'Calistenia': `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M9 14 C9 10 13 8 22 8 C31 8 35 10 35 14 L36 34 C36 37 30 40 22 40 C14 40 8 37 8 34Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M18 8 C18 6 20 5 22 5 C24 5 26 6 26 8 L27 11 C25 12 22 12 22 12 C22 12 19 12 17 11Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M9 14 C7 14 5 15 4 18 C3 21 4 25 7 27 C8 28 9 27 9 27 L9 14Z" fill="${c}" stroke="${SK}" stroke-width="1.1"/><path d="M35 14 C37 14 39 15 40 18 C41 21 40 25 37 27 C36 28 35 27 35 27 L35 14Z" fill="${c}" stroke="${SK}" stroke-width="1.1"/><path d="M9 16 C9 13 12 11 16 11 C19 11 21 13 21 16 L21 24 C18 25 12 24 10 22 C8 20 9 16 9 16Z" fill="${c}" stroke="${SK}" stroke-width="1.1" opacity="0.9"/><path d="M35 16 C35 13 32 11 28 11 C25 11 23 13 23 16 L23 24 C26 25 32 24 34 22 C36 20 35 16 35 16Z" fill="${c}" stroke="${SK}" stroke-width="1.1" opacity="0.9"/><line x1="22" y1="11" x2="22" y2="38" stroke="${SK}" stroke-width="1.1" stroke-linecap="round"/><rect x="17" y="24" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.85"/><rect x="22.5" y="24" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.85"/><rect x="17" y="29.5" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.75"/><rect x="22.5" y="29.5" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.75"/><path d="M9 24 C8 27 9 31 11 33 L14 30 L13 24Z" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.7"/><path d="M35 24 C36 27 35 31 33 33 L30 30 L31 24Z" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.7"/></svg>`,
       };
-      return svgs[g] || `<svg class="icon" viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="12" r="9"/></svg>`;
+      return svgs[g] || `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="16" fill="#464B6B" stroke="#3A3D52" stroke-width="1.3"/></svg>`;
     }
     const groups = exerciseDB.map(g => g.group);
     if (customExercises.length) groups.push('Personalizados');
@@ -8382,7 +8401,7 @@ function renderCatalog(filter) {
       const mc = MUSCLE_GROUP_COLORS[g];
       const tileBg = mc ? mc.bg.replace(/[\d.]+\)$/, '0.18)') : 'rgba(255,255,255,0.08)';
       const tileBorder = mc ? mc.bg.replace(/[\d.]+\)$/, '0.35)') : 'var(--border)';
-      const iconHtml = `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${tileBg};border:1px solid ${tileBorder}">${muscleGroupSvg(g, mc ? mc.color : undefined)}</div>`;
+      const iconHtml = `<div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(70,75,107,0.3);border:1px solid rgba(90,99,128,0.4)">${muscleGroupSvg(g, mc ? mc.color : undefined)}</div>`;
       return `<button class="group-item" data-group="${attr(g)}" onclick="showCatalogGroup(this.dataset.group)">
         <span style="display:flex;align-items:center;gap:12px">${iconHtml}<span>${g}</span></span>
         <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -9413,7 +9432,7 @@ async function loadExerciseGif(exerciseName) {
 
   // 2. AscendAPI — exerciseId hardcodeado o null (search endpoint bloqueado por CORS)
   const ASCEND_KEY  = '05b86ff66dmsh22622bda565f309p198a68jsn3ae926b9b508';
-  const ASCEND_HOST = 'exercisedb.p.rapidapi.com';
+  const ASCEND_HOST = 'edb-with-videos-and-images-by-ascendapi.p.rapidapi.com';
   const engName = (EXERCISE_EN[exerciseName] || exerciseName).toLowerCase();
   const hardcodedId = EXERCISE_IDS[engName];
 
@@ -9421,11 +9440,10 @@ async function loadExerciseGif(exerciseName) {
 
   try {
     const detailRes = await fetch(
-      `https://exercisedb.p.rapidapi.com/exercises/${hardcodedId}`,
+      `https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1/exercises/${hardcodedId}`,
       { headers: { 'x-rapidapi-host': ASCEND_HOST, 'x-rapidapi-key': ASCEND_KEY } }
     );
-    const detail = await detailRes.json();
-    const ex = detail?.data || detail;
+    const ex = (await detailRes.json())?.data;
 
     const videoUrl = ex?.videoUrl || null;
     const imageUrl = ex?.imageUrls?.['480p'] || ex?.imageUrl || null;
@@ -13864,11 +13882,13 @@ const DAYS_ES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
 function openRoutineEditor(routineId = null) {
   closeRoutineSelector();
-  _editingRoutineId   = routineId;
-  _editorExercises    = [];
-  _editorDays         = [];
-  _editorRest         = 120;
-  _pickerGroupFilter  = '';
+  _editingRoutineId       = routineId;
+  _editorExercises        = [];
+  _editorDays             = [];
+  _editorRest             = 120;
+  _editorGroups           = [];
+  _editorSmartRestActive  = false;
+  _pickerGroupFilter      = '';
 
   document.getElementById('routineNameInput').value   = '';
   document.getElementById('routineGroupSelect').value = '';
@@ -13877,6 +13897,13 @@ function openRoutineEditor(routineId = null) {
   document.getElementById('deleteRoutineSection').style.display = 'none';
   document.getElementById('editorTitle').textContent = routineId ? 'Editar rutina' : 'Nueva rutina';
   document.getElementById('editorSaveBtn').disabled = true;
+  // Reset rest UI
+  const editorRestLabel = document.getElementById('editorRestLabel');
+  if (editorRestLabel) editorRestLabel.textContent = '';
+  const editorSmartInfo = document.getElementById('editorSmartRestInfo');
+  if (editorSmartInfo) editorSmartInfo.style.display = 'none';
+  const editorRestPresets = document.getElementById('editorRestPresets');
+  if (editorRestPresets) editorRestPresets.style.display = 'block';
 
   if (routineId) {
     // Leer de localStorage (sin red)
@@ -13886,14 +13913,30 @@ function openRoutineEditor(routineId = null) {
     document.getElementById('routineGroupSelect').value = data.muscle_group || '';
     _editorExercises = (data.exercises || []).map(ex => ({ name: ex.name, equipment: ex.equipment || '', sets: ex.sets || 3 }));
     _editorDays      = Array.isArray(data.scheduled_days) ? data.scheduled_days : [];
+    _editorGroups    = Array.isArray(data.muscle_groups) ? data.muscle_groups : [];
     _editorRest      = data.default_rest_seconds || 120;
+    _editorSmartRestActive = !data.default_rest_seconds && _editorGroups.length >= 2;
     document.getElementById('routineTimeInput').value = data.scheduled_time || '';
     _pickerGroupFilter = data.muscle_group || '';
     document.getElementById('deleteRoutineSection').style.display = 'block';
+    // Restore smart rest UI if applicable
+    if (_editorSmartRestActive) {
+      if (editorRestPresets) editorRestPresets.style.display = 'none';
+      if (editorSmartInfo) {
+        editorSmartInfo.style.display = 'block';
+        const detail = document.getElementById('editorSmartRestDetail');
+        if (detail) detail.innerHTML = _editorGroups
+          .map(g => `<span style="display:inline-block;margin-right:8px">● ${g}: <b style="color:var(--primary)">${REST_BY_MUSCLE_GROUP[g] || 90}s</b></span>`)
+          .join('') + '<div style="margin-top:4px;opacity:0.7">El timer se ajusta automáticamente según el ejercicio.</div>';
+      }
+    } else if (_editorGroups.length === 1) {
+      if (editorRestLabel) editorRestLabel.textContent = `Descanso sugerido para ${_editorGroups[0]}: ${_editorRest}s`;
+    }
   }
 
   renderEditorExercises();
   renderEditorDayChips();
+  renderEditorGroupChips();
   renderEditorRestChips();
   onEditorNameInput();
   document.getElementById('routineEditorOverlay').classList.add('active');
@@ -13925,6 +13968,8 @@ function toggleDayChip(day) {
 
 const REST_CHIP_VALUES = [30, 60, 90, 120, 180, 240];
 let _editorRestCustom = false; // true cuando el usuario eligió "Otro"
+let _editorGroups = [];        // grupos musculares seleccionados en el editor
+let _editorSmartRestActive = false; // true cuando multi-grupo sin override fijo
 
 function renderEditorRestChips() {
   const container = document.getElementById('editorRestChips');
@@ -13961,6 +14006,96 @@ function setEditorRestCustomMode() {
 function applyCustomRest(val) {
   const n = parseInt(val, 10);
   if (n >= 10 && n <= 600) _editorRest = n;
+}
+
+function renderEditorGroupChips() {
+  const grid = document.getElementById('editorGroupChips');
+  if (!grid) return;
+  const groups = [
+    { key: 'Piernas',   abbr: 'Piernas',  icon: '🦵' },
+    { key: 'Gluteos',   abbr: 'Glúteos',  icon: '🍑' },
+    { key: 'Espalda',   abbr: 'Espalda',  icon: '🔙' },
+    { key: 'Pecho',     abbr: 'Pecho',    icon: '💪' },
+    { key: 'Hombros',   abbr: 'Hombros',  icon: '🏋️' },
+    { key: 'Biceps',    abbr: 'Bíceps',   icon: '💪' },
+    { key: 'Triceps',   abbr: 'Tríceps',  icon: '👊' },
+    { key: 'Abdomen',   abbr: 'Abdomen',  icon: '⚡' },
+    { key: 'Cardio',    abbr: 'Cardio',   icon: '🏃' },
+    { key: 'Calistenia',abbr: 'Calist.',  icon: '🤸' },
+  ];
+  grid.innerHTML = groups.map(g => {
+    const sel = _editorGroups.includes(g.key);
+    return `<button class="erg-group-btn" data-group="${g.key}" onclick="toggleEditorGroup('${g.key}')"
+      style="padding:8px 4px;background:${sel ? 'var(--primary-light)' : 'var(--surface2)'};border:1.5px solid ${sel ? 'var(--primary)' : 'var(--border)'};border-radius:10px;font-size:10px;font-weight:600;color:${sel ? 'var(--primary)' : 'var(--text-secondary)'};cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .15s;line-height:1.2">
+      <span style="font-size:15px;line-height:1">${g.icon}</span>
+      <span>${g.abbr}</span>
+    </button>`;
+  }).join('');
+}
+
+function toggleEditorGroup(group) {
+  const idx = _editorGroups.indexOf(group);
+  if (idx >= 0) _editorGroups.splice(idx, 1);
+  else _editorGroups.push(group);
+
+  // Update chip visuals
+  document.querySelectorAll('.erg-group-btn').forEach(b => {
+    const sel = _editorGroups.includes(b.dataset.group);
+    b.style.borderColor = sel ? 'var(--primary)' : 'var(--border)';
+    b.style.color       = sel ? 'var(--primary)' : 'var(--text-secondary)';
+    b.style.background  = sel ? 'var(--primary-light)' : 'var(--surface2)';
+  });
+
+  const count   = _editorGroups.length;
+  const label   = document.getElementById('editorRestLabel');
+  const smartInfo   = document.getElementById('editorSmartRestInfo');
+  const smartDetail = document.getElementById('editorSmartRestDetail');
+  const presets = document.getElementById('editorRestPresets');
+  const fixedBtn = document.getElementById('editorFixedRestBtn');
+
+  if (count === 0) {
+    if (label) label.textContent = '';
+    if (smartInfo) smartInfo.style.display = 'none';
+    if (presets) presets.style.display = 'block';
+    _editorSmartRestActive = false;
+  } else if (count === 1) {
+    const suggested = REST_BY_MUSCLE_GROUP[group] || 90;
+    _editorRest = suggested;
+    _editorSmartRestActive = false;
+    renderEditorRestChips();
+    if (label) label.textContent = `Descanso sugerido para ${group}: ${suggested}s`;
+    if (smartInfo) smartInfo.style.display = 'none';
+    if (presets) presets.style.display = 'block';
+  } else {
+    // Multi-grupo — smart rest mode
+    _editorSmartRestActive = true;
+    const detail = _editorGroups
+      .map(g => `<span style="display:inline-block;margin-right:8px">● ${g}: <b style="color:var(--primary)">${REST_BY_MUSCLE_GROUP[g] || 90}s</b></span>`)
+      .join('');
+    if (smartDetail) smartDetail.innerHTML = detail + '<div style="margin-top:4px;opacity:0.7">El timer se ajusta automáticamente según el ejercicio.</div>';
+    if (label) label.textContent = '';
+    if (smartInfo) smartInfo.style.display = 'block';
+    if (fixedBtn) fixedBtn.textContent = 'Prefiero tiempo fijo';
+    if (presets) presets.style.display = 'none';
+  }
+}
+
+function toggleEditorFixedRest() {
+  const presets  = document.getElementById('editorRestPresets');
+  const btn      = document.getElementById('editorFixedRestBtn');
+  const label    = document.getElementById('editorRestLabel');
+  if (!presets) return;
+  if (presets.style.display === 'none') {
+    presets.style.display = 'block';
+    if (btn) btn.textContent = 'Usar descanso inteligente';
+    if (label) label.textContent = 'Tiempo fijo para toda la rutina:';
+    _editorSmartRestActive = false;
+  } else {
+    presets.style.display = 'none';
+    if (btn) btn.textContent = 'Prefiero tiempo fijo';
+    if (label) label.textContent = '';
+    _editorSmartRestActive = true;
+  }
 }
 
 function onRoutineGroupChange() {
@@ -14083,9 +14218,11 @@ function saveRoutine() {
       const idx = routines.findIndex(r => r.id === _editingRoutineId);
       if (idx >= 0) {
         routines[idx] = { ...routines[idx], name, muscle_group: muscleGroup || null,
+          muscle_groups: _editorGroups.length > 0 ? [..._editorGroups] : null,
           exercises: _editorExercises.map(ex => ({ name: ex.name, equipment: ex.equipment || '', sets: ex.sets })),
           scheduled_days: _editorDays.length > 0 ? _editorDays : null,
-          scheduled_time: schedTime, default_rest_seconds: _editorRest };
+          scheduled_time: schedTime,
+          default_rest_seconds: _editorSmartRestActive ? null : _editorRest };
       }
     } else {
       // Nueva rutina — generar ID local
@@ -14094,9 +14231,11 @@ function saveRoutine() {
         : 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2);
       routines.unshift({ id, user_id: currentUser?.id || null, name,
         muscle_group: muscleGroup || null,
+        muscle_groups: _editorGroups.length > 0 ? [..._editorGroups] : null,
         exercises: _editorExercises.map(ex => ({ name: ex.name, sets: ex.sets })),
         scheduled_days: _editorDays.length > 0 ? _editorDays : null,
-        scheduled_time: schedTime, default_rest_seconds: _editorRest,
+        scheduled_time: schedTime,
+        default_rest_seconds: _editorSmartRestActive ? null : _editorRest,
         created_at: now, last_used_at: null, use_count: 0 });
     }
 
@@ -14456,17 +14595,30 @@ function showRoutinePreview() {
   // Marcar rutina como usada (async, no bloquea)
   _markRoutineUsed(routine.id);
 
+  // Cargar grupos musculares para fallback de descanso inteligente
+  if (Array.isArray(routine.muscle_groups) && routine.muscle_groups.length) {
+    window._configSelectedGroups = routine.muscle_groups;
+    window._configSelectedGroup  = routine.muscle_groups[0];
+  }
+
   // Aplicar descanso de la rutina si está configurado; si no, usar grupo muscular como fallback
+  let smartMode = false;
   if (routine.default_rest_seconds) {
     restSeconds = routine.default_rest_seconds;
     window._userOverrodeRest = true;
+  } else if (Array.isArray(routine.muscle_groups) && routine.muscle_groups.length) {
+    // Descanso inteligente — getSmartRestSeconds() se ajusta por ejercicio
+    window._userOverrodeRest = false;
+    smartMode = true;
   } else if (routine.muscle_group && REST_BY_MUSCLE_GROUP[routine.muscle_group]) {
     restSeconds = REST_BY_MUSCLE_GROUP[routine.muscle_group];
     window._userOverrodeRest = true;
   }
+
   // Siempre saltarse el config sheet — restSeconds ya tiene un valor válido
   const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
-  showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! Descanso: ${restSeconds}s`, 'info');
+  const restMsg = smartMode ? 'Descanso inteligente activado' : `Descanso: ${restSeconds}s`;
+  showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! ${restMsg}`, 'info');
   setTimeout(() => {
     document.getElementById('modeModal').classList.add('active');
   }, 600);
