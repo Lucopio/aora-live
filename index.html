@@ -2392,7 +2392,7 @@ body {
             <div class="w-coach-name">María</div>
             <div class="w-coach-spec">HIIT · Funcional</div>
             <div class="w-coach-tag cyan">Intensidad</div>
-            <button onclick="event.stopPropagation();showObCoachProfile('maria')" class="w-coach-profile-btn">Ver perfil →</button>
+            <button onclick="event.stopPropagation();showCoachProfile('maria','welcome')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
           <div class="w-coach-card" id="wCoachCarlos" onclick="wSelectCoach('carlos', this)">
             <div class="w-coach-av"><img src="Images/coaches/carlos.png" alt="Carlos" onerror="this.style.display='none'"></div>
@@ -2400,7 +2400,7 @@ body {
             <div class="w-coach-name">Carlos</div>
             <div class="w-coach-spec">Fuerza · Hipertrofia</div>
             <div class="w-coach-tag violet">Músculo</div>
-            <button onclick="event.stopPropagation();showObCoachProfile('carlos')" class="w-coach-profile-btn">Ver perfil →</button>
+            <button onclick="event.stopPropagation();showCoachProfile('carlos','welcome')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
           <div class="w-coach-card" id="wCoachAndrea" onclick="wSelectCoach('andrea', this)">
             <div class="w-coach-av"><img src="Images/coaches/andrea.png" alt="Andrea" onerror="this.style.display='none'"></div>
@@ -2408,7 +2408,7 @@ body {
             <div class="w-coach-name">Andrea</div>
             <div class="w-coach-spec">Bienestar · Movilidad</div>
             <div class="w-coach-tag green">Equilibrio</div>
-            <button onclick="event.stopPropagation();showObCoachProfile('andrea')" class="w-coach-profile-btn">Ver perfil →</button>
+            <button onclick="event.stopPropagation();showCoachProfile('andrea','welcome')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
           <div class="w-coach-card" id="wCoachDiego" onclick="wSelectCoach('diego', this)">
             <div class="w-coach-av"><img src="Images/coaches/diego.png" alt="Diego" onerror="this.style.display='none'"></div>
@@ -2416,7 +2416,7 @@ body {
             <div class="w-coach-name">Diego</div>
             <div class="w-coach-spec">Calistenia · Resiliencia</div>
             <div class="w-coach-tag orange">Cuerpo libre</div>
-            <button onclick="event.stopPropagation();showObCoachProfile('diego')" class="w-coach-profile-btn">Ver perfil →</button>
+            <button onclick="event.stopPropagation();showCoachProfile('diego','welcome')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
         </div>
         <p class="w-slide2-hint">Toca un coach para seleccionarlo</p>
@@ -5636,7 +5636,7 @@ function showCoachProfile(coachId, origin) {
   if (!coach) { showScreen('coach'); return; }
   // Back button — regresa al origen correcto
   const backBtn = document.getElementById('coachProfileBackBtn');
-  if (backBtn) backBtn.onclick = () => showScreen(origin === 'onboarding' ? 'onboarding' : 'coach');
+  if (backBtn) backBtn.onclick = () => showScreen(origin === 'onboarding' ? 'onboarding' : origin === 'welcome' ? 'welcome' : 'coach');
 
   // Foto
   const photoEl = document.getElementById('coachProfilePhoto');
