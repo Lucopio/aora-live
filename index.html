@@ -5689,7 +5689,9 @@ function showCoachProfile(coachId, origin) {
   const quoteEl = document.getElementById('coachProfileQuote');
   if (quoteEl) quoteEl.textContent = `"${coach.quote || ''}"`;
 
-  // CTA
+  // CTA — ocultar durante welcome (el usuario aún no ha seleccionado coach)
+  const ctaBtn = document.getElementById('coachProfileCta');
+  if (ctaBtn) ctaBtn.style.display = origin === 'welcome' ? 'none' : '';
   const ctaName = document.getElementById('coachProfileCtaName');
   if (ctaName) ctaName.textContent = coach.name;
 
