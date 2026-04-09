@@ -12634,6 +12634,18 @@ function loadFromStorage() {
     // Update home stats
     updateHomeStats();
   } catch(e) { console.log('Load failed:', e); }
+
+  // Fallback: leer perfil del nuevo onboarding (obcActivatePlan guarda en 'aora_user_profile')
+  // Esto cubre usuarios que completaron el onboarding pero el perfil no quedó en gymtracker_data
+  try {
+    const aoraRaw = localStorage.getItem('aora_user_profile');
+    if (aoraRaw) {
+      const aoraProfile = JSON.parse(aoraRaw);
+      if (aoraProfile && aoraProfile.onboarding_done) {
+        userProfile = { ...userProfile, ...aoraProfile };
+      }
+    }
+  } catch(e) {}
 }
 
 function updateHomeStats() {
@@ -13702,6 +13714,7 @@ async function obcActivatePlan() {
   localStorage.setItem('aora_user_profile', JSON.stringify(userProfile));
   saveSelectedCoach(coach);
   localStorage.setItem('gymtracker_nickname', _obcData.nickname || '');
+  saveToStorage(); // persistir en gymtracker_data para que loadFromStorage() lo recupere al reiniciar
 
   if (_obcData.routine_choice === 'suggested') {
     _obcCreateSuggestedRoutine();
