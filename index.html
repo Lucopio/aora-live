@@ -13794,7 +13794,7 @@ function _obcShowCoachTour() {
         // Para custom: bubble del coach con el recordatorio de la rutina, luego el botón
         setTimeout(function() {
           _obcShowTyping(function() {
-            _obcAddCoachBubble(`📋 Y cuando estés listo — carga tu rutina en la sección <strong>Rutinas</strong> para que pueda analizarla durante cada sesión de entrenamiento.`);
+            _obcAddCoachBubble(`📋 Y cuando estés listo — en el botón <strong>Entrenamiento</strong>, busca la sección <strong>Mi rutina para el día</strong> y toca <strong>Rutinas</strong> para ingresarla. Así podré analizarla durante cada sesión.`);
             const bottomEl = document.getElementById('obcBottom');
             bottomEl.innerHTML = `<button class="obc-btn green" onclick="obcEnterApp()">¡Ir a la app! →</button>`;
           });
@@ -15280,7 +15280,7 @@ function showRoutinePreview() {
   // Siempre saltarse el config sheet — restSeconds ya tiene un valor válido
   const coach = getSelectedCoach() || { name: 'María', emoji: '👩🏽' };
   const restMsg = smartMode ? 'Descanso inteligente activado' : `Descanso: ${restSeconds}s`;
-  showToast(`${coach.emoji} ${coach.name}: ¡Vamos con ${routine.name}! ${restMsg}`, 'info');
+  showToast(`${coach.name}: ¡Vamos con ${routine.name}! ${restMsg}`, 'info');
   setTimeout(() => {
     document.getElementById('modeModal').classList.add('active');
   }, 600);
