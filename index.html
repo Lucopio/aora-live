@@ -1628,6 +1628,8 @@ body {
 .w-coach-tag.violet { background: rgba(123,97,255,0.15); color: var(--accent2); }
 .w-coach-tag.green { background: rgba(0,200,150,0.12); color: var(--success); }
 .w-coach-tag.orange { background: rgba(255,184,0,0.12); color: var(--warning); }
+.w-coach-profile-btn { margin-top: 4px; padding: 5px 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-full); font-size: 11px; font-weight: 600; color: var(--text-secondary); font-family: var(--font); cursor: pointer; letter-spacing: 0.3px; transition: border-color 0.15s, color 0.15s; }
+.w-coach-profile-btn:active { color: var(--primary); border-color: var(--primary); }
 .w-slide2-hint { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-top: 12px; }
 
 /* E4: Tutorial Hints System */
@@ -2390,6 +2392,7 @@ body {
             <div class="w-coach-name">María</div>
             <div class="w-coach-spec">HIIT · Funcional</div>
             <div class="w-coach-tag cyan">Intensidad</div>
+            <button onclick="event.stopPropagation();showObCoachProfile('maria')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
           <div class="w-coach-card" id="wCoachCarlos" onclick="wSelectCoach('carlos', this)">
             <div class="w-coach-av"><img src="Images/coaches/carlos.png" alt="Carlos" onerror="this.style.display='none'"></div>
@@ -2397,6 +2400,7 @@ body {
             <div class="w-coach-name">Carlos</div>
             <div class="w-coach-spec">Fuerza · Hipertrofia</div>
             <div class="w-coach-tag violet">Músculo</div>
+            <button onclick="event.stopPropagation();showObCoachProfile('carlos')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
           <div class="w-coach-card" id="wCoachAndrea" onclick="wSelectCoach('andrea', this)">
             <div class="w-coach-av"><img src="Images/coaches/andrea.png" alt="Andrea" onerror="this.style.display='none'"></div>
@@ -2404,6 +2408,7 @@ body {
             <div class="w-coach-name">Andrea</div>
             <div class="w-coach-spec">Bienestar · Movilidad</div>
             <div class="w-coach-tag green">Equilibrio</div>
+            <button onclick="event.stopPropagation();showObCoachProfile('andrea')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
           <div class="w-coach-card" id="wCoachDiego" onclick="wSelectCoach('diego', this)">
             <div class="w-coach-av"><img src="Images/coaches/diego.png" alt="Diego" onerror="this.style.display='none'"></div>
@@ -2411,6 +2416,7 @@ body {
             <div class="w-coach-name">Diego</div>
             <div class="w-coach-spec">Calistenia · Resiliencia</div>
             <div class="w-coach-tag orange">Cuerpo libre</div>
+            <button onclick="event.stopPropagation();showObCoachProfile('diego')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
         </div>
         <p class="w-slide2-hint">Toca un coach para seleccionarlo</p>
