@@ -1549,6 +1549,7 @@ body {
 .obc-chip { padding: 8px 14px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 99px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.15s; font-family: var(--font); user-select: none; }
 .obc-chip:active { transform: scale(0.97); }
 .obc-chip.selected { background: rgba(0,229,255,0.12); border-color: rgba(0,229,255,0.4); color: var(--primary); }
+.obc-chips-row { padding: 4px 0 8px 36px; }
 .obc-name-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--text-primary); font-family: var(--font); outline: none; -webkit-appearance: none; box-sizing: border-box; }
 .obc-name-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
 .obc-name-input:focus { border-color: rgba(0,229,255,0.4); }
@@ -13372,9 +13373,9 @@ function _obcRenderBottom() {
 
   } else if (_obcStep === 2) {
     _obcRenderChips([
-      {label:'Menos de 6 meses', val:'beginner'},
-      {label:'6 meses – 2 años', val:'intermediate'},
-      {label:'Más de 2 años', val:'advanced'}
+      {label:'Menos de un año', val:'beginner'},
+      {label:'Entre 1 y 3 años', val:'intermediate'},
+      {label:'Más de 3 años', val:'advanced'}
     ], function(val) { _obcData.experience = val; obcNext(); });
 
   } else if (_obcStep === 3) {
@@ -13454,22 +13455,39 @@ function _obcRenderBottom() {
     ], function(val) { _obcData.routine_choice = val; obcNext(); });
 
   } else if (_obcStep === 11) {
-    bottom.innerHTML = `<button class="obc-btn" disabled>Generando tu plan...</button>`;
-    _obcGenerateAIRecommendation();
+    if (_obcData.routine_choice === 'custom') {
+      const name = _obcData.nickname || '';
+      _obcAddCoachBubble(
+        `¡Perfecto <strong>${name}</strong>! Vamos a trabajar con tu rutina. Para sacarle el máximo provecho:<br><br>` +
+        `📋 <strong>Ingrésala en Rutinas</strong> — ve a la sección de entrenamiento, crea una rutina con tus ejercicios habituales y ya podremos analizarla juntos en cada sesión.<br><br>` +
+        `📊 <strong>Registra cada serie</strong> con peso, repeticiones y esfuerzo para que vea tu progresión real semana a semana.<br><br>` +
+        `⏱ <strong>Activa el timer de descanso</strong> — te voy a sugerir los tiempos óptimos para cada grupo muscular y así maximizas la recuperación entre series.<br><br>` +
+        `Con estos datos puedo darte recomendaciones precisas y ajustar tu rutina cuando lo necesites.`
+      );
+      bottom.innerHTML = `<button class="obc-btn green" onclick="obcActivatePlan()">¡Entendido, ir a la app! →</button>`;
+    } else {
+      bottom.innerHTML = `<button class="obc-btn" disabled>Generando tu plan...</button>`;
+      _obcGenerateAIRecommendation();
+    }
   }
 }
 
 function _obcRenderChips(options, onSelect) {
-  const bottom = document.getElementById('obcBottom');
+  const feed = document.getElementById('obcFeed');
+  const row = document.createElement('div');
+  row.className = 'obc-chips-row';
   const chips = document.createElement('div');
   chips.className = 'obc-chips';
   chips.innerHTML = options.map(function(o) { return `<div class="obc-chip" data-val='${JSON.stringify(o.val)}'>${o.label}</div>`; }).join('');
-  bottom.appendChild(chips);
+  row.appendChild(chips);
+  feed.appendChild(row);
+  feed.scrollTop = feed.scrollHeight;
   chips.querySelectorAll('.obc-chip').forEach(function(chip) {
     chip.addEventListener('click', function() {
       chips.querySelectorAll('.obc-chip').forEach(function(c) { c.classList.remove('selected'); });
       chip.classList.add('selected');
       setTimeout(function() {
+        row.remove();
         _obcAddUserBubble(chip.textContent);
         onSelect(JSON.parse(chip.dataset.val));
       }, 200);
