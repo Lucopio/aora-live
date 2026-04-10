@@ -6971,9 +6971,9 @@ function selectMode(mode) {
 
 // ─── Exercise Database ───────────────────────────────────────
 const exerciseDB = [
-  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Press con mancuernas', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna', 'Press en maquina'] },
+  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna'] },
   { group: 'Espalda',   items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto', 'Remo en T', 'Face pull', 'Jalones agarre neutro', 'Pullover en polea', 'Hiperextensiones'] },
-  { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Arnold press', 'Press con mancuernas sentado', 'Elevaciones en polea', 'Encogimientos de hombros'] },
+  { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Arnold press', 'Encogimientos de hombros'] },
   { group: 'Biceps',    items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea', 'Curl inclinado', 'Curl en banca Scott', 'Curl 21s'] },
   { group: 'Triceps',   items: ['Extension en polea alta', 'Press frances', 'Patada de triceps', 'Fondos de triceps', 'Extension con mancuerna', 'Extension en polea baja', 'Press cerrado', 'Overhead en polea'] },
   { group: 'Piernas',   items: ['Sentadilla', 'Prensa de piernas', 'Extension de cuadriceps', 'Curl de femoral', 'Peso muerto rumano', 'Zancadas', 'Elevacion de gemelos', 'Hip thrust', 'Sentadilla bulgara', 'Abductores en maquina', 'Aductores en maquina', 'Step-up', 'Sentadilla sumo'] },
@@ -8309,13 +8309,11 @@ const EXERCISE_EQUIP = {
   // Pecho
   'Press de banca':        ['barra','mancuernas','maquina'],
   'Press inclinado':       ['barra','mancuernas','maquina'],
-  'Press con mancuernas':  ['mancuernas'],
   'Aperturas':             ['mancuernas','cable','maquina'],
   'Fondos en paralelas':   ['corporal'],
   'Crossover en polea':    ['cable'],
   'Press declinado':       ['barra','mancuernas'],
   'Pull-over con mancuerna': ['mancuernas'],
-  'Press en maquina':      ['maquina'],
   // Espalda
   'Dominadas':             ['corporal'],
   'Remo con barra':        ['barra'],
@@ -8334,8 +8332,6 @@ const EXERCISE_EQUIP = {
   'Elevaciones frontales': ['mancuernas','cable'],
   'Pajaros':               ['mancuernas','cable'],
   'Arnold press':          ['mancuernas'],
-  'Press con mancuernas sentado': ['mancuernas'],
-  'Elevaciones en polea':  ['cable'],
   'Encogimientos de hombros': ['barra','mancuernas'],
   // Biceps
   'Curl con barra':        ['barra'],
@@ -8477,11 +8473,8 @@ function _uniExItemHtml(name, equip) {
 // ─── Exercise Illustration Map ───────────────────────────────
 const EXERCISE_ILLUSTRATIONS = {
   'Press militar':              'Images/exercises/press_militar.png',
-  'Arnold press':               'Images/exercises/press_militar.png',
-  'Press con mancuernas sentado': 'Images/exercises/press_militar.png',
   'Press de banca':             'Images/exercises/Peso muerto.png',
   'Press inclinado':            'Images/exercises/Peso muerto.png',
-  'Press con mancuernas':       'Images/exercises/Peso muerto.png',
   'Peso muerto':                'Images/exercises/Peso muerto.png',
   'Peso muerto rumano':         'Images/exercises/Peso muerto.png',
   'Dominadas':                  'Images/exercises/Dominadas.png',
