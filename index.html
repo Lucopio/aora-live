@@ -4316,8 +4316,16 @@ body {
       <div id="lastWorkoutCard"></div>
     </div>
 
-    <!-- Crear rutina nueva -->
+    <!-- Entrenar libre -->
     <div style="margin-top:24px">
+      <button onclick="startFreeWorkoutToday()" style="width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span>Entrenar libre hoy · <span style="color:var(--text-tertiary);font-weight:400">sin plantilla</span></span>
+      </button>
+    </div>
+
+    <!-- Crear rutina nueva -->
+    <div>
       <button onclick="openRoutineEditor()" style="width:100%;padding:16px;background:var(--primary);color:#080A0F;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Crear rutina nueva
@@ -8544,9 +8552,9 @@ function exerciseRowHtml(item, equips) {
   // Botón ℹ eliminado del catálogo — la info de técnica se abre desde el workout
   const illus = EXERCISE_ILLUSTRATIONS[item];
   const illusHtml = illus
-    ? `<img src="${illus}" alt="" style="width:64px;height:64px;object-fit:contain;flex-shrink:0;opacity:0.95;border-radius:0;background:none">`
+    ? `<img src="${illus}" alt="${item}" style="width:110px;height:110px;object-fit:contain;flex-shrink:0;opacity:0.95;">`
     : ``;
-  return `<div class="exercise-row" style="display:flex;align-items:center;gap:10px">${illusHtml}<div style="flex:1">
+  return `<div class="exercise-row" style="display:flex;align-items:center;gap:10px;padding:6px 6px 6px 6px">${illusHtml}<div style="flex:1">
     <div class="exercise-row-header">
       <span class="exercise-row-name">${item}</span>${lwStr}
     </div>
@@ -10974,6 +10982,12 @@ function endWorkout() {
   const weeklyFB = generateWeeklyFeedback();
   renderWeeklyFeedback(weeklyFB);
   showScreen('summary');
+  // Restaurar rutina del coach si el usuario entrenó libre esta sesión
+  if (window._savedRoutineBeforeFree) {
+    currentSelectedRoutine = window._savedRoutineBeforeFree;
+    window._savedRoutineBeforeFree = null;
+    updateRoutineBanner(currentSelectedRoutine);
+  }
   setTimeout(() => showFeelingModal(), 800);
 }
 
@@ -14619,14 +14633,30 @@ function _renderRoutineCards(routines) {
   }
   emptyState.style.display = 'none';
   container.innerHTML = routines.map(r => {
-    const exCount  = r.exercises?.length || 0;
-    const setCount = (r.exercises || []).reduce((s, ex) => s + (ex.sets || 0), 0);
-    const tag = r.muscle_group ? `<span class="routine-card-tag">${r.muscle_group}</span>` : '';
+    const exCount   = r.exercises?.length || 0;
+    const setCount  = (r.exercises || []).reduce((s, ex) => s + (ex.sets || 0), 0);
+    const tag       = r.muscle_group ? `<span class="routine-card-tag">${r.muscle_group}</span>` : '';
+    const isCoach   = r.source === 'onboarding_ai' || r.source === 'coach';
+    const coachBadge = isCoach
+      ? `<span style="font-size:10px;padding:2px 8px;background:rgba(0,229,255,0.12);color:var(--primary);border-radius:20px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">🤖 De tu coach</span>`
+      : '';
+    const cardBorder = isCoach ? 'border:1px solid rgba(0,229,255,0.25)' : '';
+    const isActive   = currentSelectedRoutine?.id === r.id;
+    const activeDot  = isActive
+      ? `<span style="width:7px;height:7px;border-radius:50%;background:var(--primary);display:inline-block;margin-left:6px;vertical-align:middle" title="Rutina activa"></span>`
+      : '';
     return `
-      <div class="routine-card" onclick="selectRoutineFromModal('${r.id}')">
+      <div class="routine-card" style="${cardBorder}" onclick="selectRoutineFromModal('${r.id}')">
         <div class="routine-card-header">
-          <div class="routine-card-title">${r.name}</div>
-          ${tag}
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;flex:1;min-width:0">
+            <div class="routine-card-title" style="flex-shrink:0">${r.name}${activeDot}</div>
+            ${coachBadge}${tag}
+          </div>
+          <button onclick="event.stopPropagation();_deleteRoutineFromCard('${r.id}','${r.name.replace(/'/g,"\\'")}')"
+            style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--text-tertiary);flex-shrink:0;border-radius:6px;line-height:1"
+            title="Eliminar rutina">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
         </div>
         <div class="routine-card-meta">${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} · Usado ${r.use_count || 0} veces</div>
         <div class="routine-card-actions">
@@ -14635,6 +14665,29 @@ function _renderRoutineCards(routines) {
         </div>
       </div>`;
   }).join('');
+}
+
+function _deleteRoutineFromCard(routineId, routineName) {
+  if (!confirm(`¿Eliminar la rutina "${routineName}"?\nEsta acción no se puede deshacer.`)) return;
+  const routines = _getLocalRoutines().filter(r => r.id !== routineId);
+  _saveLocalRoutines(routines);
+  if (currentSelectedRoutine?.id === routineId) {
+    currentSelectedRoutine = null;
+    updateRoutineBanner(null);
+    updateWorkoutHub();
+  }
+  loadUserRoutines();
+  showToast(`Rutina eliminada`, 'success');
+}
+
+function startFreeWorkoutToday() {
+  // Cierra el selector y abre configSheet sin ninguna rutina seleccionada
+  closeRoutineSelector();
+  // Guardamos la rutina activa temporalmente y la suspendemos para esta sesión
+  window._savedRoutineBeforeFree = currentSelectedRoutine;
+  currentSelectedRoutine = null;
+  updateRoutineBanner(null);
+  setTimeout(() => openConfig(), 200);
 }
 
 // Sync background: push local routines to Supabase (non-blocking, silent)
