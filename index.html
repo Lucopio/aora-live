@@ -3018,9 +3018,9 @@ body {
         <span id="exerciseNoteText" style="font-size:12px;color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--text-tertiary)" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-      <div id="exerciseNoteAddBtn" onclick="openExerciseNoteSheet()" style="display:flex;align-items:center;gap:5px;padding:5px 0 10px;cursor:pointer">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span style="font-size:11px;color:var(--text-tertiary);font-weight:600">Añadir nota del ejercicio</span>
+      <div id="exerciseNoteAddBtn" onclick="openExerciseNoteSheet()" style="display:flex;align-items:center;gap:8px;padding:9px 12px;margin-bottom:10px;cursor:pointer;background:rgba(255,184,0,0.06);border:1.5px dashed rgba(255,184,0,0.25);border-radius:10px">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--warning)" stroke-width="2" style="flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span style="font-size:12px;color:var(--warning);font-weight:600;opacity:0.85">Añadir nota del ejercicio</span>
       </div>
       <!-- 2. Inputs de peso + reps + botón Serie -->
       <div class="set-inputs">
@@ -3056,12 +3056,8 @@ body {
           <button onclick="appendWeightChip(45)"  style="flex:1;min-width:0;padding:7px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);cursor:pointer">45</button>
         </div>
       </div>
-      <!-- 4. Toggle aproximación + Unilateral (misma fila) -->
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button id="warmupSetToggle" onclick="toggleWarmupSet()" style="display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all 0.15s">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);display:inline-block" id="warmupSetDot"></span>
-          Serie de aproximación
-        </button>
+      <!-- 4. Unilateral + L/R (misma fila), Aproximación abajo -->
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
         <button class="unilateral-btn" id="unilateralBtn" onclick="toggleUnilateral()">
           <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
           Unilateral
@@ -3070,6 +3066,12 @@ body {
           <button class="side-btn active" id="sideL" onclick="setSide('left')">Izq</button>
           <button class="side-btn" id="sideR" onclick="setSide('right')">Der</button>
         </div>
+      </div>
+      <div style="margin-top:6px">
+        <button id="warmupSetToggle" onclick="toggleWarmupSet()" style="display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all 0.15s">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);display:inline-block" id="warmupSetDot"></span>
+          Serie de aproximación
+        </button>
       </div>
       <!-- 5. Series realizadas (al final) -->
       <div class="sets-list" id="setsList"></div>
@@ -3151,7 +3153,12 @@ body {
           <span id="pendingCount">0</span> en cola
         </div>
       </div>
-      <button class="finish-exercise-btn" id="nextExerciseBtn" onclick="nextExercise()">Siguiente Ejercicio</button>
+      <div style="display:flex;gap:8px">
+        <button class="finish-exercise-btn" id="prevExerciseBtn" onclick="prevExercise()" style="display:none;flex:0 0 auto;padding:13px 14px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text-secondary)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="display:block"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="finish-exercise-btn" id="nextExerciseBtn" onclick="nextExercise()" style="flex:1">Siguiente Ejercicio</button>
+      </div>
       <button class="end-workout-btn" onclick="endWorkout()">Finalizar Entrenamiento</button>
     </div>
   </div>
@@ -3705,7 +3712,7 @@ body {
     <button class="coach-chat-back" onclick="workoutStartTime ? showScreen('workout') : showScreen('home')">
       <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
-    <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0;-webkit-tap-highlight-color:transparent" onclick="showCoachProfile()">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0;-webkit-tap-highlight-color:transparent" onclick="showCoachProfile(null,'chat')">
       <div class="coach-chat-header-avatar" id="chatHeaderAvatar">
         <span id="chatCoachEmoji">🤖</span>
         <div class="coach-online-dot"></div>
@@ -5021,6 +5028,66 @@ function getCoachMessage(coachKey, userData) {
   return `${sessions} sesión${sessions > 1 ? 'es' : ''} esta semana. La consistencia construye cuerpos. ¿En qué te ayudo hoy?`;
 }
 
+// ─── Daily wellness tips rotados por día del año ─────────────
+const _WELLNESS_TIPS = {
+  maria: [
+    // Nutrición
+    '¡Recuerda hidratarte! Beber 500ml antes de entrenar mejora tu rendimiento hasta un 10%. 💧',
+    'La proteína post-entrenamiento es clave. Intenta comer en los 30-60 min después de entrenar. 🥗',
+    'Los carbohidratos son tus aliados antes del gym. Una banana o avena 1h antes = energía sostenida. 🍌',
+    // Descanso
+    'Dormir 7-9h no es opcional, es parte del entrenamiento. Tus músculos crecen mientras descansas. 😴',
+    'Un día de descanso activo (caminar, yoga suave) recupera mejor que el sedentarismo total. 🧘',
+    'El sobreentrenamiento es real. Si llevas 3 días con fatiga acumulada, hoy descansa sin culpa. 🌿',
+    // Motivación
+    '¡Cada rep cuenta! No existe un entrenamiento "perfecto", solo el que hiciste. 🔥',
+    'El progreso no es lineal. Los días difíciles también construyen disciplina. 💪',
+    'Pequeños avances sostenidos > grandes esfuerzos esporádicos. Tú ya lo sabes. ¡Sigue! ⚡',
+  ],
+  carlos: [
+    '500ml de agua 30 min antes del entrenamiento optimiza la función muscular. Dato comprobado. 💧',
+    'Sin proteína adecuada (1.6-2.2g/kg peso corporal), el músculo no crece. Revisa tu ingesta. 📊',
+    'Los omega-3 reducen inflamación post-entrenamiento. Incluye salmón, chía o suplemento. 🐟',
+    'El sueño profundo libera hormona de crecimiento. Menos de 6h = menos hipertrofia. Simple. 😴',
+    'La cafeína 60 min antes aumenta fuerza y resistencia un 3-7%. Úsala estratégicamente. ☕',
+    'Deload cada 4-6 semanas: reduce volumen 40%. Previene estancamiento y lesiones. 📉',
+    'El progreso real tarda 8-12 semanas en ser visible. La consistencia es la única variable. 📈',
+    'Registra tus pesos. Lo que no se mide, no mejora. Esa es la base de todo. 🎯',
+    'Una semana mala no destruye meses de progreso. Vuelve al siguiente entreno. ✅',
+  ],
+  andrea: [
+    'Escucha a tu cuerpo. La diferencia entre dolor productivo y lesión está en la calidad del movimiento. 🎯',
+    'La hidratación afecta directamente tu concentración y estado de ánimo. Bebe agua antes de comer. 🌊',
+    'Comer consciente es parte del bienestar. Sin prisa, sin pantallas: tu digestión lo agradece. 🍽️',
+    'El sueño regula el cortisol. Alta tensión + poco descanso = progreso bloqueado. Prioriza descansar. 🌙',
+    'El foam roller 10 min después de entrenar reduce DOMS hasta un 30%. Vale la pena. 🔵',
+    'Tu cuerpo necesita descanso tanto como movimiento. El equilibrio es la clave del bienestar. ⚖️',
+    'El progreso viene de adentro. Nota cómo te sientes, no solo cómo te ves. 🌱',
+    'La movilidad de hoy es la fuerza de mañana. Dedica 5 min a estirar al final. 🤸',
+    'Celebra los pequeños logros. Tu cerebro aprende a través del reconocimiento positivo. 🌟',
+  ],
+  diego: [
+    'El agua es tu primer suplemento. Sin hidratación, ningún otro funciona bien. 💧',
+    'Comer real > suplementos. La comida entera tiene nutrientes que no se pueden replicar. 🥦',
+    'Los vegetales de colores oscuros son antioxidantes naturales. Come al menos 2 colores por día. 🥗',
+    'La calidad del sueño importa más que la cantidad. Oscuridad, temperatura fresca, sin pantallas. 🌒',
+    'Un nap de 20 min después del almuerzo mejora la cognición y recuperación muscular. 😌',
+    'Si llevas 2 semanas sin mejorar, no es falta de esfuerzo: es señal de que algo en la recuperación falla. 🔍',
+    'La constancia supera al talento. Tú ya lo elegiste, ahora solo sigue. 🏔️',
+    'Cada sesión que cumples cuando no tenías ganas vale doble. Esa es la fortaleza real. 🔥',
+    'No compares tu capítulo 1 con el capítulo 20 de otro. Tu proceso es único. 🌿',
+  ]
+};
+
+function _getDailyCoachTip(coachId) {
+  const tips = _WELLNESS_TIPS[coachId] || _WELLNESS_TIPS.maria;
+  // Rotar por día del año para que cambie cada día
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  // Cada 3 días muestra saludo normal, los demás muestra tips
+  if (dayOfYear % 3 === 0) return getCoachMessage(coachId, {});
+  return tips[dayOfYear % tips.length];
+}
+
 function updateCoachSpotlight() {
   const coach = getSelectedCoach();
   const spotlight = document.getElementById('coachSpotlight');
@@ -5061,8 +5128,8 @@ function updateCoachSpotlight() {
     }
   }
 
-  // Update message
-  const msg = getCoachMessage(coach.id, {});
+  // Update message — rotar entre saludo y tips de bienestar según el día
+  const msg = _getDailyCoachTip(coach.id);
   if (msgEl) { msgEl.textContent = msg; msgEl.style.display = 'block'; }
   if (spotlight) spotlight.style.display = 'flex';
   if (btn) btn.style.display = 'block';
@@ -5410,6 +5477,33 @@ function incrementChatCount() {
 }
 function canSendMessage() { return getChatCount() < CHAT_DAILY_LIMIT; }
 
+function _showCoachResponseBadge(coachName, responseText) {
+  // Badge rojo en el tab de Coach del bottom nav
+  const navItems = document.querySelectorAll('.nav-item');
+  const coachNavItem = navItems[1]; // índice 1 = Coach
+  if (coachNavItem) {
+    coachNavItem.style.position = 'relative';
+    if (!coachNavItem.querySelector('.coach-notif-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'coach-notif-dot';
+      dot.style.cssText = 'position:absolute;top:4px;right:10px;width:8px;height:8px;border-radius:50%;background:#FF4D6D;border:2px solid var(--bg);pointer-events:none;z-index:10';
+      coachNavItem.appendChild(dot);
+    }
+  }
+  // Toast si el usuario está en otra pantalla
+  const plain = responseText.replace(/<[^>]+>/g, '').slice(0, 70);
+  showToast(`💬 ${coachName}: ${plain}…`, 'info');
+  // Push notification nativa si disponible
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(coachName + ' respondió', {
+        body: responseText.replace(/<[^>]+>/g, '').slice(0, 120),
+        icon: 'Images/coaches/' + (getSelectedCoach()?.id || 'maria') + '.png'
+      });
+    } catch(e) {}
+  }
+}
+
 function buildChatContext() {
   const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
   const workouts = (() => { try { const d = JSON.parse(localStorage.getItem('gymtracker_data') || '{}'); return d.savedWorkouts || []; } catch(e) { return []; } })();
@@ -5440,9 +5534,11 @@ function buildChatContext() {
   };
 }
 
+let _coachChatDraft = '';
 function autoResizeChatInput(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  _coachChatDraft = el.value; // guardar borrador en tiempo real
 }
 function chatInputKeydown(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCoachMessage(); }
@@ -5560,8 +5656,14 @@ async function sendCoachMessage() {
 
   if (!canSendMessage()) { updateChatCounter(); return; }
 
+  // Solicitar permiso de notificación la primera vez (silencioso, no bloquea)
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(() => {});
+  }
+
   // Mostrar burbuja de usuario inmediatamente
   input.value = '';
+  _coachChatDraft = '';                      // limpiar borrador al enviar
   input.style.height = 'auto';
   appendChatBubble('user', text);
   _coachMsgQueue.push(text);
@@ -5673,6 +5775,10 @@ async function _sendCoachMessageCore(text) {
     history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
     saveChatHistory(coach.id, history);
     incrementChatCount();
+    // Badge + notificación si el usuario no está viendo el chat
+    if (!document.getElementById('coachScreen')?.classList.contains('active')) {
+      _showCoachResponseBadge(coach.name, data.response);
+    }
 
   } catch(err) {
     hideTypingIndicator();
@@ -5701,6 +5807,11 @@ function handleCoachNavTap() {
 function showCoachProfile(coachId, origin) {
   const coach = coachId ? { id: coachId, ...COACHES[coachId] } : getSelectedCoach();
   if (!coach) { showScreen('coach'); return; }
+  // Si ya hay historial y no venimos de onboarding/welcome/chat-header → ir directo al chat
+  if (!coachId && !origin && getChatHistory(coach.id).length > 0) {
+    showScreen('coach');
+    return;
+  }
   // Back button — regresa al origen correcto
   const backBtn = document.getElementById('coachProfileBackBtn');
   if (backBtn) backBtn.onclick = () => showScreen(origin === 'onboarding' ? 'onboarding' : origin === 'welcome' ? 'welcome' : 'coach');
@@ -5847,6 +5958,14 @@ function initCoachChat() {
 
   // Scroll to bottom
   wrap.scrollTop = wrap.scrollHeight;
+
+  // Restaurar borrador si el usuario lo escribió y navegó
+  const chatInput = document.getElementById('chatInput');
+  if (chatInput && _coachChatDraft) {
+    chatInput.value = _coachChatDraft;
+    autoResizeChatInput(chatInput);
+    setTimeout(() => chatInput.focus(), 300);
+  }
 }
 
 function getWeekStreak() {
@@ -6111,6 +6230,8 @@ function showScreen(name) {
   }
   if (name === 'coach') {
     initCoachChat();
+    // Limpiar badge de notificación pendiente
+    document.querySelector('.coach-notif-dot')?.remove();
     if (workoutStartTime) {
       setTimeout(() => {
         const input = document.getElementById('chatInput');
@@ -8803,8 +8924,12 @@ function _renderExerciseNote(name) {
 }
 
 function openExerciseNoteSheet() {
-  const name = currentExerciseName;
+  // Fallback para ejercicios manuales donde currentExerciseName puede estar vacío
+  const name = currentExerciseName
+    || (document.getElementById('exerciseCardName')?.textContent || '').split(' · ')[0].trim();
   if (!name) return;
+  // Sincronizar currentExerciseName si estaba vacío
+  if (!currentExerciseName) currentExerciseName = name;
   const titleEl = document.getElementById('exNoteSheetTitle');
   if (titleEl) titleEl.textContent = `Nota · ${name}`;
   const input = document.getElementById('exNoteInput');
@@ -8927,6 +9052,7 @@ function _doSelectExercise(name, equip) {
   if (wp) wp.style.display = 'none';
   renderSets();
   _renderExerciseNote(name);
+  _updatePrevExBtn();
   showScreen('workout');
 }
 
@@ -9335,6 +9461,43 @@ function nextExercise() {
     if (ws) ws.scrollTop = 0;
     openCatalog();
   }
+  _updatePrevExBtn();
+}
+
+function prevExercise() {
+  if (completedExercises.length === 0) return;
+  // Si hay ejercicio activo, devolverlo al frente de la cola
+  if (currentExerciseName) {
+    pendingExercises.unshift({ name: currentExerciseName, equipment: currentEquipment, targetSets: currentTargetSets });
+  }
+  // Recuperar el último ejercicio completado
+  const prev = completedExercises.pop();
+  exerciseCount = completedExercises.length;
+  document.getElementById('exBadge').textContent = exerciseCount;
+  updatePendingPill();
+  _updatePrevExBtn();
+  // Restaurar el ejercicio anterior sin animar transición
+  currentExerciseName  = prev.name;
+  currentEquipment     = prev.equipment || '';
+  currentExerciseSets  = [...(prev.sets || [])];
+  currentTargetSets    = prev.targetSets || prev.sets?.length || 0;
+  isUnilateral         = false;
+  document.getElementById('unilateralBtn').classList.remove('active');
+  document.getElementById('sideSelector').style.display = 'none';
+  const equipLabel = currentEquipment ? (EQUIP_LABEL[currentEquipment] || '') : '';
+  document.getElementById('exerciseCardName').textContent = equipLabel
+    ? `${prev.name} · ${equipLabel}` : prev.name;
+  const wkInfoBtn = document.getElementById('wkInfoBtn');
+  if (wkInfoBtn) wkInfoBtn.style.display = EXERCISE_INFO[prev.name] ? 'flex' : 'none';
+  renderSets();
+  _renderExerciseNote(prev.name);
+  showToast(`← Volviste a ${prev.name}`, 'info');
+  showScreen('workout');
+}
+
+function _updatePrevExBtn() {
+  const btn = document.getElementById('prevExerciseBtn');
+  if (btn) btn.style.display = completedExercises.length > 0 ? 'flex' : 'none';
 }
 
 function updatePendingPill() {
