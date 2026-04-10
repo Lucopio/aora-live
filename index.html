@@ -8544,8 +8544,8 @@ function exerciseRowHtml(item, equips) {
   // Botón ℹ eliminado del catálogo — la info de técnica se abre desde el workout
   const illus = EXERCISE_ILLUSTRATIONS[item];
   const illusHtml = illus
-    ? `<img src="${illus}" alt="" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;opacity:0.85;border-radius:8px;background:rgba(255,255,255,0.04)">`
-    : `<div style="width:52px;height:52px;flex-shrink:0;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)"></div>`;
+    ? `<img src="${illus}" alt="" style="width:64px;height:64px;object-fit:contain;flex-shrink:0;opacity:0.95;border-radius:0;background:none">`
+    : ``;
   return `<div class="exercise-row" style="display:flex;align-items:center;gap:10px">${illusHtml}<div style="flex:1">
     <div class="exercise-row-header">
       <span class="exercise-row-name">${item}</span>${lwStr}
