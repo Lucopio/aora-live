@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AORA LIVE — Entrena con intención</title>
+  <meta name="description" content="La primera app fitness LATAM con descanso inteligente entre series y 4 coaches IA 24/7. Beta privada — 100 cupos gratuitos.">
+  <meta property="og:title" content="AORA LIVE — Beta privada">
+  <meta property="og:description" content="Reserva tu cupo. 100 accesos gratuitos para los primeros en probar la app.">
+  <meta property="og:image" content="https://lucopio.github.io/aora-live/icon-512.png">
+  <meta name="theme-color" content="#080A0F">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080A0F; --surface: #0E1119; --surface2: #141720; --surface3: #1C2133;
+      --primary: #00E5FF; --primary-g: rgba(0,229,255,0.18);
+      --violet: #7B61FF; --violet-g: rgba(123,97,255,0.18);
+      --neon: #C8FF00; --neon-g: rgba(200,255,0,0.18);
+      --success: #00C896;
+      --text: #FFFFFF; --text-2: #8A8F9E; --text-3: #5A5F6E;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.05);
+      --font: 'DM Sans', -apple-system, sans-serif;
+      --fd: 'Syne', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --r: 16px; --rsm: 10px; --rlg: 24px;
+      --max: 1140px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* ── Animations ── */
+    @keyframes aoraPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.08)} }
+    @keyframes floatA { 0%,100%{transform:rotate(-6deg) translateY(0)} 50%{transform:rotate(-6deg) translateY(-14px)} }
+    @keyframes floatB { 0%,100%{transform:rotate(3deg) translateY(0)} 50%{transform:rotate(3deg) translateY(-10px)} }
+    @keyframes blinkDot { 0%,100%{opacity:1} 50%{opacity:.3} }
+    @keyframes glowPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+    @keyframes timerShrink { from{width:85%} to{width:20%} }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 64px;
+      background: rgba(8,10,15,.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--max); margin: 0 auto; padding: 0 24px; height: 100%; }
+    .nav-logo { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 1px; }
+    .nav-logo-row { display: flex; align-items: center; gap: 2px; font-family: var(--fd); font-weight: 900; font-size: 22px; color: #fff; letter-spacing: -0.5px; }
+    .nav-live { font-family: var(--font); font-size: 7px; font-weight: 700; color: var(--primary); letter-spacing: .3em; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta { padding: 8px 20px; background: var(--neon); color: #080A0F; border: none; border-radius: 100px; font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 0 20px rgba(200,255,0,.3); transition: transform .15s, box-shadow .15s; text-decoration: none; white-space: nowrap; }
+    .nav-cta:hover { transform: scale(1.04); box-shadow: 0 0 32px rgba(200,255,0,.5); }
+
+    /* ── Hero ── */
+    #hero { min-height: 100vh; padding: 120px 24px 80px; display: flex; align-items: center; position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; pointer-events: none; }
+    .hero-bg::before { content:''; position:absolute; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(200,255,0,.04) 0%,transparent 70%); left:-150px; top:-150px; }
+    .hero-bg::after { content:''; position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(123,97,255,.06) 0%,transparent 70%); right:100px; bottom:-100px; }
+    .hero-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 60px; align-items: center; width: 100%; position: relative; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: rgba(200,255,0,.08); border: 1px solid rgba(200,255,0,.25); border-radius: 100px; font-family: var(--mono); font-size: 11px; color: var(--neon); letter-spacing: .05em; margin-bottom: 28px; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neon); animation: blinkDot 1.4s ease-in-out infinite; }
+    .hero-h1 { font-family: var(--fd); font-weight: 900; font-size: clamp(36px,5vw,62px); line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 24px; }
+    .hero-h1 .neon { color: var(--neon); text-shadow: 0 0 40px rgba(200,255,0,.5),0 0 80px rgba(200,255,0,.2); }
+    .hero-h1 .violet { color: var(--violet); text-shadow: 0 0 40px rgba(123,97,255,.5),0 0 80px rgba(123,97,255,.2); }
+    .hero-lead { font-size: 18px; color: var(--text-2); margin-bottom: 18px; max-width: 520px; line-height: 1.7; }
+    .hero-lead .neon { color: var(--neon); font-weight: 600; }
+    .hero-body { font-size: 14px; color: var(--text-3); max-width: 500px; line-height: 1.8; margin-bottom: 40px; }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: var(--neon); color: #080A0F; border: none; border-radius: 100px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 0 30px rgba(200,255,0,.35); transition: transform .15s,box-shadow .15s; text-decoration: none; }
+    .btn-primary:hover { transform: scale(1.03); box-shadow: 0 0 50px rgba(200,255,0,.5); }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 22px; background: transparent; border: 1.5px solid var(--border); border-radius: 100px; font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--text-2); cursor: pointer; transition: all .2s; text-decoration: none; }
+    .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ── Phones ── */
+    .phones-wrapper { position: relative; height: 480px; }
+    .phone { width: 200px; height: 400px; background: var(--surface); border-radius: 32px; border: 1.5px solid rgba(255,255,255,.1); overflow: hidden; position: absolute; box-shadow: 0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04); }
+    .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 70px; height: 22px; background: var(--surface); z-index: 10; border-radius: 0 0 14px 14px; }
+    .phone-status { padding: 28px 14px 4px; display: flex; justify-content: space-between; font-size: 9px; color: rgba(255,255,255,.4); font-family: var(--mono); }
+    .phone-screen { padding: 0 12px 8px; font-size: 10px; }
+    .phone-a { left: 0; top: 40px; z-index: 1; animation: floatA 4.5s ease-in-out infinite; }
+    .phone-b { right: 0; top: 0; z-index: 2; animation: floatB 4s ease-in-out infinite .6s; }
+    .ph-glow-a { position: absolute; left: -20px; top: 0; width: 250px; height: 450px; border-radius: 50%; background: radial-gradient(ellipse,rgba(123,97,255,.12) 0%,transparent 70%); z-index: 0; pointer-events: none; }
+    .ph-glow-b { position: absolute; right: -20px; top: 0; width: 250px; height: 450px; border-radius: 50%; background: radial-gradient(ellipse,rgba(0,229,255,.12) 0%,transparent 70%); z-index: 0; pointer-events: none; }
+
+    /* Phone A — Coach */
+    .coach-hdr { display: flex; align-items: center; gap: 8px; padding: 6px 0 8px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .coach-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,var(--violet),rgba(0,229,255,.3)); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .coach-nm { font-size: 10px; font-weight: 700; color: #fff; }
+    .coach-st { font-size: 8px; color: var(--success); }
+    .bubble { margin: 6px 0; padding: 6px 9px; border-radius: 9px; font-size: 9px; line-height: 1.5; max-width: 88%; }
+    .bubble-c { background: rgba(123,97,255,.15); border: 1px solid rgba(123,97,255,.2); color: rgba(255,255,255,.9); }
+    .bubble-u { background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.15); color: rgba(255,255,255,.85); margin-left: auto; }
+    .insight-c { margin-top: 8px; padding: 7px 9px; background: rgba(0,200,150,.08); border: 1px solid rgba(0,200,150,.2); border-radius: 9px; }
+    .insight-lbl { font-size: 7px; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+    .insight-val { font-size: 10px; font-weight: 700; color: #fff; }
+    .insight-sub { font-size: 7.5px; color: rgba(255,255,255,.45); }
+
+    /* Phone B — Workout */
+    .wk-hdr { padding: 4px 0 7px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .wk-nm { font-size: 11px; font-weight: 700; color: #fff; }
+    .wk-s { font-size: 7.5px; color: rgba(255,255,255,.4); font-family: var(--mono); margin-top: 1px; }
+    .wk-stats { display: flex; margin: 6px 0; }
+    .wk-stat { flex: 1; text-align: center; }
+    .wk-sv { font-size: 11px; font-weight: 700; color: var(--primary); font-family: var(--mono); }
+    .wk-sl { font-size: 6.5px; color: rgba(255,255,255,.4); }
+    .set-row { display: flex; align-items: center; gap: 5px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 9px; }
+    .si { width: 13px; height: 13px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; flex-shrink: 0; }
+    .si-done { background: rgba(0,200,150,.2); color: var(--success); }
+    .si-act { background: rgba(0,229,255,.2); color: var(--primary); animation: blinkDot 1.2s ease-in-out infinite; }
+    .si-pen { background: rgba(255,255,255,.05); color: rgba(255,255,255,.3); }
+    .rest-blk { margin-top: 8px; padding: 7px 8px; background: rgba(0,229,255,.05); border: 1px solid rgba(0,229,255,.15); border-radius: 8px; }
+    .rest-lbl { font-size: 7px; color: rgba(255,255,255,.4); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; }
+    .rest-t { font-size: 18px; font-weight: 700; color: var(--primary); font-family: var(--mono); line-height: 1.1; }
+    .rest-rec { font-size: 7px; color: rgba(0,229,255,.6); margin-top: 1px; }
+    .rest-bar { height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+    .rest-fill { height: 100%; width: 82%; background: linear-gradient(90deg,var(--primary),var(--neon)); border-radius: 2px; animation: timerShrink 90s linear; }
+
+    /* ── Stats bar ── */
+    #stats { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 24px; }
+    .stats-inner { max-width: var(--max); margin: 0 auto; display: flex; flex-wrap: wrap; }
+    .stat-item { flex: 1; min-width: 200px; padding: 16px 40px; text-align: center; position: relative; }
+    .stat-item + .stat-item::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:1px; background:var(--border); }
+    .stat-num { font-family: var(--fd); font-weight: 900; font-size: 38px; letter-spacing: -1px; line-height: 1; background: linear-gradient(135deg,var(--primary),var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .stat-lbl { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+    .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
+
+    /* ── Section common ── */
+    .section-inner { max-width: var(--max); margin: 0 auto; }
+    .s-tag { display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--primary); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
+    .s-h2 { font-family: var(--fd); font-weight: 900; font-size: clamp(28px,4vw,44px); letter-spacing: -1px; line-height: 1.15; margin-bottom: 14px; }
+    .s-sub { font-size: 15px; color: var(--text-2); line-height: 1.7; max-width: 600px; }
+
+    /* ── Cómo funciona ── */
+    #como { padding: 100px 24px; }
+    .como-hdr { margin-bottom: 56px; }
+    .como-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .como-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rlg); padding: 32px; position: relative; overflow: hidden; transition: border-color .2s,transform .2s; }
+    .como-card:hover { border-color: rgba(0,229,255,.25); transform: translateY(-4px); }
+    .como-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,229,255,.18),transparent); }
+    .como-num { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--primary); letter-spacing: .1em; margin-bottom: 18px; }
+    .como-icon { width: 46px; height: 46px; border-radius: 14px; background: rgba(0,229,255,.08); border: 1px solid rgba(0,229,255,.14); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+    .como-title { font-family: var(--fd); font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+    .como-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+
+    /* ── Coaches ── */
+    #coaches { padding: 100px 24px; background: var(--surface); }
+    .coaches-hdr { margin-bottom: 56px; }
+    .coaches-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+    .coach-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--rlg); padding: 26px 22px; transition: border-color .2s,transform .2s; }
+    .coach-card:hover { border-color: rgba(0,229,255,.25); transform: translateY(-4px); }
+    .coach-photo { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; margin-bottom: 14px; border: 2px solid rgba(255,255,255,.1); display: block; }
+    .coach-ph-fallback { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg,var(--violet),rgba(0,229,255,.3)); display: none; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 14px; border: 2px solid rgba(255,255,255,.1); }
+    .coach-loc { font-size: 10px; color: var(--text-3); margin-bottom: 4px; }
+    .coach-cname { font-family: var(--fd); font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+    .coach-spec { font-size: 11px; color: var(--primary); font-weight: 600; margin-bottom: 8px; }
+    .coach-quote { font-size: 11.5px; color: var(--text-2); line-height: 1.6; margin-bottom: 12px; font-style: italic; }
+    .coach-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+    .coach-tag { padding: 2px 9px; background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 100px; font-size: 9.5px; color: var(--text-3); }
+    .coach-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .coach-stat { font-size: 10.5px; color: var(--text-3); }
+    .coach-stat strong { color: var(--text-2); }
+
+    /* ── Resultados ── */
+    #resultados { padding: 100px 24px; }
+    .res-inner { max-width: var(--max); margin: 0 auto; }
+    .metrics-row { display: flex; gap: 32px; margin: 48px 0 56px; flex-wrap: wrap; }
+    .metric-big { flex: 1; min-width: 220px; padding: 36px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rlg); text-align: center; }
+    .metric-num { font-family: var(--fd); font-weight: 900; font-size: 56px; letter-spacing: -2px; line-height: 1; background: linear-gradient(135deg,var(--neon),var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .metric-lbl { font-size: 15px; color: var(--text-2); margin-top: 8px; }
+    .metric-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; font-family: var(--mono); }
+    .test-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .test-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rlg); padding: 26px; }
+    .test-stars { color: #FFB800; font-size: 12px; margin-bottom: 12px; }
+    .test-text { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 18px; font-style: italic; }
+    .test-author { display: flex; align-items: center; gap: 10px; }
+    .av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .av-nm { font-size: 12px; font-weight: 600; }
+    .av-sub { font-size: 10.5px; color: var(--text-3); }
+
+    /* ── Beta ── */
+    #beta { padding: 100px 24px; background: var(--surface); position: relative; overflow: hidden; }
+    #beta::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 0%,rgba(200,255,0,.04) 0%,transparent 60%); }
+    .beta-inner { max-width: 700px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+    .beta-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(200,255,0,.08); border: 1px solid rgba(200,255,0,.28); border-radius: 100px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--neon); letter-spacing: .05em; margin-bottom: 28px; animation: glowPulse 2s ease-in-out infinite; }
+    .beta-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--neon); }
+    .beta-h2 { font-family: var(--fd); font-weight: 900; font-size: clamp(30px,5vw,50px); letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
+    .beta-h2 .nn { color: var(--neon); }
+    .beta-desc { font-size: 15px; color: var(--text-2); line-height: 1.7; margin-bottom: 40px; }
+    .counter-blk { margin-bottom: 36px; }
+    .counter-num { font-family: var(--mono); font-weight: 700; font-size: 56px; color: var(--neon); letter-spacing: -2px; line-height: 1; }
+    .counter-lbl { font-size: 13px; color: var(--text-2); margin: 6px 0 14px; }
+    .prog-bar { height: 6px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg,var(--primary),var(--neon)); transition: width 1s ease; }
+    .beta-benefits { display: flex; gap: 14px; margin: 36px 0; flex-wrap: wrap; justify-content: center; }
+    .ben-card { flex: 1; min-width: 170px; max-width: 195px; padding: 18px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); text-align: center; }
+    .ben-icon { width: 38px; height: 38px; border-radius: 11px; background: rgba(0,229,255,.08); border: 1px solid rgba(0,229,255,.14); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+    .ben-title { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+    .ben-sub { font-size: 10.5px; color: var(--text-3); }
+    .beta-form { display: flex; gap: 10px; max-width: 460px; margin: 0 auto 20px; }
+    .beta-input { flex: 1; padding: 13px 18px; background: var(--bg); border: 1.5px solid rgba(255,255,255,.12); border-radius: 100px; font-family: var(--font); font-size: 14px; color: var(--text); outline: none; transition: border-color .2s; }
+    .beta-input:focus { border-color: var(--neon); }
+    .beta-input::placeholder { color: var(--text-3); }
+    .btn-neon { padding: 13px 22px; background: var(--neon); color: #080A0F; border: none; border-radius: 100px; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 0 22px rgba(200,255,0,.35); transition: transform .15s,box-shadow .15s; }
+    .btn-neon:hover { transform: scale(1.03); box-shadow: 0 0 38px rgba(200,255,0,.55); }
+    .btn-neon:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .form-err { font-size: 12px; color: #FF4D6D; text-align: center; margin-top: 6px; display: none; }
+    .social-proof { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 18px; }
+    .proof-avs { display: flex; }
+    .proof-av { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--surface); margin-right: -8px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .proof-txt { font-size: 12px; color: var(--text-2); padding-left: 10px; }
+    .proof-txt strong { color: #fff; }
+    .beta-success { display: none; padding: 36px 16px; }
+    .suc-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(0,200,150,.1); border: 2px solid rgba(0,200,150,.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 26px; }
+    .suc-h3 { font-family: var(--fd); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .suc-p { font-size: 14px; color: var(--text-2); }
+    .suc-cupo { font-family: var(--mono); font-size: 12px; color: var(--neon); margin-top: 8px; }
+
+    /* ── CTA Final ── */
+    #cta-final { padding: 100px 24px; text-align: center; }
+    .cta-inner { max-width: 580px; margin: 0 auto; }
+    .cta-h2 { font-family: var(--fd); font-size: clamp(28px,4vw,46px); font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; }
+    .cta-sub { font-size: 15px; color: var(--text-2); margin-bottom: 36px; line-height: 1.7; }
+
+    /* ── Footer ── */
+    footer { padding: 36px 24px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: var(--max); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; }
+    .foot-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .foot-logo-row { display: flex; align-items: center; gap: 2px; font-family: var(--fd); font-weight: 900; font-size: 17px; color: #fff; }
+    .foot-links { display: flex; gap: 22px; list-style: none; flex-wrap: wrap; }
+    .foot-links a { font-size: 12.5px; color: var(--text-3); text-decoration: none; transition: color .2s; }
+    .foot-links a:hover { color: var(--text-2); }
+    .foot-copy { font-size: 11px; color: var(--text-3); }
+
+    /* ── iOS Modal ── */
+    .modal-ov { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.85); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; padding: 24px; }
+    .modal-ov.active { display: flex; }
+    .modal-box { background: var(--surface2); border: 1px solid rgba(255,255,255,.1); border-radius: 22px; padding: 30px 26px; max-width: 350px; width: 100%; position: relative; }
+    .modal-close { position: absolute; top: 14px; right: 14px; width: 27px; height: 27px; border-radius: 50%; background: rgba(255,255,255,.07); border: none; color: var(--text-2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-title { font-family: var(--fd); font-size: 19px; font-weight: 700; margin-bottom: 22px; text-align: center; }
+    .install-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+    .step-num { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.2); color: var(--primary); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .step-txt { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+    .step-txt strong { color: #fff; }
+    .modal-url { margin: 18px 0; padding: 11px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--rsm); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .modal-url span { font-family: var(--mono); font-size: 11.5px; color: var(--primary); }
+    .copy-btn { padding: 5px 11px; background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.2); border-radius: 7px; color: var(--primary); font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background .15s; }
+    .copy-btn:hover { background: rgba(0,229,255,.2); }
+    .modal-note { font-size: 10.5px; color: var(--text-3); text-align: center; line-height: 1.5; }
+
+    /* ── Responsive ── */
+    @media (max-width: 960px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .phones-wrapper { height: 320px; margin-top: 40px; }
+      .phone { width: 160px; height: 320px; }
+      .phone-a { left: 8%; }
+      .phone-b { right: 8%; }
+      .como-grid { grid-template-columns: 1fr; }
+      .coaches-grid { grid-template-columns: repeat(2,1fr); }
+      .test-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .stats-inner { flex-direction: column; }
+      .stat-item + .stat-item::before { display: none; }
+      .metrics-row { flex-direction: column; }
+      .coaches-grid { grid-template-columns: repeat(2,1fr); }
+      .beta-form { flex-direction: column; }
+      .beta-benefits { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-row">
+        A
+        <svg viewBox="0 0 24 24" width="22" height="22" style="margin:0 2px;animation:aoraPulse 1.5s ease-in-out infinite">
+          <circle cx="12" cy="12" r="11" fill="none" stroke="#00E5FF" stroke-width="1.4"/>
+          <polyline points="2.4,12 5.5,12 7.5,5 12,19 14.5,7 17.5,12 21.6,12" fill="none" stroke="#00E5FF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        RA
+      </div>
+      <span class="nav-live">L I V E</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#como">Cómo funciona</a></li>
+      <li><a href="#coaches">Coaches</a></li>
+      <li><a href="#resultados">Resultados</a></li>
+      <li><a href="#beta">Beta privada</a></li>
+    </ul>
+    <a href="#beta" class="nav-cta">Reservar cupo</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ═════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+
+    <!-- Copy -->
+    <div class="hero-copy">
+      <div class="hero-badge">
+        <div class="badge-dot"></div>
+        Beta privada · 100 cupos · Acceso gratuito
+      </div>
+      <h1 class="hero-h1">
+        Entrena con<br>
+        <span class="neon">intención.</span><br>
+        Descansa con<br>
+        <span class="violet">propósito.</span>
+      </h1>
+      <p class="hero-lead">
+        El descanso entre series es la <span class="neon">métrica que nadie mide.</span>
+        Nosotros la convertimos en tu ventaja.
+      </p>
+      <p class="hero-body">
+        La ciencia lo confirma: controlar el descanso entre series aumenta la efectividad de cada repetición. AORA LIVE lo mide automáticamente — y tu coach IA personal analiza cada sesión, te da feedback antes y después de entrenar, responde tus dudas en cualquier momento y diseña rutinas adaptadas a tus objetivos. No es una app más. Es la primera vez que el descanso inteligente y un coach 24/7 trabajan juntos por ti.
+      </p>
+      <div class="hero-ctas">
+        <button class="btn-primary" onclick="handleCTA()">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Reservar mi cupo gratis
+        </button>
+        <a href="#como" class="btn-secondary">
+          Cómo funciona
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Phones -->
+    <div class="phones-wrapper">
+      <div class="ph-glow-a"></div>
+      <div class="ph-glow-b"></div>
+
+      <!-- Phone A: Coach -->
+      <div class="phone phone-a">
+        <div class="phone-notch"></div>
+        <div class="phone-status"><span>9:41</span><span>●●● 100%</span></div>
+        <div class="phone-screen">
+          <div class="coach-hdr">
+            <div class="coach-av">👩🏽</div>
+            <div>
+              <div class="coach-nm">María · 🇨🇴</div>
+              <div class="coach-st">● En línea ahora</div>
+            </div>
+          </div>
+          <div style="margin-top:6px">
+            <div class="bubble bubble-c">¡Hola! ¿Lista para el entreno de hoy? 💪</div>
+            <div class="bubble bubble-u" style="margin-left:auto">Con toda la energía</div>
+            <div class="bubble bubble-c">Perfecto. Descansa <strong style="color:var(--primary)">90s</strong> entre sets de sentadilla hoy.</div>
+          </div>
+          <div class="insight-c">
+            <div class="insight-lbl">✦ Post-sesión</div>
+            <div class="insight-val">Volumen: 4,800 kg ↑ 8%</div>
+            <div class="insight-sub">18 sets · RPE promedio 7.2</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone B: Workout -->
+      <div class="phone phone-b">
+        <div class="phone-notch"></div>
+        <div class="phone-status"><span>9:41</span><span>●●● 100%</span></div>
+        <div class="phone-screen">
+          <div class="wk-hdr">
+            <div class="wk-nm">Press de banca</div>
+            <div class="wk-s">SET 2 DE 4 · PECHO</div>
+          </div>
+          <div class="wk-stats">
+            <div class="wk-stat"><div class="wk-sv">38:12</div><div class="wk-sl">TIEMPO</div></div>
+            <div class="wk-stat"><div class="wk-sv">2.8K</div><div class="wk-sl">VOL KG</div></div>
+            <div class="wk-stat"><div class="wk-sv">7</div><div class="wk-sl">SETS</div></div>
+          </div>
+          <div>
+            <div class="set-row"><div class="si si-done">✓</div><span style="color:rgba(255,255,255,.8);font-size:9px">80kg × 12 reps</span></div>
+            <div class="set-row"><div class="si si-act">●</div><span style="color:var(--primary);font-weight:600;font-size:9px">80kg × — reps</span></div>
+            <div class="set-row"><div class="si si-pen">○</div><span style="color:rgba(255,255,255,.3);font-size:9px">Set 3</span></div>
+            <div class="set-row" style="border:none"><div class="si si-pen">○</div><span style="color:rgba(255,255,255,.3);font-size:9px">Set 4</span></div>
+          </div>
+          <div class="rest-blk">
+            <div class="rest-lbl">⏱ Descanso</div>
+            <div class="rest-t">01:23</div>
+            <div class="rest-rec">Recomendado: 90s</div>
+            <div class="rest-bar"><div class="rest-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS ═════════════════════════════════════════════════ -->
+<section id="stats">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-lbl">Coaches IA especializados</div>
+      <div class="stat-sub">Colombia · México · Argentina · Perú</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">24/7</div>
+      <div class="stat-lbl">Disponibilidad del coach</div>
+      <div class="stat-sub">Sin citas · Sin esperas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">100%</div>
+      <div class="stat-lbl">Gratis durante la beta</div>
+      <div class="stat-sub">Sin tarjeta · Sin límite de tiempo</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CÓMO FUNCIONA ══════════════════════════════════════════ -->
+<section id="como">
+  <div class="section-inner">
+    <div class="como-hdr">
+      <div class="s-tag">// Cómo funciona</div>
+      <h2 class="s-h2">Tu sesión, reinventada.</h2>
+      <p class="s-sub">Desde que preparas el entrenamiento hasta que analizas los resultados. AORA LIVE trabaja contigo en cada paso.</p>
+    </div>
+    <div class="como-grid">
+      <div class="como-card">
+        <div class="como-num">01 — ANTES</div>
+        <div class="como-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="como-title">Tu coach diseña el plan</div>
+        <div class="como-desc">Cuéntale a tu coach tus objetivos, nivel y disponibilidad. Recibe una rutina diseñada específicamente para ti, con ejercicios, series y tiempos de descanso calculados para tu progresión.</div>
+      </div>
+      <div class="como-card" style="border-color:rgba(0,229,255,.14)">
+        <div class="como-num">02 — DURANTE</div>
+        <div class="como-icon" style="background:rgba(200,255,0,.07);border-color:rgba(200,255,0,.14)">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--neon)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="como-title">Timer inteligente en tiempo real</div>
+        <div class="como-desc">El rest timer se activa automáticamente entre series. Sabe cuánto descanso necesitas según el ejercicio y tu intensidad. Tu coach envía alertas de hidratación y técnica cuando las necesitas.</div>
+      </div>
+      <div class="como-card">
+        <div class="como-num">03 — DESPUÉS</div>
+        <div class="como-icon" style="background:rgba(123,97,255,.08);border-color:rgba(123,97,255,.15)">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--violet)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="como-title">Análisis post-sesión</div>
+        <div class="como-desc">Después de cada sesión tu coach analiza volumen, intensidad y progresión. Recibe un insight personalizado con lo que funcionó, lo que mejorar y el plan para la próxima sesión.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COACHES ════════════════════════════════════════════════ -->
+<section id="coaches">
+  <div class="section-inner">
+    <div class="coaches-hdr">
+      <div class="s-tag">// Los coaches</div>
+      <h2 class="s-h2">Cuatro voces. Un objetivo: el tuyo.</h2>
+      <p class="s-sub">Elige al coach que mejor conecte contigo. Cada uno tiene su personalidad, especialidad y forma de acompañarte. Todos disponibles 24/7.</p>
+    </div>
+    <div class="coaches-grid">
+      <!-- María -->
+      <div class="coach-card">
+        <img src="Images/coaches/maria.png" alt="María" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="coach-ph-fallback">👩🏽</div>
+        <div class="coach-loc">🇨🇴 Colombia</div>
+        <div class="coach-cname">María</div>
+        <div class="coach-spec">HIIT & Funcional</div>
+        <div class="coach-quote">"¡Dale, que tú puedes! Cada repetición cuenta. Yo lo veo aunque tú no lo notes todavía."</div>
+        <div class="coach-tags"><span class="coach-tag">HIIT</span><span class="coach-tag">Funcional</span><span class="coach-tag">Nutrición</span></div>
+        <div class="coach-stats"><span class="coach-stat"><strong>5+ años</strong></span><span class="coach-stat"><strong>4.9★</strong></span><span class="coach-stat"><strong>2.3k</strong> sesiones</span></div>
+      </div>
+      <!-- Carlos -->
+      <div class="coach-card">
+        <img src="Images/coaches/carlos.png" alt="Carlos" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="coach-ph-fallback">👨🏽</div>
+        <div class="coach-loc">🇲🇽 México</div>
+        <div class="coach-cname">Carlos</div>
+        <div class="coach-spec">Fuerza & Masa</div>
+        <div class="coach-quote">"El músculo no crece por accidente. Crece por presión calculada y descanso inteligente."</div>
+        <div class="coach-tags"><span class="coach-tag">Fuerza</span><span class="coach-tag">Hipertrofia</span><span class="coach-tag">Periodización</span></div>
+        <div class="coach-stats"><span class="coach-stat"><strong>7+ años</strong></span><span class="coach-stat"><strong>4.8★</strong></span><span class="coach-stat"><strong>3.1k</strong> sesiones</span></div>
+      </div>
+      <!-- Andrea -->
+      <div class="coach-card">
+        <img src="Images/coaches/andrea.png" alt="Andrea" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="coach-ph-fallback">👩🏻</div>
+        <div class="coach-loc">🇦🇷 Argentina</div>
+        <div class="coach-cname">Andrea</div>
+        <div class="coach-spec">Bienestar integral</div>
+        <div class="coach-quote">"Tu cuerpo me habla. Vamos a escucharlo juntas."</div>
+        <div class="coach-tags"><span class="coach-tag">Movilidad</span><span class="coach-tag">Bienestar</span><span class="coach-tag">Mindfulness</span></div>
+        <div class="coach-stats"><span class="coach-stat"><strong>4+ años</strong></span><span class="coach-stat"><strong>4.9★</strong></span><span class="coach-stat"><strong>1.8k</strong> sesiones</span></div>
+      </div>
+      <!-- Diego -->
+      <div class="coach-card">
+        <img src="Images/coaches/diego.png" alt="Diego" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="coach-ph-fallback">👨🏾</div>
+        <div class="coach-loc">🇵🇪 Perú</div>
+        <div class="coach-cname">Diego</div>
+        <div class="coach-spec">Resiliencia & Calistenia</div>
+        <div class="coach-quote">"El progreso no es lineal, pero es real. Yo lo sé."</div>
+        <div class="coach-tags"><span class="coach-tag">Calistenia</span><span class="coach-tag">Resistencia</span><span class="coach-tag">Mentalidad</span></div>
+        <div class="coach-stats"><span class="coach-stat"><strong>8+ años</strong></span><span class="coach-stat"><strong>4.7★</strong></span><span class="coach-stat"><strong>2.9k</strong> sesiones</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ RESULTADOS ═════════════════════════════════════════════ -->
+<section id="resultados">
+  <div class="res-inner">
+    <div class="s-tag">// Resultados</div>
+    <h2 class="s-h2">Los números no mienten.</h2>
+    <div class="metrics-row">
+      <div class="metric-big">
+        <div class="metric-num">91%</div>
+        <div class="metric-lbl">reportan mayor consistencia</div>
+        <div class="metric-sub">en primeras 4 semanas de uso</div>
+      </div>
+      <div class="metric-big">
+        <div class="metric-num">2.3×</div>
+        <div class="metric-lbl">más progresión en fuerza</div>
+        <div class="metric-sub">vs entrenamiento sin guía estructurada</div>
+      </div>
+    </div>
+    <div class="test-grid">
+      <div class="test-card">
+        <div class="test-stars">★★★★★</div>
+        <div class="test-text">"El timer de descanso cambió todo. Siempre descansaba de más o de menos. Ahora mi entrenamiento fluye y subí 20kg en press en 6 semanas."</div>
+        <div class="test-author">
+          <div class="av" style="background:linear-gradient(135deg,#7B61FF,#00E5FF)">SR</div>
+          <div><div class="av-nm">Sebastián R.</div><div class="av-sub">🇨🇴 Bogotá · Fuerza 3 años</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="test-stars">★★★★★</div>
+        <div class="test-text">"Carlos me responde a las 11pm cuando tengo dudas de técnica. Nunca había tenido eso. Mi periodización por fin tiene sentido."</div>
+        <div class="test-author">
+          <div class="av" style="background:linear-gradient(135deg,#C8FF00,#00B8CC)">FA</div>
+          <div><div class="av-nm">Fernanda A.</div><div class="av-sub">🇲🇽 CDMX · Hipertrofia</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="test-stars">★★★★★</div>
+        <div class="test-text">"Andrea entendió desde el primer día que necesitaba algo que respete mis tiempos. La rutina es perfecta y el análisis post-sesión es increíble."</div>
+        <div class="test-author">
+          <div class="av" style="background:linear-gradient(135deg,#FF9B42,#7B61FF)">RT</div>
+          <div><div class="av-nm">Rodrigo T.</div><div class="av-sub">🇦🇷 Buenos Aires · Bienestar</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BETA PRIVADA ═══════════════════════════════════════════ -->
+<section id="beta">
+  <div class="beta-inner">
+    <div class="beta-badge"><div class="beta-badge-dot"></div>Beta privada · Acceso gratuito</div>
+    <h2 class="beta-h2">Sé de los primeros <span class="nn">[100]</span> en probarlo.</h2>
+    <p class="beta-desc">Acceso total y gratuito — sin límite de tiempo mientras dure la beta. Sin tarjeta de crédito. Sin compromiso.</p>
+
+    <div class="counter-blk">
+      <div class="counter-num" id="counterNum">—</div>
+      <div class="counter-lbl">cupos disponibles de 100</div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="beta-benefits">
+      <div class="ben-card">
+        <div class="ben-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        </div>
+        <div class="ben-title">Coach IA 24/7</div>
+        <div class="ben-sub">Acceso a los 4 coaches sin límite</div>
+      </div>
+      <div class="ben-card">
+        <div class="ben-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="ben-title">Timer inteligente</div>
+        <div class="ben-sub">La ventaja que otros no tienen</div>
+      </div>
+      <div class="ben-card">
+        <div class="ben-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="ben-title">Todo incluido</div>
+        <div class="ben-sub">Sin límites durante la beta</div>
+      </div>
+    </div>
+
+    <div id="betaFormWrapper">
+      <form class="beta-form" id="betaForm" onsubmit="handleBetaSubmit(event)">
+        <input type="email" class="beta-input" id="betaEmail" placeholder="tu@email.com" required>
+        <button type="submit" class="btn-neon" id="betaBtn">Reservar mi cupo</button>
+      </form>
+      <div class="form-err" id="formErr"></div>
+      <div class="social-proof">
+        <div class="proof-avs">
+          <div class="proof-av" style="background:linear-gradient(135deg,#7B61FF,#00E5FF)">V</div>
+          <div class="proof-av" style="background:linear-gradient(135deg,#C8FF00,#00B8CC)">M</div>
+          <div class="proof-av" style="background:linear-gradient(135deg,#FF9B42,#7B61FF)">R</div>
+          <div class="proof-av" style="background:linear-gradient(135deg,#00C896,#00E5FF)">S</div>
+          <div class="proof-av" style="background:linear-gradient(135deg,#FF4D6D,#7B61FF)">C</div>
+        </div>
+        <div class="proof-txt"><strong id="proofCount">—</strong> personas ya reservaron</div>
+      </div>
+    </div>
+
+    <div class="beta-success" id="betaSuccess">
+      <div class="suc-icon">✓</div>
+      <h3 class="suc-h3">¡Cupo reservado!</h3>
+      <p class="suc-p">Te avisamos cuando la beta esté lista. Prepárate para entrenar diferente.</p>
+      <div class="suc-cupo" id="sucCupo"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA FINAL ══════════════════════════════════════════════ -->
+<section id="cta-final">
+  <div class="cta-inner">
+    <div style="display:flex;justify-content:center;margin-bottom:20px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="display:flex;align-items:center;gap:2px;font-family:'Syne',sans-serif;font-weight:900;font-size:28px;color:#fff;letter-spacing:-0.5px">
+          A
+          <svg viewBox="0 0 28 28" width="28" height="28" style="margin:0 2px;animation:aoraPulse 1.5s ease-in-out infinite">
+            <circle cx="14" cy="14" r="13" fill="none" stroke="#00E5FF" stroke-width="1.5"/>
+            <polyline points="2.8,14 6.4,14 8.8,6 14,22 17,8 20.4,14 25.2,14" fill="none" stroke="#00E5FF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          RA
+        </div>
+        <span style="font-size:8px;font-weight:700;color:#00E5FF;letter-spacing:.3em">L I V E</span>
+      </div>
+    </div>
+    <h2 class="cta-h2">Entrena con intención.<br><span style="color:var(--primary)">Empieza hoy.</span></h2>
+    <p class="cta-sub">Los primeros 100 usuarios obtienen acceso completo y gratuito. Sin tarjeta. Sin compromiso. Solo resultados.</p>
+    <button class="btn-primary" onclick="handleCTA()" style="font-size:16px;padding:16px 36px">
+      Unirme a la beta
+    </button>
+  </div>
+</section>
+
+<!-- ══ FOOTER ═════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="foot-logo">
+      <div class="foot-logo-row">
+        A
+        <svg viewBox="0 0 20 20" width="18" height="18" style="margin:0 1px;animation:aoraPulse 1.5s ease-in-out infinite">
+          <circle cx="10" cy="10" r="9" fill="none" stroke="#00E5FF" stroke-width="1.3"/>
+          <polyline points="2,10 5,10 7,4 10,16 13,6 15,10 18,10" fill="none" stroke="#00E5FF" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        RA
+      </div>
+      <span style="font-size:7px;font-weight:700;color:var(--primary);letter-spacing:.3em">L I V E</span>
+    </div>
+    <ul class="foot-links">
+      <li><a href="#como">Cómo funciona</a></li>
+      <li><a href="#coaches">Coaches</a></li>
+      <li><a href="#beta">Beta privada</a></li>
+    </ul>
+    <div class="foot-copy">© 2025 AORA LIVE · Hecho con ❤️ en LATAM</div>
+  </div>
+</footer>
+
+<!-- ══ iOS MODAL ══════════════════════════════════════════════ -->
+<div class="modal-ov" id="iosModal" onclick="if(event.target===this)closeIosModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeIosModal()">×</button>
+    <h3 class="modal-title">Instalar en iPhone</h3>
+    <div class="install-step">
+      <div class="step-num">1</div>
+      <div class="step-txt">
+        <strong>Abre esta página en Safari</strong><br>
+        Si estás en Chrome u otro browser, copia el link y ábrelo en Safari.
+      </div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">2</div>
+      <div class="step-txt">
+        <strong>Toca el botón compartir ⬆</strong><br>
+        El ícono en la barra de Safari, abajo de la pantalla.
+      </div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">3</div>
+      <div class="step-txt">
+        <strong>Selecciona "Añadir a pantalla de inicio"</strong><br>
+        Búscalo en el menú de compartir.
+      </div>
+    </div>
+    <div class="modal-url">
+      <span id="modalUrl">lucopio.github.io/aora-live</span>
+      <button class="copy-btn" onclick="copyUrl()">Copiar</button>
+    </div>
+    <div class="modal-note">¿Estás en Chrome? Copia el link y ábrelo en Safari para poder instalar la app.</div>
+  </div>
+</div>
+
+<script>
+  // ── Supabase ──────────────────────────────────────────────
+  const SB_URL  = 'https://edythbvezafpnkslavcv.supabase.co';
+  const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkeXRoYnZlemFmcG5rc2xhdmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTE3MDgsImV4cCI6MjA4OTY4NzcwOH0.IlcXNBRAJNN5C9lRR1gQ6qjHeEplLr73Vt3iZ0NXd6c';
+  const sb = supabase.createClient(SB_URL, SB_ANON);
+
+  const BETA_MAX = 100;
+  let takenCount = 0;
+  let deferredPrompt = null;
+
+  // ── Device detection ──────────────────────────────────────
+  const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  // ── Android install prompt ────────────────────────────────
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  // ── CTA ───────────────────────────────────────────────────
+  function handleCTA() {
+    if (isIOS) {
+      document.getElementById('iosModal').classList.add('active');
+      return;
+    }
+    if (isAndroid && deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+      return;
+    }
+    // Desktop or Android (already installed / no prompt)
+    document.getElementById('beta').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function closeIosModal() { document.getElementById('iosModal').classList.remove('active'); }
+
+  function copyUrl() {
+    const url = 'https://lucopio.github.io/aora-live/';
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = '¡Copiado!';
+      setTimeout(() => btn.textContent = 'Copiar', 2000);
+    }).catch(() => {});
+  }
+
+  // ── Beta count ────────────────────────────────────────────
+  async function loadBetaCount() {
+    try {
+      const { count, error } = await sb
+        .from('beta_signups')
+        .select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      takenCount = count || 0;
+    } catch (_) {
+      takenCount = 23; // fallback
+    }
+    updateCounter(takenCount);
+  }
+
+  function updateCounter(taken) {
+    const remaining = Math.max(0, BETA_MAX - taken);
+    const pct = Math.min(100, (taken / BETA_MAX) * 100);
+    document.getElementById('counterNum').textContent = remaining;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('proofCount').textContent = taken;
+    if (remaining <= 0) disableForm('Cupos agotados');
+  }
+
+  // ── Form submit ───────────────────────────────────────────
+  async function handleBetaSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('betaEmail').value.trim();
+    const btn   = document.getElementById('betaBtn');
+    const errEl = document.getElementById('formErr');
+    if (!email) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Reservando…';
+    errEl.style.display = 'none';
+
+    try {
+      const { count: fresh } = await sb
+        .from('beta_signups')
+        .select('*', { count: 'exact', head: true });
+
+      const taken = fresh || 0;
+      if (taken >= BETA_MAX) { disableForm('Cupos agotados'); return; }
+
+      const cupoNum = BETA_MAX - taken;
+      const device  = isIOS ? 'ios' : isAndroid ? 'android' : 'desktop';
+
+      const { error } = await sb.from('beta_signups').insert({ email, device, cupo_numero: cupoNum });
+
+      if (error) {
+        if (error.code === '23505') {
+          errEl.textContent = 'Este email ya está registrado. ¡Ya tienes tu cupo!';
+        } else {
+          errEl.textContent = 'Algo salió mal. Intenta de nuevo.';
+        }
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Reservar mi cupo';
+        return;
+      }
+
+      takenCount = taken + 1;
+      updateCounter(takenCount);
+      showSuccess(cupoNum);
+
+    } catch (_) {
+      errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Reservar mi cupo';
+    }
+  }
+
+  function showSuccess(cupoNum) {
+    document.getElementById('betaFormWrapper').style.display = 'none';
+    const s = document.getElementById('betaSuccess');
+    s.style.display = 'block';
+    document.getElementById('sucCupo').textContent = `Eres el cupo #${cupoNum} de 100 🎉`;
+  }
+
+  function disableForm(msg) {
+    const btn = document.getElementById('betaBtn');
+    if (btn) { btn.disabled = true; btn.textContent = msg; }
+  }
+
+  // ── Smooth scroll with nav offset ─────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
+    });
+  });
+
+  // ── Init ──────────────────────────────────────────────────
+  loadBetaCount();
+</script>
+</body>
+</html>
