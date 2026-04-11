@@ -3432,7 +3432,7 @@ body {
           <div style="font-size:11px;padding:3px 8px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-weight:700" id="selectedRoutineGroup"></div>
         </div>
         <div style="font-size:13px;color:var(--text-secondary)" id="selectedRoutineExercises"></div>
-        <div id="selectedRoutineChips" style="display:flex;flex-direction:column;gap:6px;margin-top:10px"></div>
+        <div id="selectedRoutineChips" style="display:block;margin-top:8px;border-top:1px solid var(--border)"></div>
       </div>
     </div>
 
@@ -9707,11 +9707,10 @@ function _updateTodayWorkoutCard() {
   document.getElementById('selectedRoutineGroup').textContent = `${pendingExercises.length} ejercicios`;
   document.getElementById('selectedRoutineExercises').textContent = 'Cargada automáticamente · toca para cambiar';
   const chips = document.getElementById('selectedRoutineChips');
-  if (chips) chips.innerHTML = pendingExercises.map(e =>
-    `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
-      <div style="width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>
-      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary);min-width:0">${e.name}</span>
-      ${e.sets ? `<span style="font-size:11px;color:var(--text-tertiary);font-family:var(--mono)">${e.sets}×</span>` : ''}
+  if (chips) chips.innerHTML = pendingExercises.map((e, i) =>
+    `<div class="rday-ex-row"${i < pendingExercises.length - 1 ? ' style="border-bottom:1px solid var(--border)"' : ''}>
+      <span class="rday-ex-name">${e.name}</span>
+      ${e.sets ? `<span class="rday-ex-sets">${e.sets}×</span>` : ''}
     </div>`
   ).join('');
 }
@@ -15038,13 +15037,10 @@ function updateRoutineBanner(routine) {
     `${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} totales`;
 
   const chips = document.getElementById('selectedRoutineChips');
-  const mc = MUSCLE_GROUP_COLORS[routine.muscle_group] || MUSCLE_GROUP_COLORS['Pecho'];
-  const dotColor = mc?.color || 'var(--primary)';
-  chips.innerHTML = routine.exercises.map(ex =>
-    `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
-      <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
-      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary);min-width:0">${ex.name}</span>
-      ${ex.sets ? `<span style="font-size:11px;color:var(--text-tertiary);font-family:var(--mono)">${ex.sets}×</span>` : ''}
+  chips.innerHTML = routine.exercises.map((ex, i) =>
+    `<div class="rday-ex-row"${i < routine.exercises.length - 1 ? ' style="border-bottom:1px solid var(--border)"' : ''}>
+      <span class="rday-ex-name">${ex.name}</span>
+      ${ex.sets ? `<span class="rday-ex-sets">${ex.sets}×</span>` : ''}
     </div>`
   ).join('');
 }
