@@ -7104,119 +7104,8 @@ const exerciseDB = [
   { group: 'Calistenia', items: ['Muscle-up', 'L-sit', 'Pistol squat', 'Archer push-up', 'Pike push-up', 'Hollow body', 'Back lever'] },
 ];
 
-// ─── Exercise Catalog (name + equipment pairs, para Universal Picker) ────────
-const EXERCISE_CATALOG = {
-  pecho:    { label: 'Pecho',    exercises: [
-    { name: 'Press de pecho',   equipment: 'Barra' },
-    { name: 'Press de pecho',   equipment: 'Mancuernas' },
-    { name: 'Press de pecho',   equipment: 'Máquina' },
-    { name: 'Press inclinado',  equipment: 'Barra' },
-    { name: 'Press inclinado',  equipment: 'Mancuernas' },
-    { name: 'Aperturas',        equipment: 'Mancuernas' },
-    { name: 'Aperturas',        equipment: 'Cable' },
-    { name: 'Aperturas',        equipment: 'Máquina' },
-    { name: 'Fondos',           equipment: 'Barras paralelas' },
-    { name: 'Crossover',        equipment: 'Cable' },
-    { name: 'Pull-over',        equipment: 'Mancuerna' },
-    { name: 'Press declinado',  equipment: 'Barra' },
-    { name: 'Press declinado',  equipment: 'Mancuernas' },
-  ]},
-  espalda:  { label: 'Espalda',  exercises: [
-    { name: 'Dominadas',              equipment: 'Peso corporal' },
-    { name: 'Remo',                   equipment: 'Barra' },
-    { name: 'Remo',                   equipment: 'Mancuerna' },
-    { name: 'Remo',                   equipment: 'Cable' },
-    { name: 'Remo',                   equipment: 'Máquina' },
-    { name: 'Peso muerto',            equipment: 'Barra' },
-    { name: 'Peso muerto',            equipment: 'Mancuernas' },
-    { name: 'Jalones al pecho',       equipment: 'Cable' },
-    { name: 'Jalones al pecho',       equipment: 'Máquina' },
-    { name: 'Jalones agarre neutro',  equipment: 'Cable' },
-    { name: 'Remo en T',              equipment: 'Barra' },
-    { name: 'Face pull',              equipment: 'Cable' },
-  ]},
-  hombros:  { label: 'Hombros',  exercises: [
-    { name: 'Press de hombros',       equipment: 'Barra' },
-    { name: 'Press de hombros',       equipment: 'Mancuernas' },
-    { name: 'Press de hombros',       equipment: 'Máquina' },
-    { name: 'Elevaciones laterales',  equipment: 'Mancuernas' },
-    { name: 'Elevaciones laterales',  equipment: 'Cable' },
-    { name: 'Elevaciones frontales',  equipment: 'Mancuernas' },
-    { name: 'Elevaciones frontales',  equipment: 'Barra' },
-    { name: 'Remo al cuello',         equipment: 'Barra' },
-    { name: 'Remo al cuello',         equipment: 'Cable' },
-    { name: 'Pájaros',                equipment: 'Mancuernas' },
-    { name: 'Pájaros',                equipment: 'Cable' },
-  ]},
-  biceps:   { label: 'Bíceps',   exercises: [
-    { name: 'Curl de bíceps',    equipment: 'Barra' },
-    { name: 'Curl de bíceps',    equipment: 'Mancuernas' },
-    { name: 'Curl de bíceps',    equipment: 'Cable' },
-    { name: 'Curl de bíceps',    equipment: 'Máquina' },
-    { name: 'Curl martillo',     equipment: 'Mancuernas' },
-    { name: 'Curl martillo',     equipment: 'Cable' },
-    { name: 'Curl concentrado',  equipment: 'Mancuerna' },
-    { name: 'Curl predicador',   equipment: 'Barra' },
-    { name: 'Curl predicador',   equipment: 'Mancuerna' },
-    { name: 'Curl inverso',      equipment: 'Barra' },
-  ]},
-  triceps:  { label: 'Tríceps',  exercises: [
-    { name: 'Press francés',        equipment: 'Barra' },
-    { name: 'Press francés',        equipment: 'Mancuernas' },
-    { name: 'Jalón de tríceps',     equipment: 'Cable' },
-    { name: 'Extensión de tríceps', equipment: 'Cable' },
-    { name: 'Extensión de tríceps', equipment: 'Mancuerna' },
-    { name: 'Fondos de tríceps',    equipment: 'Banco' },
-    { name: 'Fondos de tríceps',    equipment: 'Barras paralelas' },
-    { name: 'Patada de tríceps',    equipment: 'Mancuerna' },
-    { name: 'Patada de tríceps',    equipment: 'Cable' },
-  ]},
-  piernas:  { label: 'Piernas',  exercises: [
-    { name: 'Sentadilla',                  equipment: 'Barra' },
-    { name: 'Sentadilla hack',             equipment: 'Máquina' },
-    { name: 'Sentadilla goblet',           equipment: 'Mancuerna' },
-    { name: 'Prensa',                      equipment: 'Máquina' },
-    { name: 'Extensión de cuádriceps',     equipment: 'Máquina' },
-    { name: 'Curl femoral',                equipment: 'Máquina' },
-    { name: 'Curl femoral',                equipment: 'Mancuerna' },
-    { name: 'Peso muerto rumano',          equipment: 'Barra' },
-    { name: 'Peso muerto rumano',          equipment: 'Mancuernas' },
-    { name: 'Zancadas',                    equipment: 'Mancuernas' },
-    { name: 'Zancadas',                    equipment: 'Barra' },
-    { name: 'Elevación de pantorrillas',   equipment: 'Máquina' },
-    { name: 'Elevación de pantorrillas',   equipment: 'Peso corporal' },
-  ]},
-  gluteos:  { label: 'Glúteos',  exercises: [
-    { name: 'Hip thrust',        equipment: 'Barra' },
-    { name: 'Hip thrust',        equipment: 'Máquina' },
-    { name: 'Patada trasera',    equipment: 'Cable' },
-    { name: 'Patada trasera',    equipment: 'Máquina' },
-    { name: 'Abducción',         equipment: 'Cable' },
-    { name: 'Abducción',         equipment: 'Máquina' },
-    { name: 'Sentadilla sumo',   equipment: 'Barra' },
-    { name: 'Sentadilla sumo',   equipment: 'Mancuerna' },
-    { name: 'Puente de glúteos', equipment: 'Peso corporal' },
-  ]},
-  abdomen:  { label: 'Abdomen',  exercises: [
-    { name: 'Plancha',               equipment: 'Peso corporal' },
-    { name: 'Crunch',                equipment: 'Peso corporal' },
-    { name: 'Crunch',                equipment: 'Cable' },
-    { name: 'Elevación de piernas',  equipment: 'Peso corporal' },
-    { name: 'Rueda abdominal',       equipment: 'Rueda' },
-    { name: 'Russian twist',         equipment: 'Peso corporal' },
-    { name: 'Russian twist',         equipment: 'Mancuerna' },
-    { name: 'Oblicuos en polea',     equipment: 'Cable' },
-  ]},
-  cardio:   { label: 'Cardio',   exercises: [
-    { name: 'Caminata en cinta',    equipment: 'Máquina' },
-    { name: 'Carrera en cinta',     equipment: 'Máquina' },
-    { name: 'Bicicleta estática',   equipment: 'Máquina' },
-    { name: 'Elíptica',             equipment: 'Máquina' },
-    { name: 'Remo cardio',          equipment: 'Máquina' },
-    { name: 'Saltar cuerda',        equipment: 'Cuerda' },
-    { name: 'HIIT libre',           equipment: 'Peso corporal' },
-  ]},
-};
+// ─── Exercise Catalog (inicializado tras EXERCISE_EQUIP ~línea 8435) ─────────
+let EXERCISE_CATALOG = {};
 
 // ─── Exercise Info Database ───────────────────────────────────
 const EXERCISE_INFO = {
@@ -8521,6 +8410,30 @@ const EXERCISE_EQUIP = {
   'Hollow body':           ['corporal'],
   'Back lever':            ['corporal'],
 };
+
+// Poblar EXERCISE_CATALOG desde exerciseDB + EXERCISE_EQUIP
+(function() {
+  const _labels = {
+    'Pecho':'Pecho','Espalda':'Espalda','Hombros':'Hombros',
+    'Biceps':'Bíceps','Triceps':'Tríceps','Piernas':'Piernas',
+    'Gluteos':'Glúteos','Abdomen':'Abdomen','Cardio':'Cardio','Calistenia':'Calistenia'
+  };
+  const _equip = {
+    'barra':'Barra','mancuernas':'Mancuernas','maquina':'Máquina',
+    'cable':'Cable','corporal':'Peso corporal','banda':'Banda',''  :'Sin especificar'
+  };
+  exerciseDB.forEach(function(g) {
+    const key = g.group.toLowerCase();
+    const exercises = [];
+    g.items.forEach(function(name) {
+      const equips = EXERCISE_EQUIP[name] || [''];
+      equips.forEach(function(eq) {
+        exercises.push({ name: name, equipment: _equip[eq] || eq });
+      });
+    });
+    EXERCISE_CATALOG[key] = { label: _labels[g.group] || g.group, exercises: exercises };
+  });
+})();
 
 function exKey(name, equip) { return equip ? `${name} · ${equip}` : name; }
 
@@ -15466,9 +15379,14 @@ function _renderUP() {
           : '';
         var safeN = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         var safeDN = name.replace(/"/g,'&quot;');
+        var illusSrc = (typeof EXERCISE_ILLUSTRATIONS !== 'undefined' && EXERCISE_ILLUSTRATIONS[name]) || null;
+        var illusHtml = illusSrc
+          ? '<img src="' + illusSrc + '" alt="" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9;border-radius:8px">'
+          : '<div style="width:48px;height:48px;flex-shrink:0"></div>';
         return '<div class="ex-picker-item _upExItem" data-name="' + safeDN + '" onclick="_upSelectExercise(\'' + safeN + '\')">'
-          + '<span>' + name + eqPreview + '</span>'
-          + '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>'
+          + illusHtml
+          + '<span style="flex:1;min-width:0;padding:0 8px">' + name + eqPreview + '</span>'
+          + '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>'
           + '</div>';
       }).join('')
     : '<div style="text-align:center;padding:32px;color:var(--text-tertiary);font-size:13px">Sin resultados</div>';
@@ -15495,7 +15413,8 @@ function _renderUP() {
     + '<div style="font-size:16px;font-weight:700;color:var(--text-primary)">' + title + '</div>'
     + closeBtn
     + '</div>'
-    + '<div id="musclePickerMap" style="padding:0 16px 6px;flex-shrink:0"></div>'
+    + '<div id="musclePickerMap" style="padding:0 8px 2px;flex-shrink:0"></div>'
+    + '<div style="padding:0 16px 8px;flex-shrink:0;text-align:center"><span style="font-size:10px;color:var(--text-tertiary);letter-spacing:0.03em">Toca un músculo para filtrar ejercicios</span></div>'
     + '<div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">' + chipHtml + '</div>'
     + '<input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026" value="' + _upSearch.replace(/"/g,'&quot;') + '" oninput="_upDoSearch(this.value)" style="flex-shrink:0">'
     + customHtml
@@ -15511,7 +15430,7 @@ function _renderUP() {
   (function() {
     var pm = document.getElementById('musclePickerMap');
     if (!pm || typeof buildMuscleMapHTML !== 'function') return;
-    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker' });
+    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker', height: 210 });
     // Sincronizar músculo seleccionado con el grupo activo
     if (_upGroup && typeof MUSCLE_TO_CATALOG !== 'undefined') {
       Object.keys(MUSCLE_TO_CATALOG).forEach(function(mId) {
@@ -15861,11 +15780,17 @@ function renderMuscleRecoveryCard() {
   const hasRecent = savedWorkouts.some(w => new Date(w.date).getTime() >= cutoff && w.exercises_detail?.length);
   if (!hasRecent) { card.style.display = 'none'; return; }
   card.style.display = 'block';
-  let sex = 'M';
-  try { sex = JSON.parse(localStorage.getItem('gymtracker_profile') || '{}').sex || 'M'; } catch(e) {}
   const container = document.getElementById('muscleBodySvg');
-  if (container) container.innerHTML = _buildBodySvgHtml(sex, '', false);
-  applyMuscleColors(getMuscleRecoveryState(), '');
+  if (!container || typeof buildMuscleMapHTML !== 'function') return;
+  container.innerHTML = buildMuscleMapHTML('muscleBodySvg', { mode: 'fatigue' });
+  const stateMap = { 'fatigado': 'sore', 'recuperando': 'recovering', 'fresco': 'fresh' };
+  const recoveryState = getMuscleRecoveryState();
+  Object.entries(recoveryState).forEach(function([group, s]) {
+    const key = group.toLowerCase();
+    const muscles = (typeof CATALOG_GROUP_TO_MUSCLES !== 'undefined' && CATALOG_GROUP_TO_MUSCLES[key]) || [];
+    const state = stateMap[s] || 'fresh';
+    muscles.forEach(mId => setMuscleMapState('muscleBodySvg', mId, state));
+  });
 }
 
 function initCatalogBodyMap() {
@@ -15944,7 +15869,7 @@ function _markRoutineUsed(routineId) {
 }
 
 </script>
-<script src="muscle-map.js"></script>
+<script src="muscle-map.js?v=2"></script>
 
 <!-- ¿Cómo te fue? — Modal -->
 <div id="feelingModalOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:flex-end;justify-content:center">

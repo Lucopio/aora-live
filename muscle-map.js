@@ -223,8 +223,9 @@ function buildMuscleMapHTML(containerId, options) {
       + '</div>';
   }
   if (compact) {
-    // Picker: fixed height, figures side by side centered
-    return '<div style="display:flex;gap:10px;justify-content:center;height:132px;padding:2px 0">'
+    // Picker: fixed height, figures side by side centered (height overridable via options.height)
+    var h = (options && options.height) ? options.height + 'px' : '132px';
+    return '<div style="display:flex;gap:10px;justify-content:center;height:' + h + ';padding:2px 0">'
       + '<div style="height:100%">' + front + '</div>'
       + '<div style="height:100%">' + back  + '</div>'
       + '</div>';
