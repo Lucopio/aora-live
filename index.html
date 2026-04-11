@@ -2913,6 +2913,10 @@ body {
         <span id="avgRestValue">--</span>
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+        <button onclick="openCoachAlertLog()" id="coachBellBtn" style="position:relative;background:rgba(255,255,255,0.06);border:none;border-radius:10px;padding:8px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="coachBellBadge" style="display:none;position:absolute;top:4px;right:4px;min-width:16px;height:16px;border-radius:8px;background:var(--danger);font-size:9px;font-weight:700;color:#fff;align-items:center;justify-content:center;padding:0 3px;font-family:var(--mono)"></span>
+        </button>
         <button onclick="checkNewFeatureCoachmarks()" id="workoutNovedadesBtn" style="position:relative;background:rgba(255,255,255,0.06);border:none;border-radius:10px;padding:8px;cursor:pointer;display:flex;align-items:center;justify-content:center">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--text-secondary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span id="novedadesDot" style="display:none;width:6px;height:6px;border-radius:50%;background:var(--primary);position:absolute;top:6px;right:6px"></span>
@@ -3150,7 +3154,7 @@ body {
         </div>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="finish-exercise-btn" id="prevExerciseBtn" onclick="prevExercise()" style="display:none;flex:0 0 auto;padding:13px 14px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text-secondary)">
+        <button class="finish-exercise-btn" id="prevExerciseBtn" onclick="prevExercise()" style="visibility:hidden;pointer-events:none;flex:0 0 auto;padding:13px 14px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text-secondary)">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="display:block"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         </button>
         <button class="finish-exercise-btn" id="nextExerciseBtn" onclick="nextExercise()" style="flex:1">Siguiente Ejercicio</button>
@@ -4792,6 +4796,10 @@ let _setFeedbackCount = 0;
 const _hydrationFired = new Set();
 const SESSION_LONG_MS = 75 * 60 * 1000;
 
+// Historial de alertas del coach durante el entrenamiento
+const _coachAlertLog = [];   // { type, coachName, coachEmoji, message, ts }
+let _coachAlertUnread = 0;   // contador de no leídas para el badge
+
 function getActiveCoachId() {
   try {
     const raw = localStorage.getItem('selectedCoach');
@@ -4815,6 +4823,13 @@ function showCoachAlertToast(alertType) {
     window._pendingSetFeedbackMsg = null;
   } else {
     message = getRandomAlertMessage(alertType);
+  }
+  // Registrar en historial (máx 20 entradas, ignorar setFeedback para no saturar)
+  if (alertType !== 'setFeedback') {
+    _coachAlertLog.push({ type: alertType, coachName: coach.name, coachEmoji: coach.emoji || '👤', message, ts: Date.now() });
+    if (_coachAlertLog.length > 20) _coachAlertLog.shift();
+    _coachAlertUnread++;
+    _updateCoachBellBadge();
   }
   // Leer la alerta en voz alta si la voz está habilitada
   speakCoachText(message);
@@ -4884,6 +4899,74 @@ function dismissCoachAlert() {
   if (overlay) overlay.style.display = 'none';
 }
 
+function _updateCoachBellBadge() {
+  const badge = document.getElementById('coachBellBadge');
+  if (!badge) return;
+  if (_coachAlertUnread > 0) {
+    badge.textContent = _coachAlertUnread > 9 ? '9+' : String(_coachAlertUnread);
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openCoachAlertLog() {
+  _coachAlertUnread = 0;
+  _updateCoachBellBadge();
+  // Construir sheet
+  let sheet = document.getElementById('coachAlertLogSheet');
+  let overlay = document.getElementById('coachAlertLogOverlay');
+  if (!sheet) {
+    overlay = document.createElement('div');
+    overlay.id = 'coachAlertLogOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:800;display:none';
+    overlay.onclick = closeCoachAlertLog;
+    document.body.appendChild(overlay);
+    sheet = document.createElement('div');
+    sheet.id = 'coachAlertLogSheet';
+    sheet.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 36px;z-index:801;max-height:65vh;display:flex;flex-direction:column;display:none';
+    document.body.appendChild(sheet);
+  }
+  // Contenido
+  const logs = [..._coachAlertLog].reverse(); // más reciente primero
+  const typeLabel = { hydration:'💧 Hidratación', sessionLength:'⏱ Sesión larga', warmupSkipped:'🔥 Calentamiento', checkIn:'✅ Check-in', inactivity:'⏸ Inactividad', setFeedback:'📊 Feedback' };
+  const rows = logs.length === 0
+    ? `<div style="text-align:center;padding:32px 0;color:var(--text-tertiary);font-size:14px">Aún no hay alertas en esta sesión.</div>`
+    : logs.map(l => {
+        const ago = _formatAgo(l.ts);
+        return `<div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:22px;flex-shrink:0;width:32px;text-align:center">${l.coachEmoji}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:600;color:var(--text-tertiary);margin-bottom:3px">${typeLabel[l.type] || l.type} · ${ago}</div>
+            <div style="font-size:13px;color:var(--text-primary);line-height:1.5">${l.message}</div>
+          </div>
+        </div>`;
+      }).join('');
+  sheet.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary)">Alertas de esta sesión</div>
+      <button onclick="closeCoachAlertLog()" style="background:var(--surface2);border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text-secondary);cursor:pointer">Cerrar</button>
+    </div>
+    <div style="overflow-y:auto;flex:1">${rows}</div>
+  `;
+  overlay.style.display = 'block';
+  sheet.style.display = 'flex';
+}
+
+function closeCoachAlertLog() {
+  const sheet = document.getElementById('coachAlertLogSheet');
+  const overlay = document.getElementById('coachAlertLogOverlay');
+  if (sheet) sheet.style.display = 'none';
+  if (overlay) overlay.style.display = 'none';
+}
+
+function _formatAgo(ts) {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return `hace ${diff}s`;
+  if (diff < 3600) return `hace ${Math.floor(diff / 60)}min`;
+  return `hace ${Math.floor(diff / 3600)}h`;
+}
+
 function hablarConCoach() {
   window._afterCoachAlertDismiss = null;
   window._pendingReturnConfig = true;
@@ -4931,6 +5014,10 @@ function checkWorkoutAlerts() {
     if (elapsed >= checkpoint && !_hydrationFired.has(checkpoint)) {
       _hydrationFired.add(checkpoint);
       hydrationAlertCount++;
+      // Vibración + pitido distintivos para que la alerta no pase desapercibida
+      if (vibrationEnabled && navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+      playBeep(528, 250); // nota Do — diferente al beep de fin de descanso
+      setTimeout(() => playBeep(660, 200), 350);
       showCoachAlertToast('hydration');
       break;
     }
@@ -5777,8 +5864,21 @@ async function _sendCoachMessageCore(text) {
     hideTypingIndicator();
     console.error('[coach-chat]', err);
     const msg = String(err.message || err);
-    showToast(msg, 'error');
-    appendChatBubble('system', '⚠️ ' + msg);
+    const isNetworkErr = !navigator.onLine
+      || msg.includes('Failed to fetch')
+      || msg.includes('NetworkError')
+      || msg.includes('abort')
+      || msg.includes('network');
+    if (isNetworkErr) {
+      // Restaurar el mensaje al input para que el usuario pueda reintentar
+      const inp = document.getElementById('chatInput');
+      if (inp && !inp.value.trim()) inp.value = text;
+      showToast('Sin conexión — mensaje guardado, toca Enviar cuando tengas señal', 'error');
+      appendChatBubble('system', '📵 Sin conexión. Tu mensaje está de vuelta en el campo de texto — solo toca Enviar cuando recuperes la señal.');
+    } else {
+      showToast(msg, 'error');
+      appendChatBubble('system', '⚠️ ' + msg);
+    }
   } finally {
     // Restaurar contador al estado normal
     const counter = document.getElementById('chatCounter');
@@ -6103,6 +6203,9 @@ const COACH_VOICE = {
       '¡Diez segundos! ¡A ponerse de pie, parcera!',
       '¡Casi! Diez segundos y entramos fuerte.',
       '¡Diez! Prepárate que viene la siguiente.',
+      '¡Dale! Diez segundos, última oportunidad de prepararte.',
+      '¡Diez! Mentalízate, que ya viene lo bueno.',
+      '¡Despierta! Diez segundos y arrancamos.',
     ],
   },
   carlos: {
@@ -6116,6 +6219,9 @@ const COACH_VOICE = {
       'Diez segundos. Listo.',
       'Diez. De pie.',
       'Diez segundos para la siguiente serie.',
+      'Diez. Postura correcta, ya.',
+      'Diez segundos. Enfoca. Ejecuta.',
+      'Cuenta regresiva: diez. Actívate.',
     ],
   },
   andrea: {
@@ -6129,6 +6235,9 @@ const COACH_VOICE = {
       'Diez segundos. ¿Cómo está tu cuerpo?',
       'Casi. Diez segundos y volvemos.',
       'Diez segundos. Preparate con calma.',
+      'Diez segundos. Respirá una vez más, profundo.',
+      'Casi terminamos el descanso. Diez segundos.',
+      'Diez segundos. Conectá con lo que viene.',
     ],
   },
   diego: {
@@ -6142,6 +6251,9 @@ const COACH_VOICE = {
       'Diez segundos. Enfócate.',
       'Diez. El momento llega.',
       'Diez segundos. Regresa al presente.',
+      'Diez. La disciplina habla ahora.',
+      'Diez segundos. Cuerpo listo, mente lista.',
+      'Diez. Sin excusas, sin dudas.',
     ],
   },
 };
@@ -6153,6 +6265,8 @@ let restCount = 0;
 let warmupStartTime = null;
 let warmupDuration = 0;
 let warmupInterval = null;
+let warmupMaxSeconds = 0;      // límite sugerido parseado de data.duration
+let _warmupTimeAlertFired = false;
 
 // ─── Motivational quotes ────────────────────────────────────
 const quotes = [
@@ -6492,6 +6606,9 @@ function confirmAbandonWorkout() {
   _lastSetRegisteredAt = null;
   _inactivityAlertCount = 0;
   _setFeedbackCount = 0;
+  _coachAlertLog.length = 0;
+  _coachAlertUnread = 0;
+  _updateCoachBellBadge();
   dismissCoachAlert();
   if (typeof releaseWakeLock === 'function') releaseWakeLock();
   saveToStorage();
@@ -6814,6 +6931,10 @@ function toggleWuTip(id) {
 
 function renderWarmupContent(muscleGroup, data) {
   document.getElementById('warmupDuration').textContent = data.duration;
+  // Parsear el límite superior sugerido (ej. "3-5 minutos" → 300s, "5-8 min" → 480s)
+  _warmupTimeAlertFired = false;
+  const m = (data.duration || '').match(/(\d+)-(\d+)/);
+  warmupMaxSeconds = m ? parseInt(m[2]) * 60 : ((data.duration || '').match(/(\d+)/) ? parseInt(data.duration.match(/(\d+)/)[1]) * 60 : 480);
 
   // Animation map per exercise keyword
   const animMap = {
@@ -6909,7 +7030,15 @@ function showWarmup() {
   // ← Render recomendaciones dinámicas ANTES de mostrar la pantalla
   renderWarmupRecommendations();
   warmupInterval = setInterval(() => {
-    document.getElementById('warmupDisplay').textContent = formatTime(Date.now() - warmupStartTime);
+    const elapsed = Date.now() - warmupStartTime;
+    const display = document.getElementById('warmupDisplay');
+    if (display) display.textContent = formatTime(elapsed);
+    // Alerta única cuando se supera el tiempo sugerido
+    if (warmupMaxSeconds > 0 && !_warmupTimeAlertFired && elapsed >= warmupMaxSeconds * 1000) {
+      _warmupTimeAlertFired = true;
+      if (display) display.style.color = 'var(--warning)';
+      showToast('⏰ Ya superaste el tiempo sugerido de calentamiento — ¿listo para entrenar?', 'info');
+    }
   }, 1000);
   // Update button label when returning mid-workout
   const goBtn = document.querySelector('.warmup-go-btn');
@@ -6944,6 +7073,15 @@ function skipWarmup() {
 }
 
 function launchWorkout() {
+  // Aplicar unidad de peso guardada al inicio de cada entrenamiento
+  const savedUnit = localStorage.getItem('aora_weight_unit');
+  if (savedUnit && savedUnit !== weightUnit) {
+    weightUnit = savedUnit;
+    document.getElementById('unitKg').classList.toggle('active', savedUnit === 'kg');
+    document.getElementById('unitLb').classList.toggle('active', savedUnit === 'lb');
+    const wl = document.getElementById('weightLabel');
+    if (wl) wl.textContent = `PESO (${savedUnit.toUpperCase()})`;
+  }
   window._smartRestToastShown = false;
   // Check-in del coach al inicio del entrenamiento
   // Guard: no mostrar si el usuario fue directo al catálogo (sin rutina preseleccionada)
@@ -6988,6 +7126,9 @@ function cancelWarmup() {
   clearInterval(warmupInterval);
   warmupDuration = 0;
   warmupStartTime = null;
+  _warmupTimeAlertFired = false;
+  const d = document.getElementById('warmupDisplay');
+  if (d) d.style.color = '';
   if (workoutStartTime) {
     showScreen('workout');
   } else {
@@ -8824,6 +8965,7 @@ function renameCustomExercise(oldName) {
 
 function setWeightUnit(unit) {
   if (weightUnit === unit) return;
+  localStorage.setItem('aora_weight_unit', unit); // persistir preferencia
   const input = document.getElementById('weightInput');
   const val = parseFloat(input.value) || 0;
   if (val > 0) {
@@ -9438,7 +9580,12 @@ function prevExercise() {
 
 function _updatePrevExBtn() {
   const btn = document.getElementById('prevExerciseBtn');
-  if (btn) btn.style.display = completedExercises.length > 0 ? 'flex' : 'none';
+  if (!btn) return;
+  const show = completedExercises.length > 0;
+  // Usar visibility en vez de display para preservar el espacio en el flex
+  // y evitar que nextExerciseBtn cambie de tamaño al aparecer/desaparecer.
+  btn.style.visibility = show ? 'visible' : 'hidden';
+  btn.style.pointerEvents = show ? 'auto' : 'none';
 }
 
 function updatePendingPill() {
@@ -10482,6 +10629,7 @@ function startRestTimer() {
       }
       if (countdownRemaining === 10 && total > 15) {
         speakCoach('ten');
+        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([100, 60, 100]);
       }
       if (countdownRemaining <= 10) {
         ring.classList.add('alert');
@@ -10634,9 +10782,10 @@ function closeAdjustRestSheet() {
   document.getElementById('adjustRestSheet').style.display = 'none';
 }
 function adjustRest(seconds) {
-  if (!isResting || !restStartedAt) { closeAdjustRestSheet(); return; }
-  restStartedAt -= seconds * 1000; // simula que el descanso empezó antes
-  countdownRemaining = Math.max(0, restSeconds - Math.round((Date.now() - restStartedAt) / 1000));
+  if (!isResting) { closeAdjustRestSheet(); return; }
+  // Restar directamente del countdown actual (igual que extendRest suma) para
+  // evitar recalcular desde restSeconds que no incluye extensiones previas.
+  countdownRemaining = Math.max(0, countdownRemaining - seconds);
   closeAdjustRestSheet();
 }
 
@@ -11486,6 +11635,9 @@ function saveAndExit() {
   _lastSetRegisteredAt = null;
   _inactivityAlertCount = 0;
   _setFeedbackCount = 0;
+  _coachAlertLog.length = 0;
+  _coachAlertUnread = 0;
+  _updateCoachBellBadge();
   dismissCoachAlert();
 
   const ws = savedWorkouts.length + 3;
@@ -11511,6 +11663,9 @@ function discardAndExit() {
   _lastSetRegisteredAt = null;
   _inactivityAlertCount = 0;
   _setFeedbackCount = 0;
+  _coachAlertLog.length = 0;
+  _coachAlertUnread = 0;
+  _updateCoachBellBadge();
   dismissCoachAlert();
   showScreen('home');
 }
@@ -11991,7 +12146,19 @@ function speakCoach(type) {
   const coach = getSelectedCoach();
   const coachId = coach ? coach.id : 'carlos';
   const pool = COACH_VOICE[coachId]?.[type] || COACH_VOICE.carlos[type];
-  const text = pool[Math.floor(Math.random() * pool.length)];
+  // No-repeat-last: evitar que salga la misma frase dos veces seguidas
+  if (!window._lastCoachVoiceIdx) window._lastCoachVoiceIdx = {};
+  const key = coachId + '.' + type;
+  let idx;
+  if (pool.length > 1) {
+    const prev = window._lastCoachVoiceIdx[key] ?? -1;
+    let tries = 0;
+    do { idx = Math.floor(Math.random() * pool.length); tries++; } while (idx === prev && tries < 10);
+  } else {
+    idx = 0;
+  }
+  window._lastCoachVoiceIdx[key] = idx;
+  const text = pool[idx];
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   const params = COACH_TTS[coachId] || COACH_TTS.carlos;
@@ -12027,7 +12194,8 @@ const AI_PREFS_KEY = 'gymtracker_aiPrefs';
 
 function loadAIPrefs() {
   const prefs = JSON.parse(localStorage.getItem(AI_PREFS_KEY) || '{}');
-  return { enabled: prefs.enabled ?? false, focus: prefs.focus ?? 'strength' };
+  // Default enabled:true — si no existe la key, las recomendaciones están ON por defecto.
+  return { enabled: prefs.enabled ?? true, focus: prefs.focus ?? 'strength' };
 }
 
 function saveAIPrefs(prefs) {
