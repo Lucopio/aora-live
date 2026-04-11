@@ -3432,7 +3432,7 @@ body {
           <div style="font-size:11px;padding:3px 8px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-weight:700" id="selectedRoutineGroup"></div>
         </div>
         <div style="font-size:13px;color:var(--text-secondary)" id="selectedRoutineExercises"></div>
-        <div id="selectedRoutineChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+        <div id="selectedRoutineChips" style="display:flex;flex-direction:column;gap:6px;margin-top:10px"></div>
       </div>
     </div>
 
@@ -4037,33 +4037,44 @@ body {
 <div class="bottom-sheet" id="configSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-title">¿Qué vas a entrenar hoy?</div>
-  <div class="sheet-subtitle">Selecciona uno o varios grupos musculares</div>
-  <!-- Muscle group grid -->
-  <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:20px"></div>
-  <!-- Smart rest info — visible cuando 2+ grupos seleccionados -->
-  <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente</span>
-    </div>
-    <div id="configSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
-    <button onclick="toggleConfigFixedRest()" id="configFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
+
+  <!-- Paso 1: Grupos musculares — siempre visible -->
+  <div id="configStep1">
+    <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Grupo muscular · puedes elegir varios</div>
+    <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
   </div>
-  <!-- Rest label + presets — visible siempre en 1 grupo, opcional en multi -->
-  <div id="configRestLabel" style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:10px;min-height:16px"></div>
-  <div id="configRestPresets">
-    <div class="rest-presets">
-      <button class="preset-btn" onclick="selectPreset(this, 60)">60<span>seg</span></button>
-      <button class="preset-btn" onclick="selectPreset(this, 90)">90<span>seg</span></button>
-      <button class="preset-btn active" onclick="selectPreset(this, 120)">120<span>seg</span></button>
-      <button class="preset-btn" onclick="selectPreset(this, 180)">180<span>seg</span></button>
-    </div>
-    <div class="custom-input-row">
-      <label>Personalizado:</label>
-      <input class="custom-input" id="customRestInput" type="number" value="120" min="10" max="600">
-      <label>seg</label>
+
+  <!-- Paso 2: Descanso — se revela cuando se elige al menos un grupo -->
+  <div id="configStep2" style="overflow:hidden;max-height:0;transition:max-height 0.45s cubic-bezier(0.32,0.72,0,1)">
+    <div style="padding-top:22px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Tiempo de descanso</div>
+      <!-- Smart rest info — visible cuando 2+ grupos seleccionados -->
+      <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente activado</span>
+        </div>
+        <div id="configSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
+        <button onclick="toggleConfigFixedRest()" id="configFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
+      </div>
+      <!-- Rest label + presets -->
+      <div id="configRestLabel" style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:12px;min-height:16px"></div>
+      <div id="configRestPresets">
+        <div class="rest-presets">
+          <button class="preset-btn" onclick="selectPreset(this, 60)">60<span>seg</span></button>
+          <button class="preset-btn" onclick="selectPreset(this, 90)">90<span>seg</span></button>
+          <button class="preset-btn active" onclick="selectPreset(this, 120)">120<span>seg</span></button>
+          <button class="preset-btn" onclick="selectPreset(this, 180)">180<span>seg</span></button>
+        </div>
+        <div class="custom-input-row">
+          <label>Personalizado:</label>
+          <input class="custom-input" id="customRestInput" type="number" value="120" min="10" max="600">
+          <label>seg</label>
+        </div>
+      </div>
     </div>
   </div>
+
   <!-- Sugerencia de rutina del mismo día de la semana -->
   <div id="routineSuggestBanner" style="display:none">
     <div class="routine-suggest">
@@ -4075,7 +4086,7 @@ body {
       </div>
     </div>
   </div>
-  <div style="border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 0 16px rgba(52,168,83,0.3)">
+  <div style="border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 0 16px rgba(52,168,83,0.3);margin-top:20px">
     <button id="preWkExBtn" onclick="openPreWorkoutPicker()" style="width:100%;padding:13px;background:var(--surface2);border:none;border-radius:0;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;margin-bottom:0;display:flex;align-items:center;justify-content:center;gap:8px">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Agregar ejercicios a mi rutina de hoy
@@ -6430,13 +6441,14 @@ function _renderConfigGroupChips() {
   const sel = window._configSelectedGroups || [];
   grid.innerHTML = _CONFIG_GROUPS.map(g => {
     const active = sel.includes(g.key);
-    const color = active ? (MUSCLE_GROUP_COLORS[g.key]?.color || 'var(--primary)') : '#8A8F9E';
-    const border = active ? (MUSCLE_GROUP_COLORS[g.key]?.color || 'var(--primary)') : 'var(--border)';
-    const bg     = active ? 'var(--primary-light)' : 'var(--surface2)';
+    const mc     = MUSCLE_GROUP_COLORS[g.key];
+    const color  = active ? (mc?.color  || 'var(--primary)') : '#8A8F9E';
+    const border = active ? (mc?.color  || 'var(--primary)') : 'var(--border)';
+    const bg     = active ? (mc?.bg     || 'var(--primary-light)') : 'var(--surface2)';
     return `<button class="cfg-group-btn" data-group="${g.key}" onclick="selectConfigGroup('${g.key}')"
-      style="padding:6px 4px;background:${bg};border:1.5px solid ${border};border-radius:10px;font-size:10px;font-weight:600;color:${color};cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s;line-height:1.2">
-      ${muscleGroupSvg(g.key, color, 26)}
-      <span>${g.abbr}</span>
+      style="padding:14px 8px;background:${bg};border:2px solid ${border};border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .2s;-webkit-tap-highlight-color:transparent;transform:scale(${active ? '1.02' : '1'})">
+      ${muscleGroupSvg(g.key, color, 32)}
+      <span style="font-size:12px;font-weight:700;color:${color};text-align:center;line-height:1.2">${g.key}</span>
     </button>`;
   }).join('');
 }
@@ -6452,6 +6464,9 @@ function renderConfigGroups() {
   if (smartInfo) smartInfo.style.display = 'none';
   const presets = document.getElementById('configRestPresets');
   if (presets) presets.style.display = 'block';
+  // Ocultar paso 2 (descanso) — se revela al seleccionar grupo
+  const step2 = document.getElementById('configStep2');
+  if (step2) step2.style.maxHeight = '0';
   _renderConfigGroupChips();
 }
 
@@ -6471,6 +6486,9 @@ function selectConfigGroup(group) {
   _renderConfigGroupChips();
 
   const count = window._configSelectedGroups.length;
+  // Revelar/ocultar sección de descanso (paso 2)
+  const step2 = document.getElementById('configStep2');
+  if (step2) step2.style.maxHeight = count > 0 ? '420px' : '0';
   const label = document.getElementById('configRestLabel');
   const smartInfo = document.getElementById('configSmartRestInfo');
   const smartDetail = document.getElementById('configSmartRestDetail');
@@ -9689,9 +9707,13 @@ function _updateTodayWorkoutCard() {
   document.getElementById('selectedRoutineGroup').textContent = `${pendingExercises.length} ejercicios`;
   document.getElementById('selectedRoutineExercises').textContent = 'Cargada automáticamente · toca para cambiar';
   const chips = document.getElementById('selectedRoutineChips');
-  if (chips) chips.innerHTML = pendingExercises.slice(0, 4).map(e =>
-    `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-secondary)">${e.name}</div>`
-  ).join('') + (pendingExercises.length > 4 ? `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-tertiary)">+${pendingExercises.length - 4} más</div>` : '');
+  if (chips) chips.innerHTML = pendingExercises.map(e =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>
+      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary);min-width:0">${e.name}</span>
+      ${e.sets ? `<span style="font-size:11px;color:var(--text-tertiary);font-family:var(--mono)">${e.sets}×</span>` : ''}
+    </div>`
+  ).join('');
 }
 
 function loadSuggestedRoutine() {
@@ -15016,12 +15038,15 @@ function updateRoutineBanner(routine) {
     `${exCount} ejercicio${exCount !== 1 ? 's' : ''} · ${setCount} serie${setCount !== 1 ? 's' : ''} totales`;
 
   const chips = document.getElementById('selectedRoutineChips');
-  chips.innerHTML = routine.exercises.slice(0, 4).map(ex =>
-    `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-secondary)">${ex.name}</div>`
+  const mc = MUSCLE_GROUP_COLORS[routine.muscle_group] || MUSCLE_GROUP_COLORS['Pecho'];
+  const dotColor = mc?.color || 'var(--primary)';
+  chips.innerHTML = routine.exercises.map(ex =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
+      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary);min-width:0">${ex.name}</span>
+      ${ex.sets ? `<span style="font-size:11px;color:var(--text-tertiary);font-family:var(--mono)">${ex.sets}×</span>` : ''}
+    </div>`
   ).join('');
-  if (routine.exercises.length > 4) {
-    chips.innerHTML += `<div style="font-size:11px;padding:4px 10px;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;color:var(--text-tertiary)">+${routine.exercises.length - 4} más</div>`;
-  }
 }
 
 // ─── ROUTINE EDITOR ──────────────────────────────────────────
