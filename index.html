@@ -426,6 +426,131 @@ body {
 }
 .sheet-cta:active { transform: scale(0.97); }
 
+/* ─── WORKOUT SETUP WIZARD ─── */
+#workoutSetupOverlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 300;
+  display: none; flex-direction: column; overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+#workoutSetupOverlay.active { display: flex; }
+.wsu-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 8px; flex-shrink: 0;
+}
+.wsu-progress {
+  display: flex; align-items: center; gap: 6px;
+}
+.wsu-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  transition: all 0.25s; flex-shrink: 0;
+}
+.wsu-dot.active {
+  background: transparent; border: 2px solid var(--primary);
+  box-shadow: 0 0 8px rgba(0,229,255,0.45);
+}
+.wsu-dot.done { background: var(--primary); }
+.wsu-steps-wrap {
+  flex: 1; position: relative; overflow: hidden;
+}
+.wsu-step {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  overflow-y: auto; padding: 0 20px 20px;
+  opacity: 0; pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.wsu-step.active {
+  opacity: 1; pointer-events: auto; transform: translateX(0);
+}
+.wsu-step.exit-left {
+  opacity: 0; pointer-events: none; transform: translateX(-40px);
+}
+.wsu-step-title {
+  font-family: var(--font-display); font-size: 22px; font-weight: 700;
+  color: var(--text-primary); margin-bottom: 4px; margin-top: 8px;
+}
+.wsu-step-sub {
+  font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;
+}
+.wsu-footer {
+  padding: 12px 20px; flex-shrink: 0;
+  display: flex; gap: 10px;
+}
+.wsu-btn-back {
+  flex-shrink: 0; width: 48px; height: 52px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.wsu-btn-next {
+  flex: 1; height: 52px;
+  background: var(--primary); color: #080A0F;
+  border: none; border-radius: var(--radius);
+  font-size: 15px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s;
+}
+.wsu-btn-next:disabled {
+  opacity: 0.35; cursor: default;
+}
+.wsu-btn-start {
+  flex: 1; height: 52px;
+  background: var(--success); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-size: 15px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,200,150,0.3);
+  -webkit-tap-highlight-color: transparent;
+}
+.wsu-rest-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 16px;
+}
+.wsu-rest-tile {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 18px 12px; background: var(--surface2);
+  border: 2px solid var(--border); border-radius: 16px;
+  cursor: pointer; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.wsu-rest-tile.active {
+  border-color: var(--primary); background: var(--primary-light);
+}
+.wsu-rest-tile:active { transform: scale(0.96); }
+.wsu-rest-val {
+  font-family: var(--mono); font-size: 26px; font-weight: 700;
+  color: var(--text-primary);
+}
+.wsu-rest-tile.active .wsu-rest-val { color: var(--primary); }
+.wsu-rest-unit {
+  font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-weight: 600;
+}
+.wsu-rest-tile.active .wsu-rest-unit { color: var(--primary); opacity: 0.8; }
+.wsu-rest-desc {
+  font-size: 10px; color: var(--text-tertiary); margin-top: 4px;
+  text-align: center; line-height: 1.35;
+}
+.wsu-name-input {
+  width: 100%; padding: 16px; background: var(--surface2);
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  color: var(--text-primary); font-size: 16px; font-family: var(--font);
+  outline: none; box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.wsu-name-input:focus { border-color: var(--primary); }
+.wsu-name-input::placeholder { color: var(--text-tertiary); }
+.wsu-skip-link {
+  font-size: 13px; color: var(--text-secondary); background: none; border: none;
+  font-family: var(--font); cursor: pointer; padding: 4px 0;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
 /* WORKOUT */
 .workout-screen {
   background: var(--surface); display: flex; flex-direction: column;
@@ -4032,24 +4157,61 @@ body {
   </div>
 </div>
 
-<!-- Config Sheet -->
-<div class="overlay" id="configOverlay" onclick="closeConfig()"></div>
-<div class="bottom-sheet" id="configSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title">¿Qué vas a entrenar hoy?</div>
+<!-- Workout Setup Wizard (replaces configSheet) -->
+<div id="workoutSetupOverlay">
 
-  <!-- Paso 1: Grupos musculares — siempre visible -->
-  <div id="configStep1">
-    <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Grupo muscular · puedes elegir varios</div>
-    <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+  <!-- Header: progress dots + close -->
+  <div class="wsu-header">
+    <div class="wsu-progress" id="wsuProgress">
+      <div class="wsu-dot active" id="wsuDot0"></div>
+      <div class="wsu-dot" id="wsuDot1"></div>
+      <div class="wsu-dot" id="wsuDot2"></div>
+      <div class="wsu-dot" id="wsuDot3"></div>
+    </div>
+    <button onclick="closeWorkoutSetup()" style="background:none;border:none;padding:6px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--text-secondary)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 
-  <!-- Paso 2: Descanso — se revela cuando se elige al menos un grupo -->
-  <div id="configStep2" style="overflow:hidden;max-height:0;transition:max-height 0.45s cubic-bezier(0.32,0.72,0,1)">
-    <div style="padding-top:22px">
-      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Tiempo de descanso</div>
-      <!-- Smart rest info — visible cuando 2+ grupos seleccionados -->
-      <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+  <!-- Steps viewport -->
+  <div class="wsu-steps-wrap">
+
+    <!-- STEP 0: Nombre de sesión (opcional) -->
+    <div class="wsu-step active" id="wsuStep0">
+      <div class="wsu-step-title">¿Cómo llamamos esta sesión?</div>
+      <div class="wsu-step-sub">Ponle un nombre para encontrarla fácil en tu historial.</div>
+      <input class="wsu-name-input" id="wsuNameInput" type="text" maxlength="40"
+        placeholder="Ej: Piernas pesado, Push day..."
+        oninput="document.getElementById('wsuStep0NamePreview').textContent=this.value||'Sin nombre'">
+      <div style="margin-top:12px;font-size:12px;color:var(--text-tertiary)">
+        Vista previa: <span id="wsuStep0NamePreview" style="color:var(--primary);font-weight:600">Sin nombre</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: Grupos musculares -->
+    <div class="wsu-step" id="wsuStep1">
+      <div class="wsu-step-title">¿Qué vas a trabajar?</div>
+      <div class="wsu-step-sub">Puedes elegir varios grupos musculares.</div>
+      <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+      <!-- Sugerencia de rutina del mismo día -->
+      <div id="routineSuggestBanner" style="display:none;margin-top:16px">
+        <div class="routine-suggest">
+          <div class="routine-suggest-title" id="routineSuggestTitle">📅 Tu rutina del lunes pasado</div>
+          <div class="routine-suggest-exercises" id="routineSuggestList"></div>
+          <div class="routine-suggest-actions">
+            <button class="routine-use-btn" onclick="loadSuggestedRoutine()">Usar esta rutina</button>
+            <button class="routine-skip-btn" onclick="dismissRoutineSuggest()">Desde cero</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Tiempo de descanso -->
+    <div class="wsu-step" id="wsuStep2">
+      <div class="wsu-step-title">Tiempo de descanso</div>
+      <div class="wsu-step-sub" id="configRestLabel">Elige el descanso entre series.</div>
+      <!-- Smart rest info — visible cuando 2+ grupos -->
+      <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente activado</span>
@@ -4057,14 +4219,29 @@ body {
         <div id="configSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
         <button onclick="toggleConfigFixedRest()" id="configFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
       </div>
-      <!-- Rest label + presets -->
-      <div id="configRestLabel" style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:12px;min-height:16px"></div>
+      <!-- Rest tiles 2×2 -->
       <div id="configRestPresets">
-        <div class="rest-presets">
-          <button class="preset-btn" onclick="selectPreset(this, 60)">60<span>seg</span></button>
-          <button class="preset-btn" onclick="selectPreset(this, 90)">90<span>seg</span></button>
-          <button class="preset-btn active" onclick="selectPreset(this, 120)">120<span>seg</span></button>
-          <button class="preset-btn" onclick="selectPreset(this, 180)">180<span>seg</span></button>
+        <div class="wsu-rest-grid">
+          <button class="wsu-rest-tile preset-btn" onclick="wsuSelectRest(this,60)">
+            <span class="wsu-rest-val">60</span>
+            <span class="wsu-rest-unit">segundos</span>
+            <span class="wsu-rest-desc">Cardio / resistencia</span>
+          </button>
+          <button class="wsu-rest-tile preset-btn" onclick="wsuSelectRest(this,90)">
+            <span class="wsu-rest-val">90</span>
+            <span class="wsu-rest-unit">segundos</span>
+            <span class="wsu-rest-desc">Hipertrofia ligera</span>
+          </button>
+          <button class="wsu-rest-tile preset-btn active" onclick="wsuSelectRest(this,120)">
+            <span class="wsu-rest-val">120</span>
+            <span class="wsu-rest-unit">segundos</span>
+            <span class="wsu-rest-desc">Hipertrofia estándar</span>
+          </button>
+          <button class="wsu-rest-tile preset-btn" onclick="wsuSelectRest(this,180)">
+            <span class="wsu-rest-val">180</span>
+            <span class="wsu-rest-unit">segundos</span>
+            <span class="wsu-rest-desc">Fuerza / pesado</span>
+          </button>
         </div>
         <div class="custom-input-row">
           <label>Personalizado:</label>
@@ -4073,29 +4250,39 @@ body {
         </div>
       </div>
     </div>
+
+    <!-- STEP 3: Ejercicios -->
+    <div class="wsu-step" id="wsuStep3" style="padding:0;overflow:hidden">
+      <div id="wsuExPickerContainer" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden"></div>
+    </div>
+
+  </div><!-- /wsu-steps-wrap -->
+
+  <!-- Footer navigation -->
+  <div class="wsu-footer" id="wsuFooter">
+    <button class="wsu-btn-back" id="wsuBtnBack" onclick="workoutSetupBack()" style="display:none">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--text-primary)" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="wsu-btn-next" id="wsuBtnNext" onclick="workoutSetupNext()">
+      Siguiente
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button class="wsu-btn-start" id="wsuBtnStart" onclick="wsuStartWorkout()" style="display:none" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Comenzar
+    </button>
   </div>
 
-  <!-- Sugerencia de rutina del mismo día de la semana -->
-  <div id="routineSuggestBanner" style="display:none">
-    <div class="routine-suggest">
-      <div class="routine-suggest-title" id="routineSuggestTitle">📅 Tu rutina del lunes pasado</div>
-      <div class="routine-suggest-exercises" id="routineSuggestList"></div>
-      <div class="routine-suggest-actions">
-        <button class="routine-use-btn" onclick="loadSuggestedRoutine()">Usar esta rutina</button>
-        <button class="routine-skip-btn" onclick="dismissRoutineSuggest()">Desde cero</button>
-      </div>
-    </div>
-  </div>
-  <div style="border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 0 16px rgba(52,168,83,0.3);margin-top:20px">
-    <button id="preWkExBtn" onclick="openPreWorkoutPicker()" style="width:100%;padding:13px;background:var(--surface2);border:none;border-radius:0;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-secondary);cursor:pointer;margin-bottom:0;display:flex;align-items:center;justify-content:center;gap:8px">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Agregar ejercicios a mi rutina de hoy
-    </button>
-    <button class="sheet-cta" id="startWorkoutBtn" onclick="startWorkout()" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()" style="border-radius:0;box-shadow:none">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Comenzar Entrenamiento
-    </button>
-  </div>
+</div>
+
+<!-- Kept for back-compat with any code that references configOverlay/configSheet — hidden permanently -->
+<div id="configOverlay" style="display:none"></div>
+<div id="configSheet" style="display:none">
+  <!-- Compatibility stubs — real UI is in #workoutSetupOverlay -->
+  <div id="startWorkoutBtn" style="display:none"></div>
+  <div id="preWkExBtn" style="display:none"></div>
+  <div id="configStep1" style="display:none"></div>
+  <div id="configStep2" style="display:none"></div>
 </div>
 
 <!-- PRE-WORKOUT EXERCISE PICKER SHEET -->
@@ -6340,10 +6527,7 @@ function showScreen(name) {
     updateWorkoutHub();
     if (window._pendingReturnConfig) {
       window._pendingReturnConfig = false;
-      setTimeout(() => {
-        document.getElementById('configOverlay').classList.add('active');
-        setTimeout(() => { document.getElementById('configSheet').classList.add('active'); suggestRoutineForToday(); }, 10);
-      }, 300);
+      setTimeout(() => openWorkoutSetup(), 300);
     }
   }
   if (name === 'coach') {
@@ -6400,20 +6584,10 @@ function openConfig() {
     diego:  'El entrenamiento inteligente empieza antes del primer ejercicio. Elige tu grupo y ajusta el descanso con intención.'
   };
   window._pendingSetFeedbackMsg = msgs[coach.id] || msgs.maria;
-  window._afterCoachAlertDismiss = () => {
-    document.getElementById('configOverlay').classList.add('active');
-    setTimeout(() => {
-      document.getElementById('configSheet').classList.add('active');
-      renderConfigGroups();
-      suggestRoutineForToday();
-    }, 10);
-  };
+  window._afterCoachAlertDismiss = () => { openWorkoutSetup(); };
   showCoachAlertToast('setFeedback');
 }
-function closeConfig() {
-  document.getElementById('configSheet').classList.remove('active');
-  setTimeout(() => document.getElementById('configOverlay').classList.remove('active'), 350);
-}
+function closeConfig() { closeWorkoutSetup(); }
 function selectPreset(btn, seconds) {
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -6495,6 +6669,9 @@ function selectConfigGroup(group) {
   const presets = document.getElementById('configRestPresets');
   const fixedBtn = document.getElementById('configFixedRestBtn');
 
+  // Update wizard Next button state (step 1 requires ≥1 group)
+  _wsuUpdateNextBtn(1);
+
   if (count === 0) {
     if (label) label.textContent = '';
     if (smartInfo) smartInfo.style.display = 'none';
@@ -6537,13 +6714,139 @@ function toggleConfigFixedRest() {
     presets.style.display = 'block';
     if (btn) btn.textContent = 'Usar descanso inteligente';
     if (label) label.textContent = 'Tiempo fijo para toda la sesión:';
-    window._userOverrodeRest = true; // user explicitly wants fixed
+    window._userOverrodeRest = true;
   } else {
     presets.style.display = 'none';
     if (btn) btn.textContent = 'Prefiero tiempo fijo';
     if (label) label.textContent = '';
-    window._userOverrodeRest = false; // back to smart mode
+    window._userOverrodeRest = false;
   }
+}
+
+// ─── Workout Setup Wizard ─────────────────────────────────────
+let _wsuCurrentStep = 0;
+
+function openWorkoutSetup() {
+  _wsuCurrentStep = 0;
+  renderConfigGroups();
+  suggestRoutineForToday();
+  const ni = document.getElementById('wsuNameInput');
+  if (ni) ni.value = '';
+  const np = document.getElementById('wsuStep0NamePreview');
+  if (np) np.textContent = 'Sin nombre';
+  const ov = document.getElementById('workoutSetupOverlay');
+  if (ov) ov.classList.add('active');
+  // Instant — no animation on open
+  for (let i = 0; i < 4; i++) {
+    const s = document.getElementById('wsuStep' + i);
+    if (s) s.classList.remove('active', 'exit-left');
+  }
+  const s0 = document.getElementById('wsuStep0');
+  if (s0) s0.classList.add('active');
+  _wsuUpdateDots(0);
+  _wsuUpdateFooter(0);
+}
+
+function closeWorkoutSetup() {
+  const ov = document.getElementById('workoutSetupOverlay');
+  if (ov) ov.classList.remove('active');
+}
+
+function _wsuGoToStep(target) {
+  const prev = _wsuCurrentStep;
+  const forward = target > prev;
+
+  // Exit current step
+  const prevEl = document.getElementById('wsuStep' + prev);
+  if (prevEl) {
+    prevEl.classList.remove('active');
+    if (forward) prevEl.classList.add('exit-left');
+    // backward: no class — step naturally sits at translateX(40px) = slides right
+  }
+
+  // Enter new step (tiny delay so CSS transition triggers)
+  setTimeout(() => {
+    const nextEl = document.getElementById('wsuStep' + target);
+    if (nextEl) {
+      nextEl.classList.remove('exit-left');
+      nextEl.classList.add('active');
+      nextEl.scrollTop = 0;
+    }
+  }, 20);
+
+  _wsuCurrentStep = target;
+  _wsuUpdateDots(target);
+  _wsuUpdateFooter(target);
+
+  if (target === 3) {
+    setTimeout(() => _wsuRenderExPicker(), 50);
+  }
+}
+
+function _wsuUpdateDots(step) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('wsuDot' + i);
+    if (!dot) continue;
+    dot.classList.remove('active', 'done');
+    if (i < step) dot.classList.add('done');
+    else if (i === step) dot.classList.add('active');
+  }
+}
+
+function _wsuUpdateFooter(step) {
+  const backBtn  = document.getElementById('wsuBtnBack');
+  const nextBtn  = document.getElementById('wsuBtnNext');
+  const startBtn = document.getElementById('wsuBtnStart');
+  if (backBtn)  backBtn.style.display  = step > 0   ? 'flex' : 'none';
+  if (step === 3) {
+    if (nextBtn)  nextBtn.style.display  = 'none';
+    if (startBtn) startBtn.style.display = 'flex';
+  } else {
+    if (nextBtn)  nextBtn.style.display  = 'flex';
+    if (startBtn) startBtn.style.display = 'none';
+    _wsuUpdateNextBtn(step);
+  }
+}
+
+function _wsuUpdateNextBtn(step) {
+  const btn = document.getElementById('wsuBtnNext');
+  if (!btn) return;
+  // Step 1 requires ≥1 group
+  btn.disabled = (step === 1 && (window._configSelectedGroups || []).length === 0);
+}
+
+function workoutSetupNext() {
+  if (_wsuCurrentStep < 3) _wsuGoToStep(_wsuCurrentStep + 1);
+}
+
+function workoutSetupBack() {
+  if (_wsuCurrentStep > 0) _wsuGoToStep(_wsuCurrentStep - 1);
+}
+
+function wsuSelectRest(btn, seconds) {
+  document.querySelectorAll('.wsu-rest-tile').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  restSeconds = seconds;
+  const ci = document.getElementById('customRestInput');
+  if (ci) ci.value = seconds;
+  window._userOverrodeRest = true;
+}
+
+function wsuStartWorkout() {
+  const ni = document.getElementById('wsuNameInput');
+  window._wsuSessionName = ni ? ni.value.trim() : '';
+  closeWorkoutSetup();
+  startWorkout();
+}
+
+function _wsuRenderExPicker() {
+  renderUniversalPicker('wsuExPickerContainer', function(name, equip) {
+    pendingExercises.push({ name: name, equipment: equip || '' });
+    renderPendingExList();
+    updatePendingPill();
+    saveToStorage();
+    showToast('✓ ' + name + ' añadido a tu lista', 'success');
+  }, { title: 'Agregar ejercicios', showCustom: true });
 }
 
 // ─── Workout ────────────────────────────────────────────────
@@ -7165,7 +7468,7 @@ window.addEventListener('popstate', () => {
   if (document.getElementById('routineSelectorModal')?.style.display === 'flex') { closeRoutineSelector(); return; }
   if (document.getElementById('abandonModal')?.classList.contains('active')) { hideAbandonConfirm(); return; }
   if (document.getElementById('equipSheet')?.classList.contains('active')) { closeEquipSheet(); return; }
-  if (document.getElementById('configSheet')?.classList.contains('active')) { closeConfig(); return; }
+  if (document.getElementById('workoutSetupOverlay')?.classList.contains('active')) { closeWorkoutSetup(); return; }
   if (document.getElementById('modeModal')?.classList.contains('active')) {
     document.getElementById('modeModal').classList.remove('active'); return;
   }
@@ -15851,9 +16154,7 @@ function repeatLastWorkout() {
   updateRoutineBanner(null);
   closeRoutineSelector();
   showToast(`↩ Repitiendo último entrenamiento (${last.exercises_detail.length} ejercicios)`, 'info');
-  document.getElementById('configOverlay').classList.add('active');
-  setTimeout(() => document.getElementById('configSheet').classList.add('active'), 10);
-  suggestRoutineForToday();
+  openWorkoutSetup();
 }
 
 // ─── Muscle Recovery Map ──────────────────────────────────────
