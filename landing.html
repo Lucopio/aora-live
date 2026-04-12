@@ -417,6 +417,68 @@
       color: #fff; font-size: 18px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
+
+    /* ── Hero badges dobles ── */
+    .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .hero-badge-app {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 13px; border-radius: 100px;
+      border: 1px solid rgba(0,229,255,0.22);
+      background: rgba(0,229,255,0.06);
+      font-size: 11px; color: var(--primary);
+      font-family: var(--mono); font-weight: 600; letter-spacing: .04em;
+    }
+    .hero-badge-beta {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 13px; border-radius: 100px;
+      border: 1px solid rgba(200,255,0,0.22);
+      background: rgba(200,255,0,0.06);
+      font-size: 11px; color: var(--neon);
+      font-family: var(--mono); font-weight: 600; letter-spacing: .04em;
+    }
+    .badge-dot-neon { width: 5px; height: 5px; border-radius: 50%; background: var(--neon); animation: blinkDot 1.4s ease-in-out infinite 0.4s; }
+    .hero-lead .cyan-text { color: var(--primary); font-weight: 600; }
+    .hero-lead strong { color: #fff; font-weight: 700; }
+    .hero-lead { font-size: 16px; color: var(--text-2); margin-bottom: 22px; max-width: 520px; line-height: 1.7; }
+
+    /* ── Hero pills rediseñadas ── */
+    .hero-pills { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
+    .hero-pill {
+      display: flex; align-items: flex-start; gap: 11px;
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.02);
+      border: 0.5px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      transition: border-color .2s;
+    }
+    .hero-pill:hover { border-color: rgba(255,255,255,0.12); }
+    .hero-pill-highlight {
+      background: rgba(0,200,150,0.03);
+      border-color: rgba(0,200,150,0.12);
+    }
+    .hp-icon-wrap {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .hp-violet { background: rgba(123,97,255,0.1); border: 0.5px solid rgba(123,97,255,0.2); }
+    .hp-cyan   { background: rgba(0,229,255,0.08); border: 0.5px solid rgba(0,229,255,0.15); }
+    .hp-neon   { background: rgba(200,255,0,0.07); border: 0.5px solid rgba(200,255,0,0.15); }
+    .hp-green  { background: rgba(0,200,150,0.08); border: 0.5px solid rgba(0,200,150,0.15); }
+    .hp-text { flex: 1; font-size: 13px; color: var(--text-2); line-height: 1.55; }
+    .hp-text strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+    .hp-tag {
+      font-size: 10px; font-family: var(--mono); font-weight: 600;
+      padding: 2px 8px; border-radius: 100px; flex-shrink: 0;
+      white-space: nowrap; align-self: flex-start; margin-top: 2px;
+    }
+    .hp-tag-violet { background: rgba(123,97,255,0.1); color: var(--violet); }
+    .hp-tag-cyan   { background: rgba(0,229,255,0.08); color: var(--primary); }
+    .hp-tag-neon   { background: rgba(200,255,0,0.07); color: var(--neon); }
+    .hero-fine {
+      margin-top: 12px; font-size: 11px;
+      color: rgba(255,255,255,0.2); font-family: var(--mono);
+    }
   </style>
 </head>
 <body>
@@ -452,51 +514,82 @@
 
     <!-- Copy -->
     <div class="hero-copy">
-      <div class="hero-badge">
-        <div class="badge-dot"></div>
-        Beta privada · 100 cupos · Acceso gratuito
+
+      <!-- Dos badges: app + beta -->
+      <div class="hero-badges">
+        <div class="hero-badge-app">
+          <div class="badge-dot"></div>
+          App fitness · LATAM
+        </div>
+        <div class="hero-badge-beta">
+          <div class="badge-dot-neon"></div>
+          Beta gratuita · 77 cupos
+        </div>
       </div>
+
       <h1 class="hero-h1">
-        Entrena con<br>
-        <span class="neon">intención.</span><br>
-        Descansa con<br>
-        <span class="violet">propósito.</span>
+        Tu entrenador<br>
+        personal<br>
+        <span class="neon">en tu bolsillo.</span><br>
+        <span class="dim">Siempre.</span>
       </h1>
+
       <p class="hero-lead">
-        El descanso entre series y la intensidad del ejercicio son las
-        <span class="neon">métricas que ninguna app mide.</span>
-        Nosotros sí — con tu coach IA disponible 24/7.
+        <strong>AORA LIVE</strong> es la única app que combina un coach IA 24/7
+        con las dos métricas que realmente determinan si progresas:
+        el <span class="neon">descanso exacto por músculo</span>
+        y la <span class="cyan-text">intensidad real de cada serie.</span>
       </p>
+
       <div class="hero-pills">
         <div class="hero-pill">
-          <span class="hp-icon" style="flex-shrink:0;display:flex;align-items:center;width:20px;height:20px;">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </span>
-          <span><strong>Descanso por ejercicio</strong> — no genérico para toda la rutina. Cada músculo, su tiempo exacto.</span>
+          <div class="hp-icon-wrap hp-violet">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="hp-text">
+            <strong>Coach IA 24/7</strong> — antes de entrenar te prepara, después analiza tu sesión. Siempre disponible para resolver tus dudas de técnica, carga o nutrición.
+          </div>
+          <div class="hp-tag hp-tag-violet">Primero</div>
         </div>
         <div class="hero-pill">
-          <span class="hp-icon" style="flex-shrink:0;display:flex;align-items:center;width:20px;height:20px;">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          </span>
-          <span><strong>Intensidad medida con RPE</strong> — registra tu esfuerzo real por serie. La IA ajusta tus cargas.</span>
+          <div class="hp-icon-wrap hp-cyan">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="hp-text">
+            <strong>Descanso óptimo por músculo</strong> — no un timer genérico. La ciencia del deporte confirma que cada grupo muscular necesita un tiempo diferente. AORA lo calcula solo.
+          </div>
+          <div class="hp-tag hp-tag-cyan">+31% fuerza</div>
         </div>
         <div class="hero-pill">
-          <span class="hp-icon" style="flex-shrink:0;display:flex;align-items:center;width:20px;height:20px;">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </span>
-          <span><strong>Coach 24/7</strong> — antes, durante y después. Feedback real, no mensajes genéricos.</span>
+          <div class="hp-icon-wrap hp-neon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="hp-text">
+            <strong>¿Qué tan duro entrenas realmente?</strong> — registras del 1 al 10 cómo sentiste cada serie. La IA detecta si estás haciendo demasiado poco, demasiado, o exactamente lo correcto.
+          </div>
+          <div class="hp-tag hp-tag-neon">Por serie</div>
+        </div>
+        <div class="hero-pill hero-pill-highlight">
+          <div class="hp-icon-wrap hp-green">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C896" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="hp-text">
+            <strong>Para cualquier nivel</strong> — principiante, intermedio o avanzado. Con estas métricas siempre hay margen para mejorar. El estancamiento desaparece cuando empiezas a medir lo que importa.
+          </div>
         </div>
       </div>
+
       <div class="hero-ctas">
         <button class="btn-primary" onclick="handleCTA()">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Reservar mi cupo gratis
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#080A0F" stroke-width="2.5" stroke-linecap="round"><circle cx="10" cy="10" r="9"/><polyline points="2,10 4.5,10 6.5,4 10,16 13,6 15.5,10 18,10"/></svg>
+          Probar AORA LIVE gratis
         </button>
-        <a href="#como" class="btn-secondary">
-          Cómo funciona
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <a href="#coaches" class="btn-secondary">
+          Ver los coaches →
         </a>
       </div>
+      <p class="hero-fine">// Sin tarjeta · Acceso completo · Sin límite de tiempo durante la beta</p>
+
     </div>
 
     <!-- Phones -->
@@ -590,37 +683,37 @@
 <section id="como">
   <div class="section-inner">
     <div class="stag">Por qué funciona</div>
-    <h2 class="sh">Tres pilares.<br>Un solo sistema.</h2>
-    <p class="ssub">No es solo una app de registro. Es el único sistema que combina descanso inteligente, intensidad medida y coaching IA personalizado.</p>
+    <h2 class="sh">Lo que ninguna app<br>estaba midiendo.</h2>
+    <p class="ssub">Basado en los últimos avances de la ciencia del deporte. No teoría — métricas reales que determinan si progresas o te quedás estancado.</p>
     <div class="pilares-grid">
 
       <div class="pilar-item">
         <div class="pilar-num p1">01</div>
         <div class="pilar-content">
-          <div class="pilar-tag t1">// Descanso inteligente</div>
-          <h3 class="pilar-title">El tiempo que nadie mide</h3>
-          <p class="pilar-desc">El descanso óptimo entre series no es igual para todos ni para todos los ejercicios. AORA LIVE lo mide automáticamente, te avisa cuándo continuar y calcula el tiempo ideal para maximizar cada grupo muscular. No es descansar — es recuperarte con precisión.</p>
-          <div class="pilar-stat s1">+31% más fuerza en 8 semanas</div>
+          <div class="pilar-tag t1">// Descanso óptimo por grupo muscular</div>
+          <h3 class="pilar-title">Pecho, espalda y piernas no descansan igual.</h3>
+          <p class="pilar-desc">Los estudios de fisiología del deporte son claros: el tiempo de recuperación ideal varía por músculo, por ejercicio y por la carga del día. Un timer genérico para toda tu rutina te hace descansar de más en algunos ejercicios y de menos en otros — y eso frena tu progreso sin que lo notes. AORA calcula el tiempo exacto para cada serie automáticamente.</p>
+          <div class="pilar-stat s1">+31% más fuerza en 8 semanas con descanso controlado</div>
         </div>
       </div>
 
       <div class="pilar-item">
         <div class="pilar-num p2">02</div>
         <div class="pilar-content">
-          <div class="pilar-tag t2">// Intensidad medida · RPE</div>
-          <h3 class="pilar-title">Tu esfuerzo, cuantificado</h3>
-          <p class="pilar-desc">El RPE (esfuerzo percibido) es la métrica que separa el entrenamiento inteligente del entrenamiento a ciegas. Registra cómo sientes cada serie y la IA detecta patrones: cuándo estás llegando al límite, cuándo puedes exigirte más y cuándo el descanso no fue suficiente.</p>
-          <div class="pilar-stat s2">2× más series efectivas por sesión</div>
+          <div class="pilar-tag t2">// Intensidad real por serie</div>
+          <h3 class="pilar-title">¿Cuánto esfuerzo pusiste en esa serie? Del 1 al 10.</h3>
+          <p class="pilar-desc">No necesitas ser experto para medirlo. Después de cada serie indicás cómo se sintió — fácil, moderada o al límite. Tu coach IA interpreta esos números junto con el descanso y el peso para detectar si estás haciendo demasiado poco, si podés subir carga, o si necesitás recuperarte más. Es la diferencia entre entrenar y entrenar con dirección.</p>
+          <div class="pilar-stat s2">2× más series efectivas cuando la intensidad es correcta</div>
         </div>
       </div>
 
       <div class="pilar-item">
         <div class="pilar-num p3">03</div>
         <div class="pilar-content">
-          <div class="pilar-tag t3">// Coach IA · 24/7</div>
-          <h3 class="pilar-title">Un entrenador que nunca duerme</h3>
-          <p class="pilar-desc">Antes de entrenar te prepara con recomendaciones de carga y volumen. Durante la sesión analiza tus datos en tiempo real. Después te da feedback específico — no mensajes genéricos. Y entre sesiones responde cualquier duda sobre técnica, nutrición o recuperación. Siempre disponible, siempre personalizado.</p>
-          <div class="pilar-stat s3">4 coaches · personalidad LATAM real</div>
+          <div class="pilar-tag t3">// Tu coach IA · disponible ahora</div>
+          <h3 class="pilar-title">El que une todo y te lleva al siguiente nivel.</h3>
+          <p class="pilar-desc">Tu coach no solo responde preguntas — analiza cada sesión con tus datos reales. Ve cómo descansaste, qué tan intensa fue cada serie y cómo evolucionó tu volumen semana a semana. Con esa información te da feedback específico, ajusta tu carga y te dice exactamente qué mejorar. Sin importar si sos principiante, intermedio o avanzado — siempre hay un siguiente paso claro.</p>
+          <div class="pilar-stat s3">4 coaches con personalidad LATAM · disponibles ahora</div>
         </div>
       </div>
 
