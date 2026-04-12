@@ -148,7 +148,7 @@
     .como-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
 
     /* ── Coaches ── */
-    #coaches { padding: 100px 24px; background: var(--surface); }
+    #coaches { padding: 100px 24px; }
     .coaches-hdr { margin-bottom: 56px; }
     .coaches-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
     .coach-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--rlg); padding: 26px 22px; transition: border-color .2s,transform .2s; }
@@ -272,6 +272,51 @@
       .beta-form { flex-direction: column; }
       .beta-benefits { gap: 10px; }
     }
+
+    /* ── Por qué funciona · Pilares ──────────────────────── */
+    .pilares-grid { display: flex; flex-direction: column; gap: 36px; margin-top: 48px; }
+    .pilar-item { display: flex; gap: 20px; align-items: flex-start; }
+    .pilar-num { font-family: var(--fd); font-size: 52px; font-weight: 800; line-height: 1; flex-shrink: 0; width: 60px; }
+    .p1 { color: var(--primary); }
+    .p2 { color: var(--violet); }
+    .p3 { color: var(--success); }
+    .pilar-content { flex: 1; }
+    .pilar-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; opacity: .55; margin-bottom: 6px; }
+    .t1 { color: var(--primary); }
+    .t2 { color: var(--violet); }
+    .t3 { color: var(--success); }
+    .pilar-title { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 10px; }
+    .pilar-desc { font-size: 14px; line-height: 1.65; color: var(--text-2); margin: 0 0 14px; }
+    .pilar-stat { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 20px; font-weight: 600; }
+    .s1 { background: rgba(0,229,255,.1); color: var(--primary); }
+    .s2 { background: rgba(123,97,255,.1); color: var(--violet); }
+    .s3 { background: rgba(0,200,150,.1); color: var(--success); }
+    @media (min-width: 700px) {
+      .pilares-grid { gap: 44px; }
+      .pilar-num { font-size: 64px; width: 72px; }
+      .pilar-title { font-size: 22px; }
+    }
+
+    /* ── Coaches · Spotify Grid ──────────────────────────── */
+    .coaches-lead { margin-bottom: 40px; }
+    .spotify-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .spotify-card { background: var(--surface2); border-radius: var(--r); overflow: hidden; transition: transform .2s, box-shadow .2s; }
+    .spotify-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+    .spotify-card-cover { width: 100%; aspect-ratio: 1/1; object-fit: cover; object-position: top; display: block; }
+    .spotify-card-fallback { width: 100%; aspect-ratio: 1/1; display: none; align-items: center; justify-content: center; font-size: 64px; }
+    .sc-maria .spotify-card-fallback { background: linear-gradient(135deg,#FF6B9D 0%,#C44569 100%); }
+    .sc-carlos .spotify-card-fallback { background: linear-gradient(135deg,#4ECDC4 0%,#1A535C 100%); }
+    .sc-andrea .spotify-card-fallback { background: linear-gradient(135deg,#A8E063 0%,#56AB2F 100%); }
+    .sc-diego .spotify-card-fallback { background: linear-gradient(135deg,#F7971E 0%,#FFD200 100%); }
+    .spotify-card-info { padding: 14px 14px 16px; }
+    .sc-flag { font-size: 10px; color: var(--text-2); letter-spacing: .04em; margin-bottom: 4px; }
+    .sc-name { font-family: var(--fd); font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .sc-spec { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+    .sc-pill { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+    .sc-maria .sc-pill { background: rgba(255,107,157,.15); color: #FF6B9D; }
+    .sc-carlos .sc-pill { background: rgba(78,205,196,.15); color: #4ECDC4; }
+    .sc-andrea .sc-pill { background: rgba(168,224,99,.15); color: #A8E063; }
+    .sc-diego .sc-pill { background: rgba(247,151,30,.15); color: #F7971E; }
   </style>
 </head>
 <body>
@@ -419,39 +464,44 @@
   </div>
 </section>
 
-<!-- ══ CÓMO FUNCIONA ══════════════════════════════════════════ -->
+<!-- ══ POR QUÉ FUNCIONA ════════════════════════════════════════ -->
 <section id="como">
   <div class="section-inner">
-    <div class="como-hdr">
-      <div class="s-tag">// Cómo funciona</div>
-      <h2 class="s-h2">Tu sesión, reinventada.</h2>
-      <p class="s-sub">Desde que preparas el entrenamiento hasta que analizas los resultados. AORA LIVE trabaja contigo en cada paso.</p>
-    </div>
-    <div class="como-grid">
-      <div class="como-card">
-        <div class="como-num">01 — ANTES</div>
-        <div class="como-icon">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <div class="stag">Por qué funciona</div>
+    <h2 class="sh">Tres pilares.<br>Un solo sistema.</h2>
+    <p class="ssub">No es solo una app de registro. Es el único sistema que combina descanso inteligente, intensidad medida y coaching IA personalizado.</p>
+    <div class="pilares-grid">
+
+      <div class="pilar-item">
+        <div class="pilar-num p1">01</div>
+        <div class="pilar-content">
+          <div class="pilar-tag t1">// Descanso inteligente</div>
+          <h3 class="pilar-title">El tiempo que nadie mide</h3>
+          <p class="pilar-desc">El descanso óptimo entre series no es igual para todos ni para todos los ejercicios. AORA LIVE lo mide automáticamente, te avisa cuándo continuar y calcula el tiempo ideal para maximizar cada grupo muscular. No es descansar — es recuperarte con precisión.</p>
+          <div class="pilar-stat s1">+31% más fuerza en 8 semanas</div>
         </div>
-        <div class="como-title">Tu coach diseña el plan</div>
-        <div class="como-desc">Cuéntale a tu coach tus objetivos, nivel y disponibilidad. Recibe una rutina diseñada específicamente para ti, con ejercicios, series y tiempos de descanso calculados para tu progresión.</div>
       </div>
-      <div class="como-card" style="border-color:rgba(0,229,255,.14)">
-        <div class="como-num">02 — DURANTE</div>
-        <div class="como-icon" style="background:rgba(200,255,0,.07);border-color:rgba(200,255,0,.14)">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--neon)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+      <div class="pilar-item">
+        <div class="pilar-num p2">02</div>
+        <div class="pilar-content">
+          <div class="pilar-tag t2">// Intensidad medida · RPE</div>
+          <h3 class="pilar-title">Tu esfuerzo, cuantificado</h3>
+          <p class="pilar-desc">El RPE (esfuerzo percibido) es la métrica que separa el entrenamiento inteligente del entrenamiento a ciegas. Registra cómo sientes cada serie y la IA detecta patrones: cuándo estás llegando al límite, cuándo puedes exigirte más y cuándo el descanso no fue suficiente.</p>
+          <div class="pilar-stat s2">2× más series efectivas por sesión</div>
         </div>
-        <div class="como-title">Timer inteligente en tiempo real</div>
-        <div class="como-desc">El rest timer se activa automáticamente entre series. Sabe cuánto descanso necesitas según el ejercicio y tu intensidad. Tu coach envía alertas de hidratación y técnica cuando las necesitas.</div>
       </div>
-      <div class="como-card">
-        <div class="como-num">03 — DESPUÉS</div>
-        <div class="como-icon" style="background:rgba(123,97,255,.08);border-color:rgba(123,97,255,.15)">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--violet)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+
+      <div class="pilar-item">
+        <div class="pilar-num p3">03</div>
+        <div class="pilar-content">
+          <div class="pilar-tag t3">// Coach IA · 24/7</div>
+          <h3 class="pilar-title">Un entrenador que nunca duerme</h3>
+          <p class="pilar-desc">Antes de entrenar te prepara con recomendaciones de carga y volumen. Durante la sesión analiza tus datos en tiempo real. Después te da feedback específico — no mensajes genéricos. Y entre sesiones responde cualquier duda sobre técnica, nutrición o recuperación. Siempre disponible, siempre personalizado.</p>
+          <div class="pilar-stat s3">4 coaches · personalidad LATAM real</div>
         </div>
-        <div class="como-title">Análisis post-sesión</div>
-        <div class="como-desc">Después de cada sesión tu coach analiza volumen, intensidad y progresión. Recibe un insight personalizado con lo que funcionó, lo que mejorar y el plan para la próxima sesión.</div>
       </div>
+
     </div>
   </div>
 </section>
@@ -459,55 +509,55 @@
 <!-- ══ COACHES ════════════════════════════════════════════════ -->
 <section id="coaches">
   <div class="section-inner">
-    <div class="coaches-hdr">
-      <div class="s-tag">// Los coaches</div>
-      <h2 class="s-h2">Cuatro voces. Un objetivo: el tuyo.</h2>
-      <p class="s-sub">Elige al coach que mejor conecte contigo. Cada uno tiene su personalidad, especialidad y forma de acompañarte. Todos disponibles 24/7.</p>
+    <div class="coaches-lead">
+      <div class="stag">// Los coaches</div>
+      <h2 class="sh">Cuatro voces.<br>Un objetivo: el tuyo.</h2>
+      <p class="ssub">Elige al coach que mejor conecte contigo. Cada uno tiene su personalidad, especialidad y forma de acompañarte.</p>
     </div>
-    <div class="coaches-grid">
+    <div class="spotify-grid">
       <!-- María -->
-      <div class="coach-card">
-        <img src="Images/coaches/maria.png" alt="María" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="coach-ph-fallback">👩🏽</div>
-        <div class="coach-loc">🇨🇴 Colombia</div>
-        <div class="coach-cname">María</div>
-        <div class="coach-spec">HIIT & Funcional</div>
-        <div class="coach-quote">"¡Dale, que tú puedes! Cada repetición cuenta. Yo lo veo aunque tú no lo notes todavía."</div>
-        <div class="coach-tags"><span class="coach-tag">HIIT</span><span class="coach-tag">Funcional</span><span class="coach-tag">Nutrición</span></div>
-        <div class="coach-stats"><span class="coach-stat"><strong>5+ años</strong></span><span class="coach-stat"><strong>4.9★</strong></span><span class="coach-stat"><strong>2.3k</strong> sesiones</span></div>
+      <div class="spotify-card sc-maria">
+        <img src="Images/coaches/maria.png" alt="María" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="spotify-card-fallback">👩🏽</div>
+        <div class="spotify-card-info">
+          <div class="sc-flag">🇨🇴 Colombia</div>
+          <div class="sc-name">María</div>
+          <div class="sc-spec">HIIT & Funcional</div>
+          <span class="sc-pill">Energética</span>
+        </div>
       </div>
       <!-- Carlos -->
-      <div class="coach-card">
-        <img src="Images/coaches/carlos.png" alt="Carlos" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="coach-ph-fallback">👨🏽</div>
-        <div class="coach-loc">🇲🇽 México</div>
-        <div class="coach-cname">Carlos</div>
-        <div class="coach-spec">Fuerza & Masa</div>
-        <div class="coach-quote">"El músculo no crece por accidente. Crece por presión calculada y descanso inteligente."</div>
-        <div class="coach-tags"><span class="coach-tag">Fuerza</span><span class="coach-tag">Hipertrofia</span><span class="coach-tag">Periodización</span></div>
-        <div class="coach-stats"><span class="coach-stat"><strong>7+ años</strong></span><span class="coach-stat"><strong>4.8★</strong></span><span class="coach-stat"><strong>3.1k</strong> sesiones</span></div>
+      <div class="spotify-card sc-carlos">
+        <img src="Images/coaches/carlos.png" alt="Carlos" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="spotify-card-fallback">👨🏽</div>
+        <div class="spotify-card-info">
+          <div class="sc-flag">🇲🇽 México</div>
+          <div class="sc-name">Carlos</div>
+          <div class="sc-spec">Fuerza & Masa</div>
+          <span class="sc-pill">Datos-driven</span>
+        </div>
       </div>
       <!-- Andrea -->
-      <div class="coach-card">
-        <img src="Images/coaches/andrea.png" alt="Andrea" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="coach-ph-fallback">👩🏻</div>
-        <div class="coach-loc">🇦🇷 Argentina</div>
-        <div class="coach-cname">Andrea</div>
-        <div class="coach-spec">Bienestar integral</div>
-        <div class="coach-quote">"Tu cuerpo me habla. Vamos a escucharlo juntas."</div>
-        <div class="coach-tags"><span class="coach-tag">Movilidad</span><span class="coach-tag">Bienestar</span><span class="coach-tag">Mindfulness</span></div>
-        <div class="coach-stats"><span class="coach-stat"><strong>4+ años</strong></span><span class="coach-stat"><strong>4.9★</strong></span><span class="coach-stat"><strong>1.8k</strong> sesiones</span></div>
+      <div class="spotify-card sc-andrea">
+        <img src="Images/coaches/andrea.png" alt="Andrea" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="spotify-card-fallback">👩🏻</div>
+        <div class="spotify-card-info">
+          <div class="sc-flag">🇦🇷 Argentina</div>
+          <div class="sc-name">Andrea</div>
+          <div class="sc-spec">Movilidad & Bienestar</div>
+          <span class="sc-pill">Equilibrada</span>
+        </div>
       </div>
       <!-- Diego -->
-      <div class="coach-card">
-        <img src="Images/coaches/diego.png" alt="Diego" class="coach-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="coach-ph-fallback">👨🏾</div>
-        <div class="coach-loc">🇵🇪 Perú</div>
-        <div class="coach-cname">Diego</div>
-        <div class="coach-spec">Resiliencia & Calistenia</div>
-        <div class="coach-quote">"El progreso no es lineal, pero es real. Yo lo sé."</div>
-        <div class="coach-tags"><span class="coach-tag">Calistenia</span><span class="coach-tag">Resistencia</span><span class="coach-tag">Mentalidad</span></div>
-        <div class="coach-stats"><span class="coach-stat"><strong>8+ años</strong></span><span class="coach-stat"><strong>4.7★</strong></span><span class="coach-stat"><strong>2.9k</strong> sesiones</span></div>
+      <div class="spotify-card sc-diego">
+        <img src="Images/coaches/diego.png" alt="Diego" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="spotify-card-fallback">👨🏾</div>
+        <div class="spotify-card-info">
+          <div class="sc-flag">🇵🇪 Perú</div>
+          <div class="sc-name">Diego</div>
+          <div class="sc-spec">Calistenia & Resistencia</div>
+          <span class="sc-pill">Resiliente</span>
+        </div>
       </div>
     </div>
   </div>
@@ -751,7 +801,7 @@
   }
 
   // ── Beta count ────────────────────────────────────────────
-  async function loadBetaCount() {
+  async function loadCupos() {
     try {
       const { count, error } = await sb
         .from('beta_signups')
@@ -846,7 +896,8 @@
   });
 
   // ── Init ──────────────────────────────────────────────────
-  loadBetaCount();
+  loadCupos();
+  setInterval(loadCupos, 30000);
 </script>
 </body>
 </html>
