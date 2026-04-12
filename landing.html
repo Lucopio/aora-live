@@ -70,6 +70,10 @@
     .hero-lead { font-size: 18px; color: var(--text-2); margin-bottom: 18px; max-width: 520px; line-height: 1.7; }
     .hero-lead .neon { color: var(--neon); font-weight: 600; }
     .hero-body { font-size: 14px; color: var(--text-3); max-width: 500px; line-height: 1.8; margin-bottom: 40px; }
+    .hero-pills { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+    .hero-pill { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.07); border-radius: 10px; font-size: 13px; color: var(--text-2); line-height: 1.5; }
+    .hero-pill strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+    .hp-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
     .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
     .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: var(--neon); color: #080A0F; border: none; border-radius: 100px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 0 30px rgba(200,255,0,.35); transition: transform .15s,box-shadow .15s; text-decoration: none; }
     .btn-primary:hover { transform: scale(1.03); box-shadow: 0 0 50px rgba(200,255,0,.5); }
@@ -274,12 +278,13 @@
     }
 
     /* ── Por qué funciona · Pilares ──────────────────────── */
-    .pilares-grid { display: flex; flex-direction: column; gap: 36px; margin-top: 48px; }
-    .pilar-item { display: flex; gap: 20px; align-items: flex-start; }
-    .pilar-num { font-family: var(--fd); font-size: 52px; font-weight: 800; line-height: 1; flex-shrink: 0; width: 60px; }
-    .p1 { color: var(--primary); }
-    .p2 { color: var(--violet); }
-    .p3 { color: var(--success); }
+    .pilares-grid { display: flex; flex-direction: column; gap: 0; margin-top: 48px; }
+    .pilar-item { display: flex; flex-direction: column; gap: 10px; padding: 28px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
+    .pilar-item:last-child { border-bottom: none; }
+    .pilar-num { font-family: var(--mono); font-size: 11px; font-weight: 700; line-height: 1; flex-shrink: 0; width: auto; letter-spacing: .08em; padding: 4px 10px; border-radius: 6px; margin-top: 2px; }
+    .p1 { background: rgba(0,229,255,0.08); color: var(--primary); border: 0.5px solid rgba(0,229,255,0.2); }
+    .p2 { background: rgba(123,97,255,0.08); color: var(--violet); border: 0.5px solid rgba(123,97,255,0.2); }
+    .p3 { background: rgba(0,200,150,0.08); color: var(--success); border: 0.5px solid rgba(0,200,150,0.2); }
     .pilar-content { flex: 1; }
     .pilar-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; opacity: .55; margin-bottom: 6px; }
     .t1 { color: var(--primary); }
@@ -292,23 +297,21 @@
     .s2 { background: rgba(123,97,255,.1); color: var(--violet); }
     .s3 { background: rgba(0,200,150,.1); color: var(--success); }
     @media (min-width: 700px) {
-      .pilares-grid { gap: 44px; }
-      .pilar-num { font-size: 64px; width: 72px; }
+      .pilar-num { font-size: 11px; width: auto; }
       .pilar-title { font-size: 22px; }
     }
 
     /* ── Coaches · Spotify Grid ──────────────────────────── */
     .coaches-lead { margin-bottom: 40px; }
     .spotify-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .spotify-card { background: var(--surface2); border-radius: var(--r); overflow: hidden; transition: transform .2s, box-shadow .2s; }
-    .spotify-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,.5); }
-    .spotify-card-cover { width: 100%; aspect-ratio: 1/1; object-fit: cover; object-position: top; display: block; }
-    .spotify-card-fallback { width: 100%; aspect-ratio: 1/1; display: none; align-items: center; justify-content: center; font-size: 64px; }
-    .sc-maria .spotify-card-fallback { background: linear-gradient(135deg,#FF6B9D 0%,#C44569 100%); }
-    .sc-carlos .spotify-card-fallback { background: linear-gradient(135deg,#4ECDC4 0%,#1A535C 100%); }
-    .sc-andrea .spotify-card-fallback { background: linear-gradient(135deg,#A8E063 0%,#56AB2F 100%); }
-    .sc-diego .spotify-card-fallback { background: linear-gradient(135deg,#F7971E 0%,#FFD200 100%); }
-    .spotify-card-info { padding: 14px 14px 16px; }
+    .spotify-card { background: var(--surface2); border-radius: var(--r); padding: 20px; display: flex; align-items: flex-start; gap: 16px; transition: transform .2s, box-shadow .2s, border-color .2s; border: 0.5px solid transparent; cursor: pointer; text-decoration: none; }
+    .spotify-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.4); border-color: rgba(0,229,255,0.15); }
+    .spotify-card-cover { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; object-position: top; display: block; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); }
+    .spotify-card-fallback { width: 90px; height: 90px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 40px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); }
+    .sc-body { flex: 1; }
+    .sc-quote { font-size: 11.5px; color: var(--text-2); font-style: italic; line-height: 1.55; margin-top: 6px; }
+    .sc-link { font-size: 10px; color: var(--primary); font-family: var(--mono); margin-top: 10px; display: inline-flex; align-items: center; gap: 4px; opacity: 0.7; }
+    .sc-link:hover { opacity: 1; }
     .sc-flag { font-size: 10px; color: var(--text-2); letter-spacing: .04em; margin-bottom: 4px; }
     .sc-name { font-family: var(--fd); font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.1; }
     .sc-spec { font-size: 12px; color: var(--text-2); margin-top: 2px; }
@@ -363,12 +366,24 @@
         <span class="violet">propósito.</span>
       </h1>
       <p class="hero-lead">
-        El descanso entre series es la <span class="neon">métrica que nadie mide.</span>
-        Nosotros la convertimos en tu ventaja.
+        El descanso entre series y la intensidad del ejercicio son las
+        <span class="neon">métricas que ninguna app mide.</span>
+        Nosotros sí — con tu coach IA disponible 24/7.
       </p>
-      <p class="hero-body">
-        La ciencia lo confirma: controlar el descanso entre series aumenta la efectividad de cada repetición. AORA LIVE lo mide automáticamente — y tu coach IA personal analiza cada sesión, te da feedback antes y después de entrenar, responde tus dudas en cualquier momento y diseña rutinas adaptadas a tus objetivos. No es una app más. Es la primera vez que el descanso inteligente y un coach 24/7 trabajan juntos por ti.
-      </p>
+      <div class="hero-pills">
+        <div class="hero-pill">
+          <span class="hp-icon">⏱</span>
+          <span><strong>Descanso por ejercicio</strong> — no genérico para toda la rutina. Cada músculo, su tiempo exacto.</span>
+        </div>
+        <div class="hero-pill">
+          <span class="hp-icon">📊</span>
+          <span><strong>Intensidad medida con RPE</strong> — registra tu esfuerzo real por serie. La IA ajusta tus cargas.</span>
+        </div>
+        <div class="hero-pill">
+          <span class="hp-icon">🤖</span>
+          <span><strong>Coach 24/7</strong> — antes, durante y después. Feedback real, no mensajes genéricos.</span>
+        </div>
+      </div>
       <div class="hero-ctas">
         <button class="btn-primary" onclick="handleCTA()">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -392,7 +407,11 @@
         <div class="phone-status"><span>9:41</span><span>●●● 100%</span></div>
         <div class="phone-screen">
           <div class="coach-hdr">
-            <div class="coach-av">👩🏽</div>
+            <div class="coach-av" style="padding:0;overflow:hidden;">
+              <img src="Images/coaches/maria.png" alt="María"
+                   style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                   onerror="this.style.display='none';this.parentElement.textContent='👩🏽'">
+            </div>
             <div>
               <div class="coach-nm">María · 🇨🇴</div>
               <div class="coach-st">● En línea ahora</div>
@@ -473,7 +492,7 @@
     <div class="pilares-grid">
 
       <div class="pilar-item">
-        <div class="pilar-num p1">01</div>
+        <div class="pilar-num p1">// 01</div>
         <div class="pilar-content">
           <div class="pilar-tag t1">// Descanso inteligente</div>
           <h3 class="pilar-title">El tiempo que nadie mide</h3>
@@ -483,7 +502,7 @@
       </div>
 
       <div class="pilar-item">
-        <div class="pilar-num p2">02</div>
+        <div class="pilar-num p2">// 02</div>
         <div class="pilar-content">
           <div class="pilar-tag t2">// Intensidad medida · RPE</div>
           <h3 class="pilar-title">Tu esfuerzo, cuantificado</h3>
@@ -493,7 +512,7 @@
       </div>
 
       <div class="pilar-item">
-        <div class="pilar-num p3">03</div>
+        <div class="pilar-num p3">// 03</div>
         <div class="pilar-content">
           <div class="pilar-tag t3">// Coach IA · 24/7</div>
           <h3 class="pilar-title">Un entrenador que nunca duerme</h3>
@@ -516,49 +535,57 @@
     </div>
     <div class="spotify-grid">
       <!-- María -->
-      <div class="spotify-card sc-maria">
+      <a href="app.aoralive.com" class="spotify-card sc-maria" onclick="handleCTA();return false;">
         <img src="Images/coaches/maria.png" alt="María" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="spotify-card-fallback">👩🏽</div>
-        <div class="spotify-card-info">
+        <div class="spotify-card-fallback sc-maria" style="background:linear-gradient(135deg,#FF6B9D,#C44569);">👩🏽</div>
+        <div class="sc-body">
           <div class="sc-flag">🇨🇴 Colombia</div>
           <div class="sc-name">María</div>
           <div class="sc-spec">HIIT & Funcional</div>
           <span class="sc-pill">Energética</span>
+          <div class="sc-quote">"¡Dale, que tú puedes! Cada repetición cuenta. Yo lo veo aunque tú no lo notes."</div>
+          <div class="sc-link">Ver perfil →</div>
         </div>
-      </div>
+      </a>
       <!-- Carlos -->
-      <div class="spotify-card sc-carlos">
+      <a href="app.aoralive.com" class="spotify-card sc-carlos" onclick="handleCTA();return false;">
         <img src="Images/coaches/carlos.png" alt="Carlos" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="spotify-card-fallback">👨🏽</div>
-        <div class="spotify-card-info">
+        <div class="spotify-card-fallback sc-carlos" style="background:linear-gradient(135deg,#4ECDC4,#1A535C);">👨🏽</div>
+        <div class="sc-body">
           <div class="sc-flag">🇲🇽 México</div>
           <div class="sc-name">Carlos</div>
           <div class="sc-spec">Fuerza & Masa</div>
           <span class="sc-pill">Datos-driven</span>
+          <div class="sc-quote">"El músculo no crece por accidente. Crece por presión calculada y descanso inteligente."</div>
+          <div class="sc-link">Ver perfil →</div>
         </div>
-      </div>
+      </a>
       <!-- Andrea -->
-      <div class="spotify-card sc-andrea">
+      <a href="app.aoralive.com" class="spotify-card sc-andrea" onclick="handleCTA();return false;">
         <img src="Images/coaches/andrea.png" alt="Andrea" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="spotify-card-fallback">👩🏻</div>
-        <div class="spotify-card-info">
+        <div class="spotify-card-fallback sc-andrea" style="background:linear-gradient(135deg,#A8E063,#56AB2F);">👩🏻</div>
+        <div class="sc-body">
           <div class="sc-flag">🇦🇷 Argentina</div>
           <div class="sc-name">Andrea</div>
           <div class="sc-spec">Movilidad & Bienestar</div>
           <span class="sc-pill">Equilibrada</span>
+          <div class="sc-quote">"Tu cuerpo me habla. Vamos a escucharlo juntas. Sin juicios, con adaptaciones reales."</div>
+          <div class="sc-link">Ver perfil →</div>
         </div>
-      </div>
+      </a>
       <!-- Diego -->
-      <div class="spotify-card sc-diego">
+      <a href="app.aoralive.com" class="spotify-card sc-diego" onclick="handleCTA();return false;">
         <img src="Images/coaches/diego.png" alt="Diego" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="spotify-card-fallback">👨🏾</div>
-        <div class="spotify-card-info">
+        <div class="spotify-card-fallback sc-diego" style="background:linear-gradient(135deg,#F7971E,#FFD200);">👨🏾</div>
+        <div class="sc-body">
           <div class="sc-flag">🇵🇪 Perú</div>
           <div class="sc-name">Diego</div>
           <div class="sc-spec">Calistenia & Resistencia</div>
           <span class="sc-pill">Resiliente</span>
+          <div class="sc-quote">"El progreso no es lineal, pero es real. La mentalidad es el primer músculo que hay que entrenar."</div>
+          <div class="sc-link">Ver perfil →</div>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 </section>
@@ -815,12 +842,12 @@
   }
 
   function updateCounter(taken) {
-    const remaining = Math.max(0, BETA_MAX - taken);
-    const pct = Math.min(100, (taken / BETA_MAX) * 100);
-    document.getElementById('counterNum').textContent = remaining;
+    const disponibles = Math.max(0, 77 - taken);
+    const pct = Math.min(100, ((100 - disponibles) / 100) * 100);
+    document.getElementById('counterNum').textContent = disponibles;
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('proofCount').textContent = taken;
-    if (remaining <= 0) disableForm('Cupos agotados');
+    if (disponibles <= 0) disableForm('Cupos agotados');
   }
 
   // ── Form submit ───────────────────────────────────────────
