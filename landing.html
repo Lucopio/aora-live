@@ -279,31 +279,33 @@
 
     /* ── Por qué funciona · Pilares ──────────────────────── */
     .pilares-grid { display: flex; flex-direction: column; gap: 0; margin-top: 48px; }
-    .pilar-item { display: flex; flex-direction: column; gap: 10px; padding: 28px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
+    .pilar-item { display: grid; grid-template-columns: 64px 1fr; gap: 24px; align-items: start; padding: 36px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
     .pilar-item:last-child { border-bottom: none; }
-    .pilar-num { font-family: var(--mono); font-size: 11px; font-weight: 700; line-height: 1; flex-shrink: 0; width: auto; letter-spacing: .08em; padding: 4px 10px; border-radius: 6px; margin-top: 2px; }
-    .p1 { background: rgba(0,229,255,0.08); color: var(--primary); border: 0.5px solid rgba(0,229,255,0.2); }
-    .p2 { background: rgba(123,97,255,0.08); color: var(--violet); border: 0.5px solid rgba(123,97,255,0.2); }
-    .p3 { background: rgba(0,200,150,0.08); color: var(--success); border: 0.5px solid rgba(0,200,150,0.2); }
+    .pilar-num { font-family: var(--mono); font-size: 36px; font-weight: 700; line-height: 1; letter-spacing: -1px; padding-top: 4px; }
+    .p1 { color: rgba(0,229,255,0.25); }
+    .p2 { color: rgba(123,97,255,0.25); }
+    .p3 { color: rgba(0,200,150,0.25); }
     .pilar-content { flex: 1; }
-    .pilar-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; opacity: .55; margin-bottom: 6px; }
+    .pilar-tag { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; opacity: 0.7; }
     .t1 { color: var(--primary); }
     .t2 { color: var(--violet); }
     .t3 { color: var(--success); }
-    .pilar-title { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 10px; }
-    .pilar-desc { font-size: 14px; line-height: 1.65; color: var(--text-2); margin: 0 0 14px; }
+    .pilar-title { font-family: var(--fd); font-size: 22px; font-weight: 800; color: var(--text); margin: 0 0 10px; letter-spacing: -0.5px; }
+    .pilar-desc { font-size: 14px; line-height: 1.7; color: var(--text-2); margin: 0 0 16px; }
     .pilar-stat { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 20px; font-weight: 600; }
-    .s1 { background: rgba(0,229,255,.1); color: var(--primary); }
-    .s2 { background: rgba(123,97,255,.1); color: var(--violet); }
-    .s3 { background: rgba(0,200,150,.1); color: var(--success); }
-    @media (min-width: 700px) {
-      .pilar-num { font-size: 11px; width: auto; }
-      .pilar-title { font-size: 22px; }
+    .s1 { background: rgba(0,229,255,.08); color: var(--primary); border: 0.5px solid rgba(0,229,255,.2); }
+    .s2 { background: rgba(123,97,255,.08); color: var(--violet); border: 0.5px solid rgba(123,97,255,.2); }
+    .s3 { background: rgba(0,200,150,.08); color: var(--success); border: 0.5px solid rgba(0,200,150,.2); }
+    @media (max-width: 600px) {
+      .pilar-item { grid-template-columns: 44px 1fr; gap: 16px; padding: 28px 0; }
+      .pilar-num { font-size: 26px; }
+      .pilar-title { font-size: 18px; }
     }
 
     /* ── Coaches · Spotify Grid ──────────────────────────── */
     .coaches-lead { margin-bottom: 40px; }
     .spotify-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (max-width: 700px) { .spotify-grid { grid-template-columns: 1fr; } }
     .spotify-card { background: var(--surface2); border-radius: var(--r); padding: 20px; display: flex; align-items: flex-start; gap: 16px; transition: transform .2s, box-shadow .2s, border-color .2s; border: 0.5px solid transparent; cursor: pointer; text-decoration: none; }
     .spotify-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.4); border-color: rgba(0,229,255,0.15); }
     .spotify-card-cover { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; object-position: top; display: block; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); }
@@ -372,15 +374,21 @@
       </p>
       <div class="hero-pills">
         <div class="hero-pill">
-          <span class="hp-icon">⏱</span>
+          <span class="hp-icon" style="flex-shrink:0;display:flex;align-items:center;width:20px;height:20px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
           <span><strong>Descanso por ejercicio</strong> — no genérico para toda la rutina. Cada músculo, su tiempo exacto.</span>
         </div>
         <div class="hero-pill">
-          <span class="hp-icon">📊</span>
+          <span class="hp-icon" style="flex-shrink:0;display:flex;align-items:center;width:20px;height:20px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </span>
           <span><strong>Intensidad medida con RPE</strong> — registra tu esfuerzo real por serie. La IA ajusta tus cargas.</span>
         </div>
         <div class="hero-pill">
-          <span class="hp-icon">🤖</span>
+          <span class="hp-icon" style="flex-shrink:0;display:flex;align-items:center;width:20px;height:20px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
           <span><strong>Coach 24/7</strong> — antes, durante y después. Feedback real, no mensajes genéricos.</span>
         </div>
       </div>
@@ -492,7 +500,7 @@
     <div class="pilares-grid">
 
       <div class="pilar-item">
-        <div class="pilar-num p1">// 01</div>
+        <div class="pilar-num p1">01</div>
         <div class="pilar-content">
           <div class="pilar-tag t1">// Descanso inteligente</div>
           <h3 class="pilar-title">El tiempo que nadie mide</h3>
@@ -502,7 +510,7 @@
       </div>
 
       <div class="pilar-item">
-        <div class="pilar-num p2">// 02</div>
+        <div class="pilar-num p2">02</div>
         <div class="pilar-content">
           <div class="pilar-tag t2">// Intensidad medida · RPE</div>
           <h3 class="pilar-title">Tu esfuerzo, cuantificado</h3>
@@ -512,7 +520,7 @@
       </div>
 
       <div class="pilar-item">
-        <div class="pilar-num p3">// 03</div>
+        <div class="pilar-num p3">03</div>
         <div class="pilar-content">
           <div class="pilar-tag t3">// Coach IA · 24/7</div>
           <h3 class="pilar-title">Un entrenador que nunca duerme</h3>
@@ -543,8 +551,7 @@
           <div class="sc-name">María</div>
           <div class="sc-spec">HIIT & Funcional</div>
           <span class="sc-pill">Energética</span>
-          <div class="sc-quote">"¡Dale, que tú puedes! Cada repetición cuenta. Yo lo veo aunque tú no lo notes."</div>
-          <div class="sc-link">Ver perfil →</div>
+          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
         </div>
       </a>
       <!-- Carlos -->
@@ -556,8 +563,7 @@
           <div class="sc-name">Carlos</div>
           <div class="sc-spec">Fuerza & Masa</div>
           <span class="sc-pill">Datos-driven</span>
-          <div class="sc-quote">"El músculo no crece por accidente. Crece por presión calculada y descanso inteligente."</div>
-          <div class="sc-link">Ver perfil →</div>
+          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
         </div>
       </a>
       <!-- Andrea -->
@@ -569,8 +575,7 @@
           <div class="sc-name">Andrea</div>
           <div class="sc-spec">Movilidad & Bienestar</div>
           <span class="sc-pill">Equilibrada</span>
-          <div class="sc-quote">"Tu cuerpo me habla. Vamos a escucharlo juntas. Sin juicios, con adaptaciones reales."</div>
-          <div class="sc-link">Ver perfil →</div>
+          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
         </div>
       </a>
       <!-- Diego -->
@@ -582,8 +587,7 @@
           <div class="sc-name">Diego</div>
           <div class="sc-spec">Calistenia & Resistencia</div>
           <span class="sc-pill">Resiliente</span>
-          <div class="sc-quote">"El progreso no es lineal, pero es real. La mentalidad es el primer músculo que hay que entrenar."</div>
-          <div class="sc-link">Ver perfil →</div>
+          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
         </div>
       </a>
     </div>
@@ -652,21 +656,21 @@
     <div class="beta-benefits">
       <div class="ben-card">
         <div class="ben-icon">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
         <div class="ben-title">Coach IA 24/7</div>
         <div class="ben-sub">Acceso a los 4 coaches sin límite</div>
       </div>
       <div class="ben-card">
         <div class="ben-icon">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
         <div class="ben-title">Timer inteligente</div>
         <div class="ben-sub">La ventaja que otros no tienen</div>
       </div>
       <div class="ben-card">
         <div class="ben-icon">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </div>
         <div class="ben-title">Todo incluido</div>
         <div class="ben-sub">Sin límites durante la beta</div>
@@ -843,7 +847,7 @@
 
   function updateCounter(taken) {
     const disponibles = Math.max(0, 77 - taken);
-    const pct = Math.min(100, ((100 - disponibles) / 100) * 100);
+    const pct = Math.min(100, (taken / 100) * 100 + 23);
     document.getElementById('counterNum').textContent = disponibles;
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('proofCount').textContent = taken;
