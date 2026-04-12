@@ -1100,6 +1100,26 @@ body {
 }
 .clear-done.show { display: flex; }
 
+/* ── Routine Editor Wizard ──────────────────────────────────── */
+.re-header { display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0; }
+.re-title { font-size:16px;font-weight:700;color:var(--text-primary); }
+.re-progress { display:flex;gap:6px;align-items:center; }
+.re-dot { width:7px;height:7px;border-radius:50%;background:var(--border);transition:all 0.25s; }
+.re-dot.active { background:var(--primary);width:20px;border-radius:4px; }
+.re-dot.done { background:var(--primary); }
+.re-steps-wrap { flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column; }
+.re-step { position:absolute;inset:0;opacity:0;transform:translateX(40px);transition:opacity 0.25s ease,transform 0.25s ease;overflow-y:auto;padding:20px;pointer-events:none; }
+.re-step.active { opacity:1;transform:translateX(0);pointer-events:all;position:relative;flex:1;min-height:0; }
+.re-step.exit-left { opacity:0;transform:translateX(-40px);pointer-events:none; }
+.re-footer { display:flex;align-items:center;gap:10px;padding:12px 16px 28px;border-top:1px solid var(--border);flex-shrink:0; }
+.re-btn-back { width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text-secondary);cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent; }
+.re-btn-next { flex:1;padding:14px;background:var(--primary);border:none;border-radius:var(--radius-full);font-family:var(--font);font-size:15px;font-weight:700;color:#000;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+.re-btn-save { flex:1;padding:14px;background:var(--primary);border:none;border-radius:var(--radius-full);font-family:var(--font);font-size:15px;font-weight:700;color:#000;cursor:pointer;display:none;-webkit-tap-highlight-color:transparent; }
+.re-btn-save:disabled { opacity:0.35;cursor:not-allowed; }
+.re-step-title { font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:6px;letter-spacing:-0.5px; }
+.re-step-sub { font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5; }
+.re-added-bar { padding:8px 12px 0;border-bottom:1px solid var(--border);flex-shrink:0;max-height:180px;overflow-y:auto; }
+
 /* ROUTINE EDITOR */
 #routineEditorOverlay {
   position: fixed; inset: 0; background: var(--bg); z-index: 600;
@@ -4551,65 +4571,71 @@ body {
 <!-- ROUTINE EDITOR -->
 <div id="routineEditorOverlay">
 
-  <div class="editor-header">
+  <div class="re-header">
     <button onclick="closeRoutineEditor()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-secondary);display:flex;align-items:center">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <div class="editor-title" id="editorTitle">Nueva rutina</div>
-    <button class="editor-save-btn" id="editorSaveBtn" onclick="saveRoutine()">Guardar</button>
+    <div class="re-progress" id="reProgress">
+      <div class="re-dot active" id="reDot0"></div>
+      <div class="re-dot" id="reDot1"></div>
+      <div class="re-dot" id="reDot2"></div>
+    </div>
+    <div class="re-title" id="editorTitle">Nueva rutina</div>
   </div>
 
-  <div class="editor-body">
+  <div class="re-steps-wrap">
 
-    <!-- Nombre -->
-    <div style="margin-bottom:20px">
-      <div class="editor-field-label">Nombre de la rutina</div>
-      <input class="editor-input" id="routineNameInput" type="text" placeholder="Ej: Push Day, Piernas A, Full Body…" maxlength="50" oninput="onEditorNameInput()">
+    <!-- STEP 0 — Info básica -->
+    <div class="re-step active" id="reStep0">
+      <div class="re-step-title">¿Cómo llamamos a esta rutina?</div>
+      <div class="re-step-sub">Dile a AORA cuándo y cómo querés entrenar</div>
+
+      <div style="margin-bottom:20px">
+        <div class="editor-field-label">Nombre de la rutina</div>
+        <input class="editor-input" id="routineNameInput" type="text" placeholder="Ej: Push Day, Piernas A, Full Body…" maxlength="50" oninput="onEditorNameInput()">
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div class="editor-field-label">Grupo muscular principal</div>
+        <select class="editor-select" id="routineGroupSelect" onchange="onRoutineGroupChange()">
+          <option value="">Sin clasificar</option>
+          <option value="Push">Push (Pecho, Hombros, Tríceps)</option>
+          <option value="Pull">Pull (Espalda, Bíceps)</option>
+          <option value="Piernas">Piernas</option>
+          <option value="Full Body">Full Body</option>
+          <option value="Pecho">Pecho</option>
+          <option value="Espalda">Espalda</option>
+          <option value="Hombros">Hombros</option>
+          <option value="Bíceps">Bíceps</option>
+          <option value="Tríceps">Tríceps</option>
+          <option value="Glúteos">Glúteos</option>
+          <option value="Abdomen">Abdomen</option>
+          <option value="Cardio">Cardio</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div class="editor-field-label">Días de entrenamiento</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorDayChips"></div>
+      </div>
+
+      <div style="margin-bottom:8px">
+        <div class="editor-field-label">Hora habitual</div>
+        <label for="routineTimeInput" style="display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;cursor:pointer;transition:border-color .15s" onclick="this.querySelector('input').showPicker&&this.querySelector('input').showPicker()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <input id="routineTimeInput" type="time" style="background:none;border:none;color:var(--text-primary);font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;color-scheme:dark;outline:none;min-width:90px;padding:0">
+        </label>
+      </div>
     </div>
 
-    <!-- Grupo muscular -->
-    <div style="margin-bottom:20px">
-      <div class="editor-field-label">Grupo muscular principal</div>
-      <select class="editor-select" id="routineGroupSelect" onchange="onRoutineGroupChange()">
-        <option value="">Sin clasificar</option>
-        <option value="Push">Push (Pecho, Hombros, Tríceps)</option>
-        <option value="Pull">Pull (Espalda, Bíceps)</option>
-        <option value="Piernas">Piernas</option>
-        <option value="Full Body">Full Body</option>
-        <option value="Pecho">Pecho</option>
-        <option value="Espalda">Espalda</option>
-        <option value="Hombros">Hombros</option>
-        <option value="Bíceps">Bíceps</option>
-        <option value="Tríceps">Tríceps</option>
-        <option value="Glúteos">Glúteos</option>
-        <option value="Abdomen">Abdomen</option>
-        <option value="Cardio">Cardio</option>
-      </select>
-    </div>
+    <!-- STEP 1 — Config entrenamiento -->
+    <div class="re-step" id="reStep1">
+      <div class="re-step-title">¿Cómo vas a entrenar?</div>
+      <div class="re-step-sub">Grupos musculares y tiempo de descanso entre series</div>
 
-    <!-- Días de entrenamiento -->
-    <div style="margin-bottom:20px">
-      <div class="editor-field-label">Días de entrenamiento</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="editorDayChips"></div>
-    </div>
-
-    <!-- Hora habitual -->
-    <div style="margin-bottom:20px">
-      <div class="editor-field-label">Hora habitual</div>
-      <label for="routineTimeInput" style="display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;cursor:pointer;transition:border-color .15s" onclick="this.querySelector('input').showPicker&&this.querySelector('input').showPicker()">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <input id="routineTimeInput" type="time"
-          style="background:none;border:none;color:var(--text-primary);font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;color-scheme:dark;outline:none;min-width:90px;padding:0">
-      </label>
-    </div>
-
-    <!-- Descanso entre series -->
-    <div style="margin-bottom:24px">
-      <div class="editor-field-label">Descanso entre series</div>
-      <div style="font-size:12px;color:var(--text-secondary);margin:6px 0 12px">Selecciona los grupos que vas a trabajar</div>
-      <!-- Group chips grid -->
+      <div class="editor-field-label" style="margin-bottom:8px">Grupos musculares</div>
       <div id="editorGroupChips" style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px"></div>
-      <!-- Smart rest info (visible cuando 2+ grupos) -->
+
       <div id="editorSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -4618,14 +4644,11 @@ body {
         <div id="editorSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
         <button onclick="toggleEditorFixedRest()" id="editorFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
       </div>
-      <!-- Rest suggestion label -->
+
       <div id="editorRestLabel" style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:10px;min-height:16px"></div>
-      <!-- Rest presets wrapper -->
+      <div class="editor-field-label" style="margin-bottom:8px">Descanso entre series</div>
       <div id="editorRestPresets">
-        <div style="display:flex;gap:8px;flex-wrap:wrap" id="editorRestChips">
-          <!-- rendered by renderEditorRestChips() -->
-        </div>
-        <!-- Input personalizado, visible solo cuando se elige "Otro" -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="editorRestChips"></div>
         <div id="editorRestCustomRow" style="display:none;margin-top:10px;align-items:center;gap:10px">
           <input id="editorRestCustomInput" type="number" min="10" max="600" placeholder="Ej: 75"
             style="width:90px;background:var(--surface2);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font);font-size:15px;font-weight:700;color:var(--text-primary);outline:none;color-scheme:dark"
@@ -4633,26 +4656,35 @@ body {
           <span style="font-size:13px;color:var(--text-secondary)">segundos</span>
         </div>
       </div>
+
+      <div id="deleteRoutineSection" style="display:none;margin-top:32px;padding-top:20px;border-top:1px solid var(--border)">
+        <button onclick="confirmDeleteRoutine()" style="width:100%;padding:14px;background:var(--danger-light);border:1.5px solid var(--danger);border-radius:var(--radius-sm);color:var(--danger);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">
+          Eliminar esta rutina
+        </button>
+      </div>
     </div>
 
-    <!-- Ejercicios -->
-    <div style="margin-bottom:12px">
-      <div class="editor-field-label" style="margin-bottom:12px">Ejercicios</div>
-      <div id="editorExerciseList"></div>
-      <button class="add-exercise-btn" onclick="openExPicker()">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Añadir ejercicio
-      </button>
-    </div>
-
-    <!-- Eliminar rutina (solo en modo edición) -->
-    <div id="deleteRoutineSection" style="display:none;margin-top:32px;padding-top:20px;border-top:1px solid var(--border)">
-      <button onclick="confirmDeleteRoutine()" style="width:100%;padding:14px;background:var(--danger-light);border:1.5px solid var(--danger);border-radius:var(--radius-sm);color:var(--danger);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">
-        Eliminar esta rutina
-      </button>
+    <!-- STEP 2 — Selección de ejercicios -->
+    <div class="re-step" id="reStep2" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+      <div class="re-added-bar" id="reAddedBar" style="display:none;">
+        <div id="editorExerciseList"></div>
+      </div>
+      <div id="reExPickerContainer" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;"></div>
     </div>
 
   </div>
+
+  <div class="re-footer">
+    <button class="re-btn-back" id="reBtnBack" onclick="reEditorBack()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="re-btn-next" id="reBtnNext" onclick="reEditorNext()">Siguiente →</button>
+    <button class="re-btn-save" id="reBtnSave" onclick="saveRoutine()" disabled>Guardar rutina</button>
+  </div>
+
+  <!-- shim de compatibilidad para saveRoutine() -->
+  <button id="editorSaveBtn" style="display:none" disabled></button>
+
 </div>
 
 <!-- EXERCISE PICKER SHEET -->
@@ -7455,7 +7487,10 @@ window.addEventListener('popstate', () => {
 
   // Primero cerrar overlays abiertos
   if (document.getElementById('exPickerSheet')?.classList.contains('active')) { closeExPicker(); return; }
-  if (document.getElementById('routineEditorOverlay')?.classList.contains('active')) { closeRoutineEditor(); return; }
+  if (document.getElementById('routineEditorOverlay')?.classList.contains('active')) {
+    if (_reCurrentStep > 0) { reEditorBack(); return; }
+    closeRoutineEditor(); return;
+  }
   if (document.getElementById('routineSelectorModal')?.style.display === 'flex') { closeRoutineSelector(); return; }
   if (document.getElementById('abandonModal')?.classList.contains('active')) { hideAbandonConfirm(); return; }
   if (document.getElementById('equipSheet')?.classList.contains('active')) { closeEquipSheet(); return; }
@@ -8956,66 +8991,56 @@ const EXERCISE_ILLUSTRATIONS = {
   'Press inclinado':            'Images/exercises/press_inclinado.png',
   'Press declinado':            'Images/exercises/press_declinado.png',
   'Aperturas':                  'Images/exercises/aperturas.png',
-  'Fondos en paralelas':        'Images/exercises/Fondos_en_paralelas.png',
+  'Fondos en paralelas':        'Images/exercises/fondos_en_paralelas.png',
   'Crossover en polea':         'Images/exercises/crossover.png',
-  'Pull-over con mancuerna':    'Images/exercises/pullover.png',
-  'Dominadas':                  'Images/exercises/Dominadas.png',
+  'Pull-over con mancuerna':    'Images/exercises/pull_over.png',
+  'Dominadas':                  'Images/exercises/dominadas.png',
   'Jalones al pecho':           'Images/exercises/jalones.png',
   'Jalones agarre neutro':      'Images/exercises/jalones.png',
-  'Remo con barra':             'Images/exercises/Remo_con_barra.png',
+  'Remo con barra':             'Images/exercises/remo_con_barra.png',
   'Remo con mancuerna':         'Images/exercises/remo_mancuerna.png',
-  'Remo en maquina':            'Images/exercises/Remo_maquina.png',
-  'Remo en T':                  'Images/exercises/Remo_con_barra.png',
+  'Remo en maquina':            'Images/exercises/remo_maquina.png',
+  'Remo en T':                  'Images/exercises/remo_con_barra.png',
   'Peso muerto':                'Images/exercises/Peso muerto.png',
   'Hiperextensiones':           'Images/exercises/hiperextensiones.png',
   'Press militar':              'Images/exercises/press_militar.png',
   'Arnold press':               'Images/exercises/press_militar.png',
-  'Elevaciones laterales':      'Images/exercises/Elevaciones_laterales.png',
-  'Elevaciones frontales':      'Images/exercises/Elevaciones_laterales.png',
-  'Pajaros':                    'Images/exercises/Elevaciones_laterales.png',
-  'Encogimientos de hombros':   'Images/exercises/encogimientos.png',
-  'Curl con barra':             'Images/exercises/Curl_de_bíceps.png',
-  'Curl con mancuernas':        'Images/exercises/Curl_de_bíceps.png',
+  'Elevaciones laterales':      'Images/exercises/elevaciones_laterales.png',
+  'Elevaciones frontales':      'Images/exercises/elevaciones_laterales.png',
+  'Pajaros':                    'Images/exercises/elevaciones_laterales.png',
+  'Curl con barra':             'Images/exercises/curl_de_biceps.png',
+  'Curl con mancuernas':        'Images/exercises/curl_de_biceps.png',
   'Curl martillo':              'Images/exercises/curl_martillo.png',
   'Curl concentrado':           'Images/exercises/curl_concentrado.png',
-  'Curl en polea':              'Images/exercises/Curl_de_bíceps.png',
+  'Curl en polea':              'Images/exercises/curl_de_biceps.png',
   'Curl inclinado':             'Images/exercises/curl_inclinado.png',
-  'Curl en banca Scott':        'Images/exercises/Curl_de_bíceps.png',
-  'Extension en polea alta':    'Images/exercises/extension_polea.png',
-  'Press frances':              'Images/exercises/press_frances.png',
-  'Patada de triceps':          'Images/exercises/patada_triceps.png',
-  'Fondos de triceps':          'Images/exercises/fondos_triceps.png',
-  'Extension con mancuerna':    'Images/exercises/extension_mancuerna.png',
+  'Curl en banca Scott':        'Images/exercises/curl_de_biceps.png',
+  'Press frances':              'Images/exercises/Press_frances.png',
+  'Fondos de triceps':          'Images/exercises/fondos_en_paralelas.png',
   'Press cerrado':              'Images/exercises/press_cerrado.png',
-  'Overhead en polea':          'Images/exercises/overhead_polea.png',
-  'Sentadilla':                 'Images/exercises/Sentadilla.png',
+  'Sentadilla':                 'Images/exercises/sentadilla.png',
   'Sentadilla bulgara':         'Images/exercises/sentadilla_bulgara.png',
   'Sentadilla sumo':            'Images/exercises/sentadilla_sumo.png',
   'Prensa de piernas':          'Images/exercises/prensa_piernas.png',
   'Extension de cuadriceps':    'Images/exercises/extension_cuadriceps.png',
   'Curl de femoral':            'Images/exercises/curl_femoral.png',
-  'Peso muerto rumano':         'Images/exercises/peso_muerto_rumano.png',
-  'Zancadas':                   'Images/exercises/Zancada.png',
-  'Elevacion de gemelos':       'Images/exercises/gemelos.png',
-  'Hip thrust':                 'Images/exercises/Hip_thrust.png',
-  'Abductores en maquina':      'Images/exercises/abductores.png',
-  'Aductores en maquina':       'Images/exercises/abductores.png',
-  'Step-up':                    'Images/exercises/step_up.png',
-  'Puente de gluteo':           'Images/exercises/Hip_thrust.png',
-  'Patada de gluteo en polea':  'Images/exercises/patada_gluteo.png',
+  'Peso muerto rumano':         'Images/exercises/Peso muerto.png',
+  'Zancadas':                   'Images/exercises/zancada.png',
+  'Hip thrust':                 'Images/exercises/hip_thrust.png',
+  'Abductores en maquina':      'Images/exercises/extension_cuadriceps.png',
+  'Aductores en maquina':       'Images/exercises/extension_cuadriceps.png',
+  'Puente de gluteo':           'Images/exercises/hip_thrust.png',
   'Peso muerto a una pierna':   'Images/exercises/peso_muerto_una_pierna.png',
   'Abduccion con banda':        'Images/exercises/abduccion_banda.png',
-  'Plancha':                    'Images/exercises/Plancha.png',
-  'Plancha lateral':            'Images/exercises/plancha_lateral.png',
-  'Crunch':                     'Images/exercises/Crunch.png',
-  'Elevacion de piernas':       'Images/exercises/elevacion_piernas.png',
+  'Plancha':                    'Images/exercises/plancha.png',
+  'Plancha lateral':            'Images/exercises/Plancha lateral.png',
+  'Crunch':                     'Images/exercises/crunch.png',
   'Rueda abdominal':            'Images/exercises/rueda_abdominal.png',
   'Russian twist':              'Images/exercises/russian_twist.png',
-  'Crunch en polea':            'Images/exercises/crunch_polea.png',
+  'Crunch en polea':            'Images/exercises/crunch_en_polea.png',
   'Mountain climbers':          'Images/exercises/mountain_climbers.png',
   'Hollow hold':                'Images/exercises/hollow_hold.png',
-  'Dragon flag':                'Images/exercises/dragon_flag.png',
-  'Burpees':                    'Images/exercises/Burpee.png',
+  'Burpees':                    'Images/exercises/burpee.png',
 };
 
 function exerciseRowHtml(item, equips) {
@@ -15423,6 +15448,20 @@ function openRoutineEditor(routineId = null) {
   renderEditorGroupChips();
   renderEditorRestChips();
   onEditorNameInput();
+
+  // Reset wizard to step 0
+  _reCurrentStep = 0;
+  for (let i = 0; i < 3; i++) {
+    const s = document.getElementById('reStep' + i);
+    if (s) { s.classList.remove('active', 'exit-left'); }
+  }
+  document.getElementById('reStep0')?.classList.add('active');
+  // Reset picker mount flag so it re-mounts on next visit to step 2
+  const pickerCont = document.getElementById('reExPickerContainer');
+  if (pickerCont) { pickerCont._pickerMounted = false; pickerCont.innerHTML = ''; }
+  _reUpdateDots(0);
+  _reUpdateFooter(0);
+
   document.getElementById('routineEditorOverlay').classList.add('active');
 }
 
@@ -15454,6 +15493,71 @@ const REST_CHIP_VALUES = [30, 60, 90, 120, 180, 240];
 let _editorRestCustom = false; // true cuando el usuario eligió "Otro"
 let _editorGroups = [];        // grupos musculares seleccionados en el editor
 let _editorSmartRestActive = false; // true cuando multi-grupo sin override fijo
+
+// ─── Routine Editor Wizard Navigation ────────────────────────
+let _reCurrentStep = 0;
+
+function _reGoToStep(target) {
+  const prev = _reCurrentStep;
+  const forward = target > prev;
+  const prevEl = document.getElementById('reStep' + prev);
+  if (prevEl) {
+    prevEl.classList.remove('active');
+    if (forward) prevEl.classList.add('exit-left');
+  }
+  setTimeout(() => {
+    const nextEl = document.getElementById('reStep' + target);
+    if (nextEl) {
+      nextEl.classList.remove('exit-left');
+      nextEl.classList.add('active');
+      nextEl.scrollTop = 0;
+    }
+  }, 20);
+  _reCurrentStep = target;
+  _reUpdateDots(target);
+  _reUpdateFooter(target);
+  if (target === 2) setTimeout(() => _reRenderPicker(), 50);
+}
+
+function _reUpdateDots(step) {
+  for (let i = 0; i < 3; i++) {
+    const dot = document.getElementById('reDot' + i);
+    if (!dot) continue;
+    dot.classList.remove('active', 'done');
+    if (i < step) dot.classList.add('done');
+    else if (i === step) dot.classList.add('active');
+  }
+}
+
+function _reUpdateFooter(step) {
+  const backBtn = document.getElementById('reBtnBack');
+  const nextBtn = document.getElementById('reBtnNext');
+  const saveBtn = document.getElementById('reBtnSave');
+  if (backBtn) backBtn.style.display = step > 0 ? 'flex' : 'none';
+  if (nextBtn) {
+    nextBtn.style.display = step < 2 ? 'flex' : 'none';
+    nextBtn.textContent = step === 1 ? '+ Agregar ejercicios' : 'Siguiente →';
+  }
+  if (saveBtn) saveBtn.style.display = step === 2 ? 'flex' : 'none';
+}
+
+function reEditorNext() { if (_reCurrentStep < 2) _reGoToStep(_reCurrentStep + 1); }
+function reEditorBack() { if (_reCurrentStep > 0) _reGoToStep(_reCurrentStep - 1); }
+
+function _reRenderPicker() {
+  const container = document.getElementById('reExPickerContainer');
+  if (!container || container._pickerMounted) return;
+  container._pickerMounted = true;
+  renderUniversalPicker('reExPickerContainer', function(name, equip) {
+    if (_editorExercises.find(ex => ex.name === name && (ex.equipment || '') === (equip || ''))) {
+      showToast('Ya está en la lista', 'info'); return;
+    }
+    _editorExercises.push({ name: name, equipment: equip || '', sets: 3 });
+    renderEditorExercises();
+    showToast('✓ ' + name + (equip ? ' · ' + equip : '') + ' añadido', 'success');
+  }, { title: 'Agregar ejercicios', showCustom: true });
+}
+// ─────────────────────────────────────────────────────────────
 
 function renderEditorRestChips() {
   const container = document.getElementById('editorRestChips');
@@ -15575,15 +15679,22 @@ function onRoutineGroupChange() {
 
 function onEditorNameInput() {
   const name = document.getElementById('routineNameInput').value.trim();
-  document.getElementById('editorSaveBtn').disabled = name.length === 0;
+  const hasExercises = _editorExercises.length > 0;
+  const disabled = name.length === 0 || !hasExercises;
+  document.getElementById('editorSaveBtn').disabled = disabled;
+  const saveBtn = document.getElementById('reBtnSave');
+  if (saveBtn) saveBtn.disabled = disabled;
 }
 
 function renderEditorExercises() {
   const list = document.getElementById('editorExerciseList');
+  const bar  = document.getElementById('reAddedBar');
   if (_editorExercises.length === 0) {
     list.innerHTML = '';
+    if (bar) bar.style.display = 'none';
     return;
   }
+  if (bar) bar.style.display = 'block';
   list.innerHTML = _editorExercises.map((ex, i) => `
     <div class="editor-exercise-row" data-idx="${i}">
       <div class="drag-handle" data-drag="${i}" onmousedown="_dragStart(event,${i})" ontouchstart="_dragStart(event,${i})">
@@ -15675,7 +15786,7 @@ function saveRoutine() {
   if (!name) { showToast('Escribe un nombre para la rutina', 'warning'); return; }
   if (_editorExercises.length === 0) { showToast('Añade al menos un ejercicio', 'warning'); return; }
 
-  const btn = document.getElementById('editorSaveBtn');
+  const btn = document.getElementById('reBtnSave') || document.getElementById('editorSaveBtn');
   btn.disabled = true;
   btn.textContent = 'Guardando…';
 
@@ -15722,7 +15833,7 @@ function saveRoutine() {
     console.error('Error saving routine locally:', err);
     showToast('Error al guardar', 'error');
     btn.disabled = false;
-    btn.textContent = 'Guardar';
+    btn.textContent = 'Guardar rutina';
   }
 }
 
