@@ -322,6 +322,101 @@
     .sc-carlos .sc-pill { background: rgba(78,205,196,.15); color: #4ECDC4; }
     .sc-andrea .sc-pill { background: rgba(168,224,99,.15); color: #A8E063; }
     .sc-diego .sc-pill { background: rgba(247,151,30,.15); color: #F7971E; }
+
+    /* ── Coach Modal ── */
+    .coach-modal-ov {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px; overflow-y: auto;
+    }
+    .coach-modal-ov.active { display: flex; }
+    .coach-modal {
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px; max-width: 560px; width: 100%;
+      position: relative; overflow: hidden;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .coach-modal::-webkit-scrollbar { width: 0; }
+    .cm-hero {
+      height: 280px; position: relative; overflow: hidden;
+      display: flex; align-items: flex-end;
+    }
+    .cm-hero-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+    }
+    .cm-hero-fallback {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center; font-size: 100px;
+    }
+    .cm-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(14,17,25,1) 0%, rgba(14,17,25,0.4) 50%, transparent 100%);
+    }
+    .cm-hero-info {
+      position: relative; z-index: 2; padding: 24px;
+      width: 100%;
+    }
+    .cm-flag { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+    .cm-name {
+      font-family: var(--fd); font-size: 36px; font-weight: 900;
+      letter-spacing: -1px; line-height: 1; margin-bottom: 4px;
+    }
+    .cm-spec { font-size: 12px; font-family: var(--mono); }
+    .cm-body { padding: 24px; }
+    .cm-quote {
+      font-size: 16px; font-style: italic; color: rgba(255,255,255,0.75);
+      line-height: 1.6; margin-bottom: 24px; padding-left: 16px;
+      border-left: 3px solid var(--primary);
+    }
+    .cm-section-title {
+      font-size: 10px; font-family: var(--mono); letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 12px; margin-top: 20px;
+    }
+    .cm-bio { font-size: 14px; color: var(--text-2); line-height: 1.75; margin-bottom: 20px; }
+    .cm-approach { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .cm-approach-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: var(--text-2); line-height: 1.5;
+    }
+    .cm-approach-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+    }
+    .cm-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .cm-tag {
+      padding: 4px 12px; border-radius: 100px;
+      font-size: 11px; font-weight: 600;
+      background: rgba(255,255,255,0.06); color: var(--text-2);
+      border: 0.5px solid rgba(255,255,255,0.1);
+    }
+    .cm-messages {
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px;
+    }
+    .cm-msg {
+      padding: 10px 14px;
+      font-size: 12px; line-height: 1.55; max-width: 88%;
+      background: rgba(123,97,255,0.12); border: 1px solid rgba(123,97,255,0.18);
+      color: rgba(255,255,255,0.85);
+      border-radius: 4px 12px 12px 12px;
+    }
+    .cm-cta {
+      width: 100%; padding: 15px; background: var(--neon); color: #080A0F;
+      border: none; border-radius: 100px; font-family: var(--font);
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 0 24px rgba(200,255,0,0.3);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .cm-cta:hover { transform: scale(1.02); box-shadow: 0 0 36px rgba(200,255,0,0.5); }
+    .cm-close {
+      position: absolute; top: 16px; right: 16px; z-index: 10;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -543,7 +638,7 @@
     </div>
     <div class="spotify-grid">
       <!-- María -->
-      <a href="app.aoralive.com" class="spotify-card sc-maria" onclick="handleCTA();return false;">
+      <a href="app.aoralive.com" class="spotify-card sc-maria" onclick="openCoachModal('maria');return false;">
         <img src="Images/coaches/maria.png" alt="María" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="spotify-card-fallback sc-maria" style="background:linear-gradient(135deg,#FF6B9D,#C44569);">👩🏽</div>
         <div class="sc-body">
@@ -551,11 +646,11 @@
           <div class="sc-name">María</div>
           <div class="sc-spec">HIIT & Funcional</div>
           <span class="sc-pill">Energética</span>
-          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
+          <div class="sc-link" onclick="openCoachModal('maria');event.stopPropagation();">Ver perfil →</div>
         </div>
       </a>
       <!-- Carlos -->
-      <a href="app.aoralive.com" class="spotify-card sc-carlos" onclick="handleCTA();return false;">
+      <a href="app.aoralive.com" class="spotify-card sc-carlos" onclick="openCoachModal('carlos');return false;">
         <img src="Images/coaches/carlos.png" alt="Carlos" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="spotify-card-fallback sc-carlos" style="background:linear-gradient(135deg,#4ECDC4,#1A535C);">👨🏽</div>
         <div class="sc-body">
@@ -563,11 +658,11 @@
           <div class="sc-name">Carlos</div>
           <div class="sc-spec">Fuerza & Masa</div>
           <span class="sc-pill">Datos-driven</span>
-          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
+          <div class="sc-link" onclick="openCoachModal('carlos');event.stopPropagation();">Ver perfil →</div>
         </div>
       </a>
       <!-- Andrea -->
-      <a href="app.aoralive.com" class="spotify-card sc-andrea" onclick="handleCTA();return false;">
+      <a href="app.aoralive.com" class="spotify-card sc-andrea" onclick="openCoachModal('andrea');return false;">
         <img src="Images/coaches/andrea.png" alt="Andrea" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="spotify-card-fallback sc-andrea" style="background:linear-gradient(135deg,#A8E063,#56AB2F);">👩🏻</div>
         <div class="sc-body">
@@ -575,11 +670,11 @@
           <div class="sc-name">Andrea</div>
           <div class="sc-spec">Movilidad & Bienestar</div>
           <span class="sc-pill">Equilibrada</span>
-          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
+          <div class="sc-link" onclick="openCoachModal('andrea');event.stopPropagation();">Ver perfil →</div>
         </div>
       </a>
       <!-- Diego -->
-      <a href="app.aoralive.com" class="spotify-card sc-diego" onclick="handleCTA();return false;">
+      <a href="app.aoralive.com" class="spotify-card sc-diego" onclick="openCoachModal('diego');return false;">
         <img src="Images/coaches/diego.png" alt="Diego" class="spotify-card-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="spotify-card-fallback sc-diego" style="background:linear-gradient(135deg,#F7971E,#FFD200);">👨🏾</div>
         <div class="sc-body">
@@ -587,7 +682,7 @@
           <div class="sc-name">Diego</div>
           <div class="sc-spec">Calistenia & Resistencia</div>
           <span class="sc-pill">Resiliente</span>
-          <div class="sc-link" style="pointer-events:none;opacity:0.4;">Perfil próximamente →</div>
+          <div class="sc-link" onclick="openCoachModal('diego');event.stopPropagation();">Ver perfil →</div>
         </div>
       </a>
     </div>
@@ -751,6 +846,37 @@
   </div>
 </footer>
 
+<!-- ══ COACH MODAL ════════════════════════════════════════════ -->
+<div class="coach-modal-ov" id="coachModal" onclick="if(event.target===this)closeCoachModal()">
+  <div class="coach-modal">
+    <button class="cm-close" onclick="closeCoachModal()">×</button>
+    <div class="cm-hero" id="cmHero">
+      <img class="cm-hero-img" id="cmImg" src="" alt="">
+      <div class="cm-hero-fallback" id="cmFallback" style="display:none"></div>
+      <div class="cm-hero-overlay"></div>
+      <div class="cm-hero-info">
+        <div class="cm-flag" id="cmFlag"></div>
+        <div class="cm-name" id="cmName"></div>
+        <div class="cm-spec" id="cmSpec"></div>
+      </div>
+    </div>
+    <div class="cm-body">
+      <div class="cm-quote" id="cmQuote"></div>
+      <div class="cm-section-title">// Sobre este coach</div>
+      <div class="cm-bio" id="cmBio"></div>
+      <div class="cm-section-title">// Su forma de entrenar</div>
+      <div class="cm-approach" id="cmApproach"></div>
+      <div class="cm-section-title">// Especialidades</div>
+      <div class="cm-tags" id="cmTags"></div>
+      <div class="cm-section-title">// Cómo te habla</div>
+      <div class="cm-messages" id="cmMessages"></div>
+      <button class="cm-cta" onclick="closeCoachModal();document.getElementById('beta').scrollIntoView({behavior:'smooth'});">
+        Entrenar con este coach → Reservar cupo gratis
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ iOS MODAL ══════════════════════════════════════════════ -->
 <div class="modal-ov" id="iosModal" onclick="if(event.target===this)closeIosModal()">
   <div class="modal-box">
@@ -790,6 +916,152 @@
   const SB_URL  = 'https://edythbvezafpnkslavcv.supabase.co';
   const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkeXRoYnZlemFmcG5rc2xhdmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTE3MDgsImV4cCI6MjA4OTY4NzcwOH0.IlcXNBRAJNN5C9lRR1gQ6qjHeEplLr73Vt3iZ0NXd6c';
   const sb = supabase.createClient(SB_URL, SB_ANON);
+
+  // ── Coach profiles data ──────────────────────────────────
+  const COACHES_DATA = {
+    maria: {
+      name: 'María',
+      flag: '🇨🇴 Colombia',
+      spec: 'HIIT & Funcional · 4.9★',
+      specColor: '#FF6B9D',
+      photo: 'Images/coaches/maria.png',
+      fallback: '👩🏽',
+      fallbackBg: 'linear-gradient(135deg,#FF6B9D,#C44569)',
+      quote: '¡Dale, que tú puedes! Cada repetición cuenta. Yo lo veo aunque tú no lo notes todavía.',
+      bio: 'Entrenadora personal colombiana especializada en HIIT y entrenamiento funcional. Empecé en un pequeño gym de barrio y hoy acompaño a cientos de personas a moverse mejor. Mi estilo es directo, cálido y siempre con datos reales detrás de cada recomendación.',
+      approach: [
+        'Celebro cada pequeño logro — los grandes cambios se construyen así.',
+        'Nunca prometo resultados imposibles ni ignoro tus limitaciones reales.',
+        'Analizo tu volumen, peso y descanso semana a semana para ajustar tu carga.'
+      ],
+      tags: ['HIIT', 'Entrenamiento Funcional', 'Nutrición', 'Pérdida de grasa', 'Motivación'],
+      messages: [
+        '¡3 sesiones esta semana! Eso es exactamente lo que necesitamos. Tu volumen subió 8% — sigues en la dirección correcta. 🔥',
+        'Oye, vi que descansaste solo 40s entre las series de sentadilla. Esta semana apuntamos a 90s — vas a notar la diferencia en la última serie, te lo prometo.',
+        '¿Tienes dudas sobre la técnica del peso muerto? Cuéntame, que para eso estoy. Prefiero que preguntes antes de que lo hagas mal y te lesiones.'
+      ],
+      dotColor: 'var(--primary)'
+    },
+    carlos: {
+      name: 'Carlos',
+      flag: '🇲🇽 México',
+      spec: 'Fuerza & Masa · 4.8★',
+      specColor: '#4ECDC4',
+      photo: 'Images/coaches/carlos.png',
+      fallback: '👨🏽',
+      fallbackBg: 'linear-gradient(135deg,#4ECDC4,#1A535C)',
+      quote: 'El músculo no crece por accidente. Crece por presión calculada, descanso inteligente y progresión sistemática.',
+      bio: 'Entrenador de fuerza y masa muscular mexicano. 7 años trabajando con atletas y personas que buscan resultados medibles. Mi enfoque es simple: datos, progresión y técnica impecable. Sin excusas, sin magia — solo trabajo bien hecho.',
+      approach: [
+        'Periodización seria: cada semana construye sobre la anterior con carga progresiva.',
+        'Técnica primero, peso después. Siempre. Una rep mal hecha vale menos que cero.',
+        'Los datos no mienten: volumen, intensidad y recuperación medidos con precisión.'
+      ],
+      tags: ['Fuerza', 'Hipertrofia', 'Periodización', 'Técnica', 'Análisis de datos'],
+      messages: [
+        'Volumen +12% esta semana. Eso es lo que quiero ver. Pero el RPE en press de banca llegó a 9 — la semana que viene bajamos la carga 5% y aumentamos reps. Así se periodiza.',
+        'Tu descanso promedio fue 65s. Para hipertrofia necesitamos 90-120s. No es opcional — es fisiología.',
+        '¿Estancado en el peso muerto? Dime tus números de las últimas 4 semanas y te armo el plan.'
+      ],
+      dotColor: '#4ECDC4'
+    },
+    andrea: {
+      name: 'Andrea',
+      flag: '🇦🇷 Argentina',
+      spec: 'Bienestar Integral · 4.9★',
+      specColor: '#A8E063',
+      photo: 'Images/coaches/andrea.png',
+      fallback: '👩🏻',
+      fallbackBg: 'linear-gradient(135deg,#A8E063,#56AB2F)',
+      quote: 'Tu cuerpo me habla antes de que tú lo hagas. Vamos a escucharlo juntas, sin juicios y con adaptaciones reales.',
+      bio: 'Entrenadora argentina de bienestar integral. Combino entrenamiento con psicología del comportamiento porque no puedes tener un cuerpo sano sin trabajar también la mente. Mi enfoque es empático, profundo y siempre adaptado a tu vida real — no a la vida ideal.',
+      approach: [
+        'Escucho primero. Tu historial, tu estado de ánimo y tus limitaciones importan tanto como tus objetivos.',
+        'Integración mente-cuerpo: movilidad, respiración y fuerza funcional van siempre juntas.',
+        'Sin juicios, sin presión estética — solo progreso real y sostenible a largo plazo.'
+      ],
+      tags: ['Movilidad', 'Bienestar', 'Mindfulness', 'Fuerza funcional', 'Nutrición holística'],
+      messages: [
+        'Hola 🌸 Vi que esta semana entrenaste 3 veces aunque me dijiste que estabas agotada. Eso es resiliencia real. ¿Cómo te sientes hoy?',
+        'Tu RPE promedio bajó de 8 a 6 esta semana — tu cuerpo está respondiendo bien. Es el momento perfecto para subir un poco la intensidad sin forzar.',
+        '¿Tienes dudas sobre cómo respirar en el peso muerto? Es más importante de lo que parece — afecta directamente cuánto puedes levantar y cómo te recuperas.'
+      ],
+      dotColor: '#A8E063'
+    },
+    diego: {
+      name: 'Diego',
+      flag: '🇵🇪 Perú',
+      spec: 'Calistenia & Resiliencia · 4.8★',
+      specColor: '#F7971E',
+      photo: 'Images/coaches/diego.png',
+      fallback: '👨🏾',
+      fallbackBg: 'linear-gradient(135deg,#F7971E,#FFD200)',
+      quote: 'El progreso no es lineal, pero es real. La mentalidad es el primer músculo que hay que entrenar.',
+      bio: 'Entrenador peruano de calistenia y resiliencia. Crecí sin acceso a un gym y aprendí a entrenar con lo que tenía. Hoy ese background me permite ayudar a cualquier persona a progresar independientemente de sus recursos. La voluntad siempre es más fuerte que las circunstancias.',
+      approach: [
+        'El cuerpo como herramienta principal: sin excusas de equipamiento, sin límites mentales.',
+        'Mentalidad grit — la incomodidad controlada es exactamente donde crece el progreso.',
+        'Progresión paciente y consistente: prefiero 1% mejor cada semana que explosiones insostenibles.'
+      ],
+      tags: ['Calistenia', 'Resiliencia mental', 'Entrenamiento sin equipo', 'Movilidad', 'Nutrición ancestral'],
+      messages: [
+        'Una sesión esta semana. Está bien. El progreso no es lineal. ¿Qué te impidió entrenar los otros días? Cuéntame sin filtro.',
+        'Tu descanso entre series de dominadas fue 3 minutos. Para calistenia eso es correcto — los grupos musculares pequeños necesitan más recuperación que los grandes. Bien hecho.',
+        '¿Quieres aprender el muscle-up? Dime cuántas dominadas limpias puedes hacer ahora y armamos el plan desde ahí.'
+      ],
+      dotColor: '#F7971E'
+    }
+  };
+
+  function openCoachModal(coachId) {
+    const c = COACHES_DATA[coachId];
+    if (!c) return;
+
+    const img = document.getElementById('cmImg');
+    const fallback = document.getElementById('cmFallback');
+    img.src = c.photo;
+    img.alt = c.name;
+    img.style.display = 'block';
+    img.onerror = function() {
+      this.style.display = 'none';
+      fallback.style.display = 'flex';
+      fallback.textContent = c.fallback;
+      fallback.style.background = c.fallbackBg;
+    };
+    fallback.style.display = 'none';
+
+    document.getElementById('cmFlag').textContent = c.flag;
+    document.getElementById('cmName').textContent = c.name;
+    const specEl = document.getElementById('cmSpec');
+    specEl.textContent = c.spec;
+    specEl.style.color = c.specColor;
+
+    document.getElementById('cmQuote').textContent = '"' + c.quote + '"';
+    document.getElementById('cmBio').textContent = c.bio;
+
+    document.getElementById('cmApproach').innerHTML = c.approach.map(a =>
+      `<div class="cm-approach-item">
+        <div class="cm-approach-dot" style="background:${c.dotColor}"></div>
+        <span>${a}</span>
+      </div>`
+    ).join('');
+
+    document.getElementById('cmTags').innerHTML = c.tags.map(t =>
+      `<span class="cm-tag">${t}</span>`
+    ).join('');
+
+    document.getElementById('cmMessages').innerHTML = c.messages.map(m =>
+      `<div class="cm-msg">${m}</div>`
+    ).join('');
+
+    document.getElementById('coachModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCoachModal() {
+    document.getElementById('coachModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
 
   const BETA_MAX = 100;
   let takenCount = 0;
