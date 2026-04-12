@@ -1248,7 +1248,7 @@ body {
   border-color: var(--primary); background: var(--primary-light); color: var(--primary);
 }
 .ex-picker-item {
-  padding: 12px 0; border-bottom: 1px solid var(--border);
+  padding: 14px 0; border-bottom: 1px solid var(--border);
   font-size: 14px; color: var(--text-primary); cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
 }
@@ -4835,11 +4835,14 @@ function getSelectedCoach() {
 
 // Helper reutilizable: genera HTML de avatar del coach (foto con fallback a emoji)
 function coachAvatarHtml(coach, size = 36) {
-  if (!coach) return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">🤖</div>`;
-  if (coach.photoUrl) {
-    return `<img src="${coach.photoUrl}" alt="${coach.name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:center top" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">${coach.emoji}</div>`;
+  // Siempre usar foto — nunca emoji. Fallback: foto de maría (coach por defecto)
+  if (!coach) coach = { id: 'maria', ...COACHES.maria };
+  const photoUrl = coach.photoUrl || (COACHES[coach.id || 'maria'] || COACHES.maria).photoUrl;
+  const emoji = coach.emoji || '👤';
+  if (photoUrl) {
+    return `<img src="${photoUrl}" alt="${coach.name || 'Coach'}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:center top" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);align-items:center;justify-content:center;overflow:hidden"><img src="${COACHES.maria.photoUrl}" style="width:100%;height:100%;object-fit:cover;object-position:top"></div>`;
   }
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px">${coach.emoji}</div>`;
+  return `<img src="${COACHES.maria.photoUrl}" alt="Coach" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;object-position:center top">`;
 }
 
 function saveSelectedCoach(id) {
@@ -5056,7 +5059,7 @@ function getRandomAlertMessage(alertType) {
 }
 
 function showCoachAlertToast(alertType) {
-  const coach = getSelectedCoach() || { id: 'maria', name: 'María', emoji: '👩🏽' };
+  const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
   if (alertType === 'setFeedback' && window._pendingSetFeedbackMsg) {
@@ -7575,7 +7578,7 @@ function selectMode(mode) {
 const exerciseDB = [
   { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna'] },
   { group: 'Espalda',   items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto', 'Remo en T', 'Face pull', 'Jalones agarre neutro', 'Pullover en polea', 'Hiperextensiones'] },
-  { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Arnold press', 'Encogimientos de hombros'] },
+  { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Encogimientos de hombros'] },
   { group: 'Biceps',    items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea', 'Curl inclinado', 'Curl en banca Scott'] },
   { group: 'Triceps',   items: ['Extension en polea alta', 'Press frances', 'Patada de triceps', 'Fondos de triceps', 'Extension con mancuerna', 'Extension en polea baja', 'Press cerrado', 'Overhead en polea'] },
   { group: 'Piernas',   items: ['Sentadilla', 'Prensa de piernas', 'Extension de cuadriceps', 'Curl de femoral', 'Peso muerto rumano', 'Zancadas', 'Elevacion de gemelos', 'Hip thrust', 'Sentadilla bulgara', 'Abductores en maquina', 'Aductores en maquina', 'Step-up', 'Sentadilla sumo'] },
@@ -7701,13 +7704,6 @@ const EXERCISE_INFO = {
     tips: ['Torso paralelo al suelo (o casi)','Sube los brazos hasta el nivel del hombro','Codos ligeramente flexionados','Siente la contracción entre los omóplatos','Movimiento lento y controlado'],
     errors: ['No inclinar el torso lo suficiente','Usar demasiado peso','No activar los músculos de la espalda alta'],
     yt: 'pajaros deltoides posterior tecnica'
-  },
-  'Arnold press': {
-    muscles: ['Todos los deltoides','Tríceps'],
-    desc: 'Creado por Arnold Schwarzenegger. Combina rotación y press para trabajar los tres haces del deltoides. Excelente ejercicio para hombros completos.',
-    tips: ['Empieza con las palmas mirando hacia ti','Rota las muñecas al subir hasta que miren al frente','Movimiento fluido y continuo','Sube y baja con control','Rango completo de movimiento'],
-    errors: ['Movimiento mecánico y discontinuo','Peso excesivo que interrumpe la rotación','No completar la rotación de muñecas'],
-    yt: 'arnold press hombros tecnica correcta'
   },
   'Curl con barra': {
     muscles: ['Bíceps braquial','Braquial','Braquiorradial'],
@@ -8507,13 +8503,12 @@ const SCIENCE_ROUTINES = {
       goalRest: { muscle_gain: 120, fat_loss: 75, strength: 180, maintenance: 90 },
       goalReps: { muscle_gain: '8-12', fat_loss: '12-15', strength: '4-6', maintenance: '10-15' },
       days: [
-        { name: 'Push — Empuje', totalSets: 24, exercises: [
+        { name: 'Push — Empuje', totalSets: 21, exercises: [
           {name:'Press de banca',sets:4,reps:'6-10',note:'Pecho'},
           {name:'Press inclinado',sets:4,reps:'10-12',note:'Pecho superior'},
           {name:'Aperturas',sets:3,reps:'12-15',note:'Aislamiento pecho'},
           {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
           {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Deltoides medio'},
-          {name:'Arnold press',sets:3,reps:'10-12',note:'Hombro completo'},
           {name:'Extension en polea alta',sets:2,reps:'12-15',note:'Tríceps'},
         ]},
         { name: 'Pull — Jalón', totalSets: 24, exercises: [
@@ -8552,13 +8547,12 @@ const SCIENCE_ROUTINES = {
       goalRest: { muscle_gain: 120, fat_loss: 90, strength: 180, maintenance: 120 },
       goalReps: { muscle_gain: '6-12', fat_loss: '12-15', strength: '3-6', maintenance: '10-15' },
       days: [
-        { name: 'Push — Empuje (Lun)', totalSets: 28, exercises: [
+        { name: 'Push — Empuje (Lun)', totalSets: 25, exercises: [
           {name:'Press de banca',sets:5,reps:'6-8',note:'Pecho fuerza'},
           {name:'Press inclinado',sets:4,reps:'10-12',note:'Pecho superior'},
           {name:'Aperturas',sets:3,reps:'12-15',note:'Pecho aislamiento'},
           {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
           {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Deltoides medio'},
-          {name:'Arnold press',sets:3,reps:'10-12',note:'Hombro completo'},
           {name:'Extension en polea alta',sets:3,reps:'12-15',note:'Tríceps'},
           {name:'Press frances',sets:2,reps:'10-12',note:'Cabeza larga tríceps'},
         ]},
@@ -8582,11 +8576,10 @@ const SCIENCE_ROUTINES = {
           {name:'Elevacion de gemelos',sets:3,reps:'15-20',note:'Gemelos'},
           {name:'Plancha',sets:3,reps:'45s',note:'Core'},
         ]},
-        { name: 'Upper+ — Hombros/Brazos (Jue)', totalSets: 28, exercises: [
+        { name: 'Upper+ — Hombros/Brazos (Jue)', totalSets: 25, exercises: [
           {name:'Press militar',sets:5,reps:'6-8',note:'Fuerza hombros'},
           {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Deltoides medio'},
           {name:'Pajaros',sets:4,reps:'12-15',note:'Deltoides posterior'},
-          {name:'Arnold press',sets:3,reps:'10-12',note:'Hombro 360°'},
           {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
           {name:'Curl con mancuernas',sets:3,reps:'10-12',note:'Bíceps'},
           {name:'Extension en polea alta',sets:3,reps:'12-15',note:'Tríceps'},
@@ -8673,9 +8666,8 @@ const SCIENCE_ROUTINES = {
           {name:'Remo en maquina',sets:4,reps:'10-12',note:'Retracción'},
           {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Unilateral'},
         ]},
-        { name: 'Hombros y Brazos (Mié)', totalSets: 24, exercises: [
+        { name: 'Hombros y Brazos (Mié)', totalSets: 20, exercises: [
           {name:'Press militar',sets:5,reps:'5-7',note:'Fuerza hombros'},
-          {name:'Arnold press',sets:4,reps:'8-10',note:'Hombro 360°'},
           {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Amplitud'},
           {name:'Pajaros',sets:3,reps:'12-15',note:'Post. hombro'},
           {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
@@ -8724,9 +8716,8 @@ const SCIENCE_ROUTINES = {
           {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Unilateral'},
           {name:'Curl con barra',sets:3,reps:'8-10',note:'Bíceps'},
         ]},
-        { name: 'Hombros y Brazos (Mié)', totalSets: 28, exercises: [
+        { name: 'Hombros y Brazos (Mié)', totalSets: 24, exercises: [
           {name:'Press militar',sets:5,reps:'4-6',note:'Fuerza'},
-          {name:'Arnold press',sets:4,reps:'8-10',note:'Hombro completo'},
           {name:'Elevaciones laterales',sets:4,reps:'12-15',note:'Amplitud'},
           {name:'Pajaros',sets:3,reps:'12-15',note:'Post. hombro'},
           {name:'Curl con barra',sets:4,reps:'8-10',note:'Bíceps'},
@@ -8822,7 +8813,6 @@ const EXERCISE_EQUIP = {
   'Elevaciones laterales': ['mancuernas','cable'],
   'Elevaciones frontales': ['mancuernas','cable'],
   'Pajaros':               ['mancuernas','cable'],
-  'Arnold press':          ['mancuernas'],
   'Encogimientos de hombros': ['barra','mancuernas'],
   // Biceps
   'Curl con barra':        ['barra'],
@@ -9004,7 +8994,6 @@ const EXERCISE_ILLUSTRATIONS = {
   'Peso muerto':                'Images/exercises/Peso muerto.png',
   'Hiperextensiones':           'Images/exercises/hiperextensiones.png',
   'Press militar':              'Images/exercises/press_militar.png',
-  'Arnold press':               'Images/exercises/press_militar.png',
   'Elevaciones laterales':      'Images/exercises/elevaciones_laterales.png',
   'Elevaciones frontales':      'Images/exercises/elevaciones_laterales.png',
   'Pajaros':                    'Images/exercises/elevaciones_laterales.png',
@@ -10061,7 +10050,7 @@ const EXERCISE_EN = {
   'Jalones con agarre neutro':'neutral grip pulldown','Pullover en polea':'cable pullover',
   'Hiperextensiones':'back extension','Press militar':'overhead press',
   'Elevaciones laterales':'lateral raise','Elevaciones frontales':'front raise',
-  'Pajaros':'rear delt fly','Arnold press':'arnold press',
+  'Pajaros':'rear delt fly',
   'Press con mancuernas sentado':'seated dumbbell press',
   'Elevaciones en polea':'cable lateral raise',
   'Encogimientos de hombros':'barbell shrug','Curl con barra':'barbell curl',
@@ -15605,8 +15594,8 @@ function renderEditorGroupChips() {
     const border = active ? (MUSCLE_GROUP_COLORS[g.key]?.color || 'var(--primary)') : 'var(--border)';
     const bg     = active ? 'var(--primary-light)' : 'var(--surface2)';
     return `<button class="erg-group-btn" data-group="${g.key}" onclick="toggleEditorGroup('${g.key}')"
-      style="padding:6px 4px;background:${bg};border:1.5px solid ${border};border-radius:10px;font-size:10px;font-weight:600;color:${color};cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s;line-height:1.2">
-      ${muscleGroupSvg(g.key, color, 26)}
+      style="padding:10px 4px;background:${bg};border:1.5px solid ${border};border-radius:12px;font-size:11px;font-weight:600;color:${color};cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;line-height:1.2">
+      ${muscleGroupSvg(g.key, color, 32)}
       <span>${g.abbr}</span>
     </button>`;
   }).join('');
@@ -16003,8 +15992,8 @@ function _renderUP() {
         var safeDN = name.replace(/"/g,'&quot;');
         var illusSrc = (typeof EXERCISE_ILLUSTRATIONS !== 'undefined' && EXERCISE_ILLUSTRATIONS[name]) || null;
         var illusHtml = illusSrc
-          ? '<img src="' + illusSrc + '" alt="" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9;border-radius:8px">'
-          : '<div style="width:48px;height:48px;flex-shrink:0"></div>';
+          ? '<img src="' + illusSrc + '" alt="" style="width:56px;height:56px;object-fit:contain;flex-shrink:0;opacity:0.9;border-radius:10px">'
+          : '<div style="width:56px;height:56px;flex-shrink:0"></div>';
         return '<div class="ex-picker-item _upExItem" data-name="' + safeDN + '" onclick="_upSelectExercise(\'' + safeN + '\')">'
           + illusHtml
           + '<span style="flex:1;min-width:0;padding:0 8px">' + name + eqPreview + '</span>'
@@ -16052,7 +16041,7 @@ function _renderUP() {
   (function() {
     var pm = document.getElementById('musclePickerMap');
     if (!pm || typeof buildMuscleMapHTML !== 'function') return;
-    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker', height: 210 });
+    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker', height: 260 });
     // Sincronizar músculo seleccionado con el grupo activo
     if (_upGroup && typeof MUSCLE_TO_CATALOG !== 'undefined') {
       Object.keys(MUSCLE_TO_CATALOG).forEach(function(mId) {
