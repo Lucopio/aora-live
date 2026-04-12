@@ -550,6 +550,37 @@ body {
   font-family: var(--font); cursor: pointer; padding: 4px 0;
   text-decoration: underline; text-underline-offset: 3px;
 }
+.wsu-section-label {
+  font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+}
+.wsu-rest-row { display: flex; gap: 8px; }
+.wsu-rest-chip {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 12px 6px; background: var(--surface2);
+  border: 2px solid var(--border); border-radius: 14px;
+  cursor: pointer; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.wsu-rest-chip.active { border-color: var(--primary); background: var(--primary-light); }
+.wsu-rest-chip:active { transform: scale(0.96); }
+.wsu-rc-val {
+  font-family: var(--mono); font-size: 22px; font-weight: 700;
+  color: var(--text-primary); line-height: 1;
+}
+.wsu-rest-chip.active .wsu-rc-val { color: var(--primary); }
+.wsu-rc-unit { font-size: 10px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+.wsu-rest-chip.active .wsu-rc-unit { color: var(--primary); opacity: 0.8; }
+.wsu-rc-desc { font-size: 9px; color: var(--text-tertiary); margin-top: 3px; text-align: center; }
+.wsu-rest-chip.active .wsu-rc-desc { color: var(--primary); opacity: 0.7; }
+.wsu-btn-add-ex {
+  flex: 1; height: 52px; background: var(--surface2); color: var(--text-secondary);
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  font-size: 14px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  -webkit-tap-highlight-color: transparent; transition: all 0.15s;
+}
+.wsu-btn-add-ex:active { transform: scale(0.97); }
 
 /* WORKOUT */
 .workout-screen {
@@ -4160,13 +4191,11 @@ body {
 <!-- Workout Setup Wizard (replaces configSheet) -->
 <div id="workoutSetupOverlay">
 
-  <!-- Header: progress dots + close -->
+  <!-- Header: 2 progress dots + close -->
   <div class="wsu-header">
     <div class="wsu-progress" id="wsuProgress">
       <div class="wsu-dot active" id="wsuDot0"></div>
       <div class="wsu-dot" id="wsuDot1"></div>
-      <div class="wsu-dot" id="wsuDot2"></div>
-      <div class="wsu-dot" id="wsuDot3"></div>
     </div>
     <button onclick="closeWorkoutSetup()" style="background:none;border:none;padding:6px;cursor:pointer;-webkit-tap-highlight-color:transparent">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--text-secondary)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -4176,23 +4205,48 @@ body {
   <!-- Steps viewport -->
   <div class="wsu-steps-wrap">
 
-    <!-- STEP 0: Nombre de sesión (opcional) -->
+    <!-- STEP 0: Configuración (nombre + grupos + descanso) -->
     <div class="wsu-step active" id="wsuStep0">
-      <div class="wsu-step-title">¿Cómo llamamos esta sesión?</div>
-      <div class="wsu-step-sub">Ponle un nombre para encontrarla fácil en tu historial.</div>
-      <input class="wsu-name-input" id="wsuNameInput" type="text" maxlength="40"
-        placeholder="Ej: Piernas pesado, Push day..."
-        oninput="document.getElementById('wsuStep0NamePreview').textContent=this.value||'Sin nombre'">
-      <div style="margin-top:12px;font-size:12px;color:var(--text-tertiary)">
-        Vista previa: <span id="wsuStep0NamePreview" style="color:var(--primary);font-weight:600">Sin nombre</span>
-      </div>
-    </div>
+      <div class="wsu-step-title">¿Qué vas a entrenar hoy?</div>
 
-    <!-- STEP 1: Grupos musculares -->
-    <div class="wsu-step" id="wsuStep1">
-      <div class="wsu-step-title">¿Qué vas a trabajar?</div>
-      <div class="wsu-step-sub">Puedes elegir varios grupos musculares.</div>
-      <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+      <!-- Nombre de sesión (opcional) -->
+      <input class="wsu-name-input" id="wsuNameInput" type="text" maxlength="40"
+        placeholder="Nombre de la sesión (opcional)…" style="margin-bottom:20px">
+
+      <!-- Grupos musculares -->
+      <div class="wsu-section-label">Grupo muscular</div>
+      <div id="configGroupGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px"></div>
+
+      <!-- Descanso entre series — 3 chips compactos -->
+      <div class="wsu-section-label">Descanso entre series</div>
+      <div id="configRestPresets" class="wsu-rest-row">
+        <button class="wsu-rest-chip" data-val="90" data-rest="90" onclick="wsuSelectRest(this,90)">
+          <span class="wsu-rc-val">90</span>
+          <span class="wsu-rc-unit">seg</span>
+          <span class="wsu-rc-desc">Hipertrofia</span>
+        </button>
+        <button class="wsu-rest-chip active" data-val="120" data-rest="120" onclick="wsuSelectRest(this,120)">
+          <span class="wsu-rc-val">120</span>
+          <span class="wsu-rc-unit">seg</span>
+          <span class="wsu-rc-desc">Estándar</span>
+        </button>
+        <button class="wsu-rest-chip" data-val="180" data-rest="180" onclick="wsuSelectRest(this,180)">
+          <span class="wsu-rc-val">180</span>
+          <span class="wsu-rc-unit">seg</span>
+          <span class="wsu-rc-desc">Fuerza</span>
+        </button>
+      </div>
+      <!-- Hint de descanso por grupo -->
+      <div id="configRestLabel" style="font-size:11px;color:var(--primary);margin-top:8px;min-height:14px"></div>
+      <!-- Smart rest info — visible cuando 2+ grupos seleccionados -->
+      <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-top:10px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente</span>
+        </div>
+        <div id="configSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
+        <button onclick="toggleConfigFixedRest()" id="configFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
+      </div>
       <!-- Sugerencia de rutina del mismo día -->
       <div id="routineSuggestBanner" style="display:none;margin-top:16px">
         <div class="routine-suggest">
@@ -4204,71 +4258,28 @@ body {
           </div>
         </div>
       </div>
+      <!-- Hidden: customRestInput required by existing rest logic -->
+      <input id="customRestInput" type="number" value="120" min="10" max="600" style="display:none">
     </div>
 
-    <!-- STEP 2: Tiempo de descanso -->
-    <div class="wsu-step" id="wsuStep2">
-      <div class="wsu-step-title">Tiempo de descanso</div>
-      <div class="wsu-step-sub" id="configRestLabel">Elige el descanso entre series.</div>
-      <!-- Smart rest info — visible cuando 2+ grupos -->
-      <div id="configSmartRestInfo" style="display:none;background:var(--primary-light);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span style="font-size:12px;font-weight:700;color:var(--primary)">Descanso inteligente activado</span>
-        </div>
-        <div id="configSmartRestDetail" style="font-size:11px;color:var(--text-secondary);line-height:1.7"></div>
-        <button onclick="toggleConfigFixedRest()" id="configFixedRestBtn" style="margin-top:8px;background:none;border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font)">Prefiero tiempo fijo</button>
-      </div>
-      <!-- Rest tiles 2×2 -->
-      <div id="configRestPresets">
-        <div class="wsu-rest-grid">
-          <button class="wsu-rest-tile preset-btn" onclick="wsuSelectRest(this,60)">
-            <span class="wsu-rest-val">60</span>
-            <span class="wsu-rest-unit">segundos</span>
-            <span class="wsu-rest-desc">Cardio / resistencia</span>
-          </button>
-          <button class="wsu-rest-tile preset-btn" onclick="wsuSelectRest(this,90)">
-            <span class="wsu-rest-val">90</span>
-            <span class="wsu-rest-unit">segundos</span>
-            <span class="wsu-rest-desc">Hipertrofia ligera</span>
-          </button>
-          <button class="wsu-rest-tile preset-btn active" onclick="wsuSelectRest(this,120)">
-            <span class="wsu-rest-val">120</span>
-            <span class="wsu-rest-unit">segundos</span>
-            <span class="wsu-rest-desc">Hipertrofia estándar</span>
-          </button>
-          <button class="wsu-rest-tile preset-btn" onclick="wsuSelectRest(this,180)">
-            <span class="wsu-rest-val">180</span>
-            <span class="wsu-rest-unit">segundos</span>
-            <span class="wsu-rest-desc">Fuerza / pesado</span>
-          </button>
-        </div>
-        <div class="custom-input-row">
-          <label>Personalizado:</label>
-          <input class="custom-input" id="customRestInput" type="number" value="120" min="10" max="600">
-          <label>seg</label>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 3: Ejercicios -->
-    <div class="wsu-step" id="wsuStep3" style="padding:0;overflow:hidden">
+    <!-- STEP 1: Ejercicios (picker full-screen con body map) -->
+    <div class="wsu-step" id="wsuStep1" style="padding:0;overflow:hidden">
       <div id="wsuExPickerContainer" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden"></div>
     </div>
 
   </div><!-- /wsu-steps-wrap -->
 
-  <!-- Footer navigation -->
+  <!-- Footer -->
   <div class="wsu-footer" id="wsuFooter">
     <button class="wsu-btn-back" id="wsuBtnBack" onclick="workoutSetupBack()" style="display:none">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--text-primary)" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <button class="wsu-btn-next" id="wsuBtnNext" onclick="workoutSetupNext()">
-      Siguiente
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    <button class="wsu-btn-add-ex" id="wsuBtnAddEx" onclick="workoutSetupNext()">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Agregar ejercicios
     </button>
-    <button class="wsu-btn-start" id="wsuBtnStart" onclick="wsuStartWorkout()" style="display:none" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    <button class="wsu-btn-start" id="wsuBtnStart" onclick="wsuStartWorkout()" ontouchstart="handleStartBtnTouchStart(event)" ontouchend="handleStartBtnTouchEnd(event)" ontouchcancel="cancelStartLongPress()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Comenzar
     </button>
   </div>
@@ -6637,10 +6648,7 @@ function renderConfigGroups() {
   const smartInfo = document.getElementById('configSmartRestInfo');
   if (smartInfo) smartInfo.style.display = 'none';
   const presets = document.getElementById('configRestPresets');
-  if (presets) presets.style.display = 'block';
-  // Ocultar paso 2 (descanso) — se revela al seleccionar grupo
-  const step2 = document.getElementById('configStep2');
-  if (step2) step2.style.maxHeight = '0';
+  if (presets) presets.style.display = 'flex';
   _renderConfigGroupChips();
 }
 
@@ -6669,28 +6677,22 @@ function selectConfigGroup(group) {
   const presets = document.getElementById('configRestPresets');
   const fixedBtn = document.getElementById('configFixedRestBtn');
 
-  // Update wizard Next button state (step 1 requires ≥1 group)
-  _wsuUpdateNextBtn(1);
-
   if (count === 0) {
     if (label) label.textContent = '';
     if (smartInfo) smartInfo.style.display = 'none';
-    if (presets) presets.style.display = 'block';
+    if (presets) presets.style.display = 'flex';
     window._userOverrodeRest = false;
   } else if (count === 1) {
     // Single group — suggest fixed rest
     const suggested = REST_BY_MUSCLE_GROUP[group] || 90;
     restSeconds = suggested;
     window._userOverrodeRest = false;
-    const presetVals = [60, 90, 120, 180];
-    document.querySelectorAll('.preset-btn').forEach((b, i) => {
-      b.classList.toggle('active', presetVals[i] === suggested);
-    });
+    _syncRestChips(suggested);
     const ci = document.getElementById('customRestInput');
     if (ci) ci.value = suggested;
     if (label) label.textContent = `Descanso sugerido para ${group}: ${suggested}s`;
     if (smartInfo) smartInfo.style.display = 'none';
-    if (presets) presets.style.display = 'block';
+    if (presets) presets.style.display = 'flex';
   } else {
     // Multi-group — smart rest mode
     window._userOverrodeRest = false;
@@ -6701,7 +6703,7 @@ function selectConfigGroup(group) {
     if (label) label.textContent = '';
     if (smartInfo) smartInfo.style.display = 'block';
     if (fixedBtn) fixedBtn.textContent = 'Prefiero tiempo fijo';
-    if (presets) presets.style.display = 'none'; // hidden by default in smart mode
+    if (presets) presets.style.display = 'none'; // hidden in smart mode
   }
 }
 
@@ -6711,7 +6713,7 @@ function toggleConfigFixedRest() {
   const label   = document.getElementById('configRestLabel');
   if (!presets) return;
   if (presets.style.display === 'none') {
-    presets.style.display = 'block';
+    presets.style.display = 'flex';
     if (btn) btn.textContent = 'Usar descanso inteligente';
     if (label) label.textContent = 'Tiempo fijo para toda la sesión:';
     window._userOverrodeRest = true;
@@ -6732,12 +6734,16 @@ function openWorkoutSetup() {
   suggestRoutineForToday();
   const ni = document.getElementById('wsuNameInput');
   if (ni) ni.value = '';
-  const np = document.getElementById('wsuStep0NamePreview');
-  if (np) np.textContent = 'Sin nombre';
+  // Reset rest chips to default (120s)
+  _syncRestChips(120);
+  restSeconds = 120;
+  const ci = document.getElementById('customRestInput');
+  if (ci) ci.value = 120;
+  window._userOverrodeRest = false;
   const ov = document.getElementById('workoutSetupOverlay');
   if (ov) ov.classList.add('active');
-  // Instant — no animation on open
-  for (let i = 0; i < 4; i++) {
+  // Instant show — no animation on open
+  for (let i = 0; i < 2; i++) {
     const s = document.getElementById('wsuStep' + i);
     if (s) s.classList.remove('active', 'exit-left');
   }
@@ -6756,15 +6762,12 @@ function _wsuGoToStep(target) {
   const prev = _wsuCurrentStep;
   const forward = target > prev;
 
-  // Exit current step
   const prevEl = document.getElementById('wsuStep' + prev);
   if (prevEl) {
     prevEl.classList.remove('active');
     if (forward) prevEl.classList.add('exit-left');
-    // backward: no class — step naturally sits at translateX(40px) = slides right
   }
 
-  // Enter new step (tiny delay so CSS transition triggers)
   setTimeout(() => {
     const nextEl = document.getElementById('wsuStep' + target);
     if (nextEl) {
@@ -6778,13 +6781,11 @@ function _wsuGoToStep(target) {
   _wsuUpdateDots(target);
   _wsuUpdateFooter(target);
 
-  if (target === 3) {
-    setTimeout(() => _wsuRenderExPicker(), 50);
-  }
+  if (target === 1) setTimeout(() => _wsuRenderExPicker(), 50);
 }
 
 function _wsuUpdateDots(step) {
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 2; i++) {
     const dot = document.getElementById('wsuDot' + i);
     if (!dot) continue;
     dot.classList.remove('active', 'done');
@@ -6795,41 +6796,31 @@ function _wsuUpdateDots(step) {
 
 function _wsuUpdateFooter(step) {
   const backBtn  = document.getElementById('wsuBtnBack');
-  const nextBtn  = document.getElementById('wsuBtnNext');
-  const startBtn = document.getElementById('wsuBtnStart');
-  if (backBtn)  backBtn.style.display  = step > 0   ? 'flex' : 'none';
-  if (step === 3) {
-    if (nextBtn)  nextBtn.style.display  = 'none';
-    if (startBtn) startBtn.style.display = 'flex';
-  } else {
-    if (nextBtn)  nextBtn.style.display  = 'flex';
-    if (startBtn) startBtn.style.display = 'none';
-    _wsuUpdateNextBtn(step);
-  }
-}
-
-function _wsuUpdateNextBtn(step) {
-  const btn = document.getElementById('wsuBtnNext');
-  if (!btn) return;
-  // Step 1 requires ≥1 group
-  btn.disabled = (step === 1 && (window._configSelectedGroups || []).length === 0);
+  const addExBtn = document.getElementById('wsuBtnAddEx');
+  if (backBtn)  backBtn.style.display  = step === 1 ? 'flex' : 'none';
+  if (addExBtn) addExBtn.style.display = step === 0 ? 'flex' : 'none';
 }
 
 function workoutSetupNext() {
-  if (_wsuCurrentStep < 3) _wsuGoToStep(_wsuCurrentStep + 1);
+  if (_wsuCurrentStep === 0) _wsuGoToStep(1);
 }
 
 function workoutSetupBack() {
-  if (_wsuCurrentStep > 0) _wsuGoToStep(_wsuCurrentStep - 1);
+  if (_wsuCurrentStep === 1) _wsuGoToStep(0);
 }
 
 function wsuSelectRest(btn, seconds) {
-  document.querySelectorAll('.wsu-rest-tile').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  _syncRestChips(seconds);
   restSeconds = seconds;
   const ci = document.getElementById('customRestInput');
   if (ci) ci.value = seconds;
   window._userOverrodeRest = true;
+}
+
+function _syncRestChips(seconds) {
+  document.querySelectorAll('.wsu-rest-chip').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.rest) === seconds);
+  });
 }
 
 function wsuStartWorkout() {
