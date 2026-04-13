@@ -1118,7 +1118,16 @@ body {
 .re-btn-save:disabled { opacity:0.35;cursor:not-allowed; }
 .re-step-title { font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:6px;letter-spacing:-0.5px; }
 .re-step-sub { font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5; }
-.re-added-bar { padding:8px 12px 0;border-bottom:1px solid var(--border);flex-shrink:0;max-height:180px;overflow-y:auto; }
+.re-added-bar { padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap; }
+.re-added-bar::-webkit-scrollbar { height:3px; }
+.re-added-bar::-webkit-scrollbar-thumb { background:var(--border);border-radius:9999px; }
+.re-ex-chip { display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-full);padding:5px 6px 5px 10px;font-size:12px;white-space:nowrap;margin-right:6px;vertical-align:middle; }
+.re-ex-chip-name { font-weight:600;color:var(--text-primary);max-width:100px;overflow:hidden;text-overflow:ellipsis; }
+.re-ex-chip-sets { display:inline-flex;align-items:center;gap:3px;margin-left:4px; }
+.re-ex-chip-sets button { width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface-raised);color:var(--text-primary);font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0; }
+.re-ex-chip-sets button:active { background:var(--primary-light);border-color:var(--primary);color:var(--primary); }
+.re-ex-chip-sets-count { font-size:11px;font-weight:700;color:var(--primary);min-width:14px;text-align:center; }
+.re-ex-chip-rm { width:18px;height:18px;border-radius:50%;border:none;background:var(--danger-light);color:var(--danger);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;flex-shrink:0; }
 
 /* ROUTINE EDITOR */
 #routineEditorOverlay {
@@ -4666,6 +4675,7 @@ body {
 
     <!-- STEP 2 — Selección de ejercicios -->
     <div class="re-step" id="reStep2" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+      <!-- Chips de ejercicios añadidos — scroll horizontal, altura fija ~44px -->
       <div class="re-added-bar" id="reAddedBar" style="display:none;">
         <div id="editorExerciseList"></div>
       </div>
@@ -15716,24 +15726,19 @@ function renderEditorExercises() {
     return;
   }
   if (bar) bar.style.display = 'block';
+  // Chips horizontales: 1 línea, scroll lateral → no tapan el picker
   list.innerHTML = _editorExercises.map((ex, i) => `
-    <div class="editor-exercise-row" data-idx="${i}">
-      <div class="drag-handle" data-drag="${i}" onmousedown="_dragStart(event,${i})" ontouchstart="_dragStart(event,${i})">
-        <span></span><span></span><span></span>
-      </div>
-      <div class="editor-exercise-name">${ex.name}${ex.equipment ? '<span style="color:var(--text-tertiary);font-size:11px;margin-left:4px">\u00b7 '+ex.equipment+'</span>' : ''}</div>
-      <div class="sets-stepper">
-        <button onclick="changeEditorSets(${i}, -1)">−</button>
-        <div>
-          <div class="sets-count">${ex.sets}</div>
-          <div class="sets-label">series</div>
-        </div>
-        <button onclick="changeEditorSets(${i}, 1)">+</button>
-      </div>
-      <button class="editor-remove-btn" onclick="removeEditorExercise(${i})">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <span class="re-ex-chip">
+      <span class="re-ex-chip-name" title="${ex.name}">${ex.name}</span>
+      <span class="re-ex-chip-sets">
+        <button onclick="changeEditorSets(${i},-1)">−</button>
+        <span class="re-ex-chip-sets-count">${ex.sets}</span>
+        <button onclick="changeEditorSets(${i},1)">+</button>
+      </span>
+      <button class="re-ex-chip-rm" onclick="removeEditorExercise(${i})" title="Quitar">
+        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-    </div>`).join('');
+    </span>`).join('');
   onEditorNameInput();
 }
 
