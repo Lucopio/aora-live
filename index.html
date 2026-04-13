@@ -13958,20 +13958,20 @@ async function syncFromCloud() {
       document.getElementById('restIdleSeconds').textContent = restSeconds;
       document.getElementById('toggleSound').classList.toggle('on', soundEnabled);
       document.getElementById('toggleVibration').classList.toggle('on', vibrationEnabled);
-      // Cargar datos de perfil personal
+      // Cargar datos de perfil personal — nube gana cuando tiene datos; local gana cuando nube es null
       userProfile = {
-        full_name:        profile.full_name        || null,
-        nickname:         profile.nickname         || localStorage.getItem('gymtracker_nickname') || null,
-        age:              profile.age              || null,
-        sex:              profile.sex              || null,
-        body_weight:      profile.body_weight      || null,
-        body_weight_unit: profile.body_weight_unit || 'kg',
-        height_cm:        profile.height_cm        || null,
-        training_days:    profile.training_days    || null,
-        experience:       profile.experience       || null,
-        training_goal:    profile.training_goal    || null,
-        activity_level:   profile.activity_level   || null,
-        onboarding_done:  profile.onboarding_done  || userProfile.onboarding_done || false
+        full_name:        profile.full_name        || userProfile.full_name        || null,
+        nickname:         profile.nickname         || userProfile.nickname         || localStorage.getItem('gymtracker_nickname') || null,
+        age:              profile.age              || userProfile.age              || null,
+        sex:              profile.sex              || userProfile.sex              || null,
+        body_weight:      profile.body_weight      || userProfile.body_weight      || null,
+        body_weight_unit: profile.body_weight_unit || userProfile.body_weight_unit || 'kg',
+        height_cm:        profile.height_cm        || userProfile.height_cm        || null,
+        training_days:    profile.training_days    || userProfile.training_days    || null,
+        experience:       profile.experience       || userProfile.experience       || null,
+        training_goal:    profile.training_goal    || userProfile.training_goal    || null,
+        activity_level:   profile.activity_level   || userProfile.activity_level   || null,
+        onboarding_done:  profile.onboarding_done  || userProfile.onboarding_done  || false
       };
       updateProfileUI();
       // Restaurar coach seleccionado desde Supabase si localStorage está vacío
@@ -14479,7 +14479,7 @@ async function obcActivatePlan() {
       await sb.from('profiles').upsert({
         id: currentUser.id,
         full_name: _obcData.nickname,
-        nickname: _obcData.nickname,
+        // nickname no existe como columna en la tabla — se guarda solo en localStorage
         age: _obcData.age,
         sex: _obcData.sex,
         body_weight: _obcData.weight,
@@ -14964,9 +14964,11 @@ async function obSave() {
     saveToStorage();
 
     // Save to Supabase if user is logged in
+    // Note: spread userProfile but exclude 'nickname' — column doesn't exist in profiles table
     if (currentUser && sb) {
       try {
-        await sb.from('profiles').upsert({ id: currentUser.id, ...userProfile });
+        const { nickname: _nick, ...profileForCloud } = userProfile;
+        await sb.from('profiles').upsert({ id: currentUser.id, ...profileForCloud });
       } catch(e) {
         console.error('Profile save to Supabase:', e);
       }
