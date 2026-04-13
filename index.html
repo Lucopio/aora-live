@@ -8977,7 +8977,7 @@ function _uniExItemHtml(name, equip) {
 
 // ─── Exercise Illustration Map ───────────────────────────────
 const EXERCISE_ILLUSTRATIONS = {
-  'Press de banca':             'Images/exercises/press_banca.png',
+  'Press de banca':             'Images/exercises/Press_banca.png',
   'Press inclinado':            'Images/exercises/press_inclinado.png',
   'Press declinado':            'Images/exercises/press_declinado.png',
   'Aperturas':                  'Images/exercises/aperturas.png',
@@ -8990,46 +8990,58 @@ const EXERCISE_ILLUSTRATIONS = {
   'Remo con barra':             'Images/exercises/remo_con_barra.png',
   'Remo con mancuerna':         'Images/exercises/remo_mancuerna.png',
   'Remo en maquina':            'Images/exercises/remo_maquina.png',
-  'Remo en T':                  'Images/exercises/remo_con_barra.png',
+  'Remo en T':                  'Images/exercises/remo_t.png',
   'Peso muerto':                'Images/exercises/Peso muerto.png',
   'Hiperextensiones':           'Images/exercises/hiperextensiones.png',
   'Press militar':              'Images/exercises/press_militar.png',
+  'Arnold press':               'Images/exercises/press_militar.png',
   'Elevaciones laterales':      'Images/exercises/elevaciones_laterales.png',
   'Elevaciones frontales':      'Images/exercises/elevaciones_laterales.png',
-  'Pajaros':                    'Images/exercises/elevaciones_laterales.png',
+  'Pajaros':                    'Images/exercises/pajaros.png',
+  'Encogimientos de hombros':   'Images/exercises/encogimientos.png',
   'Curl con barra':             'Images/exercises/curl_de_biceps.png',
   'Curl con mancuernas':        'Images/exercises/curl_de_biceps.png',
   'Curl martillo':              'Images/exercises/curl_martillo.png',
   'Curl concentrado':           'Images/exercises/curl_concentrado.png',
-  'Curl en polea':              'Images/exercises/curl_de_biceps.png',
+  'Curl en polea':              'Images/exercises/curl_polea.png',
   'Curl inclinado':             'Images/exercises/curl_inclinado.png',
-  'Curl en banca Scott':        'Images/exercises/curl_de_biceps.png',
+  'Curl en banca Scott':        'Images/exercises/curl_scott.png',
+  'Extension en polea alta':    'Images/exercises/extension_polea.png',
   'Press frances':              'Images/exercises/Press_frances.png',
-  'Fondos de triceps':          'Images/exercises/fondos_en_paralelas.png',
+  'Patada de triceps':          'Images/exercises/patada_triceps.png',
+  'Fondos de triceps':          'Images/exercises/fondos_triceps.png',
+  'Extension con mancuerna':    'Images/exercises/extension_mancuerna.png',
   'Press cerrado':              'Images/exercises/press_cerrado.png',
+  'Overhead en polea':          'Images/exercises/overhead_polea.png',
   'Sentadilla':                 'Images/exercises/sentadilla.png',
   'Sentadilla bulgara':         'Images/exercises/sentadilla_bulgara.png',
   'Sentadilla sumo':            'Images/exercises/sentadilla_sumo.png',
   'Prensa de piernas':          'Images/exercises/prensa_piernas.png',
   'Extension de cuadriceps':    'Images/exercises/extension_cuadriceps.png',
   'Curl de femoral':            'Images/exercises/curl_femoral.png',
-  'Peso muerto rumano':         'Images/exercises/Peso muerto.png',
+  'Peso muerto rumano':         'Images/exercises/peso_muerto_rumano.png',
   'Zancadas':                   'Images/exercises/zancada.png',
+  'Elevacion de gemelos':       'Images/exercises/gemelos.png',
   'Hip thrust':                 'Images/exercises/hip_thrust.png',
-  'Abductores en maquina':      'Images/exercises/extension_cuadriceps.png',
-  'Aductores en maquina':       'Images/exercises/extension_cuadriceps.png',
+  'Abductores en maquina':      'Images/exercises/abductores.png',
+  'Aductores en maquina':       'Images/exercises/abductores.png',
+  'Step-up':                    'Images/exercises/step_up.png',
   'Puente de gluteo':           'Images/exercises/hip_thrust.png',
+  'Patada de gluteo en polea':  'Images/exercises/patada_gluteo.png',
   'Peso muerto a una pierna':   'Images/exercises/peso_muerto_una_pierna.png',
   'Abduccion con banda':        'Images/exercises/abduccion_banda.png',
   'Plancha':                    'Images/exercises/plancha.png',
   'Plancha lateral':            'Images/exercises/Plancha lateral.png',
   'Crunch':                     'Images/exercises/crunch.png',
+  'Elevacion de piernas':       'Images/exercises/elevacion_piernas.png',
   'Rueda abdominal':            'Images/exercises/rueda_abdominal.png',
   'Russian twist':              'Images/exercises/russian_twist.png',
   'Crunch en polea':            'Images/exercises/crunch_en_polea.png',
   'Mountain climbers':          'Images/exercises/mountain_climbers.png',
   'Hollow hold':                'Images/exercises/hollow_hold.png',
+  'Dragon flag':                'Images/exercises/dragon_flag.png',
   'Burpees':                    'Images/exercises/burpee.png',
+  'Face pull':                  'Images/exercises/face_pull.png',
 };
 
 function exerciseRowHtml(item, equips) {
@@ -13360,6 +13372,19 @@ function loadFromStorage() {
       if (obRoutine) currentSelectedRoutine = obRoutine;
     }
   } catch(e) {}
+
+  // Recuperación de rutinas: si la clave fue borrada por completo (localStorage.clear),
+  // restaurar desde el backup. Si el usuario borró sus rutinas manualmente, la clave
+  // existe como '[]' y NO se restaura.
+  try {
+    if (localStorage.getItem('aora_routines') === null) {
+      const bak = localStorage.getItem('aora_routines_bak');
+      if (bak && bak !== '[]') {
+        localStorage.setItem('aora_routines', bak);
+        console.info('[Recovery] aora_routines restaurado desde backup');
+      }
+    }
+  } catch(e) {}
 }
 
 function updateHomeStats() {
@@ -13531,7 +13556,7 @@ function initSupabase() {
                 body_weight: p.body_weight||null, body_weight_unit: p.body_weight_unit||'kg',
                 height_cm: p.height_cm||null, training_days: p.training_days||null,
                 experience: p.experience||null, training_goal: p.training_goal||null,
-                activity_level: p.activity_level||null, onboarding_done: p.onboarding_done||false
+                activity_level: p.activity_level||null, onboarding_done: p.onboarding_done || userProfile.onboarding_done || false
               };
               updateProfileUI();
             }
@@ -13946,7 +13971,7 @@ async function syncFromCloud() {
         experience:       profile.experience       || null,
         training_goal:    profile.training_goal    || null,
         activity_level:   profile.activity_level   || null,
-        onboarding_done:  profile.onboarding_done  || false
+        onboarding_done:  profile.onboarding_done  || userProfile.onboarding_done || false
       };
       updateProfileUI();
       // Restaurar coach seleccionado desde Supabase si localStorage está vacío
@@ -14991,6 +15016,7 @@ async function obSave() {
 function skipOnboarding() {
   if (currentUser && sb) sb.from('profiles').upsert({ id: currentUser.id, onboarding_done: true });
   userProfile.onboarding_done = true;
+  saveToStorage(); // persist so the flag survives syncFromCloud overwrite
   showScreen('home');
 
   // E5: Activate tutorial mode for first-time users
@@ -15183,6 +15209,10 @@ function _getLocalRoutines() {
 }
 function _saveLocalRoutines(routines) {
   localStorage.setItem(ROUTINES_LS_KEY, JSON.stringify(routines));
+  // Shadow backup: keep last known non-empty state so data survives accidental clears
+  if (routines.length > 0) {
+    try { localStorage.setItem(ROUTINES_LS_KEY + '_bak', JSON.stringify(routines)); } catch(e) {}
+  }
 }
 
 function _renderRoutineCards(routines) {
