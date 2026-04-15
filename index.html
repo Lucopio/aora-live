@@ -15587,7 +15587,7 @@ function _reRenderPicker() {
     _editorExercises.push({ name: name, equipment: equip || '', sets: 3 });
     renderEditorExercises();
     showToast('✓ ' + name + (equip ? ' · ' + equip : '') + ' añadido', 'success');
-  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 240 });
+  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 0 });
 }
 // ─────────────────────────────────────────────────────────────
 
@@ -16065,8 +16065,8 @@ function _renderUP() {
     + '<div style="font-size:16px;font-weight:700;color:var(--text-primary)">' + title + '</div>'
     + closeBtn
     + '</div>'
-    + '<div id="musclePickerMap" style="padding:0 8px 2px;flex-shrink:0"></div>'
-    + '<div style="padding:0 16px 8px;flex-shrink:0;text-align:center"><span style="font-size:10px;color:var(--text-tertiary);letter-spacing:0.03em">Toca un músculo para filtrar ejercicios</span></div>'
+    + (_upOpts.muscleMapHeight === 0 ? '' : '<div id="musclePickerMap" style="padding:0 8px 2px;flex-shrink:0"></div>')
+    + (_upOpts.muscleMapHeight === 0 ? '' : '<div style="padding:0 16px 8px;flex-shrink:0;text-align:center"><span style="font-size:10px;color:var(--text-tertiary);letter-spacing:0.03em">Toca un músculo para filtrar ejercicios</span></div>')
     + '<div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">' + chipHtml + '</div>'
     + '<input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026" value="' + _upSearch.replace(/"/g,'&quot;') + '" oninput="_upDoSearch(this.value)" style="flex-shrink:0">'
     + customHtml
@@ -16081,7 +16081,7 @@ function _renderUP() {
   // Inyectar muscle map en el picker (4C)
   (function() {
     var pm = document.getElementById('musclePickerMap');
-    if (!pm || typeof buildMuscleMapHTML !== 'function') return;
+    if (!pm || typeof buildMuscleMapHTML !== 'function' || _upOpts.muscleMapHeight === 0) return;
     pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker', height: (_upOpts.muscleMapHeight || 260) });
     // Sincronizar músculo seleccionado con el grupo activo
     if (_upGroup && typeof MUSCLE_TO_CATALOG !== 'undefined') {
