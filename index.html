@@ -4879,6 +4879,28 @@ function saveSelectedCoach(id) {
 
 // ─── COACH ALERTS SYSTEM ─────────────────────────────────────────────────────
 const COACH_ALERTS = {
+  heavySetTransition: {
+    maria: [
+      "¡Ese set estuvo durísimo! 🔥 Tómate 3 minutos antes del siguiente ejercicio — tu cuerpo lo necesita para rendir al 100%.",
+      "Con ese RPE tan alto necesitas una transición completa. 3 minuticos y arrancamos con el siguiente. ¡Lo estás dando todo!",
+      "Eso fue intenso 💪 No apresures el cambio de ejercicio. 180 segundos de recuperación real y seguimos fuertes."
+    ],
+    carlos: [
+      "Series >3 con RPE alto detectadas. Descanso de transición: 180s. Respetar este tiempo preserva el rendimiento en el siguiente ejercicio.",
+      "Carga acumulada alta. 3 minutos de transición para recuperar fosfocreatina y SNC. No negociable si quieres mantener intensidad.",
+      "Con RPE >7 en múltiples series, el SNC necesita 3 min para recuperarse. Ejecuta el descanso."
+    ],
+    andrea: [
+      "Ese bloque fue exigente. Antes de pasar al siguiente ejercicio, darte 3 minutos no es perder el tiempo — es respetar lo que acabás de hacer. 🌿",
+      "Tu cuerpo acaba de trabajar duro. Honralo con una transición completa. 3 minutos, respirá, y el siguiente ejercicio será mucho mejor.",
+      "Sentí la intensidad de ese set. Tomá este tiempo — tu siguiente ejercicio te lo va a agradecer."
+    ],
+    diego: [
+      "Trabajo pesado. 3 minutos. El que respeta la recuperación construye fuerza real.",
+      "Eso fue exigente. La transición no es debilidad — es parte del método. 180 segundos.",
+      "Series intensas completadas. Respeta el descanso. El próximo ejercicio será mejor por esto."
+    ]
+  },
   hydration: {
     maria: [
       "¡Ey! ¿Cuándo tomaste agua por última vez? 💧 Cada 15-20 min es clave, parcera. El rendimiento baja antes de que sientas sed.",
@@ -6943,6 +6965,19 @@ function getSmartRestSeconds() {
   }
   return REST_BY_MUSCLE_GROUP[group] || restSeconds;
 }
+// Calcula el descanso de TRANSICIÓN entre ejercicios según RPE y series completadas.
+// Basado en Grgic et al. (2017): >3 series con RPE >7 requieren 180s para recuperar ATP/fosfocreatina.
+// Retorna { seconds, isHeavy } — isHeavy=true activa mensaje del coach.
+function _calcTransitionRest(sets, baseRest) {
+  const workSets = (sets || []).filter(s => !s.is_warmup_set);
+  if (workSets.length === 0) return { seconds: Math.max(90, baseRest + 30), isHeavy: false };
+  const rpeValues = workSets.map(s => s.rpe).filter(r => r != null && r > 0);
+  const avgRpe = rpeValues.length > 0 ? rpeValues.reduce((a, b) => a + b, 0) / rpeValues.length : 0;
+  const setCount = workSets.length;
+  if (setCount > 3 && avgRpe > 7) return { seconds: 180, isHeavy: true };
+  if (setCount > 3 && avgRpe >= 5) return { seconds: 120, isHeavy: false };
+  return { seconds: Math.max(90, baseRest + 30), isHeavy: false };
+}
 
 // Abandon workout flow
 function showAbandonConfirm() {
@@ -7471,9 +7506,18 @@ function launchWorkout() {
   } else {
     showScreen('workout');
   }
-  // Descanso de transición post-calentamiento: el usuario acaba de calentar y necesita
-  // recuperarse antes de la primera serie. El timer corre aunque el catálogo esté abierto.
-  if (warmupDuration > 0) startRestTimer();
+  // Descanso de transición post-calentamiento: máximo 120s independientemente del grupo muscular.
+  // Más de 120s empieza a disipar el efecto térmico del calentamiento.
+  if (warmupDuration > 0) {
+    const _savedRest = restSeconds;
+    restSeconds = Math.min(restSeconds, 120);
+    startRestTimer();
+    restSeconds = _savedRest;
+    setTimeout(() => {
+      const sub = document.getElementById('restSub');
+      if (sub) sub.textContent = `Post-calentamiento · Listo para la primera serie`;
+    }, 100);
+  }
 
   // Alert if user skipped warmup
   if (warmupDuration === 0 && !warmupAlertFired) {
@@ -9864,7 +9908,7 @@ function nextExercise() {
     const baseRest = window._userOverrodeRest
       ? restSeconds
       : (REST_BY_MUSCLE_GROUP[group] || restSeconds);
-    const transitionRest = Math.max(90, baseRest + 30);
+    const { seconds: transitionRest, isHeavy } = _calcTransitionRest(currentExerciseSets, baseRest);
     const _savedRest = restSeconds;
     restSeconds = transitionRest;
     startRestTimer();
@@ -9873,6 +9917,10 @@ function nextExercise() {
       const sub = document.getElementById('restSub');
       if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
     }, 100);
+    // Coach alerta solo si fue exigente Y no hay otro toast de setFeedback pendiente
+    if (isHeavy && !window._pendingSetFeedbackMsg) {
+      setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
+    }
   }
 
   // No cancelar el descanso: el timer es global a la sesión y debe persistir entre ejercicios.
