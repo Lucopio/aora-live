@@ -1241,6 +1241,8 @@ body {
   font-size: 14px; color: var(--text-primary); outline: none; width: calc(100% - 32px); box-sizing: border-box;
 }
 .ex-picker-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px; }
+/* En el editor de rutinas, la lista siempre tiene al menos 130px */
+#reExPickerContainer .ex-picker-list { min-height: 130px; }
 .ex-picker-group-title {
   font-size: 10px; font-weight: 700; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: 1px; padding: 10px 0 6px;
@@ -15587,7 +15589,7 @@ function _reRenderPicker() {
     _editorExercises.push({ name: name, equipment: equip || '', sets: 3 });
     renderEditorExercises();
     showToast('✓ ' + name + (equip ? ' · ' + equip : '') + ' añadido', 'success');
-  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 110, largeItems: true });
+  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 260, largeItems: true });
 }
 // ─────────────────────────────────────────────────────────────
 
@@ -16088,7 +16090,7 @@ function _renderUP() {
     + '<div style="font-size:16px;font-weight:700;color:var(--text-primary)">' + title + '</div>'
     + closeBtn
     + '</div>'
-    + (_upOpts.muscleMapHeight === 0 ? '' : '<div id="musclePickerMap" style="padding:0 8px 2px;flex-shrink:0"></div>')
+    + (_upOpts.muscleMapHeight === 0 ? '' : '<div id="musclePickerMap" style="padding:0 8px 2px;flex-shrink:' + (_upOpts.largeItems ? '1' : '0') + ';min-height:' + (_upOpts.largeItems ? '120px' : '0') + '"></div>')
     + (_upOpts.muscleMapHeight === 0 || _upOpts.largeItems ? '' : '<div style="padding:0 16px 8px;flex-shrink:0;text-align:center"><span style="font-size:10px;color:var(--text-tertiary);letter-spacing:0.03em">Toca un músculo para filtrar ejercicios</span></div>')
     + '<div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">' + chipHtml + '</div>'
     + '<input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026" value="' + _upSearch.replace(/"/g,'&quot;') + '" oninput="_upDoSearch(this.value)" style="flex-shrink:0">'
