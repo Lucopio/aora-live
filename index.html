@@ -1894,38 +1894,45 @@ body {
 }
 .ws1-sub strong { color: rgba(255,255,255,.78); }
 
+/* Spacer flexible — absorbe el espacio sobrante entre secciones */
+.ws1-spacer { flex: 1; min-height: 6px; max-height: 22px; }
+
 /* Cards — alternando izquierda y derecha */
-.ws1-cards { display: flex; flex-direction: column; gap: 6px; margin-bottom: 0; }
+.ws1-cards { display: flex; flex-direction: column; gap: 9px; margin-bottom: 0; }
 .ws1-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 12px;
-  background: rgba(255,255,255,.03);
-  border: 0.5px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 0.5px solid rgba(255,255,255,.09);
 }
 .ws1-card.c1 { animation: ws1-fromLeft  .6s cubic-bezier(.34,1.3,.64,1) .88s both; }
 .ws1-card.c2 { animation: ws1-fromRight .6s cubic-bezier(.34,1.3,.64,1) 1.06s both; }
 .ws1-card.c3 { animation: ws1-fromLeft  .6s cubic-bezier(.34,1.3,.64,1) 1.24s both; }
 .ws1-card-ic {
-  width: 32px; height: 32px; border-radius: 8px;
+  width: 36px; height: 36px; border-radius: 9px;
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
 }
-.ws1-ic-v { background: rgba(123,97,255,.1);  border: 0.5px solid rgba(123,97,255,.2); }
-.ws1-ic-c { background: rgba(0,229,255,.08);  border: 0.5px solid rgba(0,229,255,.14); }
-.ws1-ic-n { background: rgba(200,255,0,.07);  border: 0.5px solid rgba(200,255,0,.13); }
-.ws1-card-t { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 1px; }
-.ws1-card-s { font-size: 9px;  color: var(--text-tertiary); line-height: 1.4; }
+.ws1-ic-v { background: rgba(123,97,255,.12); border: 0.5px solid rgba(123,97,255,.25); }
+.ws1-ic-c { background: rgba(0,229,255,.10);  border: 0.5px solid rgba(0,229,255,.18); }
+.ws1-ic-n { background: rgba(200,255,0,.09);  border: 0.5px solid rgba(200,255,0,.17); }
+.ws1-card-t { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.ws1-card-s { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
 
-/* Stats — zoom impact + barra que se llena */
-.ws1-stats { display: flex; gap: 5px; margin-top: 10px; margin-bottom: 0; }
+/* Stats — grid 2×2 */
+.ws1-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 7px; margin-top: 12px; margin-bottom: 0;
+}
 .ws1-stat {
-  flex: 1; padding: 9px 6px; text-align: center;
-  background: rgba(0,229,255,.04);
-  border: 0.5px solid rgba(0,229,255,.09);
-  border-radius: 10px; overflow: hidden; position: relative;
+  padding: 13px 8px; text-align: center;
+  background: rgba(0,229,255,.05);
+  border: 0.5px solid rgba(0,229,255,.12);
+  border-radius: 11px; overflow: hidden; position: relative;
 }
 .ws1-stat.s1 { animation: ws1-fromBot .5s ease 1.42s both; }
 .ws1-stat.s2 { animation: ws1-fromBot .5s ease 1.56s both; }
 .ws1-stat.s3 { animation: ws1-fromBot .5s ease 1.70s both; }
+.ws1-stat.s4 { animation: ws1-fromBot .5s ease 1.84s both; }
 .ws1-stat::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0;
   height: 2px;
@@ -1935,7 +1942,8 @@ body {
 .ws1-stat.s1::after { animation: ws1-barFill .7s ease 1.72s forwards; }
 .ws1-stat.s2::after { animation: ws1-barFill .7s ease 1.88s forwards; }
 .ws1-stat.s3::after { animation: ws1-barFill .7s ease 2.04s forwards; }
-.ws1-sv { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--primary); }
+.ws1-stat.s4::after { animation: ws1-barFill .7s ease 2.20s forwards; }
+.ws1-sv { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--primary); line-height: 1; }
 .ws1-sv .num {
   display: inline-block;
   animation: ws1-impact .5s cubic-bezier(.34,1.56,.64,1) both;
@@ -1943,7 +1951,8 @@ body {
 .ws1-stat.s1 .num { animation-delay: 1.42s; }
 .ws1-stat.s2 .num { animation-delay: 1.56s; }
 .ws1-stat.s3 .num { animation-delay: 1.70s; }
-.ws1-sl { font-size: 8px; color: var(--text-tertiary); margin-top: 2px; line-height: 1.3; }
+.ws1-stat.s4 .num { animation-delay: 1.84s; }
+.ws1-sl { font-size: 10px; color: var(--text-secondary); margin-top: 4px; line-height: 1.35; }
 
 /* Glow ambiental detrás del contenido */
 .ws1-glow {
@@ -2693,11 +2702,14 @@ body {
           tu coach lo interpreta para que progreses cada semana.
         </p>
 
+        <!-- Spacer flexible -->
+        <div class="ws1-spacer"></div>
+
         <!-- Cards — alternando izquierda/derecha -->
         <div class="ws1-cards">
           <div class="ws1-card c1">
             <div class="ws1-card-ic ws1-ic-v">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
               <div class="ws1-card-t">Coach IA 24/7</div>
@@ -2706,7 +2718,7 @@ body {
           </div>
           <div class="ws1-card c2">
             <div class="ws1-card-ic ws1-ic-c">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <div>
               <div class="ws1-card-t">Descanso óptimo por músculo</div>
@@ -2715,7 +2727,7 @@ body {
           </div>
           <div class="ws1-card c3">
             <div class="ws1-card-ic ws1-ic-n">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <div>
               <div class="ws1-card-t">Intensidad por serie (del 1 al 10)</div>
@@ -2724,7 +2736,10 @@ body {
           </div>
         </div>
 
-        <!-- Stats — números con impacto + barra que se llena -->
+        <!-- Spacer flexible -->
+        <div class="ws1-spacer"></div>
+
+        <!-- Stats 2×2 — números con impacto + barra que se llena -->
         <div class="ws1-stats">
           <div class="ws1-stat s1">
             <div class="ws1-sv"><span class="num">+31%</span></div>
@@ -2732,11 +2747,15 @@ body {
           </div>
           <div class="ws1-stat s2">
             <div class="ws1-sv"><span class="num">2×</span></div>
-            <div class="ws1-sl">recuperación<br>óptima</div>
+            <div class="ws1-sl">recuperación<br>más rápida</div>
           </div>
           <div class="ws1-stat s3">
             <div class="ws1-sv"><span class="num">4</span></div>
             <div class="ws1-sl">coaches IA<br>LATAM</div>
+          </div>
+          <div class="ws1-stat s4">
+            <div class="ws1-sv"><span class="num">+80%</span></div>
+            <div class="ws1-sl">adherencia<br>al plan</div>
           </div>
         </div>
       </div>
@@ -14962,7 +14981,7 @@ function updateWelcomeSlide() {
       const animated = slide1.querySelectorAll(
         '.ws1-logo,.ws1-h1 .l1,.ws1-h1 .l2,.ws1-h1 .l3,.ws1-sub,' +
         '.ws1-card.c1,.ws1-card.c2,.ws1-card.c3,' +
-        '.ws1-stat.s1,.ws1-stat.s2,.ws1-stat.s3,.ws1-sv .num'
+        '.ws1-stat.s1,.ws1-stat.s2,.ws1-stat.s3,.ws1-stat.s4,.ws1-sv .num'
       );
       animated.forEach(el => {
         el.style.animation = 'none';
@@ -14970,7 +14989,7 @@ function updateWelcomeSlide() {
         el.style.animation = '';
       });
       // Re-trigger ::after pseudo para las barras
-      ['.ws1-stat.s1','.ws1-stat.s2','.ws1-stat.s3'].forEach(sel => {
+      ['.ws1-stat.s1','.ws1-stat.s2','.ws1-stat.s3','.ws1-stat.s4'].forEach(sel => {
         const el = slide1.querySelector(sel);
         if (el) {
           const cls = sel.replace('.ws1-stat.','');
