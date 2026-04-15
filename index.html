@@ -16078,7 +16078,7 @@ function _renderUP() {
   (function() {
     var pm = document.getElementById('musclePickerMap');
     if (!pm || typeof buildMuscleMapHTML !== 'function') return;
-    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker', height: 260 });
+    pm.innerHTML = buildMuscleMapHTML('musclePickerMap', { mode: 'picker', height: (_upOpts.muscleMapHeight || 260) });
     // Sincronizar músculo seleccionado con el grupo activo
     if (_upGroup && typeof MUSCLE_TO_CATALOG !== 'undefined') {
       Object.keys(MUSCLE_TO_CATALOG).forEach(function(mId) {
