@@ -15587,7 +15587,7 @@ function _reRenderPicker() {
     _editorExercises.push({ name: name, equipment: equip || '', sets: 3 });
     renderEditorExercises();
     showToast('✓ ' + name + (equip ? ' · ' + equip : '') + ' añadido', 'success');
-  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 0 });
+  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 0, largeItems: true });
 }
 // ─────────────────────────────────────────────────────────────
 
@@ -15987,6 +15987,11 @@ function _upConfirmAdd() {
   _upSelectedEquip = '';
 }
 
+// Selección directa desde chip de equipo (modo largeItems)
+function _upAddDirect(name, equip) {
+  if (typeof _upSelect === 'function') _upSelect(name, equip);
+}
+
 function _renderUP() {
   if (!_upContainer) return;
   _upSelectedName = '';
@@ -16020,15 +16025,33 @@ function _renderUP() {
   });
 
   const names = Object.keys(_upEquipMap);
+  const _upLarge = !!_upOpts.largeItems;
   const listHtml = names.length
     ? names.map(function(name) {
         var eqs = _upEquipMap[name];
-        var eqPreview = eqs.length
-          ? '<span style="color:var(--text-tertiary);font-size:11px;display:block;margin-top:2px">' + eqs.slice(0, 4).join(' \u00b7 ') + (eqs.length > 4 ? '\u2026' : '') + '</span>'
-          : '';
         var safeN = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         var safeDN = name.replace(/"/g,'&quot;');
         var illusSrc = (typeof EXERCISE_ILLUSTRATIONS !== 'undefined' && EXERCISE_ILLUSTRATIONS[name]) || null;
+        if (_upLarge) {
+          // Estilo catálogo: imagen 90px + chips de equipo inline
+          var illusLg = illusSrc
+            ? '<img src="' + illusSrc + '" alt="' + safeDN + '" style="width:90px;height:90px;object-fit:contain;flex-shrink:0;opacity:0.95;border-radius:12px">'
+            : '<div style="width:56px;height:56px;flex-shrink:0"></div>';
+          var chipRows = (eqs.length ? eqs : ['']).map(function(e) {
+            var safeE = e.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            var lbl = (typeof EQUIP_LABEL !== 'undefined' && EQUIP_LABEL[e]) ? EQUIP_LABEL[e] : (e || 'Libre');
+            return '<button class="equip-chip" onclick="_upAddDirect(\'' + safeN + '\',\'' + safeE + '\')">' + lbl + '</button>';
+          }).join('');
+          return '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)">'
+            + illusLg
+            + '<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px">' + name + '</div>'
+            + '<div style="display:flex;flex-wrap:wrap;gap:6px">' + chipRows + '</div>'
+            + '</div></div>';
+        }
+        // Estilo compacto (workout picker)
+        var eqPreview = eqs.length
+          ? '<span style="color:var(--text-tertiary);font-size:11px;display:block;margin-top:2px">' + eqs.slice(0, 4).join(' \u00b7 ') + (eqs.length > 4 ? '\u2026' : '') + '</span>'
+          : '';
         var illusHtml = illusSrc
           ? '<img src="' + illusSrc + '" alt="" style="width:56px;height:56px;object-fit:contain;flex-shrink:0;opacity:0.9;border-radius:10px">'
           : '<div style="width:56px;height:56px;flex-shrink:0"></div>';
