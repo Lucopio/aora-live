@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymtracker-v103';
+const CACHE_NAME = 'gymtracker-v104';
 const ASSETS = [
   './',
   './index.html',
