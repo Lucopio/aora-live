@@ -9979,9 +9979,17 @@ function prevExercise() {
   currentEquipment     = prev.equipment || '';
   currentExerciseSets  = [...(prev.sets || [])];
   currentTargetSets    = prev.targetSets || prev.sets?.length || 0;
-  isUnilateral         = false;
-  document.getElementById('unilateralBtn').classList.remove('active');
-  document.getElementById('sideSelector').style.display = 'none';
+  // Restaurar estado unilateral si el ejercicio anterior tenía series con lado registrado
+  const wasUnilateral = (prev.sets || []).some(s => s.side != null);
+  isUnilateral = wasUnilateral;
+  document.getElementById('unilateralBtn').classList.toggle('active', wasUnilateral);
+  document.getElementById('sideSelector').style.display = wasUnilateral ? 'flex' : 'none';
+  if (wasUnilateral) {
+    const lastSide = [...(prev.sets || [])].reverse().find(s => s.side != null)?.side;
+    setSide(lastSide === 'left' ? 'right' : 'left'); // continuar con el lado opuesto al último registrado
+  } else {
+    document.getElementById('unilateralBtn').classList.remove('active');
+  }
   const equipLabel = currentEquipment ? (EQUIP_LABEL[currentEquipment] || '') : '';
   document.getElementById('exerciseCardName').textContent = equipLabel
     ? `${prev.name} · ${equipLabel}` : prev.name;
