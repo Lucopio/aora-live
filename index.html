@@ -9891,6 +9891,11 @@ function nextExercise() {
     const next = pendingExercises.shift();
     updatePendingPill();
     selectExercise(next.name, next.equipment, next.targetSets || 0);
+    // Si el ejercicio volvió a la cola vía prevExercise(), restaurar sus series guardadas
+    if (next.savedSets && next.savedSets.length > 0) {
+      currentExerciseSets = [...next.savedSets];
+      renderSets();
+    }
   } else {
     if (!supersetActive) supersetGroupCounter = 0;
     // Scroll al top para que el usuario note el cambio de ejercicio
@@ -9904,9 +9909,14 @@ function nextExercise() {
 
 function prevExercise() {
   if (completedExercises.length === 0) return;
-  // Si hay ejercicio activo, devolverlo al frente de la cola
+  // Si hay ejercicio activo, devolverlo al frente de la cola — INCLUYENDO las series ya hechas
   if (currentExerciseName) {
-    pendingExercises.unshift({ name: currentExerciseName, equipment: currentEquipment, targetSets: currentTargetSets });
+    pendingExercises.unshift({
+      name: currentExerciseName,
+      equipment: currentEquipment,
+      targetSets: currentTargetSets,
+      savedSets: [...currentExerciseSets]   // preservar series en progreso
+    });
   }
   // Recuperar el último ejercicio completado
   const prev = completedExercises.pop();
