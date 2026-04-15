@@ -9902,8 +9902,9 @@ function closeEditSet() {
 function nextExercise() {
   _unilateralPendingSide = false;
 
-  // Descanso de transición entre ejercicios (solo si hay sets hechos y no hay descanso activo)
-  if (!isResting && workoutMode === 'full' && currentExerciseSets.length > 0) {
+  // Descanso de transición entre ejercicios — siempre que haya sets hechos, en modo full.
+  // Si hay un descanso activo (usuario pasó antes de que terminara el timer) se reemplaza con skipRest().
+  if (workoutMode === 'full' && currentExerciseSets.length > 0) {
     const group = detectPrimaryMuscleGroup();
     const baseRest = window._userOverrodeRest
       ? restSeconds
@@ -9911,6 +9912,7 @@ function nextExercise() {
     const { seconds: transitionRest, isHeavy } = _calcTransitionRest(currentExerciseSets, baseRest);
     const _savedRest = restSeconds;
     restSeconds = transitionRest;
+    if (isResting) skipRest(); // reemplazar descanso de serie con descanso de transición
     startRestTimer();
     restSeconds = _savedRest; // restaurar inmediatamente — no alterar config global
     setTimeout(() => {
@@ -9923,7 +9925,6 @@ function nextExercise() {
     }
   }
 
-  // No cancelar el descanso: el timer es global a la sesión y debe persistir entre ejercicios.
   // _restTargetSet sigue apuntando al último set del ejercicio anterior (que va a completedExercises),
   // por lo que markRestReady() guardará la duración correctamente al tocar "Listo".
   if (currentExerciseName && currentExerciseSets.length > 0) {
