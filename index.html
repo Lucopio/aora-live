@@ -15587,7 +15587,7 @@ function _reRenderPicker() {
     _editorExercises.push({ name: name, equipment: equip || '', sets: 3 });
     renderEditorExercises();
     showToast('✓ ' + name + (equip ? ' · ' + equip : '') + ' añadido', 'success');
-  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 0, largeItems: true });
+  }, { title: 'Agregar ejercicios', showCustom: true, muscleMapHeight: 110, largeItems: true });
 }
 // ─────────────────────────────────────────────────────────────
 
@@ -16035,7 +16035,7 @@ function _renderUP() {
         if (_upLarge) {
           // Estilo catálogo: imagen 90px + chips de equipo inline
           var illusLg = illusSrc
-            ? '<img src="' + illusSrc + '" alt="' + safeDN + '" style="width:90px;height:90px;object-fit:contain;flex-shrink:0;opacity:0.95;border-radius:12px">'
+            ? '<img src="' + illusSrc + '" alt="' + safeDN + '" style="width:110px;height:110px;object-fit:contain;flex-shrink:0;opacity:0.95;border-radius:12px">'
             : '<div style="width:56px;height:56px;flex-shrink:0"></div>';
           var chipRows = (eqs.length ? eqs : ['']).map(function(e) {
             var safeE = e.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -16089,7 +16089,7 @@ function _renderUP() {
     + closeBtn
     + '</div>'
     + (_upOpts.muscleMapHeight === 0 ? '' : '<div id="musclePickerMap" style="padding:0 8px 2px;flex-shrink:0"></div>')
-    + (_upOpts.muscleMapHeight === 0 ? '' : '<div style="padding:0 16px 8px;flex-shrink:0;text-align:center"><span style="font-size:10px;color:var(--text-tertiary);letter-spacing:0.03em">Toca un músculo para filtrar ejercicios</span></div>')
+    + (_upOpts.muscleMapHeight === 0 || _upOpts.largeItems ? '' : '<div style="padding:0 16px 8px;flex-shrink:0;text-align:center"><span style="font-size:10px;color:var(--text-tertiary);letter-spacing:0.03em">Toca un músculo para filtrar ejercicios</span></div>')
     + '<div style="overflow-x:auto;white-space:nowrap;padding:0 16px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">' + chipHtml + '</div>'
     + '<input class="ex-picker-search" type="text" placeholder="Buscar ejercicio\u2026" value="' + _upSearch.replace(/"/g,'&quot;') + '" oninput="_upDoSearch(this.value)" style="flex-shrink:0">'
     + customHtml
