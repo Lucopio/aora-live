@@ -13417,7 +13417,8 @@ function loadFromStorage() {
     if (data.lastWeights) lastWeights = data.lastWeights;
     if (Array.isArray(data.customExercises)) customExercises = data.customExercises;
     if (data.exerciseNotes && typeof data.exerciseNotes === 'object') exerciseNotes = data.exerciseNotes;
-    if (data.userProfile && data.userProfile.onboarding_done) {
+    // Cargar siempre (no solo cuando onboarding_done=true) — el flag se verifica en la ruta de navegación
+    if (data.userProfile) {
       userProfile = { ...userProfile, ...data.userProfile };
     }
 
@@ -13436,6 +13437,12 @@ function loadFromStorage() {
       }
     }
   } catch(e) {}
+
+  // Bandera independiente: si el usuario completó onboarding alguna vez, preservar ese estado
+  // incluso si gymtracker_data o Supabase devolvieron onboarding_done:false/null por race condition
+  if (localStorage.getItem('aora_ob_done') === '1') {
+    userProfile.onboarding_done = true;
+  }
 
   // Auto-seleccionar la rutina del onboarding si existe y no hay ninguna seleccionada
   try {
@@ -14044,7 +14051,7 @@ async function syncFromCloud() {
         experience:       profile.experience       || userProfile.experience       || null,
         training_goal:    profile.training_goal    || userProfile.training_goal    || null,
         activity_level:   profile.activity_level   || userProfile.activity_level   || null,
-        onboarding_done:  profile.onboarding_done  || userProfile.onboarding_done  || false
+        onboarding_done:  profile.onboarding_done  || userProfile.onboarding_done  || localStorage.getItem('aora_ob_done') === '1' || false
       };
       updateProfileUI();
       // Restaurar coach seleccionado desde Supabase si localStorage está vacío
@@ -14531,6 +14538,7 @@ async function obcActivatePlan() {
     onboarding_done: true
   });
   localStorage.setItem('aora_user_profile', JSON.stringify(userProfile));
+  localStorage.setItem('aora_ob_done', '1'); // flag independiente — nunca se borra por sync
   saveSelectedCoach(coach);
   localStorage.setItem('gymtracker_nickname', _obcData.nickname || '');
   saveToStorage(); // persistir en gymtracker_data para que loadFromStorage() lo recupere al reiniciar
@@ -15037,6 +15045,7 @@ async function obSave() {
       cycleEnabled = true;
       cycleStartDate = document.getElementById('obCycleDate').value || null;
     }
+    localStorage.setItem('aora_ob_done', '1'); // flag independiente — nunca se borra por sync
     saveToStorage();
 
     // Save to Supabase if user is logged in
@@ -15094,6 +15103,7 @@ async function obSave() {
 function skipOnboarding() {
   if (currentUser && sb) sb.from('profiles').upsert({ id: currentUser.id, onboarding_done: true });
   userProfile.onboarding_done = true;
+  localStorage.setItem('aora_ob_done', '1'); // flag independiente — nunca se borra por sync
   saveToStorage(); // persist so the flag survives syncFromCloud overwrite
   showScreen('home');
 
