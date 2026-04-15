@@ -5867,6 +5867,12 @@ function updateHomeDashboard() {
 }
 
 function updateWorkoutHub() {
+  // Fecha de hoy en el header
+  const todayEl = document.getElementById('hubTodayDate');
+  if (todayEl) {
+    const now = new Date();
+    todayEl.textContent = now.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' });
+  }
   updateCyclePill();
   const now = new Date();
   const startOfWeek = new Date(now);
@@ -5886,16 +5892,47 @@ function updateWorkoutHub() {
   const recents = savedWorkouts.slice(0, 5);
   if (!recents.length) {
     recentEl.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Sin entrenamientos registrados</p><p style="font-size:12px;margin-top:4px">Comienza uno nuevo arriba</p></div>';
-    return;
+  } else {
+    const ACCENT_COLORS = ['var(--primary)', '#7B61FF', 'var(--success)', '#FFB800', 'var(--primary)'];
+    recentEl.innerHTML = recents.map((w, i) => {
+      const d = w.date instanceof Date ? w.date : new Date(w.date);
+      const timeStr = d.toLocaleTimeString('es-CO', { hour:'numeric', minute:'2-digit' });
+      const dayStr = isToday(d) ? 'Hoy' : isYesterday(d) ? 'Ayer' : d.toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
+      const isRO = w.mode === 'rest-only';
+      const accentColor = ACCENT_COLORS[i % ACCENT_COLORS.length];
+
+      // Total series reales (sin warmup)
+      let totalSets = 0;
+      if (w.exercises_detail && w.exercises_detail.length) {
+        totalSets = w.exercises_detail.reduce((acc, ex) => {
+          return acc + (ex.sets ? ex.sets.filter(s => !s.is_warmup_set).length : 0);
+        }, 0);
+      }
+
+      // Tags dinámicos
+      const tags = [];
+      if (!isRO && totalSets > 0) tags.push(`<span style="font-size:10px;padding:3px 8px;background:rgba(0,200,150,0.1);color:var(--success);border-radius:20px;font-weight:600">${totalSets} series</span>`);
+      if (w.avg_rpe != null) tags.push(`<span style="font-size:10px;padding:3px 8px;background:rgba(255,184,0,0.1);color:var(--warning);border-radius:20px;font-weight:600">RPE ${w.avg_rpe}</span>`);
+      if (w.feeling) {
+        const feelingMap = { great:'😄 Excelente', good:'🙂 Bien', ok:'😐 Normal', tired:'😓 Cansado', bad:'😞 Mal' };
+        if (feelingMap[w.feeling]) tags.push(`<span style="font-size:10px;padding:3px 8px;background:rgba(255,255,255,0.06);color:var(--text-secondary);border-radius:20px">${feelingMap[w.feeling]}</span>`);
+      }
+
+      const exercisesLabel = isRO ? `${w.restCount || 0} descansos` : `${w.exercises || 0} ejercicios`;
+
+      return `<div style="background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:3px solid ${accentColor};cursor:pointer;transition:opacity 0.15s" onclick="openWorkoutDetail(${i})" onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary)">${isRO ? 'Solo descansos' : 'Entrenamiento'}</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:1px">${dayStr}, ${timeStr} · ${exercisesLabel}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:${accentColor};flex-shrink:0;margin-left:8px">${formatTimeMM(w.duration)}</div>
+        </div>
+        ${tags.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px">${tags.join('')}</div>` : ''}
+        <div style="font-size:11px;color:var(--primary);margin-top:8px;font-weight:600">Ver estadísticas &rsaquo;</div>
+      </div>`;
+    }).join('');
   }
-  recentEl.innerHTML = recents.map(w => {
-    const d = w.date instanceof Date ? w.date : new Date(w.date);
-    const timeStr = d.toLocaleTimeString('es-CO', { hour:'numeric', minute:'2-digit' });
-    const dayStr = isToday(d) ? 'Hoy' : isYesterday(d) ? 'Ayer' : d.toLocaleDateString('es-CO', { weekday:'short' });
-    const isRO = w.mode === 'rest-only';
-    const recLabel = isRO ? (w.restCount || 0) + ' descansos' : w.exercises + ' ejercicios';
-    return '<div class="recent-item"><div class="recent-left"><div class="recent-icon"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="recent-info"><h4>' + (isRO ? 'Solo descansos' : 'Entrenamiento') + '</h4><p>' + dayStr + ', ' + timeStr + ' - ' + recLabel + '</p></div></div><div class="recent-duration">' + formatTimeMM(w.duration) + '</div></div>';
-  }).join('');
 
   // Sincronizar banner de rutina con la selección actual
   updateRoutineBanner(currentSelectedRoutine);
@@ -5918,6 +5955,11 @@ function updateWorkoutHub() {
       levelBtnText.textContent = 'Rutinas por nivel (Principiante · Intermedio · Avanzado)';
     }
   }
+}
+
+function openWorkoutDetail(i) {
+  showScreen('history');
+  setTimeout(() => toggleHistoryDetail(i), 250);
 }
 
 // Onboarding coach profile overlay
