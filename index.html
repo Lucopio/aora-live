@@ -7593,7 +7593,7 @@ function selectMode(mode) {
 
 // ─── Exercise Database ───────────────────────────────────────
 const exerciseDB = [
-  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna'] },
+  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Press con mancuernas', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna'] },
   { group: 'Espalda',   items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto', 'Remo en T', 'Face pull', 'Jalones agarre neutro', 'Pullover en polea', 'Hiperextensiones'] },
   { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Encogimientos de hombros'] },
   { group: 'Biceps',    items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea', 'Curl inclinado', 'Curl en banca Scott'] },
@@ -8808,6 +8808,7 @@ const EXERCISE_EQUIP = {
   // Pecho
   'Press de banca':        ['barra','mancuernas','maquina'],
   'Press inclinado':       ['barra','mancuernas','maquina'],
+  'Press con mancuernas':  ['mancuernas'],
   'Aperturas':             ['mancuernas','cable','maquina'],
   'Fondos en paralelas':   ['corporal'],
   'Crossover en polea':    ['cable'],
@@ -14012,8 +14013,11 @@ async function syncFromCloud() {
     if (wData?.length) {
       const cloudDates = new Set(wData.map(w => new Date(w.started_at).getTime()));
       const localOnly  = savedWorkouts.filter(w => !cloudDates.has(new Date(w.date).getTime()));
+      // Preserve exercises_detail from localStorage — Supabase workouts table doesn't store it
+      const _localDetail = {};
+      savedWorkouts.forEach(w => { const t = new Date(w.date).getTime(); if (w.exercises_detail?.length) _localDetail[t] = w.exercises_detail; });
       savedWorkouts = [
-        ...wData.map(w => ({ date: new Date(w.started_at), duration: w.duration_ms, exercises: w.exercise_count, mode: w.mode, restCount: w.rest_count, warmupDuration: w.warmup_duration_ms || 0, exercises_detail: [], avg_rest_ms: w.avg_rest_ms || null, rest_adherence: w.rest_adherence || null, total_rests_tracked: w.total_rests_tracked || 0 })),
+        ...wData.map(w => { const t = new Date(w.started_at).getTime(); return { date: new Date(w.started_at), duration: w.duration_ms, exercises: w.exercise_count, mode: w.mode, restCount: w.rest_count, warmupDuration: w.warmup_duration_ms || 0, exercises_detail: _localDetail[t] || [], avg_rest_ms: w.avg_rest_ms || null, rest_adherence: w.rest_adherence || null, total_rests_tracked: w.total_rests_tracked || 0 }; }),
         ...localOnly
       ];
       savedWorkouts.sort((a,b) => new Date(b.date) - new Date(a.date));
