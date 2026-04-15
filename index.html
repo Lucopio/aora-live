@@ -42,6 +42,7 @@
   --font: 'DM Sans', -apple-system, sans-serif;
   --font-display: 'Syne', -apple-system, sans-serif;
   --mono: 'JetBrains Mono', monospace;
+  --neon: #C8FF00;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 button { -webkit-tap-highlight-color: transparent; outline: none; -webkit-appearance: none; appearance: none; }
@@ -1821,6 +1822,134 @@ body {
 .w-coach-profile-btn:active { color: var(--primary); border-color: var(--primary); }
 .w-slide2-hint { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-top: 12px; }
 
+/* ── Welcome Slide 1 · Reveal Animations ── */
+@keyframes ws1-fromTop {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ws1-fromBot {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ws1-fromLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes ws1-fromRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes ws1-impact {
+  0%   { opacity: 0; transform: scale(1.55); }
+  60%  { opacity: 1; transform: scale(.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ws1-barFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Logo — desde arriba */
+.ws1-logo {
+  animation: ws1-fromTop .5s cubic-bezier(.34,1.2,.64,1) .1s both;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 16px;
+}
+.ws1-logo-row {
+  display: flex; align-items: center; gap: 2px;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 18px; color: #fff; letter-spacing: -.5px;
+}
+.ws1-logo-live {
+  font-size: 7px; font-weight: 700; color: var(--primary);
+  letter-spacing: .3em; font-family: var(--font);
+}
+
+/* Headline — cada línea desde abajo en cascada */
+.ws1-h1 {
+  font-family: var(--font-display); font-size: 26px; font-weight: 900;
+  letter-spacing: -1px; line-height: 1.0; margin-bottom: 10px;
+}
+.ws1-h1 .l1 {
+  display: block;
+  animation: ws1-fromBot .45s cubic-bezier(.34,1.2,.64,1) .22s both;
+}
+.ws1-h1 .l2 {
+  display: block;
+  animation: ws1-fromBot .45s cubic-bezier(.34,1.2,.64,1) .34s both;
+}
+.ws1-h1 .l3 {
+  display: block; color: var(--neon);
+  text-shadow: 0 0 18px rgba(200,255,0,.4);
+  animation: ws1-fromBot .45s cubic-bezier(.34,1.2,.64,1) .46s both;
+}
+
+/* Sub */
+.ws1-sub {
+  font-size: 12px; color: var(--text-secondary); line-height: 1.55;
+  margin-bottom: 14px;
+  animation: ws1-fromBot .4s ease .58s both;
+}
+.ws1-sub strong { color: rgba(255,255,255,.78); }
+
+/* Cards — alternando izquierda y derecha */
+.ws1-cards { display: flex; flex-direction: column; gap: 6px; }
+.ws1-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 12px;
+  background: rgba(255,255,255,.03);
+  border: 0.5px solid rgba(255,255,255,.07);
+}
+.ws1-card.c1 { animation: ws1-fromLeft  .45s cubic-bezier(.34,1.2,.64,1) .70s both; }
+.ws1-card.c2 { animation: ws1-fromRight .45s cubic-bezier(.34,1.2,.64,1) .84s both; }
+.ws1-card.c3 { animation: ws1-fromLeft  .45s cubic-bezier(.34,1.2,.64,1) .98s both; }
+.ws1-card-ic {
+  width: 32px; height: 32px; border-radius: 8px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+}
+.ws1-ic-v { background: rgba(123,97,255,.1);  border: 0.5px solid rgba(123,97,255,.2); }
+.ws1-ic-c { background: rgba(0,229,255,.08);  border: 0.5px solid rgba(0,229,255,.14); }
+.ws1-ic-n { background: rgba(200,255,0,.07);  border: 0.5px solid rgba(200,255,0,.13); }
+.ws1-card-t { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 1px; }
+.ws1-card-s { font-size: 9px;  color: var(--text-tertiary); line-height: 1.4; }
+
+/* Stats — zoom impact + barra que se llena */
+.ws1-stats { display: flex; gap: 5px; margin-top: 10px; }
+.ws1-stat {
+  flex: 1; padding: 9px 6px; text-align: center;
+  background: rgba(0,229,255,.04);
+  border: 0.5px solid rgba(0,229,255,.09);
+  border-radius: 10px; overflow: hidden; position: relative;
+}
+.ws1-stat.s1 { animation: ws1-fromBot .4s ease 1.10s both; }
+.ws1-stat.s2 { animation: ws1-fromBot .4s ease 1.22s both; }
+.ws1-stat.s3 { animation: ws1-fromBot .4s ease 1.34s both; }
+.ws1-stat::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--neon));
+  transform: scaleX(0); transform-origin: left;
+}
+.ws1-stat.s1::after { animation: ws1-barFill .6s ease 1.44s forwards; }
+.ws1-stat.s2::after { animation: ws1-barFill .6s ease 1.56s forwards; }
+.ws1-stat.s3::after { animation: ws1-barFill .6s ease 1.68s forwards; }
+.ws1-sv { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--primary); }
+.ws1-sv .num {
+  display: inline-block;
+  animation: ws1-impact .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.ws1-stat.s1 .num { animation-delay: 1.10s; }
+.ws1-stat.s2 .num { animation-delay: 1.22s; }
+.ws1-stat.s3 .num { animation-delay: 1.34s; }
+.ws1-sl { font-size: 8px; color: var(--text-tertiary); margin-top: 2px; line-height: 1.3; }
+
+/* Glow ambiental detrás del contenido */
+.ws1-glow {
+  position: absolute; top: -60px; right: -50px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,255,0,.04) 0%, rgba(123,97,255,.03) 40%, transparent 70%);
+  pointer-events: none;
+}
+
 /* E4: Tutorial Hints System */
 .tutorial-hint-overlay { position: fixed; inset: 0; z-index: 999; }
 .tutorial-hint { position: fixed; background: var(--primary); color:#080A0F; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 0 12px rgba(0,0,0,0.15); z-index: 1000; max-width: 240px; line-height: 1.4; animation: hintSlideIn 0.3s ease-out; }
@@ -2533,37 +2662,79 @@ body {
     <!-- Slide 1: Propuesta de valor -->
     <div class="welcome-slide active" id="welcomeSlide1">
       <div class="w-content">
-        <div class="w-logomark">
-          <div class="w-logo-dot"></div>
-          <span class="w-logo-txt">AORA LIVE</span>
+        <div class="ws1-glow"></div>
+
+        <!-- Logo — entra desde arriba -->
+        <div class="ws1-logo">
+          <div class="ws1-logo-row">
+            A
+            <svg style="animation:aoraPulse 1.5s ease-in-out infinite;margin:0 2px;" viewBox="0 0 22 22" width="18" height="18">
+              <circle cx="11" cy="11" r="10" fill="none" stroke="#00E5FF" stroke-width="1.4"/>
+              <polyline points="2,11 4.5,11 6.5,5 11,17 14,7 16.5,11 20,11" fill="none" stroke="#00E5FF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            RA
+          </div>
+          <span class="ws1-logo-live">L I V E</span>
         </div>
-        <div class="w-eyebrow">Tu entrenador IA, siempre contigo</div>
-        <h1 class="w-headline">Entrena más inteligente.<br><span>Progresa cada semana.</span></h1>
-        <p class="w-subline">Coaching personalizado que analiza tu entrenamiento de forma global — para que alcances tus metas a corto, mediano y largo plazo.</p>
-        <div class="w-pillars">
-          <div class="w-pillar">
-            <div class="w-pillar-icon cyan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+        <!-- Headline — 3 líneas en cascada desde abajo -->
+        <h1 class="ws1-h1">
+          <span class="l1">Tu entrenador</span>
+          <span class="l2">personal</span>
+          <span class="l3">en tu bolsillo.</span>
+        </h1>
+
+        <!-- Subline -->
+        <p class="ws1-sub">
+          <strong>AORA LIVE</strong> mide lo que importa —
+          tu coach lo interpreta para que progreses cada semana.
+        </p>
+
+        <!-- Cards — alternando izquierda/derecha -->
+        <div class="ws1-cards">
+          <div class="ws1-card c1">
+            <div class="ws1-card-ic ws1-ic-v">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <div class="w-pillar-txt">Control de descanso inteligente<small>Recomendamos el descanso óptimo por grupo muscular para maximizar fuerza y recuperación</small></div>
+            <div>
+              <div class="ws1-card-t">Coach IA 24/7</div>
+              <div class="ws1-card-s">Antes, durante y después de cada sesión</div>
+            </div>
           </div>
-          <div class="w-pillar">
-            <div class="w-pillar-icon violet">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <div class="ws1-card c2">
+            <div class="ws1-card-ic ws1-ic-c">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <div class="w-pillar-txt">RPE: la intensidad que importa<small>Medimos el esfuerzo de cada serie para que siempre estés avanzando hacia tu objetivo</small></div>
+            <div>
+              <div class="ws1-card-t">Descanso óptimo por músculo</div>
+              <div class="ws1-card-s">La ciencia calcula tu tiempo exacto</div>
+            </div>
           </div>
-          <div class="w-pillar">
-            <div class="w-pillar-icon green">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#00C896" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div class="ws1-card c3">
+            <div class="ws1-card-ic ws1-ic-n">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-            <div class="w-pillar-txt">Tu coach IA disponible 24/7<small>Resuelve dudas, ajusta tu plan y te acompaña en cada entrenamiento en tiempo real</small></div>
+            <div>
+              <div class="ws1-card-t">Intensidad por serie (del 1 al 10)</div>
+              <div class="ws1-card-s">Sin estancamientos, para cualquier nivel</div>
+            </div>
           </div>
         </div>
-        <div class="w-stats-row">
-          <div class="w-stat-card"><div class="w-stat-num">+31%</div><div class="w-stat-lbl">más fuerza en<br>8 semanas</div></div>
-          <div class="w-stat-card"><div class="w-stat-num">2×</div><div class="w-stat-lbl">recuperación<br>óptima</div></div>
-          <div class="w-stat-card"><div class="w-stat-num">4</div><div class="w-stat-lbl">coaches IA<br>disponibles</div></div>
+
+        <!-- Stats — números con impacto + barra que se llena -->
+        <div class="ws1-stats">
+          <div class="ws1-stat s1">
+            <div class="ws1-sv"><span class="num">+31%</span></div>
+            <div class="ws1-sl">fuerza en<br>8 semanas</div>
+          </div>
+          <div class="ws1-stat s2">
+            <div class="ws1-sv"><span class="num">2×</span></div>
+            <div class="ws1-sl">recuperación<br>óptima</div>
+          </div>
+          <div class="ws1-stat s3">
+            <div class="ws1-sv"><span class="num">4</span></div>
+            <div class="ws1-sl">coaches IA<br>LATAM</div>
+          </div>
         </div>
       </div>
     </div>
@@ -14779,6 +14950,30 @@ function updateWelcomeSlide() {
     } else {
       nextBtn.textContent = 'Siguiente →';
       nextBtn.classList.remove('w-final');
+    }
+  }
+  // Re-trigger animaciones del slide 1 cada vez que se muestra
+  if (_welcomeStep === 1) {
+    const slide1 = document.getElementById('welcomeSlide1');
+    if (slide1) {
+      const animated = slide1.querySelectorAll(
+        '.ws1-logo,.ws1-h1 .l1,.ws1-h1 .l2,.ws1-h1 .l3,.ws1-sub,' +
+        '.ws1-card.c1,.ws1-card.c2,.ws1-card.c3,' +
+        '.ws1-stat.s1,.ws1-stat.s2,.ws1-stat.s3,.ws1-sv .num'
+      );
+      animated.forEach(el => {
+        el.style.animation = 'none';
+        void el.offsetHeight;
+        el.style.animation = '';
+      });
+      // Re-trigger ::after pseudo para las barras
+      ['.ws1-stat.s1','.ws1-stat.s2','.ws1-stat.s3'].forEach(sel => {
+        const el = slide1.querySelector(sel);
+        if (el) {
+          const cls = sel.replace('.ws1-stat.','');
+          el.classList.remove(cls); void el.offsetHeight; el.classList.add(cls);
+        }
+      });
     }
   }
 }
