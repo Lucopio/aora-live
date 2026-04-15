@@ -1774,9 +1774,9 @@ body {
 .w-prog-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.3s ease; }
 .w-prog-txt { font-size: 11px; color: var(--text-tertiary); font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
 .w-btns { display: flex; gap: 12px; }
-.w-btn-skip { flex: 1; padding: 13px 16px; background: transparent; color: var(--text-tertiary); border: 1.5px solid var(--border); border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.w-btn-skip { flex: 1; padding: 16px 16px; background: transparent; color: var(--text-tertiary); border: 1.5px solid var(--border); border-radius: 14px; font-family: var(--font); font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
 .w-btn-skip:active { opacity: 0.7; }
-.w-btn-next { flex: 1.6; padding: 13px 16px; background: var(--primary); color: #080A0F; border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.15s; }
+.w-btn-next { flex: 1.6; padding: 16px 16px; background: var(--primary); color: #080A0F; border: none; border-radius: 14px; font-family: var(--font); font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.15s; }
 .w-btn-next:active { transform: scale(0.97); }
 .w-btn-next.w-final { background: #16A34A; }
 
@@ -1824,25 +1824,26 @@ body {
 
 /* ── Welcome Slide 1 · Reveal Animations ── */
 @keyframes ws1-fromTop {
-  from { opacity: 0; transform: translateY(-20px); }
+  from { opacity: 0; transform: translateY(-36px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes ws1-fromBot {
-  from { opacity: 0; transform: translateY(22px); }
+  from { opacity: 0; transform: translateY(40px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes ws1-fromLeft {
-  from { opacity: 0; transform: translateX(-28px); }
+  from { opacity: 0; transform: translateX(-48px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes ws1-fromRight {
-  from { opacity: 0; transform: translateX(28px); }
+  from { opacity: 0; transform: translateX(48px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes ws1-impact {
-  0%   { opacity: 0; transform: scale(1.55); }
-  60%  { opacity: 1; transform: scale(.96); }
-  100% { opacity: 1; transform: scale(1); }
+  0%   { opacity: 0; transform: scale(1.8) translateY(8px); }
+  55%  { opacity: 1; transform: scale(.92) translateY(-2px); }
+  75%  { transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 @keyframes ws1-barFill {
   from { transform: scaleX(0); }
@@ -1851,7 +1852,7 @@ body {
 
 /* Logo — desde arriba */
 .ws1-logo {
-  animation: ws1-fromTop .5s cubic-bezier(.34,1.2,.64,1) .1s both;
+  animation: ws1-fromTop .7s cubic-bezier(.34,1.3,.64,1) .15s both;
   display: flex; align-items: center; gap: 6px; margin-bottom: 16px;
 }
 .ws1-logo-row {
@@ -1866,42 +1867,44 @@ body {
 
 /* Headline — cada línea desde abajo en cascada */
 .ws1-h1 {
-  font-family: var(--font-display); font-size: 26px; font-weight: 900;
-  letter-spacing: -1px; line-height: 1.0; margin-bottom: 10px;
+  font-family: var(--font-display); font-size: 30px; font-weight: 900;
+  letter-spacing: -1.5px; line-height: 1.0; margin-bottom: 12px;
 }
 .ws1-h1 .l1 {
-  display: block;
-  animation: ws1-fromBot .45s cubic-bezier(.34,1.2,.64,1) .22s both;
+  display: block; color: rgba(255,255,255,0.95);
+  text-shadow: 0 0 40px rgba(255,255,255,0.08);
+  animation: ws1-fromBot .65s cubic-bezier(.34,1.3,.64,1) .2s both;
 }
 .ws1-h1 .l2 {
-  display: block;
-  animation: ws1-fromBot .45s cubic-bezier(.34,1.2,.64,1) .34s both;
+  display: block; color: rgba(255,255,255,0.95);
+  text-shadow: 0 0 40px rgba(255,255,255,0.08);
+  animation: ws1-fromBot .65s cubic-bezier(.34,1.3,.64,1) .38s both;
 }
 .ws1-h1 .l3 {
   display: block; color: var(--neon);
   text-shadow: 0 0 18px rgba(200,255,0,.4);
-  animation: ws1-fromBot .45s cubic-bezier(.34,1.2,.64,1) .46s both;
+  animation: ws1-fromBot .7s cubic-bezier(.34,1.4,.64,1) .56s both;
 }
 
 /* Sub */
 .ws1-sub {
   font-size: 12px; color: var(--text-secondary); line-height: 1.55;
   margin-bottom: 14px;
-  animation: ws1-fromBot .4s ease .58s both;
+  animation: ws1-fromBot .6s ease .72s both;
 }
 .ws1-sub strong { color: rgba(255,255,255,.78); }
 
 /* Cards — alternando izquierda y derecha */
-.ws1-cards { display: flex; flex-direction: column; gap: 6px; }
+.ws1-cards { display: flex; flex-direction: column; gap: 6px; margin-bottom: 0; }
 .ws1-card {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px; border-radius: 12px;
   background: rgba(255,255,255,.03);
   border: 0.5px solid rgba(255,255,255,.07);
 }
-.ws1-card.c1 { animation: ws1-fromLeft  .45s cubic-bezier(.34,1.2,.64,1) .70s both; }
-.ws1-card.c2 { animation: ws1-fromRight .45s cubic-bezier(.34,1.2,.64,1) .84s both; }
-.ws1-card.c3 { animation: ws1-fromLeft  .45s cubic-bezier(.34,1.2,.64,1) .98s both; }
+.ws1-card.c1 { animation: ws1-fromLeft  .6s cubic-bezier(.34,1.3,.64,1) .88s both; }
+.ws1-card.c2 { animation: ws1-fromRight .6s cubic-bezier(.34,1.3,.64,1) 1.06s both; }
+.ws1-card.c3 { animation: ws1-fromLeft  .6s cubic-bezier(.34,1.3,.64,1) 1.24s both; }
 .ws1-card-ic {
   width: 32px; height: 32px; border-radius: 8px;
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
@@ -1913,33 +1916,33 @@ body {
 .ws1-card-s { font-size: 9px;  color: var(--text-tertiary); line-height: 1.4; }
 
 /* Stats — zoom impact + barra que se llena */
-.ws1-stats { display: flex; gap: 5px; margin-top: 10px; }
+.ws1-stats { display: flex; gap: 5px; margin-top: 10px; margin-bottom: 0; }
 .ws1-stat {
   flex: 1; padding: 9px 6px; text-align: center;
   background: rgba(0,229,255,.04);
   border: 0.5px solid rgba(0,229,255,.09);
   border-radius: 10px; overflow: hidden; position: relative;
 }
-.ws1-stat.s1 { animation: ws1-fromBot .4s ease 1.10s both; }
-.ws1-stat.s2 { animation: ws1-fromBot .4s ease 1.22s both; }
-.ws1-stat.s3 { animation: ws1-fromBot .4s ease 1.34s both; }
+.ws1-stat.s1 { animation: ws1-fromBot .5s ease 1.42s both; }
+.ws1-stat.s2 { animation: ws1-fromBot .5s ease 1.56s both; }
+.ws1-stat.s3 { animation: ws1-fromBot .5s ease 1.70s both; }
 .ws1-stat::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0;
   height: 2px;
   background: linear-gradient(90deg, var(--primary), var(--neon));
   transform: scaleX(0); transform-origin: left;
 }
-.ws1-stat.s1::after { animation: ws1-barFill .6s ease 1.44s forwards; }
-.ws1-stat.s2::after { animation: ws1-barFill .6s ease 1.56s forwards; }
-.ws1-stat.s3::after { animation: ws1-barFill .6s ease 1.68s forwards; }
+.ws1-stat.s1::after { animation: ws1-barFill .7s ease 1.72s forwards; }
+.ws1-stat.s2::after { animation: ws1-barFill .7s ease 1.88s forwards; }
+.ws1-stat.s3::after { animation: ws1-barFill .7s ease 2.04s forwards; }
 .ws1-sv { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--primary); }
 .ws1-sv .num {
   display: inline-block;
   animation: ws1-impact .5s cubic-bezier(.34,1.56,.64,1) both;
 }
-.ws1-stat.s1 .num { animation-delay: 1.10s; }
-.ws1-stat.s2 .num { animation-delay: 1.22s; }
-.ws1-stat.s3 .num { animation-delay: 1.34s; }
+.ws1-stat.s1 .num { animation-delay: 1.42s; }
+.ws1-stat.s2 .num { animation-delay: 1.56s; }
+.ws1-stat.s3 .num { animation-delay: 1.70s; }
 .ws1-sl { font-size: 8px; color: var(--text-tertiary); margin-top: 2px; line-height: 1.3; }
 
 /* Glow ambiental detrás del contenido */
@@ -2661,7 +2664,7 @@ body {
 
     <!-- Slide 1: Propuesta de valor -->
     <div class="welcome-slide active" id="welcomeSlide1">
-      <div class="w-content">
+      <div class="w-content" style="padding-top: 20px; padding-bottom: 8px;">
         <div class="ws1-glow"></div>
 
         <!-- Logo — entra desde arriba -->
