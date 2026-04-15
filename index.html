@@ -5957,9 +5957,97 @@ function updateWorkoutHub() {
   }
 }
 
-function openWorkoutDetail(i) {
-  showScreen('history');
-  setTimeout(() => toggleHistoryDetail(i), 250);
+function openWorkoutDetail(index) {
+  const w = savedWorkouts[index];
+  if (!w) return;
+  const d = w.date instanceof Date ? w.date : new Date(w.date);
+  const dateStr = d.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const timeStr = d.toLocaleTimeString('es-CO', { hour:'numeric', minute:'2-digit' });
+  const isRO = w.mode === 'rest-only';
+
+  let totalWorkSets = 0;
+  if (w.exercises_detail) {
+    totalWorkSets = w.exercises_detail.reduce((a, ex) => a + (ex.sets ? ex.sets.filter(s => !s.is_warmup_set).length : 0), 0);
+  }
+
+  const feelingMap = { great:'😄 Excelente', good:'🙂 Bien', ok:'😐 Normal', tired:'😓 Cansado', bad:'😞 Mal' };
+
+  let html = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:2px">${isRO ? 'Solo descansos' : 'Entrenamiento'}</div>
+      <div style="font-size:12px;color:var(--text-tertiary)">${dateStr} · ${timeStr}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
+      <div style="background:var(--bg);border-radius:10px;padding:10px 8px;text-align:center;border-top:2px solid var(--primary)">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary)">${formatTimeMM(w.duration)}</div>
+        <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Duración</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:10px 8px;text-align:center;border-top:2px solid #7B61FF">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary)">${w.avg_rpe != null ? w.avg_rpe : '—'}</div>
+        <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">RPE prom.</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:10px 8px;text-align:center;border-top:2px solid var(--success)">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary)">${isRO ? (w.restCount || 0) : (w.exercises || 0)}</div>
+        <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">${isRO ? 'Descansos' : 'Ejercicios'}</div>
+      </div>
+    </div>`;
+
+  if (w.feeling && feelingMap[w.feeling]) {
+    html += `<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--text-secondary)">Sensación: ${feelingMap[w.feeling]}</div>`;
+  }
+
+  if (!isRO && w.exercises_detail && w.exercises_detail.length) {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Ejercicios</div>`;
+    w.exercises_detail.forEach(ex => {
+      const workSets = (ex.sets || []).filter(s => !s.is_warmup_set);
+      const warmSets = (ex.sets || []).filter(s => s.is_warmup_set);
+      const rpeScores = workSets.filter(s => s.rpe != null);
+      const exRPE = rpeScores.length
+        ? (rpeScores.reduce((a, s) => a + s.rpe, 0) / rpeScores.length).toFixed(1)
+        : null;
+      html += `<div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary)">${ex.name}</div>
+          ${exRPE ? `<span style="font-size:10px;padding:2px 7px;background:rgba(255,184,0,0.1);color:var(--warning);border-radius:20px;font-weight:600">RPE ${exRPE}</span>` : ''}
+        </div>`;
+      if (warmSets.length) {
+        html += `<div style="font-size:10px;color:var(--text-tertiary);margin-bottom:4px">Aproximación: ${warmSets.map(s => `${s.weight || 0}${s.unit || 'kg'} × ${s.reps}`).join(' · ')}</div>`;
+      }
+      html += workSets.map((s, si) => `<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:10px;color:var(--text-tertiary);width:20px">S${si+1}</div>
+          <div style="font-size:12px;color:var(--text-primary);flex:1">${s.weight || 0} ${s.unit || 'kg'} × ${s.reps} reps</div>
+          ${s.rpe != null ? `<div style="font-size:10px;color:var(--warning)">RPE ${s.rpe}</div>` : ''}
+        </div>`).join('');
+      html += `</div>`;
+    });
+  }
+
+  html += `<button onclick="closeWorkoutDetail()" style="width:100%;margin-top:16px;padding:14px;background:var(--primary);border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;color:#000;cursor:pointer">Cerrar</button>`;
+
+  document.getElementById('workoutDetailContent').innerHTML = html;
+
+  const overlay = document.getElementById('workoutDetailOverlay');
+  const sheet   = document.getElementById('workoutDetailSheet');
+  overlay.style.display = 'block';
+  sheet.style.display   = 'block';
+  sheet.style.transition = 'none';
+  sheet.style.transform  = 'translateX(-50%) translateY(100%)';
+  requestAnimationFrame(() => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheet.style.transform  = 'translateX(-50%) translateY(0)';
+  });
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWorkoutDetail() {
+  const sheet = document.getElementById('workoutDetailSheet');
+  sheet.style.transform = 'translateX(-50%) translateY(100%)';
+  setTimeout(() => {
+    sheet.style.display = 'none';
+    document.getElementById('workoutDetailOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }, 280);
 }
 
 // Onboarding coach profile overlay
@@ -16937,6 +17025,13 @@ function _markRoutineUsed(routineId) {
     </div>
     <button onclick="skipFeeling()" style="display:block;width:100%;background:none;border:none;color:var(--text-tertiary);font-size:13px;padding:8px;cursor:pointer;font-family:var(--font)">Saltar</button>
   </div>
+</div>
+
+<!-- WORKOUT DETAIL SHEET -->
+<div id="workoutDetailOverlay" onclick="closeWorkoutDetail()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700"></div>
+<div id="workoutDetailSheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 40px;z-index:701;max-height:80vh;overflow-y:auto">
+  <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
+  <div id="workoutDetailContent"></div>
 </div>
 </body>
 </html>
