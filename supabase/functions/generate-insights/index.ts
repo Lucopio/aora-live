@@ -10,20 +10,48 @@ const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 // Wellness tip categories that rotate
 const WELLNESS_CATEGORIES = ["sleep", "hydration", "supplement_omega3", "supplement_magnesium", "supplement_multivitamin", "recovery", "nutrition"];
 
+// ── Allowed origins ────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "https://lucopio.github.io",
+  "https://app.aoralive.com",
+  "https://aoralive.com",
+  "https://www.aoralive.com",
+  "http://localhost:5500",   // dev — Live Server
+  "http://127.0.0.1:5500",  // dev — Live Server
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+// ── Helper ─────────────────────────────────────────────────────────────────
+function jsonErr(message: string, status: number, cors: Record<string, string> = {}) {
+  return new Response(JSON.stringify({ error: message }), {
+    status, headers: { "Content-Type": "application/json", ...cors },
+  });
+}
+
 Deno.serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type" },
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return jsonErr("Unauthorized", 401);
+    if (!authHeader) return jsonErr("Unauthorized", 401, corsHeaders);
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     const { data: { user }, error: authErr } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (authErr || !user) return jsonErr("Unauthorized", 401);
+    if (authErr || !user) return jsonErr("Unauthorized", 401, corsHeaders);
 
     const userId = user.id;
     const body = await req.json().catch(() => ({}));
@@ -38,10 +66,10 @@ Deno.serve(async (req: Request) => {
       ? `Objetivo: ${profile.training_goal || "?"}, Experiencia: ${profile.experience || "?"}, Días/semana: ${profile.training_days || "?"}, Peso: ${profile.body_weight || "?"}${profile.body_weight_unit || "kg"}, Edad: ${profile.age || "?"}`
       : "Perfil no disponible";
 
-    // ── TIP MODE ─────────────────────────────────────────────
+    // ── TIP MODE ───────────────────────────────────────────────────────────
     if (tipType === "tip") {
       const context = body.context ?? {};
-      const workout = context.workout; // last workout summary from client
+      const workout = context.workout;
       const tipCategory = context.tip_category ?? "auto";
       const daysSinceLast = context.days_since_last_workout ?? 0;
       const totalWorkouts = context.total_workouts ?? 0;
@@ -49,7 +77,7 @@ Deno.serve(async (req: Request) => {
       let prompt = "";
 
       if (workout) {
-        // Post-workout tip: analyze the just-completed session
+        // Post-workout tip
         const exList = (workout.exercises_detail || []).map((ex: {name: string; equipment?: string; sets?: {reps: number; weight: number; unit: string; rest_after_ms?: number; rest_status?: string}[]}) =>
           `${ex.name}: ${(ex.sets || []).length} series`
         ).join(", ");
@@ -69,7 +97,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
 {"emoji":"...","message":"tip específico y accionable en español, máx 110 caracteres","category":"..."}`;
 
       } else {
-        // Daily wellness tip: no workout context, rotate categories
+        // Daily wellness tip
         const cat = tipCategory !== "auto" ? tipCategory : WELLNESS_CATEGORIES[Math.floor(Math.random() * WELLNESS_CATEGORIES.length)];
         const categoryPrompts: Record<string, string> = {
           sleep: "sobre la importancia de dormir 8 horas para la recuperación muscular y el crecimiento",
@@ -97,7 +125,6 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
 {"emoji":"...","message":"tip en español, máx 110 caracteres","category":"${cat}"}`;
       }
 
-      // Call Claude Haiku with minimal tokens
       const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -112,7 +139,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
         }),
       });
 
-      if (!anthropicRes.ok) return jsonErr("Error al contactar IA.", 502);
+      if (!anthropicRes.ok) return jsonErr("Error al contactar IA.", 502, corsHeaders);
       const anthropicData = await anthropicRes.json();
       const rawText = anthropicData.content?.[0]?.text ?? "{}";
 
@@ -125,11 +152,11 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
       }
 
       return new Response(JSON.stringify({ tip, generated_at: new Date().toISOString() }), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // ── FULL ANALYSIS MODE ────────────────────────────────────
+    // ── FULL ANALYSIS MODE ─────────────────────────────────────────────────
     // Cooldown check
     const { data: lastInsight } = await supabase.from("ai_insights")
       .select("generated_at").eq("user_id", userId)
@@ -139,7 +166,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
       const age = Date.now() - new Date(lastInsight.generated_at).getTime();
       if (age < COOLDOWN_MS) {
         const hoursLeft = Math.ceil((COOLDOWN_MS - age) / 3600000);
-        return jsonErr(`Análisis disponible en ${hoursLeft}h. Máximo 1 por semana.`, 429);
+        return jsonErr(`Análisis disponible en ${hoursLeft}h. Máximo 1 por semana.`, 429, corsHeaders);
       }
     }
 
@@ -149,7 +176,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
       .select("id, started_at, duration_ms, mode, exercise_count, rest_count, avg_rest_ms, rest_adherence, total_rests_tracked")
       .eq("user_id", userId).gte("started_at", since).order("started_at", { ascending: false });
 
-    if (!workouts || workouts.length === 0) return jsonErr("Sin suficientes datos. Completa al menos un entrenamiento.", 422);
+    if (!workouts || workouts.length === 0) return jsonErr("Sin suficientes datos. Completa al menos un entrenamiento.", 422, corsHeaders);
 
     const workoutIds = workouts.map((w: { id: string }) => w.id);
     const { data: exercises } = await supabase.from("workout_exercises")
@@ -162,7 +189,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
           .in("workout_exercise_id", exIds)
       : { data: [] };
 
-    // Exercise frequency + progression (week 1 vs week 2 avg weight)
+    // Exercise frequency + progression
     const now2 = Date.now();
     const week1Start = now2 - 14 * 86400000; const week1End = now2 - 7 * 86400000;
     const week2Start = now2 - 7 * 86400000;
@@ -207,7 +234,7 @@ Responde ÚNICAMENTE con JSON válido, sin texto adicional:
       return s;
     }).join("; ");
 
-    // Workout frequency per weekday (to detect missing rest days)
+    // Workout frequency per weekday
     const dayCount = new Array(7).fill(0);
     workouts.forEach((w: { started_at: string }) => { dayCount[new Date(w.started_at).getDay()]++; });
     const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -249,28 +276,22 @@ Si adherencia < 70%, calcula rest_suggestion_seconds = Math.round(descanso_prome
       body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 700, messages: [{ role: "user", content: prompt }] }),
     });
 
-    if (!anthropicRes.ok) return jsonErr("Error al contactar IA. Intenta más tarde.", 502);
+    if (!anthropicRes.ok) return jsonErr("Error al contactar IA. Intenta más tarde.", 502, corsHeaders);
     const anthropicData = await anthropicRes.json();
     const rawText = anthropicData.content?.[0]?.text ?? "";
 
     let insights;
     try { insights = JSON.parse(rawText); }
-    catch { const match = rawText.match(/\{[\s\S]*\}/); if (match) insights = JSON.parse(match[0]); else return jsonErr("Respuesta IA inválida.", 502); }
+    catch { const match = rawText.match(/\{[\s\S]*\}/); if (match) insights = JSON.parse(match[0]); else return jsonErr("Respuesta IA inválida.", 502, corsHeaders); }
 
     await supabase.from("ai_insights").insert({ user_id: userId, insights });
 
     return new Response(JSON.stringify({ insights, generated_at: new Date().toISOString() }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
 
   } catch (err) {
     console.error("Unexpected error:", err);
-    return jsonErr("Error interno del servidor.", 500);
+    return jsonErr("Error interno del servidor.", 500, corsHeaders);
   }
 });
-
-function jsonErr(message: string, status: number) {
-  return new Response(JSON.stringify({ error: message }), {
-    status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-  });
-}

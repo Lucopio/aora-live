@@ -4,12 +4,28 @@ const ANTHROPIC_API_KEY    = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type",
-};
+// ── Allowed origins ────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "https://lucopio.github.io",
+  "https://app.aoralive.com",
+  "https://aoralive.com",
+  "https://www.aoralive.com",
+  "http://localhost:5500",   // dev — Live Server
+  "http://127.0.0.1:5500",  // dev — Live Server
+];
 
-// ── Conversational rule (shared by all coaches) ───────────────────────────────
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+// ── Conversational rule (shared by all coaches) ────────────────────────────
 const CONVERSATIONAL_RULE = `
 REGLA CONVERSACIONAL — LEE ESTO PRIMERO, ES OBLIGATORIO:
 - Máximo UNA pregunta por mensaje. Si necesitas saber más de una cosa, elige la más importante y pregunta solo esa.
@@ -33,7 +49,7 @@ EJEMPLO DE LO QUE SÍ DEBES HACER:
 "¿De dónde vienes y qué te trae por aquí?" → esperar → profundizar.
 `;
 
-// ── Coach personalities ────────────────────────────────────────────────────────
+// ── Coach personalities ────────────────────────────────────────────────────
 const COACH_PROMPTS: Record<string, string> = {
   maria: `${CONVERSATIONAL_RULE}
 Eres María, entrenadora personal colombiana especializada en HIIT y entrenamiento funcional.
@@ -60,18 +76,18 @@ No usas emojis. Español peruano, pausado y preciso. Cuando hablas, cada frase t
 Compartes perspectivas sobre disciplina, paciencia y el largo plazo solo cuando el contexto lo pide.`,
 };
 
-// ── Helper: JSON response ──────────────────────────────────────────────────────
-function jsonRes(body: unknown, status = 200) {
+// ── Helper: JSON response ──────────────────────────────────────────────────
+function jsonRes(body: unknown, status = 200, cors: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { ...cors, "Content-Type": "application/json" },
   });
 }
-function jsonErr(msg: string, status = 400) {
-  return jsonRes({ error: msg }, status);
+function jsonErr(msg: string, status = 400, cors: Record<string, string> = {}) {
+  return jsonRes({ error: msg }, status, cors);
 }
 
-// ── Format context for the system prompt ──────────────────────────────────────
+// ── Format context for the system prompt ──────────────────────────────────
 function formatContext(context: Record<string, unknown>): string {
   const parts: string[] = [];
 
@@ -116,25 +132,27 @@ function formatContext(context: Record<string, unknown>): string {
   return parts.join("\n\n");
 }
 
-// ── Main handler ──────────────────────────────────────────────────────────────
+// ── Main handler ───────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: CORS_HEADERS });
+    return new Response(null, { headers: corsHeaders });
   }
   if (req.method !== "POST") {
-    return jsonErr("Method not allowed", 405);
+    return jsonErr("Method not allowed", 405, corsHeaders);
   }
 
   try {
     // 1. Auth
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return jsonErr("Unauthorized", 401);
+    if (!authHeader) return jsonErr("Unauthorized", 401, corsHeaders);
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     const { data: { user }, error: authErr } = await supabase.auth.getUser(
       authHeader.replace("Bearer ", "")
     );
-    if (authErr || !user) return jsonErr("Unauthorized", 401);
+    if (authErr || !user) return jsonErr("Unauthorized", 401, corsHeaders);
 
     // 2. Parse body
     const body = await req.json().catch(() => ({}));
@@ -146,19 +164,18 @@ Deno.serve(async (req: Request) => {
     };
 
     if (!coachId || !COACH_PROMPTS[coachId]) {
-      return jsonErr("Coach inválido", 400);
+      return jsonErr("Coach inválido", 400, corsHeaders);
     }
     if (!message || typeof message !== "string" || message.trim().length === 0) {
-      return jsonErr("Mensaje vacío", 400);
+      return jsonErr("Mensaje vacío", 400, corsHeaders);
     }
     if (message.length > 1000) {
-      return jsonErr("Mensaje demasiado largo (máx 1000 caracteres)", 400);
+      return jsonErr("Mensaje demasiado largo (máx 1000 caracteres)", 400, corsHeaders);
     }
 
     // 3. Build system prompt
     const contextStr = formatContext(context);
     const isFirstMessage = history.length === 0;
-    // Detect handoff: history has messages but last assistant msg mentions another coach or uses handoff phrasing
     const lastAssistant = [...history].reverse().find((m) => m.role === "assistant");
     const isHandoff = !isFirstMessage && !!lastAssistant?.content?.match(/me puso al día|ya sé de tus objetivos|retomemos donde lo dejaron/i);
     const systemPrompt =
@@ -177,14 +194,12 @@ Deno.serve(async (req: Request) => {
       "Sin listas con viñetas en respuestas conversacionales. " +
       "No repitas el nombre del usuario en cada mensaje.";
 
-    // 4. Build messages array (conversation history + new message)
+    // 4. Build messages array
     const validRoles = new Set(["user", "assistant"]);
     const messages = [
-      // Historial de conversación (últimos 10 pares máx)
       ...history
         .filter((m) => validRoles.has(m.role) && typeof m.content === "string")
         .slice(-16),
-      // Nuevo mensaje del usuario
       { role: "user", content: message.trim() },
     ];
 
@@ -207,23 +222,23 @@ Deno.serve(async (req: Request) => {
     if (!claudeRes.ok) {
       const errBody = await claudeRes.text();
       console.error("Claude API error:", claudeRes.status, errBody);
-      return jsonErr("El coach no está disponible ahora. Intenta en unos momentos.", 502);
+      return jsonErr("El coach no está disponible ahora. Intenta en unos momentos.", 502, corsHeaders);
     }
 
     const claudeData = await claudeRes.json();
     const responseText = claudeData?.content?.[0]?.text ?? "";
 
     if (!responseText) {
-      return jsonErr("No se recibió respuesta del coach", 502);
+      return jsonErr("No se recibió respuesta del coach", 502, corsHeaders);
     }
 
     return jsonRes({
       response: responseText,
       tokens_used: claudeData?.usage?.output_tokens ?? 0,
-    });
+    }, 200, corsHeaders);
 
   } catch (err) {
     console.error("coach-chat error:", err);
-    return jsonErr("Error interno del servidor", 500);
+    return jsonErr("Error interno del servidor", 500, corsHeaders);
   }
 });
