@@ -12977,13 +12977,12 @@ async function _speakElevenLabs(text, coachId) {
     // Usar audio cacheado si existe
     if (_elAudioCache[cacheKey]) {
       const audio = new Audio(_elAudioCache[cacheKey]);
-      audio.play();
-      return true;
+      try { await audio.play(); return true; } catch(e) { return false; }
     }
     const token = await _getCoachToken();
-    if (!token) return false;
+    if (!token) { console.warn('[TTS] Sin token auth, usando fallback'); return false; }
     const ctrl = new AbortController();
-    const timeout = setTimeout(() => ctrl.abort(), 5000); // 5s max
+    const timeout = setTimeout(() => ctrl.abort(), 9000); // 9s — EL tarda 1-3s + red móvil
     let res;
     try {
       res = await fetch('https://edythbvezafpnkslavcv.supabase.co/functions/v1/tts-coach', {
@@ -12998,16 +12997,30 @@ async function _speakElevenLabs(text, coachId) {
     } finally {
       clearTimeout(timeout);
     }
-    if (!res.ok) { _elAvailable = false; return false; }
+    if (!res.ok) {
+      console.error('[TTS] ElevenLabs HTTP', res.status);
+      if (res.status >= 500) _elAvailable = false; // solo deshabilitar en error de servidor
+      return false;
+    }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-    _elAudioCache[cacheKey] = url; // cachear para esta sesión
+    _elAudioCache[cacheKey] = url;
     const audio = new Audio(url);
-    audio.play();
-    return true;
+    try {
+      await audio.play();
+      return true;
+    } catch(e) {
+      // NotAllowedError = política de autoplay del navegador — no deshabilitar EL
+      console.warn('[TTS] audio.play() bloqueado:', e.message);
+      return false;
+    }
   } catch(e) {
-    console.warn('[TTS] ElevenLabs falló, usando fallback:', e.message);
-    _elAvailable = false;
+    if (e.name === 'AbortError') {
+      console.warn('[TTS] ElevenLabs timeout (>9s), reintentará próxima vez');
+    } else {
+      console.error('[TTS] Error inesperado:', e.name, e.message);
+      _elAvailable = false; // error de red real — deshabilitar
+    }
     return false;
   }
 }
