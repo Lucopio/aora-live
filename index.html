@@ -2184,7 +2184,10 @@ body {
   font-weight: 700 !important;
   border: none !important;
   box-shadow: 0 4px 20px rgba(0,229,255,0.25) !important;
+  font-size: 17px !important;
+  padding: 20px 24px !important;
 }
+.start-btn svg { stroke: #000 !important; }
 .start-btn:active { transform: scale(0.98); opacity: 0.9; }
 
 /* ─── WORKOUT TIMER ──────────────────────────────────────── */
@@ -3770,37 +3773,24 @@ body {
 <div class="screen" id="workoutHubScreen">
   <div class="screen-pad">
 
-    <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h1 style="font-size:22px;font-weight:700;color:var(--text-primary)">Entrenar</h1>
-      <div id="hubTodayDate" style="font-size:11px;color:var(--text-tertiary)"></div>
-    </div>
-
-    <!-- Banner entrenamiento en curso -->
-    <div class="wk-running-banner" id="wkBannerHub" onclick="showScreen('workout')">
+    <!-- Banner entrenamiento en curso — sin cambios -->
+    <div class="wk-running-banner" id="wkBannerHub" onclick="showScreen('workout')" style="display:none;margin-bottom:14px">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
 
-    <!-- Stats semana: 3 columnas con borde superior de color -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-      <div style="background:var(--surface);border-radius:12px;padding:10px 8px;text-align:center;border-top:2px solid var(--primary)">
-        <div class="wsg-value" id="hubWeekSessions" style="font-size:18px;font-weight:700;color:var(--text-primary)">0</div>
-        <div class="wsg-label" style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Sesiones</div>
-      </div>
-      <div style="background:var(--surface);border-radius:12px;padding:10px 8px;text-align:center;border-top:2px solid #7B61FF">
-        <div class="wsg-value" id="hubWeekTime" style="font-size:16px;font-weight:700;color:var(--text-primary)">0:00</div>
-        <div class="wsg-label" style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Tiempo</div>
-      </div>
-      <div style="background:var(--surface);border-radius:12px;padding:10px 8px;text-align:center;border-top:2px solid var(--success)">
-        <div class="wsg-value" id="hubWeekStreak" style="font-size:18px;font-weight:700;color:var(--text-primary)">0</div>
-        <div class="wsg-label" style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Racha</div>
+    <!-- Header con racha -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h1 style="font-size:26px;font-weight:800;color:var(--text-primary);font-family:var(--font-display);margin:0">Entrenar</h1>
+      <div style="display:flex;align-items:center;gap:5px;background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.15);border-radius:20px;padding:5px 12px">
+        <span style="font-size:15px">🔥</span>
+        <span id="hubStreakLabel" style="font-size:12px;font-weight:700;color:var(--primary)">0 sem.</span>
       </div>
     </div>
 
-    <!-- Ciclo menstrual pill (sin cambios) -->
-    <div id="cyclePill" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,105,180,0.08);border:1px solid rgba(255,105,180,0.25);border-radius:12px;align-items:center;gap:10px">
+    <!-- Ciclo menstrual pill — sin cambios funcionales -->
+    <div id="cyclePill" style="display:none;margin-bottom:14px;padding:11px 14px;background:rgba(255,105,180,0.08);border:1px solid rgba(255,105,180,0.25);border-radius:12px;align-items:center;gap:10px">
       <span id="cyclePillEmoji" style="font-size:20px">🌸</span>
       <div style="flex:1">
         <div id="cyclePillPhase" style="font-size:13px;font-weight:700;color:#ff69b4"></div>
@@ -3808,58 +3798,74 @@ body {
       </div>
     </div>
 
-    <!-- Card: Rutina de hoy -->
-    <div style="background:linear-gradient(135deg,rgba(123,97,255,0.08),rgba(0,229,255,0.05));border:1px solid rgba(123,97,255,0.22);border-radius:14px;padding:14px 16px;margin-bottom:12px">
-      <div style="font-size:10px;color:#9B87FF;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:6px">Rutina de hoy</div>
-
-      <!-- Estado vacío -->
-      <div id="noRoutineState">
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Sin rutina asignada · configura tus rutinas personales</div>
-        <div style="display:flex;gap:8px">
-          <button onclick="openConfig()" style="flex:1;background:var(--primary);border:none;border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;font-weight:700;color:#000;cursor:pointer">
-            + Nuevo
-          </button>
-          <button onclick="openRoutineSelector()" style="flex:1;background:rgba(123,97,255,0.15);border:1px solid rgba(123,97,255,0.3);border-radius:10px;padding:10px;font-family:var(--font);font-size:12px;font-weight:600;color:#9B87FF;cursor:pointer">
-            Configurar
-          </button>
-        </div>
+    <!-- BOTÓN 1: Nuevo entrenamiento — GRANDE, gradiente, texto negro -->
+    <button class="start-btn" onclick="openConfig()" style="margin-bottom:10px;width:100%;display:flex;align-items:center;gap:16px;text-align:left;border-radius:18px !important;justify-content:flex-start !important">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:800;color:#000;font-family:var(--font-display);line-height:1.1" id="hubNewBtnLabel">Nuevo entreno</div>
+        <div style="font-size:12px;color:rgba(0,0,0,0.55);margin-top:3px" id="hubNewBtnSub">Libre o con rutina</div>
+      </div>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
 
-      <!-- Estado con rutina seleccionada -->
-      <div id="selectedRoutineState" style="display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-size:15px;font-weight:700;color:var(--text-primary)" id="selectedRoutineName"></div>
-          <div style="font-size:10px;padding:3px 8px;background:rgba(0,229,255,0.1);color:var(--primary);border-radius:12px;font-weight:700;cursor:pointer" id="selectedRoutineGroup" onclick="openRoutineSelector()">Cambiar</div>
-        </div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px" id="selectedRoutineExercises"></div>
-        <div id="selectedRoutineChips" style="margin-bottom:10px"></div>
-        <button onclick="openConfig()" style="width:100%;background:var(--primary);border:none;border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;font-weight:700;color:#000;cursor:pointer">
-          + Empezar Entrenamiento
-        </button>
+    <!-- BOTÓN 2: Express -->
+    <button onclick="openQuickWorkout()" id="quickWorkoutBtn" style="width:100%;margin-bottom:10px;background:#0A1F0A;border:1.5px solid #1F4A1F;border-radius:18px;padding:18px 20px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(74,222,128,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:800;color:#4ade80;font-family:var(--font-display);line-height:1.1">Express</div>
+        <div style="font-size:12px;color:#2d7a2d;margin-top:3px">Máx 30 min · listo ya</div>
+      </div>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4ade80" stroke-width="2.5" opacity="0.35"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <!-- BOTÓN 3: Mis Rutinas -->
+    <button id="routinesByLevelBtn" onclick="showRoutinesSheet()" style="width:100%;margin-bottom:20px;background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:18px 20px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:800;color:var(--text-secondary);font-family:var(--font-display);line-height:1.1" id="routinesByLevelBtnText">Mis rutinas</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Por nivel · personalizadas</div>
+      </div>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--text-tertiary)" stroke-width="2.5" opacity="0.4"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <!-- Stats semana: 2 columnas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+      <div style="background:var(--surface);border-radius:14px;padding:14px 12px;text-align:center;border-top:2px solid var(--primary)">
+        <div style="font-size:28px;font-weight:800;color:var(--text-primary);font-family:var(--font-display);line-height:1" id="hubWeekSessions">0</div>
+        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px">Sesiones</div>
+      </div>
+      <div style="background:var(--surface);border-radius:14px;padding:14px 12px;text-align:center;border-top:2px solid #7B61FF">
+        <div style="font-size:22px;font-weight:800;color:var(--text-primary);font-family:var(--font-display);line-height:1" id="hubWeekTime">0m</div>
+        <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px">Esta semana</div>
       </div>
     </div>
 
-    <!-- Acciones: Express + Rutinas en grid 2 columnas -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-      <button onclick="openQuickWorkout()" id="quickWorkoutBtn" style="background:linear-gradient(135deg,#0A1F0A,#061206);border:1px solid #1F4A1F;border-radius:12px;padding:14px 12px;font-family:var(--font);cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4ade80" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <div style="font-size:13px;font-weight:700;color:#4ade80;line-height:1.2">Rutina Express</div>
-        <div style="font-size:10px;color:#2d7a2d">máx 30 min</div>
-      </button>
-      <button id="routinesByLevelBtn" onclick="showRoutinesSheet()" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 12px;font-family:var(--font);cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--text-secondary)" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        <div style="font-size:13px;font-weight:600;color:var(--text-secondary);line-height:1.2" id="routinesByLevelBtnText">Rutinas</div>
-        <div style="font-size:10px;color:var(--text-tertiary)">Por nivel</div>
-      </button>
-    </div>
-
-    <!-- Recientes: header con "Ver todos" -->
+    <!-- Último entreno -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="section-title" style="margin-bottom:0">Recientes</div>
-      <button onclick="showScreen('history')" style="background:none;border:none;font-family:var(--font);font-size:12px;color:var(--primary);font-weight:600;cursor:pointer;padding:0">Ver todos &rsaquo;</button>
+      <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em">Último entreno</div>
+      <button onclick="showScreen('history')" style="background:none;border:none;font-family:var(--font);font-size:13px;color:var(--primary);font-weight:600;cursor:pointer;padding:0">Ver historial →</button>
     </div>
     <div id="hubRecentsList">
-      <div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Sin entrenamientos registrados</p><p style="font-size:12px;margin-top:4px">Comienza uno nuevo arriba</p></div>
+      <div style="text-align:center;padding:28px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Tu primer entreno aparecerá aquí</p></div>
+    </div>
+
+    <!-- IDs legacy que el JS usa internamente — ocultos, NO BORRAR -->
+    <div style="display:none" aria-hidden="true">
+      <div id="hubWeekStreak"></div>
+      <div id="todayWorkoutCard"></div>
+      <div id="noRoutineState"></div>
+      <div id="selectedRoutineState"></div>
+      <div id="selectedRoutineName"></div>
+      <div id="selectedRoutineGroup"></div>
+      <div id="selectedRoutineExercises"></div>
+      <div id="selectedRoutineChips"></div>
+      <div id="routineChangeBtn"></div>
     </div>
 
     <div style="height:90px"></div>
@@ -5889,54 +5895,40 @@ function updateWorkoutHub() {
   const strEl  = document.getElementById('hubWeekStreak');
   if (sessEl) sessEl.textContent = weekWorkouts.length;
   const totalMs = weekWorkouts.reduce((a, w) => a + w.duration, 0);
-  if (timeEl) timeEl.textContent = formatTimeMM(totalMs);
+  if (timeEl) timeEl.textContent = totalMs ? Math.round(totalMs / 60000) + 'm' : '0m';
   if (strEl)  strEl.textContent  = typeof getWeekStreak === 'function' ? getWeekStreak() : 0;
-  // Recientes
+  // Actualizar badge de racha en header
+  const streakLbl = document.getElementById('hubStreakLabel');
+  if (streakLbl) {
+    const s = typeof getWeekStreak === 'function' ? getWeekStreak() : 0;
+    streakLbl.textContent = s + ' sem.';
+  }
+  // Subtítulo del botón Nuevo si hay rutina activa
+  const subEl = document.getElementById('hubNewBtnSub');
+  if (subEl && currentSelectedRoutine && currentSelectedRoutine.name) {
+    subEl.textContent = currentSelectedRoutine.name;
+  }
+  // Recientes — solo el último entreno
   const recentEl = document.getElementById('hubRecentsList');
   if (!recentEl) return;
-  const recents = savedWorkouts.slice(0, 5);
+  const recents = savedWorkouts.slice(0, 1);
   if (!recents.length) {
-    recentEl.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Sin entrenamientos registrados</p><p style="font-size:12px;margin-top:4px">Comienza uno nuevo arriba</p></div>';
+    recentEl.innerHTML = '<div style="text-align:center;padding:28px 16px;color:var(--text-tertiary)"><p style="font-size:14px">Tu primer entreno aparecerá aquí</p></div>';
   } else {
-    const ACCENT_COLORS = ['var(--primary)', '#7B61FF', 'var(--success)', '#FFB800', 'var(--primary)'];
-    recentEl.innerHTML = recents.map((w, i) => {
-      const d = w.date instanceof Date ? w.date : new Date(w.date);
-      const timeStr = d.toLocaleTimeString('es-CO', { hour:'numeric', minute:'2-digit' });
-      const dayStr = isToday(d) ? 'Hoy' : isYesterday(d) ? 'Ayer' : d.toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
-      const isRO = w.mode === 'rest-only';
-      const accentColor = ACCENT_COLORS[i % ACCENT_COLORS.length];
-
-      // Total series reales (sin warmup)
-      let totalSets = 0;
-      if (w.exercises_detail && w.exercises_detail.length) {
-        totalSets = w.exercises_detail.reduce((acc, ex) => {
-          return acc + (ex.sets ? ex.sets.filter(s => !s.is_warmup_set).length : 0);
-        }, 0);
-      }
-
-      // Tags dinámicos
-      const tags = [];
-      if (!isRO && totalSets > 0) tags.push(`<span style="font-size:10px;padding:3px 8px;background:rgba(0,200,150,0.1);color:var(--success);border-radius:20px;font-weight:600">${totalSets} series</span>`);
-      if (w.avg_rpe != null) tags.push(`<span style="font-size:10px;padding:3px 8px;background:rgba(255,184,0,0.1);color:var(--warning);border-radius:20px;font-weight:600">RPE ${w.avg_rpe}</span>`);
-      if (w.feeling) {
-        const feelingMap = { great:'😄 Excelente', good:'🙂 Bien', ok:'😐 Normal', tired:'😓 Cansado', bad:'😞 Mal' };
-        if (feelingMap[w.feeling]) tags.push(`<span style="font-size:10px;padding:3px 8px;background:rgba(255,255,255,0.06);color:var(--text-secondary);border-radius:20px">${feelingMap[w.feeling]}</span>`);
-      }
-
-      const exercisesLabel = isRO ? `${w.restCount || 0} descansos` : `${w.exercises || 0} ejercicios`;
-
-      return `<div style="background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:3px solid ${accentColor};cursor:pointer;transition:opacity 0.15s" onclick="openWorkoutDetail(${i})" onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text-primary)">${isRO ? 'Solo descansos' : 'Entrenamiento'}</div>
-            <div style="font-size:11px;color:var(--text-tertiary);margin-top:1px">${dayStr}, ${timeStr} · ${exercisesLabel}</div>
-          </div>
-          <div style="font-size:14px;font-weight:700;color:${accentColor};flex-shrink:0;margin-left:8px">${formatTimeMM(w.duration)}</div>
-        </div>
-        ${tags.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px">${tags.join('')}</div>` : ''}
-        <div style="font-size:11px;color:var(--primary);margin-top:8px;font-weight:600">Ver estadísticas &rsaquo;</div>
-      </div>`;
-    }).join('');
+    const w = recents[0];
+    const d = w.date instanceof Date ? w.date : new Date(w.date);
+    const dayStr = isToday(d) ? 'Hoy' : isYesterday(d) ? 'Ayer' : d.toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
+    const timeStr = d.toLocaleTimeString('es-CO', { hour:'numeric', minute:'2-digit' });
+    const isRO = w.mode === 'rest-only';
+    const label = isRO ? `${w.restCount || 0} descansos` : `${w.exercises || 0} ejercicios`;
+    const rpe = w.avg_rpe != null ? ` · RPE ${w.avg_rpe}` : '';
+    recentEl.innerHTML = `<div onclick="openWorkoutDetail(0)" style="background:var(--surface);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:3px solid var(--primary)" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-primary)">${isRO ? 'Solo descansos' : 'Entrenamiento'}</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px">${dayStr}, ${timeStr} · ${label}${rpe}</div>
+      </div>
+      <div style="font-size:16px;font-weight:800;color:var(--primary);font-family:var(--font-display)">${formatTimeMM(w.duration)}</div>
+    </div>`;
   }
 
   // Sincronizar banner de rutina con la selección actual
