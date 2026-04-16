@@ -6789,6 +6789,9 @@ let isResting = false;
 let audioCtx = null;
 let soundEnabled = true;
 let voiceAlertMode = 'ambas'; // 'mitad' | '10s' | 'ambas' | 'ninguna'
+// ─── ElevenLabs TTS Cache ────────────────────────────────────
+const _elAudioCache = {}; // cache en memoria por sesión: key = coachId+text
+let _elAvailable = true;  // se pone false si ElevenLabs falla, activa fallback
 let _ttsVoices = [];
 function _loadTTSVoices() {
   const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
@@ -12923,20 +12926,62 @@ function playFinalBeep() {
   } catch(e) {}
 }
 
+// ─── ElevenLabs TTS ─────────────────────────────────────────
+async function _speakElevenLabs(text, coachId) {
+  if (!_elAvailable) return false;
+  const cacheKey = coachId + '::' + text;
+  try {
+    // Usar audio cacheado si existe
+    if (_elAudioCache[cacheKey]) {
+      const audio = new Audio(_elAudioCache[cacheKey]);
+      audio.play();
+      return true;
+    }
+    const token = await _getCoachToken();
+    if (!token) return false;
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 5000); // 5s max
+    let res;
+    try {
+      res = await fetch('https://edythbvezafpnkslavcv.supabase.co/functions/v1/tts-coach', {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text, coachId })
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!res.ok) { _elAvailable = false; return false; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    _elAudioCache[cacheKey] = url; // cachear para esta sesión
+    const audio = new Audio(url);
+    audio.play();
+    return true;
+  } catch(e) {
+    console.warn('[TTS] ElevenLabs falló, usando fallback:', e.message);
+    _elAvailable = false;
+    return false;
+  }
+}
+
 // ─── Coach Speech Synthesis ─────────────────────────────────
-function speakCoachText(text) {
+async function speakCoachText(text) {
   if (voiceAlertMode === 'ninguna') return;
-  if (!window.speechSynthesis) return;
   const coach = getSelectedCoach();
   const coachId = coach ? coach.id : 'maria';
-  window.speechSynthesis.cancel();
+  const el = await _speakElevenLabs(text, coachId);
+  if (el) return;
+  // Fallback: browser speechSynthesis
+  if (!window.speechSynthesis) return;
   const cleanText = text.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]/gu, '').replace(/\s{2,}/g, ' ').trim();
   const utt = new SpeechSynthesisUtterance(cleanText);
   const params = COACH_TTS[coachId] || COACH_TTS.maria;
-  utt.lang = 'es-MX';
-  utt.rate = params.rate;
-  utt.pitch = params.pitch;
-  utt.volume = 1;
+  utt.lang = 'es-MX'; utt.rate = params.rate; utt.pitch = params.pitch; utt.volume = 1;
   const voice = _pickVoice(coachId);
   if (voice) { utt.voice = voice; utt.lang = voice.lang; }
   window.speechSynthesis.speak(utt);
@@ -12960,11 +13005,10 @@ function _speakExerciseDos(exerciseName) {
   setTimeout(() => speakCoachText(text), 800);
 }
 
-function speakCoach(type) {
+async function speakCoach(type) {
   if (voiceAlertMode === 'ninguna') return;
   if (type === 'mid'  && voiceAlertMode === '10s') return;
   if (type === 'ten'  && voiceAlertMode === 'mitad') return;
-  if (!window.speechSynthesis) return;
   const coach = getSelectedCoach();
   const coachId = coach ? coach.id : 'carlos';
   const pool = COACH_VOICE[coachId]?.[type] || COACH_VOICE.carlos[type];
@@ -12976,18 +13020,17 @@ function speakCoach(type) {
     const prev = window._lastCoachVoiceIdx[key] ?? -1;
     let tries = 0;
     do { idx = Math.floor(Math.random() * pool.length); tries++; } while (idx === prev && tries < 10);
-  } else {
-    idx = 0;
-  }
+  } else { idx = 0; }
   window._lastCoachVoiceIdx[key] = idx;
   const text = pool[idx];
+  const el = await _speakElevenLabs(text, coachId);
+  if (el) return;
+  // Fallback: browser speechSynthesis
+  if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   const params = COACH_TTS[coachId] || COACH_TTS.carlos;
-  utt.lang   = 'es-MX';
-  utt.rate   = params.rate;
-  utt.pitch  = params.pitch;
-  utt.volume = 1;
+  utt.lang = 'es-MX'; utt.rate = params.rate; utt.pitch = params.pitch; utt.volume = 1;
   const voice = _pickVoice(coachId);
   if (voice) { utt.voice = voice; utt.lang = voice.lang; }
   window.speechSynthesis.speak(utt);
