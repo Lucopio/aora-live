@@ -3832,11 +3832,11 @@ body {
 
     <!-- BOTÓN 3: Mis Rutinas -->
     <button id="routinesByLevelBtn" onclick="showRoutinesSheet()" style="width:100%;margin-bottom:20px;background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:18px 20px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
-      <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,184,0,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="4" height="8" rx="1"/><rect x="9" y="9" width="4" height="13" rx="1"/><rect x="16" y="4" width="4" height="18" rx="1"/></svg>
       </div>
       <div style="flex:1">
-        <div style="font-size:17px;font-weight:800;color:var(--text-secondary);font-family:var(--font-display);line-height:1.1" id="routinesByLevelBtnText">Mis rutinas</div>
+        <div style="font-size:17px;font-weight:800;color:var(--text-secondary);font-family:var(--font-display);line-height:1.1" id="routinesByLevelBtnText">Rutinas por nivel</div>
         <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Por nivel · personalizadas</div>
       </div>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--text-tertiary)" stroke-width="2.5" opacity="0.4"><polyline points="9 18 15 12 9 6"/></svg>
@@ -5957,7 +5957,7 @@ function updateWorkoutHub() {
       levelBtn.style.padding = '';
       levelBtn.style.fontSize = '';
       levelBtn.style.opacity = '';
-      levelBtnText.textContent = 'Rutinas por nivel (Principiante · Intermedio · Avanzado)';
+      levelBtnText.textContent = 'Rutinas por nivel';
     }
   }
 }
