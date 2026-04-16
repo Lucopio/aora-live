@@ -10510,6 +10510,14 @@ const EXERCISE_EN = {
   'Hollow hold':'hollow hold','Dragon flag':'dragon flag','Burpees':'burpee',
   'Saltos de caja':'box jump','Cuerda':'jump rope','Muscle-up':'muscle up',
   'Pistol squat':'pistol squat','Pike push-up':'pike push up','Archer push-up':'archer push up',
+  // ── Alias sin tilde (exerciseDB almacena nombres SIN acentos) ──────────────
+  'Sentadilla bulgara':'bulgarian split squat',
+  'Abductores en maquina':'hip abduction',
+  'Aductores en maquina':'hip adduction',
+  'Patada de gluteo en polea':'cable glute kickback',
+  'Puente de gluteo':'glute bridge',
+  'Abduccion con banda':'band hip abduction',
+  'Jalones agarre neutro':'neutral grip pulldown',
 };
 
 // ─── Warmup exercise name → ExerciseDB query (español→inglés) ─
@@ -10617,6 +10625,18 @@ const EXERCISE_IDS = {
   'plank':                 'exr_41n2hXQw5yAbbXL8',
   'leg raise':             'exr_41n2hMZCmZBvQApL',
   'lat pulldown':          'exr_41n2hXszY7TgwKy4', // Chin-Up (mejor sustituto disponible — mismo patrón de jalón)
+  // Nuevos IDs confirmados vía AscendAPI
+  'incline bench press':   'exr_41n2hsVHu7B1MTdr', // Palms In Incline Bench Press
+  'decline bench press':   'exr_41n2hGUso7JFmuYR', // Decline Push-Up (mejor sustituto)
+  'dumbbell row':          'exr_41n2hY9EdwkdGz9a', // Dumbbell One Arm Bent-over Row
+  'back extension':        'exr_41n2hfYD2sH4TRCH', // Hyperextension
+  'front raise':           'exr_41n2howQHvcrcrW6', // Front Raise
+  'rear delt fly':         'exr_41n2hyNf5GebszTf', // Dumbbell Rear Delt Fly
+  'concentration curl':    'exr_41n2hxqpSU5p6DZv', // Biceps Leg Concentration Curl
+  'step up':               'exr_41n2hXvPyEyMBgNR', // Step-up on Chair
+  'sumo squat':            'exr_41n2hYAP9oGEZk2P', // Sumo Squat
+  'mountain climber':      'exr_41n2ha5iPFpN3hEJ', // Bridge - Mountain Climber
+  'single leg deadlift':   'exr_41n2hcw2FN534HcA', // Dumbbell Stiff Leg Deadlift (sustituto)
 };
 
 async function loadExerciseGif(exerciseName) {
