@@ -8,7 +8,7 @@
 - **Rama principal:** `main`
 
 ## Stack Técnico
-- **Arquitectura:** Monolítica — un solo archivo `index.html` (~10,050 líneas)
+- **Arquitectura:** Monolítica — un solo archivo `index.html` (~14,000 líneas)
 - **Backend:** Supabase (`edythbvezafpnkslavcv.supabase.co`)
 - **Auth:** Supabase Auth (email/password)
 - **Storage local:** localStorage (offline-first) — no se usa IndexedDB
@@ -80,11 +80,19 @@
 |---|---|---|
 | `/functions/v1/coach-chat` | Claude Haiku 4.5 | Chat con entrenadores IA |
 | `/functions/v1/generate-insights` | Claude Haiku 4.5 | Análisis semanal + tips post-entreno |
+| `/functions/v1/tts-coach` | ElevenLabs eleven_multilingual_v2 | Text-to-speech de voces de coaches |
+
+### tts-coach — Detalles
+- **Body:** `{ text: string, coachId: 'maria'|'carlos'|'andrea'|'diego' }`
+- **Auth:** Supabase JWT requerido (protege quota de ElevenLabs)
+- **Respuesta:** `audio/mpeg` binario
+- **Voice IDs:** maría `VmejBeYhbrcTPwDniox7`, carlos `dn9HtxgDwCH96MVX9iAO`, andrea `6Mo5ciGH5nWiQacn5FYk`, diego `eklUXgdI2kEgVcRbATIu`
+- **Límite texto:** 500 caracteres por llamada
 
 ## 4 Entrenadores IA (Diferenciador Principal)
 | Entrenador | País | Especialidad | Personalidad |
 |---|---|---|---|
-| **María** | Colombia 🇨🇴 | HIIT, funcional | Energética, empática |
+| **María** | Colombia 🇨🇴 (Medellín) | HIIT, funcional | Energética, empática |
 | **Carlos** | México 🇲🇽 | Fuerza, hipertrofia | Datos-driven, preciso |
 | **Andrea** | Argentina 🇦🇷 | Movilidad, wellness | Equilibrada, reflexiva |
 | **Diego** | Perú 🇵🇪 | Calistenia, resistencia | Resiliente, sereno |
@@ -96,6 +104,15 @@ Alertas hardcodeadas (cero costo IA) en `COACH_ALERTS` (~línea 3503). Cada aler
 - **hydration** — Recordatorios de hidratación cada X minutos de entrenamiento
 - **warmupSkipped** — Cuando el usuario salta el calentamiento
 - Los mensajes se muestran como toasts con avatar del coach seleccionado
+
+### Sistema TTS de Coaches (Implementado)
+`speakCoach(type)` y `speakCoachText(text)` son **async**. Flujo:
+1. Intenta ElevenLabs via Edge Function `tts-coach` (audio de calidad real)
+2. Si falla o timeout >5s → fallback automático a `window.speechSynthesis`
+3. Cache en memoria `_elAudioCache` (ObjectURL por sesión, key = `coachId::text`)
+4. `_elAvailable = false` desactiva ElevenLabs para toda la sesión si hay error
+
+Variables relevantes: `_elAudioCache`, `_elAvailable`, `_ttsVoices`, `COACH_TTS`, `voiceAlertMode`
 
 ## Segundo Diferenciador: Rest/Recovery Tracking
 Sistema inteligente de seguimiento de descanso entre series — gap identificado en JEFIT, Strong y MyFitnessPal. El rest timer es crítico y su estado no debe perderse entre navegaciones.
@@ -154,10 +171,11 @@ const OB_STEP_IDS_BASE = ['obStep1','obStepCycle','obStepLocation','obStep2','ob
 - **Catálogo de ejercicios** (`exerciseDB` ~línea 4736) con grupos musculares + GIFs via ExerciseDB/RapidAPI
 - **GIF cache** en localStorage (`aora_gif_cache`) — 500 calls/mes free tier
 - **Coach chat** (Edge Function `coach-chat`)
-- **Insights/Progreso** (Edge Function `generate-insights` + analytics locales)
+- **Insights/Progreso** renombrado "Mi Semana" con rango de fechas dinámico — (Edge Function `generate-insights` + analytics locales)
 - **Warmup inteligente** pre-entrenamiento con ejercicios específicos
 - **Coach alerts** (hydration, warmup-skipped) — hardcoded, cero costo IA
-- **Streak semanal** (badge 🔥 en home)
+- **Coach TTS** — ElevenLabs vía Edge Function `tts-coach` con fallback a speechSynthesis
+- **Streak semanal** (badge 🔥 en home y en Workout Hub)
 - **Ciclo menstrual** (4 fases con recomendaciones en home pill)
 - **Welcome flow** (4 slides explicando la app)
 - **Onboarding** (7 pasos con selección de coach)
@@ -166,6 +184,7 @@ const OB_STEP_IDS_BASE = ['obStep1','obStepCycle','obStepLocation','obStep2','ob
 - **Tutorial system** (coachmarks + hints contextuales)
 - **Back button handler** (popstate con cierre de overlays)
 - **Rutinas preset** con wizard de 3 pasos (nivel → tiempo → rutina) via `renderRoutines()`
+- **Chat counter UX** — aviso solo al alcanzar ≥75% del límite diario
 
 ## ExerciseDB & GIFs
 - **API:** RapidAPI endpoint `exercisedb.p.rapidapi.com/exercises/name/{name}?limit=1`
@@ -173,6 +192,30 @@ const OB_STEP_IDS_BASE = ['obStep1','obStepCycle','obStepLocation','obStep2','ob
 - **Quota:** 500 calls/mes en free tier
 - **Ubicación del array:** `grep -n "exerciseDB\s*=" index.html` (~línea 4736)
 - **Grupos:** Pecho, Espalda, Hombros, Bíceps, Tríceps, Core, Piernas, Glúteos, Cardio, Calistenia
+- **`filter: invert(1)`** aplicado a `#exGifImg` — las imágenes de AscendAPI tienen fondo blanco; invertir las hace correctas sobre el dark UI
+
+### Mapas de traducción de ejercicios
+- **`EXERCISE_EN`** — mapa Español→Inglés. Incluye aliases sin tilde (exerciseDB almacena nombres SIN acentos). Si un ejercicio no aparece, agregar alias aquí.
+- **`EXERCISE_IDS`** — mapa Inglés→AscendAPI ID (33 entradas). AscendAPI devuelve imágenes de ejercicios; su endpoint de búsqueda está roto — solo funciona browse por ID hardcodeado.
+- Cobertura actual de GIFs: ~26 ejercicios con animación.
+
+## Pantallas Rediseñadas (UI actual)
+
+### Workout Hub (`workoutHubScreen`)
+- Header: "Entrenar" + `hubStreakLabel` badge con racha semanal
+- 3 botones full-width: Nuevo entreno (gradient, `openConfig()`), Entreno rápido (verde, `openQuickWorkout()`), Ver rutinas (surface, `showRoutinesSheet()`)
+- Stats en 2 columnas: `hubWeekSessions` + `hubWeekTime`
+- 1 entrenamiento reciente en `hubRecentsList`
+- IDs legacy preservados en `<div style="display:none">` para compatibilidad con JS
+
+### Home (`homeScreen`)
+- Bloque Racha arriba del mapa muscular (fondo gradient, número grande en `streakBadgeNew`)
+- `muscleFatigueSection` con header de leyenda (3 puntos de color)
+- Coach spotlight: avatar 42px, padding compacto
+
+### Insights (`insightsScreen`)
+- Renombrado a **"Mi Semana"** (h1)
+- Subtítulo dinámico con rango de fechas (`insightsDateRange`): e.g. "14 abr – 16 abr · 2026"
 
 ## Reglas de Implementación CRÍTICAS
 
@@ -229,6 +272,33 @@ Los prompts a Claude Code deben prohibir explícitamente tocar JS logic, DOM str
 - **github** — commits, PRs, estado del repo
 - **playwright** — testing visual de la app en browser
 
+## Archivos del Proyecto (Estructura Relevante)
+```
+aora-live/
+├── index.html              # App completa (~14,000 líneas)
+├── sw.js                   # Service Worker (network-first para HTML)
+├── manifest.json           # PWA manifest
+├── watch.html              # Companion para Samsung Galaxy Watch
+├── .gitignore              # Excluye mcp_config*.json (tienen API keys)
+├── supabase/
+│   ├── config.toml
+│   ├── migrations/
+│   │   └── 20260413165041_remote_schema.sql
+│   └── functions/
+│       ├── coach-chat/     # Chat IA con coaches
+│       ├── generate-insights/ # Análisis semanal IA
+│       └── tts-coach/      # ElevenLabs TTS (NUEVO)
+├── Images/coaches/         # Fotos de coaches (maria1.png, etc.)
+├── Icons/SVG/              # 40+ iconos SVG del design system
+└── videos/                 # Videos generados con Kling AI
+    └── maria_rotaciones_brazos.mp4
+```
+
+**Archivos ignorados por git** (contienen API keys o son locales):
+- `mcp_config.json`, `mcp_config_min.json` — RapidAPI key
+- `serve3001.js` — dev server local
+- `.claude/agents/`, `.claude/skills/`, `.claude/settings.local.json.bak`
+
 ## Comandos Útiles
 ```bash
 # Ver estado del deploy
@@ -245,6 +315,15 @@ grep -n "COACH_ALERTS" index.html
 
 # Encontrar showScreen map
 grep -n "const screenMap" index.html
+
+# Encontrar mapas de ejercicios
+grep -n "EXERCISE_EN\|EXERCISE_IDS" index.html | head -10
+
+# Encontrar funciones TTS
+grep -n "function speakCoach\|function _speakElevenLabs\|_elAvailable\|voiceAlertMode" index.html | head -15
+
+# Deploy de Edge Function
+npx supabase functions deploy <nombre-funcion> --project-ref edythbvezafpnkslavcv
 
 # Ver tablas de Supabase
 # → Preguntarle directamente a Claude Code usando MCP
