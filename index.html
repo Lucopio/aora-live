@@ -3167,75 +3167,77 @@ body {
 <!-- HOME -->
 <div class="screen" id="homeScreen">
   <div class="screen-pad">
+
+    <!-- Banner workout en curso -->
     <div class="wk-running-banner" id="wkBannerHome" onclick="showScreen('workout')">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-    <!-- ① HEADER -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div id="homeDayGreeting" style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px"></div>
         <h1 id="homeUserName" style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text-primary);line-height:1.1;margin:0">AORA LIVE</h1>
-        <div style="display:flex;align-items:baseline;gap:5px;margin-top:4px;flex-wrap:wrap">
+        <div style="display:flex;align-items:baseline;gap:5px;margin-top:3px">
           <span id="homeNickname" style="font-size:15px;font-weight:700;color:var(--primary)"></span>
           <span id="homeGreeting" style="font-size:13px;color:var(--text-secondary)">Listo para entrenar</span>
         </div>
       </div>
-      <div id="homeAvatarCircle" onclick="showScreen('settings')" style="width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent2);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent">?</div>
+      <div id="homeAvatarCircle" onclick="showScreen('settings')" style="width:42px;height:42px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent2);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent">?</div>
     </div>
 
-    <!-- ② COACH CARD -->
-    <div id="coachSpotlight" style="display:none;background:var(--surface);border:1px solid rgba(123,97,255,0.25);border-radius:16px;padding:14px;margin-bottom:14px;position:relative;overflow:hidden">
+    <!-- Coach spotlight -->
+    <div id="coachSpotlight" style="display:none;background:var(--surface);border:1px solid rgba(123,97,255,0.25);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden">
       <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:radial-gradient(circle at top right,rgba(123,97,255,0.08),transparent 70%);pointer-events:none"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="position:relative">
-            <div id="coachAvatarEmoji" style="width:38px;height:38px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden">🤖</div>
+            <div id="coachAvatarEmoji" style="width:42px;height:42px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden">🤖</div>
             <div class="coach-online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:var(--success);border:2px solid var(--surface);border-radius:50%"></div>
           </div>
           <div>
-            <div id="coachSpotlightName" style="font-size:14px;font-weight:700;color:var(--text-primary)">Tu Coach</div>
+            <div id="coachSpotlightName" style="font-size:15px;font-weight:700;color:var(--text-primary)">Tu Coach</div>
             <div style="display:flex;align-items:center;gap:5px;margin-top:1px">
               <div class="pulse-dot"></div>
-              <span style="font-size:10px;color:var(--text-tertiary)">Entrenador IA · Activo ahora</span>
+              <span style="font-size:11px;color:var(--text-tertiary)">Entrenador IA · Activo ahora</span>
             </div>
           </div>
         </div>
-        <div style="font-size:9px;padding:3px 8px;background:rgba(123,97,255,0.12);border:0.5px solid rgba(123,97,255,0.3);border-radius:20px;color:var(--accent2);font-weight:700">En línea</div>
+        <div style="font-size:9px;padding:3px 9px;background:rgba(123,97,255,0.12);border:0.5px solid rgba(123,97,255,0.3);border-radius:20px;color:var(--accent2);font-weight:700">En línea</div>
       </div>
-      <div id="coachDailyMessage" style="display:none;font-size:13px;color:var(--text-secondary);line-height:1.6;background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;margin-bottom:10px;border-left:2px solid var(--accent2)"></div>
-      <button id="coachChatBtn" onclick="showCoachProfile()" style="display:none;width:100%;padding:10px;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.3);border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--accent2);cursor:pointer;text-align:center;transition:opacity 0.15s">💬 Hablar con <span id="coachChatBtnName">tu coach</span></button>
+      <div id="coachDailyMessage" style="display:none;font-size:13px;color:var(--text-secondary);line-height:1.6;background:rgba(255,255,255,0.03);border-radius:10px;padding:11px 13px;margin-bottom:10px;border-left:2px solid var(--accent2)"></div>
+      <button id="coachChatBtn" onclick="showCoachProfile()" style="display:none;width:100%;padding:11px;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.3);border-radius:10px;font-family:var(--font);font-size:14px;font-weight:700;color:var(--accent2);cursor:pointer;text-align:center">💬 Hablar con <span id="coachChatBtnName">tu coach</span></button>
     </div>
 
     <!-- Coach empty state -->
-    <div id="coachEmptyState" style="display:none;background:var(--surface);border:1px dashed rgba(255,255,255,0.1);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px">
-      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">Elige tu entrenador IA personal</div>
-      <button onclick="openCoachChangeSheet()" style="padding:8px 20px;background:var(--accent2);color:#fff;border:none;border-radius:20px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer">Elegir coach →</button>
+    <div id="coachEmptyState" style="display:none;background:var(--surface);border:1px dashed rgba(255,255,255,0.1);border-radius:16px;padding:16px;text-align:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:10px">Elige tu entrenador IA personal</div>
+      <button onclick="openCoachChangeSheet()" style="padding:10px 24px;background:var(--accent2);color:#fff;border:none;border-radius:20px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer">Elegir coach →</button>
     </div>
 
-    <!-- ③ STATS GRID — oculto en home, visible solo en workoutHub -->
-    <div class="weekly-stats-grid" style="display:none">
-      <div class="wsg-item">
-        <div class="wsg-value" id="weekSessions">0</div>
-        <div class="wsg-label">Sesiones</div>
+    <!-- RACHA — bloque propio con peso visual -->
+    <div style="background:linear-gradient(135deg,rgba(0,229,255,0.05),rgba(123,97,255,0.05));border:1px solid rgba(0,229,255,0.12);border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:26px;flex-shrink:0">🔥</div>
+      <div style="flex:1">
+        <div style="font-size:22px;font-weight:800;color:var(--text-primary);font-family:var(--font-display);line-height:1">
+          <span id="streakBadgeNew"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px">Racha semanal activa</div>
       </div>
-      <div class="wsg-item">
-        <div class="wsg-value" id="weekTime">0:00</div>
-        <div class="wsg-label">Tiempo</div>
-      </div>
-      <div class="wsg-item">
-        <div class="wsg-value" id="weekStreak">0</div>
-        <div class="wsg-label">Racha sem.</div>
+      <div>
+        <div id="weekDayDots" style="display:flex;gap:4px"></div>
+        <div id="weekDayLabels" style="display:flex;gap:4px;margin-top:3px"></div>
       </div>
     </div>
 
     <!-- Tips / AI Insight (ocultos por defecto) -->
     <div id="homeTipsSection" style="display:none">
-      <div class="section-title" style="margin-top:20px">💡 Para ti</div>
+      <div class="section-title" style="margin-top:16px">💡 Para ti</div>
       <div id="homeTipsList" class="tips-section"></div>
     </div>
-    <div id="homeAIInsightCard" style="display:none;margin-bottom:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
+    <div id="homeAIInsightCard" style="display:none;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
       <div style="background:linear-gradient(135deg,var(--accent2),var(--primary));padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:8px">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="#000"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -3249,28 +3251,28 @@ body {
       </div>
     </div>
 
-    <!-- ④ FATIGA MUSCULAR -->
-    <div id="muscleFatigueSection" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px">Estado muscular hoy</span>
-        <span style="font-size:10px;color:var(--text-tertiary)">Basado en tus entrenos</span>
+    <!-- MAPA MUSCULAR — contenedor conservado INTACTO con header mejorado -->
+    <div id="muscleFatigueSection" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:12px;font-weight:700;color:var(--text-primary)">Estado muscular hoy</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--success)"></div><span style="font-size:9px;color:var(--text-tertiary)">Listo</span></div>
+          <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--warning)"></div><span style="font-size:9px;color:var(--text-tertiary)">Recuperando</span></div>
+          <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--danger)"></div><span style="font-size:9px;color:var(--text-tertiary)">Fatigado</span></div>
+        </div>
       </div>
       <div id="muscleFatigueMap"></div>
       <div id="muscleFatigueEmpty" style="font-size:12px;color:var(--text-tertiary);text-align:center;padding:8px 0;display:none">Registra entrenamientos para ver tu estado muscular</div>
     </div>
 
-    <!-- ⑤ RACHA SEMANAL -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px">Esta semana</span>
-        <span id="streakBadgeNew" style="font-size:11px;font-weight:700;color:var(--primary)"></span>
-      </div>
-      <div id="weekDayDots" style="display:flex;gap:4px"></div>
-      <div id="weekDayLabels" style="display:flex;gap:4px;margin-top:4px"></div>
-      <div id="weekFirstTip" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(0,229,255,0.05);border-left:2px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.6"></div>
+    <!-- Stats grid — oculto, solo compatibilidad JS -->
+    <div class="weekly-stats-grid" style="display:none">
+      <div class="wsg-item"><div class="wsg-value" id="weekSessions">0</div><div class="wsg-label">Sesiones</div></div>
+      <div class="wsg-item"><div class="wsg-value" id="weekTime">0:00</div><div class="wsg-label">Tiempo</div></div>
+      <div class="wsg-item"><div class="wsg-value" id="weekStreak">0</div><div class="wsg-label">Racha sem.</div></div>
     </div>
 
-    <!-- ⑥ TARJETA DE CONTENIDO DIARIA -->
+    <!-- Tarjeta de contenido diario -->
     <div id="dailyContentCard" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;cursor:pointer">
       <div id="dailyContentInner" style="padding:14px"></div>
     </div>
@@ -3279,6 +3281,7 @@ body {
     <div id="homeRecents" style="display:none"></div>
     <span id="homeStreakBadge" style="display:none"></span>
     <div id="weekAdherence" style="display:none"></div>
+    <div id="weekFirstTip" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(0,229,255,0.05);border-left:2px solid var(--primary);border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.6"></div>
 
     <div style="height:90px"></div>
   </div>
