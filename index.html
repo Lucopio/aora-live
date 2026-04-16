@@ -3660,6 +3660,19 @@ body {
       </div>
     </div>
 
+    <!-- Card del coach -->
+<div style="background:linear-gradient(135deg,rgba(0,229,255,0.05),rgba(123,97,255,0.07));border:1px solid rgba(0,229,255,0.14);border-radius:14px;padding:14px;margin-bottom:14px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+    <div id="insightsCoachAvatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1a2035,#201528);border:2px solid rgba(123,97,255,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"></div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:var(--text-primary)" id="insightsCoachName">Tu coach analiza tu semana</div>
+      <div style="font-size:10px;color:var(--text-tertiary);margin-top:1px">Basado en tus entrenamientos reales</div>
+    </div>
+    <div style="font-size:9px;padding:3px 9px;background:rgba(0,229,255,0.1);color:var(--primary);border-radius:20px;font-weight:700">Esta semana</div>
+  </div>
+  <div id="insightsCoachSummary" style="font-size:12px;color:#D1D5DB;font-style:italic;line-height:1.6;border-left:2px solid rgba(123,97,255,0.35);padding-left:10px">Genera tu análisis para ver el comentario de tu coach.</div>
+</div>
+
     <!-- Resumen semanal -->
     <div class="insights-card" id="insightsSummary">
       <div class="insights-card-title" style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:12px">Esta semana</div>
@@ -3883,7 +3896,33 @@ body {
 <!-- SETTINGS -->
 <div class="screen" id="settingsScreen">
   <div class="screen-pad">
-    <div class="settings-header"><h1>Ajustes</h1></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <h1 style="font-size:24px;font-weight:800;color:var(--text-primary);font-family:var(--font-display);margin:0">Yo</h1>
+        <div id="settingsPlanSubtitle" style="font-size:11px;color:var(--text-tertiary);margin-top:2px">Plan Explorer · gratuito</div>
+      </div>
+    </div>
+
+    <!-- Sección plan — siempre visible -->
+    <div id="planSection" style="background:linear-gradient(135deg,rgba(0,229,255,0.04),rgba(123,97,255,0.05));border:1px solid rgba(0,229,255,0.14);border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:15px;font-weight:700;color:var(--text-primary)" id="planNameDisplay">Explorer</div>
+        <div style="font-size:9px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.07);color:var(--text-tertiary);font-weight:700" id="planBadgeDisplay">GRATIS</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+        <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 10px">
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary)" id="planChatUsage">—</div>
+          <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:4px 0"><div id="planChatBar" style="height:100%;border-radius:2px;background:var(--warning);width:0%"></div></div>
+          <div style="font-size:9px;color:var(--text-tertiary);margin-top:2px">Mensajes hoy</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 10px">
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary)" id="planAnalysisUsage">—</div>
+          <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:4px 0"><div id="planAnalysisBar" style="height:100%;border-radius:2px;background:#7B61FF;width:0%"></div></div>
+          <div style="font-size:9px;color:var(--text-tertiary);margin-top:2px">Análisis este mes</div>
+        </div>
+      </div>
+      <button onclick="showToast('Coach Pro disponible próximamente 🚀', 'info')" style="width:100%;padding:12px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--primary);cursor:pointer">Ver Coach Pro — $7.99/mes →</button>
+    </div>
 
     <!-- Perfil (visible solo cuando hay sesion) -->
     <div id="profileGroup" style="display:none">
@@ -6978,16 +7017,20 @@ function showScreen(name) {
   if (name === 'history') renderHistory();
   if (name === 'insights') {
     renderInsights(); loadLastAIInsights(); updateAnalyticsScreen();
-    // Mostrar rango de fechas en el header
     const rangeEl = document.getElementById('insightsDateRange');
     if (rangeEl) {
       const now = new Date();
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-      weekStart.setHours(0, 0, 0, 0);
-      const fmt = d => d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+      weekStart.setHours(0,0,0,0);
+      const fmt = d => d.toLocaleDateString('es-CO',{day:'numeric',month:'short'});
       rangeEl.textContent = fmt(weekStart) + ' – ' + fmt(now) + ' · ' + now.getFullYear();
     }
+    const coach = typeof getSelectedCoach === 'function' ? getSelectedCoach() : null;
+    const nameEl = document.getElementById('insightsCoachName');
+    const avatarEl = document.getElementById('insightsCoachAvatar');
+    if (coach && nameEl) nameEl.textContent = coach.name + ' analiza tu semana';
+    if (coach && avatarEl && typeof coachAvatarHtml === 'function') avatarEl.innerHTML = coachAvatarHtml(coach, 36);
   }
   if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); }
   if (name === 'workoutHub') {
@@ -7011,7 +7054,7 @@ function showScreen(name) {
       }, 400);
     }
   }
-  if (name === 'settings') { updateAccountUI(); }
+  if (name === 'settings') { updateAccountUI(); if (typeof renderPlanCard === 'function') renderPlanCard(); }
   if (name === 'workout') {
     // Mostrar dot de novedades si hay coachmarks no vistos — no disparar automáticamente
     setTimeout(() => {
@@ -14400,6 +14443,25 @@ async function handleLogout() {
   currentUser = null;
   updateAccountUI();
   showScreen('auth');
+}
+
+function renderPlanCard() {
+  const limit = typeof CHAT_DAILY_LIMIT !== 'undefined' ? CHAT_DAILY_LIMIT : 10;
+  const used = typeof getChatCount === 'function' ? getChatCount() : 0;
+  const analysesLimit = 2;
+  const now = new Date();
+  const monthKey = 'aora_analyses_' + now.getFullYear() + '_' + (now.getMonth()+1);
+  const analysesUsed = parseInt(localStorage.getItem(monthKey) || '0');
+  const chatPct = Math.min(100, Math.round((used / limit) * 100));
+  const analysisPct = Math.min(100, Math.round((analysesUsed / analysesLimit) * 100));
+  const chatEl = document.getElementById('planChatUsage');
+  const chatBar = document.getElementById('planChatBar');
+  const analysisEl = document.getElementById('planAnalysisUsage');
+  const analysisBar = document.getElementById('planAnalysisBar');
+  if (chatEl) chatEl.textContent = used + '/' + limit;
+  if (chatBar) chatBar.style.width = chatPct + '%';
+  if (analysisEl) analysisEl.textContent = analysesUsed + '/' + analysesLimit;
+  if (analysisBar) analysisBar.style.width = analysisPct + '%';
 }
 
 function updateAccountUI() {
