@@ -24,5 +24,18 @@
       "Credentials/**",
       ".git/**"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat .claude/agents/aora-dev.md"
+          }
+        ]
+      }
+    ]
   }
 }

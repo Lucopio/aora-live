@@ -1,11 +1,1 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    {
-      "name": "aora-live",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["G:/Mi unidad/Otros proyectos/AoraLive/aora-live/serve.js"],
-      "port": 3000
-    }
-  ]
-}
+{"version":"0.0.1","configurations":[{"name":"aora-live","runtimeExecutable":"npx","runtimeArgs":["serve","-p","5500","."],"port":5500}]}
