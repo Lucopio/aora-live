@@ -16024,14 +16024,30 @@ function renderHomeRoutineCarousel() {
   const wrap  = document.getElementById('homeRoutineCarousel');
   const track = document.getElementById('hrcTrack');
   if (!wrap || !track) return;
-  const routines = _getLocalRoutines();
-  if (routines.length === 0) { wrap.style.display = 'none'; return; }
+
   wrap.style.display = 'block';
+  const routines = _getLocalRoutines();
+
+  if (routines.length === 0) {
+    track.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1.5px dashed var(--border);border-radius:12px;cursor:pointer;min-width:200px;flex-shrink:0" onclick="openRoutineEditor()">
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-primary)">Crear mi rutina</div>
+          <div style="font-size:8px;color:var(--text-tertiary);margin-top:1px">Ejercicios, días y descansos</div>
+        </div>
+      </div>`;
+    return;
+  }
+
   const sorted = [...routines].sort((a, b) => {
     const ta = a.last_used_at || a.created_at || '';
     const tb = b.last_used_at || b.created_at || '';
     return tb.localeCompare(ta);
   });
+
   track.innerHTML = sorted.map(r => {
     const isActive = currentSelectedRoutine?.id === r.id;
     const exCount  = r.exercises?.length || 0;
