@@ -5188,6 +5188,28 @@ const COACH_ALERTS = {
       "Series intensas completadas. Respeta el descanso. El próximo ejercicio será mejor por esto."
     ]
   },
+  heavySetExtendedRest: {
+    maria: [
+      "¡Ese set estuvo durísimo! 🔥 Te agregué {{secs}}s más de descanso — tu cuerpo los necesita.",
+      "Con ese RPE tan alto, sumé {{secs}}s al descanso. Respíralos, parcera. ¡Vas fuerte!",
+      "Eso fue intenso 💪 Te di {{secs}}s extra. Cuando sientas el pulso tranquilo, seguimos."
+    ],
+    carlos: [
+      "RPE alto detectado. +{{secs}}s al descanso actual para recuperar SNC y fosfocreatina.",
+      "Carga acumulada alta. Extendí el descanso {{secs}}s. No negociable para mantener intensidad.",
+      "Series intensas. Sumé {{secs}}s. Respeta el tiempo completo."
+    ],
+    andrea: [
+      "Sentí la intensidad de ese bloque. Te sumé {{secs}}s más — no es perder tiempo, es respetar lo que hiciste. 🌿",
+      "Ese trabajo merece recuperación completa. Agregué {{secs}}s al descanso actual.",
+      "Tu cuerpo trabajó duro. Sumé {{secs}}s — tomalos con calma."
+    ],
+    diego: [
+      "Trabajo pesado. +{{secs}}s. El que respeta la recuperación, construye.",
+      "Serie exigente. Extendí el descanso {{secs}}s. Respetalo.",
+      "Intensidad detectada. Sumé {{secs}}s. La recuperación no es pausa — es parte del trabajo."
+    ]
+  },
   hydration: {
     maria: [
       "¡Ey! ¿Cuándo tomaste agua por última vez? 💧 Cada 15-20 min es clave, parcera. El rendimiento baja antes de que sientas sed.",
@@ -5384,7 +5406,7 @@ function getRandomAlertMessage(alertType) {
   return msgs[Math.floor(Math.random() * msgs.length)];
 }
 
-function showCoachAlertToast(alertType) {
+function showCoachAlertToast(alertType, vars) {
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -5393,6 +5415,12 @@ function showCoachAlertToast(alertType) {
     window._pendingSetFeedbackMsg = null;
   } else {
     message = getRandomAlertMessage(alertType);
+  }
+  // Reemplazo de variables {{key}} con valores del objeto vars
+  if (vars && typeof vars === 'object' && message) {
+    Object.keys(vars).forEach(k => {
+      message = message.replace(new RegExp(`{{${k}}}`, 'g'), vars[k]);
+    });
   }
   // Registrar en historial (máx 20 entradas, ignorar setFeedback para no saturar)
   if (alertType !== 'setFeedback') {
@@ -5599,9 +5627,11 @@ function checkWorkoutAlerts() {
     setTimeout(() => showCoachAlertToast('sessionLength'), 3000);
   }
 
-  // Inactividad: alerta si llevan más de 5 min sin registrar series (máx 2 veces)
+  // Inactividad: alerta si llevan más de 5 min sin registrar series (máx 2 veces).
+  // No dispara si el usuario está en un descanso activo — eso es actividad legítima.
   if (
     workoutMode === 'full' &&
+    !isResting &&
     _inactivityAlertCount < 2 &&
     _lastSetRegisteredAt !== null &&
     (Date.now() - _lastSetRegisteredAt) >= INACTIVITY_THRESHOLD_MS
@@ -6866,6 +6896,7 @@ let timerInterval = null;
 let exerciseCount = 0;
 let countdownInterval = null;
 let countdownRemaining = 0;
+let _restTotalSeconds = 0; // total del descanso actual (para cálculo por timestamp)
 let isResting = false;
 let audioCtx = null;
 let soundEnabled = true;
@@ -9945,6 +9976,7 @@ function showChangeExerciseDialog(newName, newEquip) {
 
 function keepAndChangeExercise(newName, newEquip) {
   completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+  console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'keepAndChangeExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
   exerciseCount = completedExercises.length;
   currentExerciseSets = [];
   document.getElementById('changeExOverlay')?.remove();
@@ -9963,6 +9995,7 @@ function _doSelectExercise(name, equip) {
   // Save previous exercise if it had sets (normal flow — same exercise kept adding)
   if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: '_doSelectExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
   }
@@ -10397,18 +10430,36 @@ function nextExercise() {
       ? restSeconds
       : (REST_BY_MUSCLE_GROUP[group] || restSeconds);
     const { seconds: transitionRest, isHeavy } = _calcTransitionRest(currentExerciseSets, baseRest);
-    const _savedRest = restSeconds;
-    restSeconds = transitionRest;
-    if (isResting) skipRest(); // reemplazar descanso de serie con descanso de transición
-    startRestTimer();
-    restSeconds = _savedRest; // restaurar inmediatamente — no alterar config global
-    setTimeout(() => {
-      const sub = document.getElementById('restSub');
-      if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
-    }, 100);
-    // Coach alerta solo si fue exigente Y no hay otro toast de setFeedback pendiente
-    if (isHeavy && !window._pendingSetFeedbackMsg) {
-      setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
+
+    if (isResting && restStartedAt) {
+      // Ya está descansando — extender solo si falta para llegar al total de transición
+      const yaDescansado = Math.floor((Date.now() - restStartedAt) / 1000);
+      const delta = transitionRest - yaDescansado;
+      if (delta > 0) {
+        extendRest(delta);
+        setTimeout(() => {
+          const sub = document.getElementById('restSub');
+          if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
+        }, 100);
+        if (isHeavy && !window._pendingSetFeedbackMsg) {
+          setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 600);
+        }
+      } else {
+        const sub = document.getElementById('restSub');
+        if (sub) sub.textContent = `Ya descansaste ${yaDescansado}s · listo para continuar`;
+      }
+    } else {
+      const _savedRest = restSeconds;
+      restSeconds = transitionRest;
+      startRestTimer();
+      restSeconds = _savedRest;
+      setTimeout(() => {
+        const sub = document.getElementById('restSub');
+        if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
+      }, 100);
+      if (isHeavy && !window._pendingSetFeedbackMsg) {
+        setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
+      }
     }
   }
 
@@ -10417,6 +10468,7 @@ function nextExercise() {
   if (currentExerciseName && currentExerciseSets.length > 0) {
     const ssGroup = supersetActive ? (supersetGroupCounter || (supersetGroupCounter = 1)) : null;
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets], superset_group: ssGroup });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'nextExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
   }
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
@@ -10457,6 +10509,7 @@ function prevExercise() {
   }
   // Recuperar el último ejercicio completado
   const prev = completedExercises.pop();
+  console.log('[AORA:exerciseCount]', { action: 'pop', total: completedExercises.length, poppedName: prev?.name, location: 'prevExercise', timestamp: new Date().toISOString() });
   exerciseCount = completedExercises.length;
   document.getElementById('exBadge').textContent = exerciseCount;
   updatePendingPill();
@@ -11445,6 +11498,7 @@ function changeExercise() {
   // Guardar series actuales antes de cambiar ejercicio
   if (currentExerciseName && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'changeExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
   }
@@ -11516,6 +11570,7 @@ function startRestTimer() {
   _restTargetSet = currentExerciseSets.length > 0 ? currentExerciseSets[currentExerciseSets.length - 1] : null;
   const smartRest = getSmartRestSeconds();
   countdownRemaining = smartRest;
+  _restTotalSeconds = smartRest;
   const total = smartRest;
   const circ = 2 * Math.PI * 34;
   let halfwayAlertFired = false; // se activa una sola vez al llegar al 50%
@@ -11546,7 +11601,9 @@ function startRestTimer() {
   update();
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
-    countdownRemaining--;
+    // Cálculo por timestamp absoluto — resiliente a suspensión de JS (pantalla bloqueada)
+    const elapsed = Math.floor((Date.now() - restStartedAt) / 1000);
+    countdownRemaining = _restTotalSeconds - elapsed;
     if (countdownRemaining > 0) {
       // Alerta a mitad del descanso: vibración + pitido + voz (una sola vez)
       const halfPoint = Math.round(total / 2);
@@ -11722,6 +11779,7 @@ function adjustRest(seconds) {
 function extendRest(seconds) {
   if (!isResting) return;
   countdownRemaining += seconds;
+  _restTotalSeconds += seconds; // mantener el total alineado con la extensión
   if (_restTargetSet) {
     _restTargetSet.rest_extended_seconds = (_restTargetSet.rest_extended_seconds || 0) + seconds;
   }
@@ -12038,6 +12096,7 @@ function endWorkout() {
     // Save current exercise if it has sets
     if (currentExerciseName && currentExerciseSets.length > 0) {
       completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+      console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'finishWorkout', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     }
     exerciseCount = completedExercises.length;
     document.getElementById('sumExercises').textContent = exerciseCount;
@@ -13874,6 +13933,18 @@ function releaseWakeLock() {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && workoutStartTime && !document.getElementById('workoutScreen').classList.contains('active') === false) {
     requestWakeLock();
+  }
+});
+
+// Re-sincronizar rest timer al volver a foreground (evita timer pegado al bloquear pantalla)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isResting && restStartedAt) {
+    const elapsed = Math.floor((Date.now() - restStartedAt) / 1000);
+    countdownRemaining = _restTotalSeconds - elapsed;
+    const ringNum = document.getElementById('ringNumber');
+    if (ringNum && countdownRemaining >= 0) {
+      ringNum.textContent = countdownRemaining;
+    }
   }
 });
 
