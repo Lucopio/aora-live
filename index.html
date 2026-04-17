@@ -6360,21 +6360,36 @@ function updateChatCounter() {
 }
 
 // Obtiene un token de acceso válido sin colgarse si getSession() está bloqueado.
-// Estrategia: timeout → localStorage directo → nueva sesión anónima.
+// Estrategia: timeout → refresh → localStorage directo → nueva sesión anónima.
 async function _getCoachToken() {
-  // 1. Intentar getSession() con timeout de 3s (evita el deadlock del SDK)
+  // 1. Intentar getSession() con timeout de 8s (permite refresh automático del SDK)
   try {
     const result = await Promise.race([
       sb.auth.getSession(),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
     ]);
     const tok = result?.data?.session?.access_token;
     if (tok) { currentUser = currentUser || result.data.session.user; return tok; }
   } catch(e) {
-    console.warn('[coach] getSession bloqueado, usando localStorage...');
+    console.warn('[coach] getSession bloqueado, intentando refresh...');
   }
 
-  // 2. Leer token directamente del localStorage de Supabase
+  // 2. Intentar refreshSession() para renovar token expirado
+  try {
+    const { data, error } = await Promise.race([
+      sb.auth.refreshSession(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ]);
+    if (!error && data?.session?.access_token) {
+      console.log('[coach] token renovado via refreshSession OK');
+      currentUser = currentUser || data.session.user;
+      return data.session.access_token;
+    }
+  } catch(e) {
+    console.warn('[coach] refreshSession falló, usando localStorage...');
+  }
+
+  // 3. Leer token directamente del localStorage de Supabase
   try {
     const raw = localStorage.getItem('sb-edythbvezafpnkslavcv-auth-token');
     if (raw) {
@@ -6384,7 +6399,7 @@ async function _getCoachToken() {
     }
   } catch(e) {}
 
-  // 3. Crear sesión anónima nueva (skip_auth users)
+  // 4. Crear sesión anónima nueva (skip_auth users)
   if (localStorage.getItem('gymtracker_skip_auth') && sb) {
     try {
       console.log('[coach] creando sesión anónima nueva...');
