@@ -1411,6 +1411,24 @@ body {
 .exercise-card-name {
   font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;
 }
+
+/* ─── HOME ROUTINE CAROUSEL ─── */
+.home-routine-carousel { display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none; }
+.home-routine-carousel::-webkit-scrollbar { display:none; }
+.hrc-item { background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;min-width:115px;flex-shrink:0;cursor:pointer;transition:border-color .2s,background .2s;-webkit-tap-highlight-color:transparent; }
+.hrc-item.hrc-active { border-color:rgba(0,229,255,0.5);background:rgba(0,229,255,0.05); }
+.hrc-item.hrc-add { min-width:40px;display:flex;align-items:center;justify-content:center;border-style:dashed;border-color:var(--border); }
+.hrc-day { font-size:8px;color:var(--text-tertiary);letter-spacing:.7px;text-transform:uppercase;margin-bottom:3px; }
+.hrc-name { font-size:11px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px; }
+.hrc-meta { font-size:8px;color:var(--text-secondary); }
+.hrc-dot { width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px; }
+
+/* ─── EXERCISE CARD MEDIA ─── */
+.exercise-card-media { width:calc(100% + 32px);height:130px;margin:-16px -16px 14px -16px;background:var(--bg);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;flex-shrink:0; }
+.exercise-card-media img,.exercise-card-media video { width:100%;height:100%;object-fit:cover;border-radius:0; }
+.ecm-ph { display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.18; }
+.ecm-badge { position:absolute;top:7px;right:7px;background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.3);border-radius:5px;padding:2px 8px;font-size:10px;color:var(--primary);font-family:var(--font);font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+
 .sets-list { margin-bottom: 10px; min-height: 24px; }
 .set-chip {
   display: flex; align-items: center; justify-content: space-between;
@@ -3218,6 +3236,12 @@ body {
       </div>
     </div>
 
+    <!-- CARRUSEL DE RUTINAS — debajo de racha semanal -->
+    <div id="homeRoutineCarousel" style="display:none;margin-bottom:12px">
+      <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Mis rutinas</div>
+      <div class="home-routine-carousel" id="hrcTrack"></div>
+    </div>
+
     <!-- Tips / AI Insight (ocultos por defecto) -->
     <div id="homeTipsSection" style="display:none">
       <div class="section-title" style="margin-top:16px">💡 Para ti</div>
@@ -3382,6 +3406,16 @@ body {
 
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
+      <!-- Media zone — GIF / Video inline -->
+      <div class="exercise-card-media" id="exerciseCardMedia">
+        <div class="ecm-ph" id="ecmPh">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8,21 12,17 16,21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span style="font-size:10px;color:var(--text-tertiary)">Técnica</span>
+        </div>
+        <img  id="ecmImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
+        <video id="ecmVid" autoplay muted playsinline loop style="display:none;width:100%;height:100%;object-fit:cover"></video>
+        <div  id="ecmBadge" class="ecm-badge" style="display:none" onclick="showExerciseInfo(currentExerciseName)">▶ ver completo</div>
+      </div>
       <!-- 1. Nombre del ejercicio + botones -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0;flex:1">Ejercicio</div>
@@ -7040,7 +7074,7 @@ function showScreen(name) {
     if (coach && nameEl) nameEl.textContent = coach.name + ' analiza tu semana';
     if (coach && avatarEl && typeof coachAvatarHtml === 'function') avatarEl.innerHTML = coachAvatarHtml(coach, 36);
   }
-  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); }
+  if (name === 'home') { renderHomeTips(); setTimeout(() => generateDailyTip(), 2500); loadHomeAIInsight(); updateHomeGreeting(); updateCoachSpotlight(); renderMuscleRecoveryCard(); updateHomeDashboard(); renderHomeRoutineCarousel(); }
   if (name === 'workoutHub') {
     updateWorkoutHub();
     if (window._pendingReturnConfig) {
@@ -9948,6 +9982,26 @@ function _doSelectExercise(name, equip) {
   // Show name + equipment in card header
   const equipLabel = equip ? EQUIP_LABEL[equip] : '';
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
+  // ─── Inline media reset + load ───
+  const _ecmPh    = document.getElementById('ecmPh');
+  const _ecmImg   = document.getElementById('ecmImg');
+  const _ecmVid   = document.getElementById('ecmVid');
+  const _ecmBadge = document.getElementById('ecmBadge');
+  if (_ecmPh)    { _ecmPh.style.display = 'flex'; }
+  if (_ecmImg)   { _ecmImg.style.display = 'none'; _ecmImg.src = ''; }
+  if (_ecmVid)   { _ecmVid.style.display = 'none'; _ecmVid.src = ''; }
+  if (_ecmBadge) { _ecmBadge.style.display = 'none'; }
+  const _ecmTarget = name;
+  loadExerciseGif(name).then(result => {
+    if (!result || currentExerciseName !== _ecmTarget) return;
+    if (_ecmPh) _ecmPh.style.display = 'none';
+    if (result.type === 'video' && result.url && _ecmVid) {
+      _ecmVid.src = result.url; _ecmVid.style.display = 'block';
+    } else if (result.url && _ecmImg) {
+      _ecmImg.src = result.url; _ecmImg.style.display = 'block';
+    }
+    if (_ecmBadge) _ecmBadge.style.display = 'block';
+  }).catch(() => {});
   // #5 — mostrar/ocultar botón de GIF
   const wkInfoBtn = document.getElementById('wkInfoBtn');
   if (wkInfoBtn) wkInfoBtn.style.display = EXERCISE_INFO[name] ? 'flex' : 'none';
@@ -13964,8 +14018,15 @@ function loadFromStorage() {
   try {
     if (!currentSelectedRoutine) {
       const routines = _getLocalRoutines();
-      const obRoutine = routines.find(r => r.source === 'onboarding_ai');
-      if (obRoutine) currentSelectedRoutine = obRoutine;
+      const activeId = localStorage.getItem('aora_active_routine_id');
+      if (activeId) {
+        const saved = routines.find(r => r.id === activeId);
+        if (saved) { currentSelectedRoutine = saved; }
+      }
+      if (!currentSelectedRoutine) {
+        const obRoutine = routines.find(r => r.source === 'onboarding_ai');
+        if (obRoutine) currentSelectedRoutine = obRoutine;
+      }
     }
   } catch(e) {}
 
@@ -15959,6 +16020,53 @@ async function _syncRoutinesToSupabase() {
   } catch { /* silencioso */ }
 }
 
+function renderHomeRoutineCarousel() {
+  const wrap  = document.getElementById('homeRoutineCarousel');
+  const track = document.getElementById('hrcTrack');
+  if (!wrap || !track) return;
+  const routines = _getLocalRoutines();
+  if (routines.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const sorted = [...routines].sort((a, b) => {
+    const ta = a.last_used_at || a.created_at || '';
+    const tb = b.last_used_at || b.created_at || '';
+    return tb.localeCompare(ta);
+  });
+  track.innerHTML = sorted.map(r => {
+    const isActive = currentSelectedRoutine?.id === r.id;
+    const exCount  = r.exercises?.length || 0;
+    const restLbl  = r.rest_seconds ? r.rest_seconds + 's' : '90s';
+    const rawDays  = r.days_of_week;
+    const dayLbl   = Array.isArray(rawDays) && rawDays.length
+      ? rawDays.slice(0, 3).join(' · ')
+      : '';
+    return `<div class="hrc-item${isActive ? ' hrc-active' : ''}" onclick="hrcSelect('${r.id}')">
+      ${dayLbl ? `<div class="hrc-day">${dayLbl}</div>` : ''}
+      <div class="hrc-name">${r.name}</div>
+      <div class="hrc-meta">${exCount} ejerc. · ${restLbl} desc.</div>
+      ${isActive ? '<div class="hrc-dot"></div>' : ''}
+    </div>`;
+  }).join('') +
+  `<div class="hrc-item hrc-add" onclick="openRoutineEditor()" title="Nueva rutina">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text-tertiary)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </div>`;
+}
+
+function hrcSelect(routineId) {
+  const routines = _getLocalRoutines();
+  const routine  = routines.find(r => r.id === routineId);
+  if (!routine) return;
+  currentSelectedRoutine = routine;
+  localStorage.setItem('aora_active_routine_id', routineId);
+  renderHomeRoutineCarousel();
+  updateRoutineBanner(routine);
+  const lbl = document.getElementById('hubNewBtnLabel');
+  const sub = document.getElementById('hubNewBtnSub');
+  if (lbl) lbl.textContent = routine.name;
+  if (sub) sub.textContent = (routine.exercises?.length || 0) + ' ejerc. · listo para entrenar';
+  showToast('\u2713 ' + routine.name + ' seleccionada', 'success');
+}
+
 function loadUserRoutines() {
   const container  = document.getElementById('myRoutinesList');
   const emptyState = document.getElementById('emptyRoutinesState');
@@ -15991,6 +16099,7 @@ function selectRoutineFromModal(routineId) {
   const routine  = routines.find(r => r.id === routineId);
   if (!routine) { showToast('Rutina no encontrada', 'error'); return; }
   currentSelectedRoutine = routine;
+  localStorage.setItem('aora_active_routine_id', routineId);
   updateRoutineBanner(routine);
   closeRoutineSelector();
   showToast(`✓ Rutina "${routine.name}" seleccionada`, 'success');
