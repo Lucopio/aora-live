@@ -6389,26 +6389,29 @@ async function _getCoachToken() {
     console.warn('[coach] refreshSession falló, usando localStorage...');
   }
 
-  // 3. Leer token directamente del localStorage de Supabase
+  // 3. Leer token de localStorage SOLO si no está expirado
   try {
     const raw = localStorage.getItem('sb-edythbvezafpnkslavcv-auth-token');
     if (raw) {
       const stored = JSON.parse(raw);
       const tok = stored?.access_token;
-      if (tok) { console.log('[coach] token leído de localStorage OK'); return tok; }
+      const exp = stored?.expires_at; // segundos desde epoch
+      const valid = tok && (!exp || (Date.now() / 1000) < exp);
+      if (valid) { console.log('[coach] token localStorage válido OK'); return tok; }
+      if (tok) console.warn('[coach] token localStorage EXPIRADO (exp=' + exp + '), descartando');
     }
   } catch(e) {}
 
-  // 4. Crear sesión anónima nueva (skip_auth users)
-  if (localStorage.getItem('gymtracker_skip_auth') && sb) {
+  // 4. Último recurso: sesión anónima — funciona para cualquier usuario
+  if (sb) {
     try {
-      console.log('[coach] creando sesión anónima nueva...');
+      console.log('[coach] creando sesión anónima para TTS...');
       const { data, error } = await sb.auth.signInAnonymously();
       if (!error && data?.session?.access_token) {
-        currentUser = data.user;
+        currentUser = currentUser || data.user;
         return data.session.access_token;
       }
-    } catch(e) {}
+    } catch(e) { console.warn('[coach] signInAnonymously falló:', e.message); }
   }
   return null;
 }
