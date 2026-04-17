@@ -6389,30 +6389,34 @@ async function _getCoachToken() {
     console.warn('[coach] refreshSession falló, usando localStorage...');
   }
 
-  // 3. Leer token de localStorage SOLO si no está expirado
-  try {
-    const raw = localStorage.getItem('sb-edythbvezafpnkslavcv-auth-token');
-    if (raw) {
-      const stored = JSON.parse(raw);
-      const tok = stored?.access_token;
-      const exp = stored?.expires_at; // segundos desde epoch
-      const valid = tok && (!exp || (Date.now() / 1000) < exp);
-      if (valid) { console.log('[coach] token localStorage válido OK'); return tok; }
-      if (tok) console.warn('[coach] token localStorage EXPIRADO (exp=' + exp + '), descartando');
-    }
-  } catch(e) {}
-
-  // 4. Último recurso: sesión anónima — funciona para cualquier usuario
+  // 3. Si getSession y refreshSession fallaron, el SDK no puede validar la sesión.
+  //    Ir directo a sesión anónima — más confiable que un token posiblemente revocado.
   if (sb) {
     try {
-      console.log('[coach] creando sesión anónima para TTS...');
+      console.log('[coach] SDK sin sesión válida, creando sesión anónima para TTS...');
       const { data, error } = await sb.auth.signInAnonymously();
       if (!error && data?.session?.access_token) {
+        console.log('[coach] sesión anónima OK');
         currentUser = currentUser || data.user;
         return data.session.access_token;
       }
     } catch(e) { console.warn('[coach] signInAnonymously falló:', e.message); }
   }
+
+  // 4. Último recurso: localStorage (puede estar revocado, pero es lo único que queda)
+  try {
+    const raw = localStorage.getItem('sb-edythbvezafpnkslavcv-auth-token');
+    if (raw) {
+      const stored = JSON.parse(raw);
+      const tok = stored?.access_token;
+      const exp = stored?.expires_at;
+      if (tok && (!exp || (Date.now() / 1000) < exp)) {
+        console.log('[coach] usando token localStorage como último recurso');
+        return tok;
+      }
+    }
+  } catch(e) {}
+
   return null;
 }
 
