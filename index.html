@@ -12987,8 +12987,9 @@ async function _speakElevenLabs(text, coachId) {
       const audio = new Audio(_elAudioCache[cacheKey]);
       try { await audio.play(); return true; } catch(e) { return false; }
     }
-    const token = await _getCoachToken();
-    if (!token) { console.warn('[TTS] Sin token auth, usando fallback'); return false; }
+    // Usar anon key directamente — evita la cadena de auth que falla en sesiones expiradas
+    const token = (typeof SB_ANON !== 'undefined' && SB_ANON) ? SB_ANON : await _getCoachToken();
+    if (!token) { console.warn('[TTS] Sin token, usando fallback'); return false; }
     const ctrl = new AbortController();
     const timeout = setTimeout(() => ctrl.abort(), 9000); // 9s — EL tarda 1-3s + red móvil
     let res;

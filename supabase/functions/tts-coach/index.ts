@@ -1,8 +1,5 @@
-import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const ELEVENLABS_API_KEY   = Deno.env.get("ELEVENLABS_API_KEY") ?? "";
-const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY") ?? "";
+const SUPABASE_ANON_KEY  = Deno.env.get("SUPABASE_ANON_KEY")  ?? "";
 
 // ── Voice IDs por coach ────────────────────────────────────────────────────
 const VOICE_IDS: Record<string, string> = {
@@ -44,7 +41,6 @@ function jsonErr(msg: string, status: number, cors: Record<string, string>) {
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
-  // Preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -53,15 +49,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // 1. Auth — protege la key de ElevenLabs de uso no autorizado
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return jsonErr("Unauthorized", 401, corsHeaders);
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-    if (authErr || !user) return jsonErr("Unauthorized", 401, corsHeaders);
+    // 1. Auth — verificar anon key (ya pública en el frontend, protege de abuso externo)
+    const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "").trim();
+    if (!token || token !== SUPABASE_ANON_KEY) {
+      return jsonErr("Unauthorized", 401, corsHeaders);
+    }
 
     // 2. Parse body
     const body = await req.json().catch(() => ({}));
