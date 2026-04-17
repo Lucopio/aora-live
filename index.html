@@ -1424,11 +1424,6 @@ body {
 .hrc-dot { width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px; }
 
 /* ─── EXERCISE CARD MEDIA ─── */
-.exercise-card-media { width:calc(100% + 32px);height:130px;margin:-16px -16px 14px -16px;background:var(--bg);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;flex-shrink:0; }
-.exercise-card-media img,.exercise-card-media video { width:100%;height:100%;object-fit:cover;border-radius:0; }
-.ecm-ph { display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.18; }
-.ecm-badge { position:absolute;top:7px;right:7px;background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.3);border-radius:5px;padding:2px 8px;font-size:10px;color:var(--primary);font-family:var(--font);font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent; }
-
 .sets-list { margin-bottom: 10px; min-height: 24px; }
 .set-chip {
   display: flex; align-items: center; justify-content: space-between;
@@ -2448,7 +2443,7 @@ body {
 .chat-input-area {
   flex-shrink: 0;
   background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255,255,255,0.04);
   padding: 10px 12px 12px;
 }
 .chat-login-prompt { text-align: center; padding: 12px 0; }
@@ -2505,7 +2500,7 @@ body {
   right: 16px;
   max-width: 398px;
   margin: 0 auto;
-  background: transparent;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 14px 16px;
@@ -2514,10 +2509,12 @@ body {
   gap: 12px;
   z-index: 900;
   transform: translateY(120%);
-  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease;
   box-shadow: 0 0 32px rgba(0,0,0,0.4);
 }
-.coach-alert-toast.visible { transform: translateY(0); }
+.coach-alert-toast.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 .coach-alert-avatar { font-size: 32px; line-height: 1; flex-shrink: 0; }
 .coach-alert-body { flex: 1; }
 .coach-alert-name {
@@ -2585,9 +2582,11 @@ body {
 }
 .ob-coach-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 
-/* GIF invert para dark background */
-#exGifImg {
-  filter: invert(1);
+/* GIF invert para dark background — preserva colores rojos de músculos marcados */
+#exGifImg,
+#ex-info-gif,
+#wuGifImg {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 </style>
@@ -3406,16 +3405,6 @@ body {
 
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
-      <!-- Media zone — GIF / Video inline -->
-      <div class="exercise-card-media" id="exerciseCardMedia">
-        <div class="ecm-ph" id="ecmPh">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8,21 12,17 16,21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          <span style="font-size:10px;color:var(--text-tertiary)">Técnica</span>
-        </div>
-        <img  id="ecmImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
-        <video id="ecmVid" autoplay muted playsinline loop style="display:none;width:100%;height:100%;object-fit:cover"></video>
-        <div  id="ecmBadge" class="ecm-badge" style="display:none" onclick="showExerciseInfo(currentExerciseName)">▶ ver completo</div>
-      </div>
       <!-- 1. Nombre del ejercicio + botones -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0;flex:1">Ejercicio</div>
@@ -6359,7 +6348,23 @@ function appendChatBubble(role, text) {
     div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1);border-radius:10px;font-size:12px;text-align:center">${text}</div>`;
   }
   wrap.appendChild(div);
-  wrap.scrollTop = wrap.scrollHeight;
+  // Log defensivo — diagnóstico de mensajes largos que "no aparecen"
+  console.log('[AORA:chat]', {
+    role,
+    length: text.length,
+    bubbleHeight: div.offsetHeight,
+    wrapScrollHeight: wrap.scrollHeight,
+    wrapClientHeight: wrap.clientHeight,
+    timestamp: new Date().toISOString()
+  });
+  // Doble RAF: esperar al layout Y al paint antes de hacer scroll
+  // Evita el salto visual al inicio cuando el auto-resize del textarea
+  // cambia el viewport antes de que el bubble se renderice
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      wrap.scrollTop = wrap.scrollHeight;
+    });
+  });
 }
 
 function showTypingIndicator() {
@@ -10015,27 +10020,7 @@ function _doSelectExercise(name, equip) {
   // Show name + equipment in card header
   const equipLabel = equip ? EQUIP_LABEL[equip] : '';
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
-  // ─── Inline media reset + load ───
-  const _ecmPh    = document.getElementById('ecmPh');
-  const _ecmImg   = document.getElementById('ecmImg');
-  const _ecmVid   = document.getElementById('ecmVid');
-  const _ecmBadge = document.getElementById('ecmBadge');
-  if (_ecmPh)    { _ecmPh.style.display = 'flex'; }
-  if (_ecmImg)   { _ecmImg.style.display = 'none'; _ecmImg.src = ''; }
-  if (_ecmVid)   { _ecmVid.style.display = 'none'; _ecmVid.src = ''; }
-  if (_ecmBadge) { _ecmBadge.style.display = 'none'; }
-  const _ecmTarget = name;
-  loadExerciseGif(name).then(result => {
-    if (!result || currentExerciseName !== _ecmTarget) return;
-    if (_ecmPh) _ecmPh.style.display = 'none';
-    if (result.type === 'video' && result.url && _ecmVid) {
-      _ecmVid.src = result.url; _ecmVid.style.display = 'block';
-    } else if (result.url && _ecmImg) {
-      _ecmImg.src = result.url; _ecmImg.style.display = 'block';
-    }
-    if (_ecmBadge) _ecmBadge.style.display = 'block';
-  }).catch(() => {});
-  // #5 — mostrar/ocultar botón de GIF
+  // Mostrar/ocultar botón "Cómo hacerlo" según si hay info para el ejercicio
   const wkInfoBtn = document.getElementById('wkInfoBtn');
   if (wkInfoBtn) wkInfoBtn.style.display = EXERCISE_INFO[name] ? 'flex' : 'none';
 
