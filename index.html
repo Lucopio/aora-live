@@ -7535,8 +7535,8 @@ function _calcTransitionRest(sets, baseRest) {
   const rpeValues = workSets.map(s => s.rpe).filter(r => r != null && r > 0);
   const avgRpe = rpeValues.length > 0 ? rpeValues.reduce((a, b) => a + b, 0) / rpeValues.length : 0;
   const setCount = workSets.length;
-  if (setCount > 3 && avgRpe > 7) return { seconds: 180, isHeavy: true };
-  if (setCount > 3 && avgRpe >= 5) return { seconds: 120, isHeavy: false };
+  if (setCount >= 3 && avgRpe > 7) return { seconds: 180, isHeavy: true };
+  if (setCount >= 3 && avgRpe >= 5) return { seconds: 120, isHeavy: false };
   return { seconds: Math.max(90, baseRest + 30), isHeavy: false };
 }
 
