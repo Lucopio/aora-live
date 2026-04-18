@@ -10526,7 +10526,7 @@ function nextExercise() {
           if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
         }, 100);
         if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
-          setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 600);
+          setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 1800);
         }
       } else {
         const sub = document.getElementById('restSub');
@@ -10543,7 +10543,7 @@ function nextExercise() {
         if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
       }, 100);
       if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
-        setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
+        setTimeout(() => showCoachAlertToast('heavySetTransition'), 1800);
       }
     }
   }
