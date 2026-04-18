@@ -5369,7 +5369,7 @@ const COACH_ALERTS = {
 // Alert control variables
 let hydrationAlertCount = 0;
 let sessionLongAlertFired = false;
-let warmupAlertFired = false;
+let warmupAlertFiredThisVisit = false;
 let _lastSetRegisteredAt = null;
 let _inactivityAlertCount = 0;
 const INACTIVITY_THRESHOLD_MS = 5 * 60 * 1000;
@@ -6585,6 +6585,15 @@ async function sendCoachMessage() {
   input.style.height = 'auto';
   appendChatBubble('user', text);
   _coachMsgQueue.push(text);
+  // Persist immediately so navigation away doesn't lose the user bubble
+  {
+    const _c = getSelectedCoach();
+    if (_c) {
+      const _h = getChatHistory(_c.id);
+      _h.push({ role: 'user', content: text, ts: new Date().toISOString() });
+      saveChatHistory(_c.id, _h);
+    }
+  }
 
   // Mostrar "escribiendo..." solo si no hay uno ya
   if (!document.getElementById('chatTyping')) showTypingIndicator();
@@ -6694,7 +6703,6 @@ async function _sendCoachMessageCore(text) {
 
     // ── 4. Mostrar respuesta ─────────────────────────────────────────────────
     appendChatBubble('coach', data.response);
-    history.push({ role: 'user',      content: text,          ts: new Date().toISOString() });
     history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
     saveChatHistory(coach.id, history);
     incrementChatCount();
@@ -7586,7 +7594,7 @@ function confirmAbandonWorkout() {
   warmupStartTime = null;
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
-  warmupAlertFired = false;
+  warmupAlertFiredThisVisit = false;
   _hydrationFired.clear();
   _lastSetRegisteredAt = null;
   _inactivityAlertCount = 0;
@@ -8008,6 +8016,7 @@ function toggleWuInjury(el) {
 function showWarmup() {
   // If returning from active workout, don't reset workout state
   const fromWorkout = !!workoutStartTime;
+  warmupAlertFiredThisVisit = false;
   warmupDuration = 0;
   warmupStartTime = Date.now();
   document.getElementById('warmupDisplay').textContent = '00:00:00';
@@ -8051,8 +8060,8 @@ function skipWarmup() {
   warmupDuration = 0;
   // If workout already started, just return to it + alertar al coach una sola vez
   if (workoutStartTime) {
-    if (!warmupAlertFired) {
-      warmupAlertFired = true;
+    if (!warmupAlertFiredThisVisit) {
+      warmupAlertFiredThisVisit = true;
       setTimeout(() => showCoachAlertToast('warmupSkipped'), 1000);
     }
     showScreen('workout');
@@ -8113,8 +8122,7 @@ function launchWorkout() {
   }
 
   // Alert if user skipped warmup
-  if (warmupDuration === 0 && !warmupAlertFired) {
-    warmupAlertFired = true;
+  if (warmupDuration === 0) {
     setTimeout(() => showCoachAlertToast('warmupSkipped'), 2000);
     setTimeout(() => {
       const pill = document.getElementById('warmupReturnPill');
@@ -12747,7 +12755,7 @@ function saveAndExit() {
   // Reset coach alert state
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
-  warmupAlertFired = false;
+  warmupAlertFiredThisVisit = false;
   _hydrationFired.clear();
   _lastSetRegisteredAt = null;
   _inactivityAlertCount = 0;
@@ -12775,7 +12783,7 @@ function discardAndExit() {
   if (savedWorkouts.length > 0) savedWorkouts.shift();
   hydrationAlertCount = 0;
   sessionLongAlertFired = false;
-  warmupAlertFired = false;
+  warmupAlertFiredThisVisit = false;
   _hydrationFired.clear();
   _lastSetRegisteredAt = null;
   _inactivityAlertCount = 0;
