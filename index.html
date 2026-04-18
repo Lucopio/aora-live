@@ -2807,8 +2807,8 @@ body {
             <div class="w-coach-av"><img src="Images/coaches/diego1.png" alt="Diego" onerror="this.style.display='none'"></div>
             <div class="w-coach-flag">🇵🇪</div>
             <div class="w-coach-name">Diego</div>
-            <div class="w-coach-spec">Calistenia · Resiliencia</div>
-            <div class="w-coach-tag orange">Cuerpo libre</div>
+            <div class="w-coach-spec">Técnica · Resiliencia</div>
+            <div class="w-coach-tag orange">Técnica</div>
             <button onclick="event.stopPropagation();showCoachProfile('diego','welcome')" class="w-coach-profile-btn">Ver perfil →</button>
           </div>
         </div>
@@ -3061,7 +3061,7 @@ body {
           <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego1.png" alt="Diego"></div>
           <div class="trainer-flag">🇵🇪</div>
           <div class="trainer-name">Diego</div>
-          <div class="trainer-specialty">Resiliencia & Calistenia</div>
+          <div class="trainer-specialty">Resiliencia & Técnica</div>
           <button onclick="event.stopPropagation();showCoachProfile('diego','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
       </div>
@@ -4243,7 +4243,7 @@ body {
       <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego1.png" alt="Diego"></div>
       <div class="trainer-flag">🇵🇪</div>
       <div class="trainer-name">Diego</div>
-      <div class="trainer-specialty">Resiliencia & Calistenia</div>
+      <div class="trainer-specialty">Resiliencia & Técnica</div>
     </div>
   </div>
 </div>
@@ -5102,17 +5102,17 @@ const COACHES = {
     location: 'Disponible ahora · Buenos Aires, AR'
   },
   diego: {
-    name: 'Diego', emoji: '👨🏾', country: 'Perú', flag: '🇵🇪', specialty: 'Resiliencia & Calistenia', tone: 'sereno',
+    name: 'Diego', emoji: '👨🏾', country: 'Perú', flag: '🇵🇪', specialty: 'Resiliencia & Técnica', tone: 'sereno',
     photoUrl: 'Images/coaches/diego1.png',
-    bio: 'Entrenador peruano de calistenia y resiliencia. Con poco puedes lograr mucho. La mentalidad es el primer músculo que hay que entrenar.',
+    bio: 'Entrenador peruano de técnica y resiliencia. La forma correcta es el primer paso. La mentalidad es el primer músculo que hay que entrenar.',
     approach: [
-      'El cuerpo como herramienta: sin gimnasio, sin excusas.',
+      'Técnica antes que peso: el movimiento perfecto construye el físico perfecto.',
       'Mentalidad grit — la incomodidad es donde crece el progreso.',
-      'Nutrición ancestral y moderna: lo que te alimenta de verdad.'
+      'Progresión inteligente: cada semana un poco mejor, sin lesiones.'
     ],
     quote: 'El progreso no es lineal, pero es real. Yo lo sé.',
     stats: { exp: '8+', rating: '4.7★', sessions: '2.9k' },
-    tags: ['Calistenia', 'Resistencia', 'Mentalidad'],
+    tags: ['Técnica', 'Resistencia', 'Mentalidad'],
     location: 'Disponible ahora · Lima, PE'
   }
 };
@@ -6162,7 +6162,7 @@ const _OB_COACH_DESCS = {
   maria:  'María entrena con energía contagiosa y motivación constante. Su estilo HIIT funcional está diseñado para quemar calorías rápido sin perder la técnica. Directa, cálida y muy efectiva — ideal si quieres resultados visibles en poco tiempo.',
   carlos: 'Carlos es el coach de los datos. Analiza tu progreso, optimiza tus cargas y no acepta excusas. Su enfoque en fuerza e hipertrofia es metódico y probado. Perfecto si buscas masa muscular con ciencia detrás.',
   andrea: 'Andrea conecta el cuerpo con la mente. Su enfoque de bienestar integral combina movilidad, respiración y fuerza funcional. Empática y profunda — ideal si quieres entrenar de forma sostenible y cuidar tu salud a largo plazo.',
-  diego:  'Diego entrena con calma y propósito. Calistenia, control corporal y resiliencia mental son su firma. Filosófico y paciente — ideal si quieres dominar tu peso corporal y construir una base sólida.',
+  diego:  'Diego entrena con calma y propósito. Técnica, control corporal y resiliencia mental son su firma. Filosófico y paciente — ideal si quieres moverte mejor, evitar lesiones y construir una base sólida.',
 };
 let _obProfileCoachId = null;
 
@@ -7301,7 +7301,6 @@ const _CONFIG_GROUPS = [
   { key: 'Triceps',    abbr: 'Tríceps' },
   { key: 'Abdomen',    abbr: 'Abdomen' },
   { key: 'Cardio',     abbr: 'Cardio'  },
-  { key: 'Calistenia', abbr: 'Calist.' },
 ];
 
 function _renderConfigGroupChips() {
@@ -7561,16 +7560,15 @@ const REST_BY_MUSCLE_GROUP = {
   'Triceps':     90,
   'Abdomen':     60,
   'Cardio':      45,
-  'Calistenia':  90,
 };
 
 function getSmartRestSeconds() {
   if (window._userOverrodeRest) return restSeconds;
   const group = detectPrimaryMuscleGroup();
   if (!group) return restSeconds;
-  // Cardio y Calistenia: si el usuario ya tiene un descanso > 60s configurado,
+  // Cardio: si el usuario ya tiene un descanso > 60s configurado,
   // respetar su preferencia en lugar de forzar los 45s del grupo
-  if ((group === 'Cardio' || group === 'Calistenia') && restSeconds > 60) {
+  if (group === 'Cardio' && restSeconds > 60) {
     return restSeconds;
   }
   return REST_BY_MUSCLE_GROUP[group] || restSeconds;
@@ -8261,7 +8259,7 @@ function selectMode(mode) {
 
 // ─── Exercise Database ───────────────────────────────────────
 const exerciseDB = [
-  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Press con mancuernas', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna'] },
+  { group: 'Pecho',     items: ['Press de banca', 'Press inclinado', 'Aperturas', 'Fondos en paralelas', 'Crossover en polea', 'Press declinado', 'Pull-over con mancuerna'] },
   { group: 'Espalda',   items: ['Dominadas', 'Remo con barra', 'Remo con mancuerna', 'Jalones al pecho', 'Remo en maquina', 'Peso muerto', 'Remo en T', 'Face pull', 'Jalones agarre neutro', 'Pullover en polea', 'Hiperextensiones'] },
   { group: 'Hombros',   items: ['Press militar', 'Elevaciones laterales', 'Elevaciones frontales', 'Pajaros', 'Encogimientos de hombros'] },
   { group: 'Biceps',    items: ['Curl con barra', 'Curl con mancuernas', 'Curl martillo', 'Curl concentrado', 'Curl en polea', 'Curl inclinado', 'Curl en banca Scott'] },
@@ -8270,7 +8268,6 @@ const exerciseDB = [
   { group: 'Gluteos',   items: ['Hip thrust', 'Patada de gluteo en polea', 'Peso muerto a una pierna', 'Puente de gluteo', 'Abduccion con banda'] },
   { group: 'Abdomen',   items: ['Plancha', 'Crunch', 'Elevacion de piernas', 'Rueda abdominal', 'Russian twist', 'Crunch en polea', 'Plancha lateral', 'Mountain climbers', 'Hollow hold', 'Dragon flag'] },
   { group: 'Cardio',    items: ['Caminadora', 'Bicicleta estatica', 'Remo', 'Cuerda', 'Burpees', 'Eliptica', 'Escaladora', 'Saltos de caja', 'Sprint en caminadora'] },
-  { group: 'Calistenia', items: ['Muscle-up', 'L-sit', 'Pistol squat', 'Archer push-up', 'Pike push-up', 'Hollow body', 'Back lever'] },
 ];
 
 // ─── Exercise Catalog (inicializado tras EXERCISE_EQUIP ~línea 8435) ─────────
@@ -8291,13 +8288,6 @@ const EXERCISE_INFO = {
     tips: ['Banco a 30-45° para máximo énfasis en pectoral superior','Misma técnica que press plano','No subir demasiado el ángulo (se convierte en press de hombros)','Controla la bajada 2-3 segundos'],
     errors: ['Ángulo demasiado alto (>50°)','No bajar la barra al nivel del pecho superior','Arquear excesivamente la espalda baja'],
     yt: 'como hacer press inclinado correctamente'
-  },
-  'Press con mancuernas': {
-    muscles: ['Pectoral mayor','Tríceps','Deltoides ant.'],
-    desc: 'Versión con mancuernas del press de banca que permite mayor rango de movimiento y trabaja cada lado de forma independiente, mejorando los desequilibrios musculares.',
-    tips: ['Mayor rango de movimiento que con barra','Mantén las mancuernas paralelas o ligeramente rotadas','Junta las mancuernas arriba para mayor contracción','No dejes caer los codos por debajo del banco'],
-    errors: ['Dejar caer los codos demasiado abajo','Peso excesivo con mala técnica','No controlar la bajada'],
-    yt: 'press mancuernas tecnica correcta'
   },
   'Aperturas': {
     muscles: ['Pectoral mayor','Deltoides ant.'],
@@ -9030,7 +9020,7 @@ const SCIENCE_ROUTINES = {
           {name:'Sentadilla',sets:3,reps:'10-12',note:'Cuádriceps + glúteos'},
           {name:'Zancadas',sets:3,reps:'10 c/lado',note:'Glúteos + equilibrio'},
           {name:'Press de banca',sets:3,reps:'10-12',note:'Pecho'},
-          {name:'Press con mancuernas',sets:3,reps:'12-14',note:'Pecho + control'},
+          {name:'Press de banca',sets:3,reps:'12-14',note:'Pecho + control'},
           {name:'Jalones al pecho',sets:3,reps:'10-12',note:'Dorsal'},
           {name:'Curl con barra',sets:3,reps:'10-12',note:'Bíceps'},
         ]},
@@ -9092,7 +9082,7 @@ const SCIENCE_ROUTINES = {
         { name: 'Día B — Cuerpo completo', totalSets: 36, exercises: [
           {name:'Peso muerto',sets:4,reps:'5-7',note:'Cuerpo completo'},
           {name:'Prensa de piernas',sets:4,reps:'12-14',note:'Cuádriceps'},
-          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Pecho'},
+          {name:'Press de banca',sets:4,reps:'10-12',note:'Pecho'},
           {name:'Aperturas',sets:3,reps:'12-15',note:'Aislamiento pecho'},
           {name:'Dominadas',sets:4,reps:'6-10',note:'Dorsal'},
           {name:'Remo con mancuerna',sets:3,reps:'10-12',note:'Espalda'},
@@ -9151,7 +9141,7 @@ const SCIENCE_ROUTINES = {
         { name: 'Push — Empuje', totalSets: 20, exercises: [
           {name:'Press de banca',sets:4,reps:'8-10',note:'Pecho'},
           {name:'Press inclinado',sets:4,reps:'10-12',note:'Pecho superior'},
-          {name:'Press con mancuernas',sets:3,reps:'10-12',note:'Pecho estabilidad'},
+          {name:'Press de banca',sets:3,reps:'10-12',note:'Pecho estabilidad'},
           {name:'Press militar',sets:4,reps:'8-10',note:'Hombros'},
           {name:'Elevaciones laterales',sets:3,reps:'12-15',note:'Deltoides medio'},
           {name:'Extension en polea alta',sets:2,reps:'12-15',note:'Tríceps'},
@@ -9294,7 +9284,7 @@ const SCIENCE_ROUTINES = {
         { name: 'Pecho (Lun)', totalSets: 20, exercises: [
           {name:'Press de banca',sets:4,reps:'6-8',note:'Fuerza base'},
           {name:'Press inclinado',sets:4,reps:'8-10',note:'Pecho superior'},
-          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Rango completo'},
+          {name:'Press de banca',sets:4,reps:'10-12',note:'Rango completo'},
           {name:'Aperturas',sets:4,reps:'12-15',note:'Aislamiento'},
           {name:'Crossover en polea',sets:4,reps:'12-15',note:'Definición'},
         ]},
@@ -9338,7 +9328,7 @@ const SCIENCE_ROUTINES = {
         { name: 'Pecho (Lun)', totalSets: 24, exercises: [
           {name:'Press de banca',sets:5,reps:'5-7',note:'Fuerza'},
           {name:'Press inclinado',sets:4,reps:'8-10',note:'Pecho superior'},
-          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Rango completo'},
+          {name:'Press de banca',sets:4,reps:'10-12',note:'Rango completo'},
           {name:'Aperturas',sets:4,reps:'12-15',note:'Estiramiento'},
           {name:'Fondos en paralelas',sets:4,reps:'10-15',note:'Pecho inferior'},
           {name:'Crossover en polea',sets:3,reps:'12-15',note:'Definición'},
@@ -9386,7 +9376,7 @@ const SCIENCE_ROUTINES = {
         { name: 'Pecho (Lun)', totalSets: 28, exercises: [
           {name:'Press de banca',sets:5,reps:'4-6',note:'Fuerza máxima'},
           {name:'Press inclinado',sets:4,reps:'8-10',note:'Pecho superior'},
-          {name:'Press con mancuernas',sets:4,reps:'10-12',note:'Rango'},
+          {name:'Press de banca',sets:4,reps:'10-12',note:'Rango'},
           {name:'Aperturas',sets:4,reps:'12-15',note:'Estiramiento'},
           {name:'Fondos en paralelas',sets:4,reps:'10-15',note:'Inferior'},
           {name:'Crossover en polea',sets:4,reps:'12-15',note:'Definición'},
@@ -9476,7 +9466,6 @@ const EXERCISE_EQUIP = {
   // Pecho
   'Press de banca':        ['barra','mancuernas','maquina'],
   'Press inclinado':       ['barra','mancuernas','maquina'],
-  'Press con mancuernas':  ['mancuernas'],
   'Aperturas':             ['mancuernas','cable','maquina'],
   'Fondos en paralelas':   ['corporal'],
   'Crossover en polea':    ['cable'],
@@ -9558,14 +9547,6 @@ const EXERCISE_EQUIP = {
   'Escaladora':            ['maquina'],
   'Saltos de caja':        ['corporal'],
   'Sprint en caminadora':  ['maquina'],
-  // Calistenia
-  'Muscle-up':             ['corporal'],
-  'L-sit':                 ['corporal'],
-  'Pistol squat':          ['corporal'],
-  'Archer push-up':        ['corporal'],
-  'Pike push-up':          ['corporal'],
-  'Hollow body':           ['corporal'],
-  'Back lever':            ['corporal'],
 };
 
 // Poblar EXERCISE_CATALOG desde exerciseDB + EXERCISE_EQUIP
@@ -9573,7 +9554,7 @@ const EXERCISE_EQUIP = {
   const _labels = {
     'Pecho':'Pecho','Espalda':'Espalda','Hombros':'Hombros',
     'Biceps':'Bíceps','Triceps':'Tríceps','Piernas':'Piernas',
-    'Gluteos':'Glúteos','Abdomen':'Abdomen','Cardio':'Cardio','Calistenia':'Calistenia'
+    'Gluteos':'Glúteos','Abdomen':'Abdomen','Cardio':'Cardio'
   };
   const _equip = {
     'barra':'Barra','mancuernas':'Mancuernas','maquina':'Máquina',
@@ -9663,13 +9644,14 @@ function _uniExItemHtml(name, equip) {
 
 // ─── Exercise Illustration Map ───────────────────────────────
 const EXERCISE_ILLUSTRATIONS = {
-  'Press de banca':             'Images/exercises/Press_banca.png',
+  'Press de banca':             'Images/exercises/press_banca.png',
   'Press inclinado':            'Images/exercises/press_inclinado.png',
-  // 'Press declinado' — imagen no disponible
+  'Press declinado':            'Images/exercises/press_declinado.png',
   'Aperturas':                  'Images/exercises/aperturas.png',
   'Fondos en paralelas':        'Images/exercises/fondos_en_paralelas.png',
   'Crossover en polea':         'Images/exercises/crossover.png',
-  'Pull-over con mancuerna':    'Images/exercises/pull_over.png',
+  'Pull-over con mancuerna':    'Images/exercises/pullover_polea.png',
+  'Pullover en polea':          'Images/exercises/pullover_polea.png',
   'Dominadas':                  'Images/exercises/dominadas.png',
   'Jalones al pecho':           'Images/exercises/jalones.png',
   'Jalones agarre neutro':      'Images/exercises/jalones.png',
@@ -9709,11 +9691,11 @@ const EXERCISE_ILLUSTRATIONS = {
   'Zancadas':                   'Images/exercises/zancada.png',
   'Elevacion de gemelos':       'Images/exercises/gemelos.png',
   'Hip thrust':                 'Images/exercises/hip_thrust.png',
-  // 'Abductores en maquina' — imagen no disponible
-  // 'Aductores en maquina'  — imagen no disponible
+  'Abductores en maquina':      'Images/exercises/abductores_en_maquina.png',
+  'Aductores en maquina':       'Images/exercises/abductores_en_maquina.png',
   'Step-up':                    'Images/exercises/step_up.png',
   'Puente de gluteo':           'Images/exercises/hip_thrust.png',
-  // 'Patada de gluteo en polea' — imagen no disponible
+  'Patada de gluteo en polea':  'Images/exercises/patada_de_gluteo.png',
   'Peso muerto a una pierna':   'Images/exercises/peso_muerto_una_pierna.png',
   'Abduccion con banda':        'Images/exercises/abduccion_banda.png',
   'Plancha':                    'Images/exercises/plancha.png',
@@ -9763,7 +9745,6 @@ const MUSCLE_GROUP_COLORS = {
   'Triceps':     { color: '#A78BFA', bg: 'rgba(167,139,250,0.10)' },
   'Abdomen':     { color: '#00C896', bg: 'rgba(0,200,150,0.10)'   },
   'Cardio':      { color: '#EF4444', bg: 'rgba(239,68,68,0.10)'   },
-  'Calistenia':  { color: '#60A5FA', bg: 'rgba(96,165,250,0.10)'  },
 };
 
 function muscleGroupSvg(g, color, size) {
@@ -9782,7 +9763,6 @@ function muscleGroupSvg(g, color, size) {
     'Gluteos': `<svg width="${sz}" height="${sz}" viewBox="0 0 44 44" fill="none"><path d="M8 8 C8 6 12 5 22 5 C32 5 36 6 36 8 L37 14 C34 15 28 16 22 16 C16 16 10 15 7 14Z" fill="${B2}" stroke="${SK}" stroke-width="1.2"/><path d="M7 16 C5 20 5 28 7 34 C8 37 11 40 15 41 L19 41 L19 16Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M37 16 C39 20 39 28 37 34 C36 37 33 40 29 41 L25 41 L25 16Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M8 14 C7 17 7 22 9 25 C11 28 15 29 19 28 L19 14 C15 13 10 13 8 14Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M36 14 C37 17 37 22 35 25 C33 28 29 29 25 28 L25 14 C29 13 34 13 36 14Z" fill="${c}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><line x1="22" y1="14" x2="22" y2="29" stroke="${SK}" stroke-width="1.2" stroke-linecap="round"/><path d="M10 16 C9 19 9 23 11 26" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/><path d="M34 16 C35 19 35 23 33 26" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.7"/></svg>`,
     'Abdomen': `<svg width="${sz}" height="${sz}" viewBox="0 0 44 44" fill="none"><path d="M9 10 C9 8 13 6 22 6 C31 6 35 8 35 10 L36 30 C36 34 30 38 22 38 C14 38 8 34 8 30Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M8 12 C6 13 5 15 5 18 C5 21 6 23 8 24 L9 15Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M36 12 C38 13 39 15 39 18 C39 21 38 23 36 24 L35 15Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M9 14 C9 12 12 10 17 10 C19 10 21 11 21 13 L21 21 C18 22 12 21 10 19 C8 17 9 14 9 14Z" fill="${B3}" stroke="${SK}" stroke-width="1" opacity="0.9"/><path d="M35 14 C35 12 32 10 27 10 C25 10 23 11 23 13 L23 21 C26 22 32 21 34 19 C36 17 35 14 35 14Z" fill="${B3}" stroke="${SK}" stroke-width="1" opacity="0.9"/><rect x="16" y="21" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="23" y="21" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="16" y="27" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="23" y="27" width="5" height="4.5" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1"/><rect x="17" y="33" width="4" height="4" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.85"/><rect x="23" y="33" width="4" height="4" rx="1.8" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.85"/><path d="M9 22 C8 25 9 29 11 32 C13 34 15 35 17 34 L16 27 C13 25 10 23 9 22Z" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.8"/><path d="M35 22 C36 25 35 29 33 32 C31 34 29 35 27 34 L28 27 C31 25 34 23 35 22Z" fill="${c}" stroke="${SK}" stroke-width="1" opacity="0.8"/><line x1="22" y1="20" x2="22" y2="37" stroke="${SK}" stroke-width="1.1" stroke-linecap="round"/><path d="M16 26 L28 26" stroke="${SK}" stroke-width="0.8" opacity="0.6"/><path d="M16 32 L28 32" stroke="${SK}" stroke-width="0.8" opacity="0.6"/></svg>`,
     'Cardio': `<svg width="${sz}" height="${sz}" viewBox="0 0 44 44" fill="none"><path d="M22 37 C22 37 4 26 4 15 C4 10 8 7 13 7 C17 7 20 9 22 13 C24 9 27 7 31 7 C36 7 40 10 40 15 C40 26 22 37 22 37Z" fill="${BG}" stroke="${SK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M22 37 C22 37 4 26 4 15 C4 10 8 7 13 7 C17 7 20 9 22 13 L22 37Z" fill="${c}" stroke="${SK}" stroke-width="1.2"/><path d="M22 13 C24 9 27 7 31 7 C36 7 40 10 40 15 C40 26 22 37 22 37 L22 13Z" fill="${c}" stroke="${SK}" stroke-width="1.2" opacity="0.7"/><path d="M22 13 C21 20 20 27 22 37" stroke="${SK}" stroke-width="1" stroke-linecap="round"/><path d="M18 8 C18 5 20 4 22 4 C24 4 26 5 26 8" stroke="${c}" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M9 14 C8 17 8 21 10 25" stroke="${SK}" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/><path d="M6 41 L10 41 L13 37 L16 44 L19 38 L22 41 L28 41" stroke="${c}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`,
-    'Calistenia': `<svg width="${sz}" height="${sz}" viewBox="0 0 44 44" fill="none"><path d="M9 14 C9 10 13 8 22 8 C31 8 35 10 35 14 L36 34 C36 37 30 40 22 40 C14 40 8 37 8 34Z" fill="${BG}" stroke="${SK}" stroke-width="1.3"/><path d="M18 8 C18 6 20 5 22 5 C24 5 26 6 26 8 L27 11 C25 12 22 12 22 12 C22 12 19 12 17 11Z" fill="${B}" stroke="${SK}" stroke-width="1"/><path d="M9 14 C7 14 5 15 4 18 C3 21 4 25 7 27 C8 28 9 27 9 27 L9 14Z" fill="${c}" stroke="${SK}" stroke-width="1.1"/><path d="M35 14 C37 14 39 15 40 18 C41 21 40 25 37 27 C36 28 35 27 35 27 L35 14Z" fill="${c}" stroke="${SK}" stroke-width="1.1"/><path d="M9 16 C9 13 12 11 16 11 C19 11 21 13 21 16 L21 24 C18 25 12 24 10 22 C8 20 9 16 9 16Z" fill="${c}" stroke="${SK}" stroke-width="1.1" opacity="0.9"/><path d="M35 16 C35 13 32 11 28 11 C25 11 23 13 23 16 L23 24 C26 25 32 24 34 22 C36 20 35 16 35 16Z" fill="${c}" stroke="${SK}" stroke-width="1.1" opacity="0.9"/><line x1="22" y1="11" x2="22" y2="38" stroke="${SK}" stroke-width="1.1" stroke-linecap="round"/><rect x="17" y="24" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.85"/><rect x="22.5" y="24" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.85"/><rect x="17" y="29.5" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.75"/><rect x="22.5" y="29.5" width="4.5" height="4" rx="1.5" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.75"/><path d="M9 24 C8 27 9 31 11 33 L14 30 L13 24Z" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.7"/><path d="M35 24 C36 27 35 31 33 33 L30 30 L31 24Z" fill="${c}" stroke="${SK}" stroke-width="0.9" opacity="0.7"/></svg>`,
   };
   return svgs[g] || `<svg width="${sz}" height="${sz}" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="16" fill="#464B6B" stroke="#3A3D52" stroke-width="1.3"/></svg>`;
 }
@@ -10843,7 +10823,7 @@ function dismissRoutineSuggest() {
 // ─── ExerciseDB GIF System ───────────────────────────────────
 const EXERCISE_EN = {
   'Press de banca':'bench press','Press inclinado':'incline bench press',
-  'Press con mancuernas':'dumbbell bench press','Aperturas':'dumbbell fly',
+  'Aperturas':'dumbbell fly',
   'Fondos en paralelas':'chest dip','Crossover en polea':'cable crossover',
   'Press declinado':'decline bench press','Pull-over con mancuerna':'dumbbell pullover',
   'Press en máquina':'machine chest press','Dominadas':'pull up',
@@ -10878,8 +10858,7 @@ const EXERCISE_EN = {
   'Russian twist':'russian twist','Crunch en polea':'cable crunch',
   'Plancha lateral':'side plank','Mountain climbers':'mountain climber',
   'Hollow hold':'hollow hold','Dragon flag':'dragon flag','Burpees':'burpee',
-  'Saltos de caja':'box jump','Cuerda':'jump rope','Muscle-up':'muscle up',
-  'Pistol squat':'pistol squat','Pike push-up':'pike push up','Archer push-up':'archer push up',
+  'Saltos de caja':'box jump','Cuerda':'jump rope',
   // ── Alias sin tilde (exerciseDB almacena nombres SIN acentos) ──────────────
   'Sentadilla bulgara':'bulgarian split squat',
   'Abductores en maquina':'hip abduction',
@@ -12996,7 +12975,7 @@ const _COACH_SUBTITLES = {
   maria:  'Entrenadora colombiana · HIIT & Funcional',
   carlos: 'Entrenador mexicano · Fuerza & Masa',
   andrea: 'Entrenadora argentina · Bienestar integral',
-  diego:  'Entrenador peruano · Calistenia & Resiliencia',
+  diego:  'Entrenador peruano · Técnica & Resiliencia',
 };
 
 let _tourStep = 0;
@@ -16480,7 +16459,7 @@ const ROUTINE_GROUP_MAP = {
   'Tríceps':  ['Triceps'],
   'Glúteos':  ['Gluteos'],
   'Abdomen':  ['Abdomen'],
-  'Cardio':   ['Cardio','Calistenia'],
+  'Cardio':   ['Cardio'],
 };
 const DAYS_ES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
@@ -17398,8 +17377,7 @@ const MUSCLE_REGION_MAP = {
   'Piernas':    ['svg-cuadriceps', 'svg-abductores', 'b-isquiotibiales', 'b-pantorrillas'],
   'Gluteos':    ['b-gluteos'],
   'Abdomen':    ['svg-abdomen'],
-  'Cardio':     [],
-  'Calistenia': []
+  'Cardio':     []
 };
 
 function getMuscleRecoveryState() {
@@ -17558,7 +17536,7 @@ function initCatalogBodyMap() {
   const chipsDiv = document.getElementById('catalogGroupChips');
   if (chipsDiv) {
     const groups = ['Pecho','Espalda','Hombros','Biceps','Triceps',
-                    'Piernas','Gluteos','Abdomen','Cardio','Calistenia','Personalizados'];
+                    'Piernas','Gluteos','Abdomen','Cardio','Personalizados'];
     chipsDiv.innerHTML = groups.map(g =>
       `<button onclick="catalogMapClick('${g}')"
         style="padding:6px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent">${g}</button>`
