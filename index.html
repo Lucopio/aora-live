@@ -13077,6 +13077,10 @@ function playFinalBeep() {
 
 // ─── ElevenLabs TTS ─────────────────────────────────────────
 async function _speakElevenLabs(text, coachId) {
+  // Guard defensivo: TTS solo durante entrenamiento activo.
+  // Evita que cualquier fetch a ElevenLabs (y su posible 401) pueda
+  // disparar side-effects al arrancar la app o en el home.
+  if (!workoutStartTime) return false;
   if (!_elAvailable) return false;
   const cacheKey = coachId + '::' + text;
   try {
