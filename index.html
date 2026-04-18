@@ -5396,6 +5396,12 @@ function getRandomAlertMessage(alertType) {
 }
 
 function showCoachAlertToast(alertType, vars) {
+  console.log('[AORA:alert] showCoachAlertToast called', {
+    alertType,
+    vars,
+    _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg,
+    trace: new Error().stack.split('\n').slice(1,4).join(' | ')
+  });
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -5403,7 +5409,16 @@ function showCoachAlertToast(alertType, vars) {
     message = window._pendingSetFeedbackMsg;
     window._pendingSetFeedbackMsg = null;
   } else {
-    message = getRandomAlertMessage(alertType);
+    try {
+      message = getRandomAlertMessage(alertType);
+    } catch (e) {
+      console.log('[AORA:alert] BLOCKED', { reason: 'getRandomAlertMessage threw', alertType, err: e.message });
+      return;
+    }
+  }
+  if (!message) {
+    console.log('[AORA:alert] BLOCKED', { reason: 'no message', alertType });
+    return;
   }
   // Reemplazo de variables {{key}} con valores del objeto vars
   if (vars && typeof vars === 'object' && message) {
@@ -10526,7 +10541,10 @@ function nextExercise() {
           if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
         }, 100);
         if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
+          console.log('[AORA:alert] scheduling heavySetExtendedRest (1800ms)');
           setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 1800);
+        } else {
+          console.log('[AORA:alert] heavySetExtendedRest NOT scheduled', { effectiveHeavy, isHeavy, alreadyExtended, _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg });
         }
       } else {
         const sub = document.getElementById('restSub');
@@ -10543,7 +10561,10 @@ function nextExercise() {
         if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
       }, 100);
       if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
+        console.log('[AORA:alert] scheduling heavySetTransition (1800ms)');
         setTimeout(() => showCoachAlertToast('heavySetTransition'), 1800);
+      } else {
+        console.log('[AORA:alert] heavySetTransition NOT scheduled', { effectiveHeavy, isHeavy, alreadyExtended, _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg });
       }
     }
   }
@@ -11995,7 +12016,15 @@ function selectRPE(value) {
     }
     _setFeedbackCount++;
     window._pendingSetFeedbackMsg = _feedbackMsg;
+    console.log('[AORA:alert] setFeedback scheduled (800ms)', { _feedbackMsg: !!_feedbackMsg, _setFeedbackCount, _workSetsCount });
     setTimeout(() => showCoachAlertToast('setFeedback'), 800);
+  } else {
+    console.log('[AORA:alert] setFeedback NOT scheduled', {
+      _workSetsCount,
+      _setFeedbackCount,
+      modulo: _workSetsCount % 3,
+      gate: _workSetsCount > 0 && _setFeedbackCount < 6 && _workSetsCount % 3 === 0
+    });
   }
 }
 
