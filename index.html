@@ -8072,6 +8072,8 @@ function launchWorkout() {
     if (wl) wl.textContent = `PESO (${savedUnit.toUpperCase()})`;
   }
   window._smartRestToastShown = false;
+  // Limpiar mensaje de feedback pendiente que pueda haber quedado de openConfig u otras rutas
+  window._pendingSetFeedbackMsg = null;
   // Check-in del coach al inicio del entrenamiento
   // Guard: no mostrar si el usuario fue directo al catálogo (sin rutina preseleccionada)
   setTimeout(() => {
@@ -10600,6 +10602,8 @@ function nextExercise() {
     openCatalog();
   }
   _updatePrevExBtn();
+  // Limpiar mensaje de feedback pendiente para no bloquear futuras alertas
+  setTimeout(() => { window._pendingSetFeedbackMsg = null; }, 3000);
 }
 
 function prevExercise() {
