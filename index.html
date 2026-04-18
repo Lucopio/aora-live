@@ -5402,6 +5402,11 @@ function showCoachAlertToast(alertType, vars) {
     _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg,
     trace: new Error().stack.split('\n').slice(1,4).join(' | ')
   });
+  if (alertType === 'warmupSkipped') {
+    console.log('[AORA:warmup-alert] showCoachAlertToast called', {
+      _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg
+    });
+  }
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -6585,6 +6590,7 @@ async function sendCoachMessage() {
   input.style.height = 'auto';
   appendChatBubble('user', text);
   _coachMsgQueue.push(text);
+  console.log('[AORA:coach-send]', { text, queueBefore: _coachMsgQueue.length - 1 });
   // Persist immediately so navigation away doesn't lose the user bubble
   {
     const _c = getSelectedCoach();
@@ -6611,6 +6617,7 @@ async function sendCoachMessage() {
 }
 
 function flushCoachQueue() {
+  console.log('[AORA:coach-flush] called', { queueLen: _coachMsgQueue.length });
   clearTimeout(_coachDebounceTimer);
   _coachDebounceTimer = null;
   if (_coachMsgQueue.length === 0) return;
@@ -6621,6 +6628,7 @@ function flushCoachQueue() {
 }
 
 async function _sendCoachMessageCore(text) {
+  console.log('[AORA:coach-core] invoked', { textLength: text?.length });
   // ── 1. Recuperar sesión si currentUser es null (usuarios sin cuenta) ──────
   if (!currentUser && sb && localStorage.getItem('gymtracker_skip_auth')) {
     try {
@@ -8056,12 +8064,19 @@ function finishWarmup() {
 }
 
 function skipWarmup() {
+  console.log('[AORA:warmup-skip] called', {
+    warmupDuration,
+    workoutStartTime: !!workoutStartTime,
+    warmupAlertFiredThisVisit,
+    trace: new Error().stack.split('\n').slice(1,4).join(' | ')
+  });
   clearInterval(warmupInterval);
   warmupDuration = 0;
   // If workout already started, just return to it + alertar al coach una sola vez
   if (workoutStartTime) {
     if (!warmupAlertFiredThisVisit) {
       warmupAlertFiredThisVisit = true;
+      console.log('[AORA:warmup-skip] about to fire alert');
       setTimeout(() => showCoachAlertToast('warmupSkipped'), 1000);
     }
     showScreen('workout');
