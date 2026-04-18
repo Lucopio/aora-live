@@ -5653,8 +5653,8 @@ function getCoachMessage(coachKey, userData) {
   const prevWeekWorkouts = saved.filter(w => new Date(w.date) >= prevWeekStart && new Date(w.date) < weekStart);
 
   const calcVolume = (workouts) => workouts.reduce((total, w) => {
-    if (!w.exercises) return total;
-    return total + w.exercises.reduce((et, ex) => {
+    const exercises = Array.isArray(w.exercises) ? w.exercises : [];
+    return total + exercises.reduce((et, ex) => {
       if (!ex.sets) return et;
       return et + ex.sets.reduce((st, s) => st + ((s.weight || 0) * (s.reps || 0)), 0);
     }, 0);
@@ -5758,6 +5758,7 @@ function _getDailyCoachTip(coachId) {
 }
 
 function updateCoachSpotlight() {
+  try {
   const coach = getSelectedCoach();
   const spotlight = document.getElementById('coachSpotlight');
   const msgEl = document.getElementById('coachDailyMessage');
@@ -5804,6 +5805,9 @@ function updateCoachSpotlight() {
   if (btn) btn.style.display = 'block';
   if (talkBtn) talkBtn.style.display = 'inline-block';
 
+  } catch(e) {
+    console.warn('[CoachSpotlight] Error no crítico:', e.message);
+  }
 }
 
 function updateCoachScreen(coach) {
@@ -6304,6 +6308,58 @@ function buildChatContext() {
   const now = new Date();
   const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
   const weekSessions = workouts.filter(w => new Date(w.date) >= weekStart).length;
+  // Contexto del entrenamiento activo (si hay uno en curso)
+  let activeWorkout = null;
+  if (workoutStartTime) {
+    const elapsedSec = Math.floor((Date.now() - workoutStartTime) / 1000);
+    const elapsedMin = Math.floor(elapsedSec / 60);
+
+    // Grupo muscular principal del entrenamiento actual
+    let primaryGroup = null;
+    try { primaryGroup = detectPrimaryMuscleGroup(); } catch(e) {}
+
+    // Sets de la serie actual (no guardados aún en completedExercises)
+    const currentSetsData = (currentExerciseSets || []).map(s => ({
+      weight: s.weight,
+      reps: s.reps,
+      rpe: s.rpe ?? null,
+      is_warmup_set: !!s.is_warmup_set,
+      side: s.side || null
+    }));
+
+    // Ejercicios ya completados en esta sesión (nombre + # de sets)
+    const completed = (completedExercises || []).map(e => ({
+      name: e.name,
+      equipment: e.equipment || null,
+      setsCount: (e.sets || []).filter(s => !s.is_warmup_set).length,
+      avgRpe: (() => {
+        const rpes = (e.sets || []).filter(s => !s.is_warmup_set && s.rpe != null).map(s => s.rpe);
+        if (rpes.length === 0) return null;
+        return Math.round((rpes.reduce((a,b) => a+b, 0) / rpes.length) * 10) / 10;
+      })()
+    }));
+
+    // Ejercicios pendientes de la rutina (si aplica)
+    const pending = (pendingExercises || []).map(e => ({
+      name: e.name,
+      equipment: e.equipment || null
+    }));
+
+    activeWorkout = {
+      isActive: true,
+      elapsedMinutes: elapsedMin,
+      mode: workoutMode || 'full',
+      primaryMuscleGroup: primaryGroup,
+      currentExercise: currentExerciseName || null,
+      currentExerciseEquipment: currentEquipment || null,
+      currentSets: currentSetsData,
+      completedExercises: completed,
+      pendingExercises: pending,
+      totalExercisesCompleted: completed.length,
+      totalExercisesPending: pending.length
+    };
+  }
+
   return {
     profile: {
       name: profile.full_name || null,
@@ -6315,7 +6371,8 @@ function buildChatContext() {
     },
     recentWorkouts: recent,
     daysSinceLastWorkout: daysSince,
-    weekSessions
+    weekSessions,
+    activeWorkout  // null si no hay entrenamiento activo
   };
 }
 

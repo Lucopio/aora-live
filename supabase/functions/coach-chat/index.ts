@@ -129,6 +129,67 @@ function formatContext(context: Record<string, unknown>): string {
     parts.push(`Sesiones esta semana: ${context.weekSessions}`);
   }
 
+  // ── Contexto del entrenamiento ACTIVO (si hay uno en curso) ────────────
+  const activeWorkout = context.activeWorkout as Record<string, unknown> | null | undefined;
+  if (activeWorkout && activeWorkout.isActive) {
+    const awLines: string[] = [];
+    awLines.push("⚡ ENTRENAMIENTO ACTIVO AHORA MISMO:");
+    awLines.push("El usuario está entrenando EN ESTE MOMENTO. No le sugieras \"intenta mañana\" ni \"la próxima sesión\" — está en medio del entrenamiento ahora. Da feedback sobre lo que está haciendo AHORA.");
+    awLines.push(`Tiempo transcurrido: ${activeWorkout.elapsedMinutes} min`);
+
+    if (activeWorkout.primaryMuscleGroup) {
+      awLines.push(`Grupo muscular principal: ${activeWorkout.primaryMuscleGroup}`);
+    }
+
+    if (activeWorkout.mode === "rest-only") {
+      awLines.push("Modo: solo descansos (no registra sets, solo tiempos)");
+    }
+
+    if (activeWorkout.currentExercise) {
+      const equip = activeWorkout.currentExerciseEquipment ? ` (${activeWorkout.currentExerciseEquipment})` : "";
+      awLines.push(`Ejercicio actual: ${activeWorkout.currentExercise}${equip}`);
+
+      const currentSets = (activeWorkout.currentSets as Array<Record<string, unknown>>) || [];
+      const workSets = currentSets.filter(s => !s.is_warmup_set);
+      if (workSets.length > 0) {
+        awLines.push(`Series registradas en este ejercicio: ${workSets.length}`);
+        workSets.forEach((s, i) => {
+          const rpe = s.rpe != null ? ` · RPE ${s.rpe}` : "";
+          const side = s.side ? ` (${s.side})` : "";
+          awLines.push(`  Serie ${i + 1}: ${s.weight}kg × ${s.reps} reps${rpe}${side}`);
+        });
+      } else {
+        awLines.push("Aún no ha registrado series en este ejercicio.");
+      }
+    } else {
+      awLines.push("Sin ejercicio seleccionado (posiblemente entre ejercicios o en catálogo).");
+    }
+
+    const completedCount = activeWorkout.totalExercisesCompleted as number || 0;
+    if (completedCount > 0) {
+      const completed = (activeWorkout.completedExercises as Array<Record<string, unknown>>) || [];
+      awLines.push(`Ejercicios completados en esta sesión (${completedCount}):`);
+      completed.forEach(e => {
+        const rpe = e.avgRpe != null ? ` · RPE prom ${e.avgRpe}` : "";
+        awLines.push(`  - ${e.name}: ${e.setsCount} series${rpe}`);
+      });
+    }
+
+    const pendingCount = activeWorkout.totalExercisesPending as number || 0;
+    if (pendingCount > 0) {
+      const pending = (activeWorkout.pendingExercises as Array<Record<string, unknown>>) || [];
+      awLines.push(`Ejercicios pendientes en la rutina (${pendingCount}):`);
+      pending.slice(0, 5).forEach(e => {
+        awLines.push(`  - ${e.name}`);
+      });
+      if (pendingCount > 5) {
+        awLines.push(`  ...y ${pendingCount - 5} más`);
+      }
+    }
+
+    parts.push(awLines.join("\n"));
+  }
+
   return parts.join("\n\n");
 }
 
