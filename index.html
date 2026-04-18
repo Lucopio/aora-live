@@ -1424,11 +1424,6 @@ body {
 .hrc-dot { width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px; }
 
 /* ─── EXERCISE CARD MEDIA ─── */
-.exercise-card-media { width:calc(100% + 32px);height:130px;margin:-16px -16px 14px -16px;background:var(--bg);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;flex-shrink:0; }
-.exercise-card-media img,.exercise-card-media video { width:100%;height:100%;object-fit:cover;border-radius:0; }
-.ecm-ph { display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.18; }
-.ecm-badge { position:absolute;top:7px;right:7px;background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.3);border-radius:5px;padding:2px 8px;font-size:10px;color:var(--primary);font-family:var(--font);font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent; }
-
 .sets-list { margin-bottom: 10px; min-height: 24px; }
 .set-chip {
   display: flex; align-items: center; justify-content: space-between;
@@ -2448,7 +2443,7 @@ body {
 .chat-input-area {
   flex-shrink: 0;
   background: rgba(14,17,25,0.97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255,255,255,0.04);
   padding: 10px 12px 12px;
 }
 .chat-login-prompt { text-align: center; padding: 12px 0; }
@@ -2505,7 +2500,7 @@ body {
   right: 16px;
   max-width: 398px;
   margin: 0 auto;
-  background: transparent;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 14px 16px;
@@ -2514,10 +2509,12 @@ body {
   gap: 12px;
   z-index: 900;
   transform: translateY(120%);
-  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease;
   box-shadow: 0 0 32px rgba(0,0,0,0.4);
 }
-.coach-alert-toast.visible { transform: translateY(0); }
+.coach-alert-toast.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 .coach-alert-avatar { font-size: 32px; line-height: 1; flex-shrink: 0; }
 .coach-alert-body { flex: 1; }
 .coach-alert-name {
@@ -2585,9 +2582,11 @@ body {
 }
 .ob-coach-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 
-/* GIF invert para dark background */
-#exGifImg {
-  filter: invert(1);
+/* GIF invert para dark background — preserva colores rojos de músculos marcados */
+#exGifImg,
+#ex-info-gif,
+#wuGifImg {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 </style>
@@ -3406,16 +3405,6 @@ body {
 
     <!-- Exercise card (full mode only) -->
     <div class="exercise-card" id="exerciseCard" style="display:none">
-      <!-- Media zone — GIF / Video inline -->
-      <div class="exercise-card-media" id="exerciseCardMedia">
-        <div class="ecm-ph" id="ecmPh">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8,21 12,17 16,21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          <span style="font-size:10px;color:var(--text-tertiary)">Técnica</span>
-        </div>
-        <img  id="ecmImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
-        <video id="ecmVid" autoplay muted playsinline loop style="display:none;width:100%;height:100%;object-fit:cover"></video>
-        <div  id="ecmBadge" class="ecm-badge" style="display:none" onclick="showExerciseInfo(currentExerciseName)">▶ ver completo</div>
-      </div>
       <!-- 1. Nombre del ejercicio + botones -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="exercise-card-name" id="exerciseCardName" style="margin-bottom:0;flex:1">Ejercicio</div>
@@ -5188,6 +5177,28 @@ const COACH_ALERTS = {
       "Series intensas completadas. Respeta el descanso. El próximo ejercicio será mejor por esto."
     ]
   },
+  heavySetExtendedRest: {
+    maria: [
+      "¡Ese set estuvo durísimo! 🔥 Te agregué {{secs}}s más de descanso — tu cuerpo los necesita.",
+      "Con ese RPE tan alto, sumé {{secs}}s al descanso. Respíralos, parcera. ¡Vas fuerte!",
+      "Eso fue intenso 💪 Te di {{secs}}s extra. Cuando sientas el pulso tranquilo, seguimos."
+    ],
+    carlos: [
+      "RPE alto detectado. +{{secs}}s al descanso actual para recuperar SNC y fosfocreatina.",
+      "Carga acumulada alta. Extendí el descanso {{secs}}s. No negociable para mantener intensidad.",
+      "Series intensas. Sumé {{secs}}s. Respeta el tiempo completo."
+    ],
+    andrea: [
+      "Sentí la intensidad de ese bloque. Te sumé {{secs}}s más — no es perder tiempo, es respetar lo que hiciste. 🌿",
+      "Ese trabajo merece recuperación completa. Agregué {{secs}}s al descanso actual.",
+      "Tu cuerpo trabajó duro. Sumé {{secs}}s — tomalos con calma."
+    ],
+    diego: [
+      "Trabajo pesado. +{{secs}}s. El que respeta la recuperación, construye.",
+      "Serie exigente. Extendí el descanso {{secs}}s. Respetalo.",
+      "Intensidad detectada. Sumé {{secs}}s. La recuperación no es pausa — es parte del trabajo."
+    ]
+  },
   hydration: {
     maria: [
       "¡Ey! ¿Cuándo tomaste agua por última vez? 💧 Cada 15-20 min es clave, parcera. El rendimiento baja antes de que sientas sed.",
@@ -5384,7 +5395,7 @@ function getRandomAlertMessage(alertType) {
   return msgs[Math.floor(Math.random() * msgs.length)];
 }
 
-function showCoachAlertToast(alertType) {
+function showCoachAlertToast(alertType, vars) {
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -5393,6 +5404,12 @@ function showCoachAlertToast(alertType) {
     window._pendingSetFeedbackMsg = null;
   } else {
     message = getRandomAlertMessage(alertType);
+  }
+  // Reemplazo de variables {{key}} con valores del objeto vars
+  if (vars && typeof vars === 'object' && message) {
+    Object.keys(vars).forEach(k => {
+      message = message.replace(new RegExp(`{{${k}}}`, 'g'), vars[k]);
+    });
   }
   // Registrar en historial (máx 20 entradas, ignorar setFeedback para no saturar)
   if (alertType !== 'setFeedback') {
@@ -5599,9 +5616,11 @@ function checkWorkoutAlerts() {
     setTimeout(() => showCoachAlertToast('sessionLength'), 3000);
   }
 
-  // Inactividad: alerta si llevan más de 5 min sin registrar series (máx 2 veces)
+  // Inactividad: alerta si llevan más de 5 min sin registrar series (máx 2 veces).
+  // No dispara si el usuario está en un descanso activo — eso es actividad legítima.
   if (
     workoutMode === 'full' &&
+    !isResting &&
     _inactivityAlertCount < 2 &&
     _lastSetRegisteredAt !== null &&
     (Date.now() - _lastSetRegisteredAt) >= INACTIVITY_THRESHOLD_MS
@@ -6329,7 +6348,23 @@ function appendChatBubble(role, text) {
     div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1);border-radius:10px;font-size:12px;text-align:center">${text}</div>`;
   }
   wrap.appendChild(div);
-  wrap.scrollTop = wrap.scrollHeight;
+  // Log defensivo — diagnóstico de mensajes largos que "no aparecen"
+  console.log('[AORA:chat]', {
+    role,
+    length: text.length,
+    bubbleHeight: div.offsetHeight,
+    wrapScrollHeight: wrap.scrollHeight,
+    wrapClientHeight: wrap.clientHeight,
+    timestamp: new Date().toISOString()
+  });
+  // Doble RAF: esperar al layout Y al paint antes de hacer scroll
+  // Evita el salto visual al inicio cuando el auto-resize del textarea
+  // cambia el viewport antes de que el bubble se renderice
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      wrap.scrollTop = wrap.scrollHeight;
+    });
+  });
 }
 
 function showTypingIndicator() {
@@ -6866,6 +6901,7 @@ let timerInterval = null;
 let exerciseCount = 0;
 let countdownInterval = null;
 let countdownRemaining = 0;
+let _restTotalSeconds = 0; // total del descanso actual (para cálculo por timestamp)
 let isResting = false;
 let audioCtx = null;
 let soundEnabled = true;
@@ -9945,6 +9981,7 @@ function showChangeExerciseDialog(newName, newEquip) {
 
 function keepAndChangeExercise(newName, newEquip) {
   completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+  console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'keepAndChangeExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
   exerciseCount = completedExercises.length;
   currentExerciseSets = [];
   document.getElementById('changeExOverlay')?.remove();
@@ -9963,6 +10000,7 @@ function _doSelectExercise(name, equip) {
   // Save previous exercise if it had sets (normal flow — same exercise kept adding)
   if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: '_doSelectExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
   }
@@ -9982,27 +10020,7 @@ function _doSelectExercise(name, equip) {
   // Show name + equipment in card header
   const equipLabel = equip ? EQUIP_LABEL[equip] : '';
   document.getElementById('exerciseCardName').textContent = equipLabel ? `${name} · ${equipLabel}` : name;
-  // ─── Inline media reset + load ───
-  const _ecmPh    = document.getElementById('ecmPh');
-  const _ecmImg   = document.getElementById('ecmImg');
-  const _ecmVid   = document.getElementById('ecmVid');
-  const _ecmBadge = document.getElementById('ecmBadge');
-  if (_ecmPh)    { _ecmPh.style.display = 'flex'; }
-  if (_ecmImg)   { _ecmImg.style.display = 'none'; _ecmImg.src = ''; }
-  if (_ecmVid)   { _ecmVid.style.display = 'none'; _ecmVid.src = ''; }
-  if (_ecmBadge) { _ecmBadge.style.display = 'none'; }
-  const _ecmTarget = name;
-  loadExerciseGif(name).then(result => {
-    if (!result || currentExerciseName !== _ecmTarget) return;
-    if (_ecmPh) _ecmPh.style.display = 'none';
-    if (result.type === 'video' && result.url && _ecmVid) {
-      _ecmVid.src = result.url; _ecmVid.style.display = 'block';
-    } else if (result.url && _ecmImg) {
-      _ecmImg.src = result.url; _ecmImg.style.display = 'block';
-    }
-    if (_ecmBadge) _ecmBadge.style.display = 'block';
-  }).catch(() => {});
-  // #5 — mostrar/ocultar botón de GIF
+  // Mostrar/ocultar botón "Cómo hacerlo" según si hay info para el ejercicio
   const wkInfoBtn = document.getElementById('wkInfoBtn');
   if (wkInfoBtn) wkInfoBtn.style.display = EXERCISE_INFO[name] ? 'flex' : 'none';
 
@@ -10397,18 +10415,36 @@ function nextExercise() {
       ? restSeconds
       : (REST_BY_MUSCLE_GROUP[group] || restSeconds);
     const { seconds: transitionRest, isHeavy } = _calcTransitionRest(currentExerciseSets, baseRest);
-    const _savedRest = restSeconds;
-    restSeconds = transitionRest;
-    if (isResting) skipRest(); // reemplazar descanso de serie con descanso de transición
-    startRestTimer();
-    restSeconds = _savedRest; // restaurar inmediatamente — no alterar config global
-    setTimeout(() => {
-      const sub = document.getElementById('restSub');
-      if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
-    }, 100);
-    // Coach alerta solo si fue exigente Y no hay otro toast de setFeedback pendiente
-    if (isHeavy && !window._pendingSetFeedbackMsg) {
-      setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
+
+    if (isResting && restStartedAt) {
+      // Ya está descansando — extender solo si falta para llegar al total de transición
+      const yaDescansado = Math.floor((Date.now() - restStartedAt) / 1000);
+      const delta = transitionRest - yaDescansado;
+      if (delta > 0) {
+        extendRest(delta);
+        setTimeout(() => {
+          const sub = document.getElementById('restSub');
+          if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
+        }, 100);
+        if (isHeavy && !window._pendingSetFeedbackMsg) {
+          setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 600);
+        }
+      } else {
+        const sub = document.getElementById('restSub');
+        if (sub) sub.textContent = `Ya descansaste ${yaDescansado}s · listo para continuar`;
+      }
+    } else {
+      const _savedRest = restSeconds;
+      restSeconds = transitionRest;
+      startRestTimer();
+      restSeconds = _savedRest;
+      setTimeout(() => {
+        const sub = document.getElementById('restSub');
+        if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
+      }, 100);
+      if (isHeavy && !window._pendingSetFeedbackMsg) {
+        setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
+      }
     }
   }
 
@@ -10417,6 +10453,7 @@ function nextExercise() {
   if (currentExerciseName && currentExerciseSets.length > 0) {
     const ssGroup = supersetActive ? (supersetGroupCounter || (supersetGroupCounter = 1)) : null;
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets], superset_group: ssGroup });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'nextExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
   }
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
@@ -10457,6 +10494,7 @@ function prevExercise() {
   }
   // Recuperar el último ejercicio completado
   const prev = completedExercises.pop();
+  console.log('[AORA:exerciseCount]', { action: 'pop', total: completedExercises.length, poppedName: prev?.name, location: 'prevExercise', timestamp: new Date().toISOString() });
   exerciseCount = completedExercises.length;
   document.getElementById('exBadge').textContent = exerciseCount;
   updatePendingPill();
@@ -11445,6 +11483,7 @@ function changeExercise() {
   // Guardar series actuales antes de cambiar ejercicio
   if (currentExerciseName && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'changeExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
   }
@@ -11516,6 +11555,7 @@ function startRestTimer() {
   _restTargetSet = currentExerciseSets.length > 0 ? currentExerciseSets[currentExerciseSets.length - 1] : null;
   const smartRest = getSmartRestSeconds();
   countdownRemaining = smartRest;
+  _restTotalSeconds = smartRest;
   const total = smartRest;
   const circ = 2 * Math.PI * 34;
   let halfwayAlertFired = false; // se activa una sola vez al llegar al 50%
@@ -11546,7 +11586,9 @@ function startRestTimer() {
   update();
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
-    countdownRemaining--;
+    // Cálculo por timestamp absoluto — resiliente a suspensión de JS (pantalla bloqueada)
+    const elapsed = Math.floor((Date.now() - restStartedAt) / 1000);
+    countdownRemaining = _restTotalSeconds - elapsed;
     if (countdownRemaining > 0) {
       // Alerta a mitad del descanso: vibración + pitido + voz (una sola vez)
       const halfPoint = Math.round(total / 2);
@@ -11722,6 +11764,7 @@ function adjustRest(seconds) {
 function extendRest(seconds) {
   if (!isResting) return;
   countdownRemaining += seconds;
+  _restTotalSeconds += seconds; // mantener el total alineado con la extensión
   if (_restTargetSet) {
     _restTargetSet.rest_extended_seconds = (_restTargetSet.rest_extended_seconds || 0) + seconds;
   }
@@ -12038,6 +12081,7 @@ function endWorkout() {
     // Save current exercise if it has sets
     if (currentExerciseName && currentExerciseSets.length > 0) {
       completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
+      console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'finishWorkout', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     }
     exerciseCount = completedExercises.length;
     document.getElementById('sumExercises').textContent = exerciseCount;
@@ -13874,6 +13918,18 @@ function releaseWakeLock() {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && workoutStartTime && !document.getElementById('workoutScreen').classList.contains('active') === false) {
     requestWakeLock();
+  }
+});
+
+// Re-sincronizar rest timer al volver a foreground (evita timer pegado al bloquear pantalla)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isResting && restStartedAt) {
+    const elapsed = Math.floor((Date.now() - restStartedAt) / 1000);
+    countdownRemaining = _restTotalSeconds - elapsed;
+    const ringNum = document.getElementById('ringNumber');
+    if (ringNum && countdownRemaining >= 0) {
+      ringNum.textContent = countdownRemaining;
+    }
   }
 });
 
