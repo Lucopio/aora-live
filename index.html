@@ -4995,8 +4995,8 @@ body {
       <input id="exCustomInput" type="text" maxlength="60"
         placeholder="Añadir otro ejercicio…"
         style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text-primary);outline:none"
-        onkeydown="if(event.key==='Enter')addCustomExercise()">
-      <button onclick="addCustomExercise()"
+        onkeydown="if(event.key==='Enter')addCustomExerciseToEditor()">
+      <button onclick="addCustomExerciseToEditor()"
         style="flex-shrink:0;padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:var(--radius-sm);color:var(--primary);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
         + Añadir
       </button>
@@ -9828,7 +9828,11 @@ function renderCatalog(filter) {
   }
 
   // Level 2: Exercise list for selected group
-  titleEl.textContent = catalogSubGroup || catalogGroup;
+  if (workoutStartTime && catalogGroup && !catalogSubGroup) {
+    titleEl.textContent = `${catalogGroup} · Cambiar ejercicio`;
+  } else {
+    titleEl.textContent = catalogSubGroup || catalogGroup;
+  }
 
   // Piernas sub-group selection level
   if (catalogGroup === 'Piernas' && !catalogSubGroup) {
@@ -9876,6 +9880,16 @@ function renderCatalog(filter) {
   list.innerHTML = html;
 }
 
+// Detecta si un nombre corresponde a un ejercicio del catálogo base (exerciseDB)
+// Usado para identificar ejercicios custom al guardar rutinas.
+function _isExerciseInCatalog(name) {
+  if (!name) return true; // no tratar vacío como custom
+  for (const g of exerciseDB) {
+    if (g.items.includes(name)) return true;
+  }
+  return false;
+}
+
 // Mapeo grupos de calentamiento → grupos de exerciseDB
 const _WARMUP_TO_CATALOG = {
   'Pecho': 'Pecho', 'Espalda': 'Espalda', 'Hombros': 'Hombros',
@@ -9888,12 +9902,26 @@ function openCatalog() {
   catalogSubGroup = null;
   document.getElementById('catalogSearchInput').value = '';
 
-  // Si el usuario eligió grupo en el calentamiento, pre-filtrar al catálogo de ese grupo
-  // Se consume una sola vez — aperturas de catálogo posteriores muestran todos los grupos
+  // Prioridad de pre-filtrado del catálogo:
+  // 1. Grupo explícito del calentamiento (consumo único)
+  // 2. Grupo detectado del workout activo (si existe y es válido)
+  // 3. Sin filtro — mostrar todos los grupos
   if (_warmupSelectedGroup) {
     const mapped = _WARMUP_TO_CATALOG[_warmupSelectedGroup] || null;
     _warmupSelectedGroup = null;
-    catalogGroup = mapped; // null si Torso u otro sin mapeo directo
+    catalogGroup = mapped;
+  } else if (workoutStartTime) {
+    let inferredGroup = null;
+    try {
+      if (typeof detectPrimaryMuscleGroup === 'function') {
+        inferredGroup = detectPrimaryMuscleGroup();
+      }
+    } catch(e) {}
+    if (inferredGroup && exerciseDB.some(g => g.group === inferredGroup)) {
+      catalogGroup = inferredGroup;
+    } else {
+      catalogGroup = null;
+    }
   } else {
     catalogGroup = null;
   }
@@ -16882,6 +16910,19 @@ function saveRoutine() {
         created_at: now, last_used_at: null, use_count: 0 });
     }
 
+    // Registrar como "Personalizados" cualquier ejercicio custom de esta rutina
+    // para que aparezca en el catálogo durante entrenamientos futuros.
+    let customAdded = 0;
+    _editorExercises.forEach(ex => {
+      if (!_isExerciseInCatalog(ex.name) && !customExercises.includes(ex.name)) {
+        customExercises.push(ex.name);
+        customAdded++;
+      }
+    });
+    if (customAdded > 0) {
+      try { saveToStorage(); } catch(e) { /* non-blocking */ }
+    }
+
     _saveLocalRoutines(routines);
     showToast(_editingRoutineId ? '✓ Rutina actualizada' : '✓ Rutina guardada', 'success');
     closeRoutineEditor();
@@ -17207,7 +17248,7 @@ function closePreWorkoutPicker() {
   document.getElementById('preWkPickerSheet').style.display = 'none';
 }
 
-function addCustomExercise() {
+function addCustomExerciseToEditor() {
   const input = document.getElementById('exCustomInput');
   const name  = (input.value || '').trim();
   if (!name) { input.focus(); return; }
