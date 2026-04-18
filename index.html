@@ -10464,6 +10464,12 @@ function closeEditSet() {
 }
 
 function nextExercise() {
+  if (window._nextExerciseInProgress) {
+    console.log('[AORA:nextExercise] IGNORADO — ya en progreso');
+    return;
+  }
+  window._nextExerciseInProgress = true;
+  setTimeout(() => { window._nextExerciseInProgress = false; }, 1000);
   _unilateralPendingSide = false;
 
   // Descanso de transición entre ejercicios — siempre que haya sets hechos, en modo full.
@@ -10483,7 +10489,9 @@ function nextExercise() {
       if (effectiveHeavy) _heavyExtended.add(exKey);
       // Ya está descansando — extender solo si falta para llegar al total de transición
       const yaDescansado = Math.floor((Date.now() - restStartedAt) / 1000);
-      const delta = transitionRest - yaDescansado;
+      // Comparar contra el total del descanso en curso, no contra tiempo transcurrido.
+      // Si _restTotalSeconds ya es >= transitionRest, no hay que extender.
+      const delta = transitionRest - _restTotalSeconds;
       if (delta > 0) {
         extendRest(delta);
         setTimeout(() => {
@@ -10495,7 +10503,7 @@ function nextExercise() {
         }
       } else {
         const sub = document.getElementById('restSub');
-        if (sub) sub.textContent = `Ya descansaste ${yaDescansado}s · listo para continuar`;
+        if (sub) sub.textContent = `Descanso de ${_restTotalSeconds}s ya suficiente · listo para continuar`;
       }
     } else {
       if (effectiveHeavy) _heavyExtended.add(exKey);
