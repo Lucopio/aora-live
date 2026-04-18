@@ -3999,7 +3999,7 @@ body {
           <label>Personalizado:</label>
           <div class="stepper">
             <button class="stepper-btn" onclick="stepDefaultRest(-10)">-</button>
-            <input type="number" id="settingsRestInput" class="stepper-input" value="60" min="10" max="600" onchange="applyCustomDefaultRest()">
+            <input type="number" id="settingsRestInput" class="stepper-input" value="60" min="10" max="600" oninput="_debouncedApplyDefaultRest()" onchange="applyCustomDefaultRest()">
             <button class="stepper-btn" onclick="stepDefaultRest(10)">+</button>
           </div>
           <label>seg</label>
@@ -6583,12 +6583,17 @@ async function sendCoachMessage() {
 
   // Resetear timer — cada nuevo mensaje reinicia la espera
   clearTimeout(_coachDebounceTimer);
-  _coachDebounceTimer = setTimeout(async () => {
-    const messages = [..._coachMsgQueue];
-    _coachMsgQueue = [];
-    const combinedText = messages.join('\n\n');
-    await _sendCoachMessageCore(combinedText);
-  }, COACH_DEBOUNCE_MS);
+  _coachDebounceTimer = setTimeout(() => flushCoachQueue(), COACH_DEBOUNCE_MS);
+}
+
+function flushCoachQueue() {
+  clearTimeout(_coachDebounceTimer);
+  _coachDebounceTimer = null;
+  if (_coachMsgQueue.length === 0) return;
+  const messages = [..._coachMsgQueue];
+  _coachMsgQueue = [];
+  const combinedText = messages.join('\n\n');
+  _sendCoachMessageCore(combinedText);
 }
 
 async function _sendCoachMessageCore(text) {
@@ -6955,6 +6960,7 @@ function updateHomeGreeting() {
 let restSeconds = 60;
 let workoutStartTime = null;
 let _heavyExtended = new Set(); // ejercicios que ya tuvieron extensión por RPE alto en esta sesión
+let _changeExerciseSnapshot = null; // { name, equipment, sets, isUnilateral } preservado al tocar "Cambiar"
 let timerInterval = null;
 let exerciseCount = 0;
 let countdownInterval = null;
@@ -7141,6 +7147,10 @@ function updateWorkoutNav() {
 }
 
 function showScreen(name) {
+  // Si hay cola de mensajes del coach esperando, despacharla antes de navegar
+  if (typeof flushCoachQueue === 'function' && _coachMsgQueue && _coachMsgQueue.length > 0) {
+    flushCoachQueue();
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = { home: 0, coach: 1, workoutHub: 2, insights: 3, settings: 4 };
@@ -8024,8 +8034,12 @@ function finishWarmup() {
 function skipWarmup() {
   clearInterval(warmupInterval);
   warmupDuration = 0;
-  // If workout already started, just return to it
+  // If workout already started, just return to it + alertar al coach una sola vez
   if (workoutStartTime) {
+    if (!warmupAlertFired) {
+      warmupAlertFired = true;
+      setTimeout(() => showCoachAlertToast('warmupSkipped'), 1000);
+    }
     showScreen('workout');
   } else {
     launchWorkout();
@@ -10056,6 +10070,19 @@ function discardAndChangeExercise(newName, newEquip) {
 }
 
 function _doSelectExercise(name, equip) {
+  // Si venimos de "Cambiar", confirmar las series del ejercicio anterior ahora
+  if (_changeExerciseSnapshot && _changeExerciseSnapshot.sets.length > 0) {
+    completedExercises.push({
+      name: _changeExerciseSnapshot.name,
+      equipment: _changeExerciseSnapshot.equipment,
+      sets: _changeExerciseSnapshot.sets
+    });
+    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: _changeExerciseSnapshot.name, location: '_doSelectExercise(snapshot)', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
+    exerciseCount = completedExercises.length;
+    const exBadge = document.getElementById('exBadge');
+    if (exBadge) exBadge.textContent = exerciseCount;
+  }
+  _changeExerciseSnapshot = null;
   // Save previous exercise if it had sets (normal flow — same exercise kept adding)
   if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
@@ -11546,21 +11573,30 @@ function startScienceRoutine(level, time, dayIdx) {
 }
 
 function cancelCatalogChange() {
-  // Volver al workout sin seleccionar ejercicio nuevo
+  // Restaurar ejercicio anterior si venimos de "Cambiar"
+  if (_changeExerciseSnapshot) {
+    currentExerciseName = _changeExerciseSnapshot.name;
+    currentEquipment = _changeExerciseSnapshot.equipment;
+    currentExerciseSets = _changeExerciseSnapshot.sets;
+    isUnilateral = _changeExerciseSnapshot.isUnilateral;
+    _changeExerciseSnapshot = null;
+  }
   if (workoutStartTime) {
     showScreen('workout');
   }
 }
 
 function changeExercise() {
-  // Guardar series actuales antes de cambiar ejercicio
-  if (currentExerciseName && currentExerciseSets.length > 0) {
-    completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
-    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'changeExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
-    exerciseCount = completedExercises.length;
-    document.getElementById('exBadge').textContent = exerciseCount;
+  // Guardar snapshot del ejercicio actual en lugar de hacer push prematuro
+  if (currentExerciseName) {
+    _changeExerciseSnapshot = {
+      name: currentExerciseName,
+      equipment: currentEquipment,
+      sets: [...currentExerciseSets],
+      isUnilateral: isUnilateral
+    };
   }
-  // NO cancelar el rest timer — el descanso es global a la sesión
+  // Limpiar estado visible (el snapshot persiste para restaurar si cancela)
   currentExerciseName = '';
   currentEquipment = '';
   currentExerciseSets = [];
@@ -11568,7 +11604,6 @@ function changeExercise() {
   const count = completedExercises.length;
   document.getElementById('catalogExCount').textContent = `${count} ejercicio${count !== 1 ? 's' : ''} completado${count !== 1 ? 's' : ''}`;
   openCatalog();
-  // Mostrar botón Volver — openCatalog() lo oculta porque currentExerciseName ya es ''
   const backBtn = document.getElementById('catalogBackBtn');
   if (backBtn) backBtn.style.display = 'flex';
 }
@@ -13407,6 +13442,7 @@ function applyCustomDefaultRest() {
   const val = Math.max(10, Math.min(600, parseInt(document.getElementById('settingsRestInput').value) || 60));
   document.getElementById('settingsRestInput').value = val;
   restSeconds = val;
+  window._userOverrodeRest = true; // respetar preferencia en getSmartRestSeconds
   document.getElementById('customRestInput').value = val;
   document.getElementById('restIdleSeconds').textContent = val;
   // Deselect presets if custom value doesn't match any
@@ -13417,6 +13453,12 @@ function applyCustomDefaultRest() {
     b.classList.toggle('active', parseInt(b.textContent) === val);
   });
   flashSaved();
+}
+
+let _applyDefaultRestTimer = null;
+function _debouncedApplyDefaultRest() {
+  clearTimeout(_applyDefaultRestTimer);
+  _applyDefaultRestTimer = setTimeout(() => applyCustomDefaultRest(), 600);
 }
 
 function flashSaved() {
