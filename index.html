@@ -7271,6 +7271,14 @@ function openConfig() {
     diego:  'El entrenamiento inteligente empieza antes del primer ejercicio. Elige tu grupo y ajusta el descanso con intención.'
   };
   window._pendingSetFeedbackMsg = msgs[coach.id] || msgs.maria;
+  // Auto-limpieza: si nadie consume el mensaje en 5s, liberar el slot
+  // para no bloquear alertas futuras (warmupSkipped, heavy, etc.)
+  const _checkInMsg = msgs[coach.id] || msgs.maria;
+  setTimeout(() => {
+    if (window._pendingSetFeedbackMsg === _checkInMsg) {
+      window._pendingSetFeedbackMsg = null;
+    }
+  }, 5000);
   window._afterCoachAlertDismiss = () => { openWorkoutSetup(); };
   showCoachAlertToast('setFeedback');
 }
