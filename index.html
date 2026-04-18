@@ -11616,6 +11616,15 @@ function startRestTimer() {
   restCount++;
   if (restCount === 1) checkCoachmarks('restTimer');
   restStartedAt = Date.now();
+  console.log('[AORA:rest] startRestTimer', {
+    smartRest: getSmartRestSeconds(),
+    restSeconds: restSeconds,
+    _restTotalSeconds: _restTotalSeconds,
+    group: detectPrimaryMuscleGroup(),
+    currentExercise: currentExerciseName,
+    sets: currentExerciseSets.length,
+    trace: new Error().stack.split('\n').slice(1,4).join(' | ')
+  });
   // Capturar referencia al set que inició el descanso; persiste aunque el usuario cambie de ejercicio
   _restTargetSet = currentExerciseSets.length > 0 ? currentExerciseSets[currentExerciseSets.length - 1] : null;
   const smartRest = getSmartRestSeconds();
@@ -11830,6 +11839,11 @@ function adjustRest(seconds) {
 
 function extendRest(seconds) {
   if (!isResting) return;
+  console.log('[AORA:rest] extendRest', {
+    seconds,
+    _restTotalSeconds_before: _restTotalSeconds,
+    trace: new Error().stack.split('\n').slice(1,4).join(' | ')
+  });
   countdownRemaining += seconds;
   _restTotalSeconds += seconds; // mantener el total alineado con la extensión
   if (_restTargetSet) {
