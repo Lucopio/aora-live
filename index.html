@@ -5179,24 +5179,24 @@ const COACH_ALERTS = {
   },
   heavySetExtendedRest: {
     maria: [
-      "¡Ese set estuvo durísimo! 🔥 Te agregué {{secs}}s más de descanso — tu cuerpo los necesita.",
-      "Con ese RPE tan alto, sumé {{secs}}s al descanso. Respíralos, parcera. ¡Vas fuerte!",
-      "Eso fue intenso 💪 Te di {{secs}}s extra. Cuando sientas el pulso tranquilo, seguimos."
+      "¡Ese set estuvo durísimo! 🔥 Vas a necesitar 3 min completos de descanso antes del siguiente ejercicio.",
+      "Con ese RPE tan alto, llega a 3 minutos antes de seguir. Tu cuerpo lo agradece, parcera.",
+      "Eso fue intenso 💪 Apunta a 3 min completos de descanso — recuperación de verdad."
     ],
     carlos: [
-      "RPE alto detectado. +{{secs}}s al descanso actual para recuperar SNC y fosfocreatina.",
-      "Carga acumulada alta. Extendí el descanso {{secs}}s. No negociable para mantener intensidad.",
-      "Series intensas. Sumé {{secs}}s. Respeta el tiempo completo."
+      "RPE alto detectado. Objetivo de descanso: 3 minutos completos para recuperar SNC y fosfocreatina.",
+      "Carga acumulada alta. 3 min de transición es el estándar. No negociable para mantener intensidad.",
+      "Series intensas. 180s de descanso es el mínimo para este tipo de esfuerzo."
     ],
     andrea: [
-      "Sentí la intensidad de ese bloque. Te sumé {{secs}}s más — no es perder tiempo, es respetar lo que hiciste. 🌿",
-      "Ese trabajo merece recuperación completa. Agregué {{secs}}s al descanso actual.",
-      "Tu cuerpo trabajó duro. Sumé {{secs}}s — tomalos con calma."
+      "Sentí la intensidad de ese bloque. Date 3 minutos completos — no es perder tiempo, es respetar lo que hiciste. 🌿",
+      "Ese trabajo merece recuperación completa. 3 min antes de seguir.",
+      "Tu cuerpo trabajó duro. Apunta a 3 min de descanso — con calma."
     ],
     diego: [
-      "Trabajo pesado. +{{secs}}s. El que respeta la recuperación, construye.",
-      "Serie exigente. Extendí el descanso {{secs}}s. Respetalo.",
-      "Intensidad detectada. Sumé {{secs}}s. La recuperación no es pausa — es parte del trabajo."
+      "Trabajo pesado. 3 minutos. El que respeta la recuperación, construye.",
+      "Serie exigente. Descanso objetivo: 3 minutos. Respetalo.",
+      "Intensidad detectada. 180 segundos de descanso. La recuperación es parte del trabajo."
     ]
   },
   hydration: {
@@ -6954,6 +6954,7 @@ function updateHomeGreeting() {
 // ─── State ──────────────────────────────────────────────────
 let restSeconds = 60;
 let workoutStartTime = null;
+let _heavyExtended = new Set(); // ejercicios que ya tuvieron extensión por RPE alto en esta sesión
 let timerInterval = null;
 let exerciseCount = 0;
 let countdownInterval = null;
@@ -8050,6 +8051,7 @@ function launchWorkout() {
     }
   }, 1500);
   workoutStartTime = Date.now();
+  _heavyExtended.clear();
   resetRestZone();
   startTimer();
   requestWakeLock();
@@ -10472,8 +10474,13 @@ function nextExercise() {
       ? restSeconds
       : (REST_BY_MUSCLE_GROUP[group] || restSeconds);
     const { seconds: transitionRest, isHeavy } = _calcTransitionRest(currentExerciseSets, baseRest);
+    // Si este ejercicio ya tuvo extensión por RPE alto en esta sesión, no repetir
+    const exKey = currentExerciseName || '';
+    const alreadyExtended = isHeavy && _heavyExtended.has(exKey);
+    const effectiveHeavy = isHeavy && !alreadyExtended;
 
     if (isResting && restStartedAt) {
+      if (effectiveHeavy) _heavyExtended.add(exKey);
       // Ya está descansando — extender solo si falta para llegar al total de transición
       const yaDescansado = Math.floor((Date.now() - restStartedAt) / 1000);
       const delta = transitionRest - yaDescansado;
@@ -10483,7 +10490,7 @@ function nextExercise() {
           const sub = document.getElementById('restSub');
           if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
         }, 100);
-        if (isHeavy && !window._pendingSetFeedbackMsg) {
+        if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
           setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 600);
         }
       } else {
@@ -10491,6 +10498,7 @@ function nextExercise() {
         if (sub) sub.textContent = `Ya descansaste ${yaDescansado}s · listo para continuar`;
       }
     } else {
+      if (effectiveHeavy) _heavyExtended.add(exKey);
       const _savedRest = restSeconds;
       restSeconds = transitionRest;
       startRestTimer();
@@ -10499,7 +10507,7 @@ function nextExercise() {
         const sub = document.getElementById('restSub');
         if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
       }, 100);
-      if (isHeavy && !window._pendingSetFeedbackMsg) {
+      if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
         setTimeout(() => showCoachAlertToast('heavySetTransition'), 600);
       }
     }
@@ -11812,9 +11820,11 @@ function closeAdjustRestSheet() {
 }
 function adjustRest(seconds) {
   if (!isResting) { closeAdjustRestSheet(); return; }
-  // Restar directamente del countdown actual (igual que extendRest suma) para
-  // evitar recalcular desde restSeconds que no incluye extensiones previas.
+  // Restar tanto de countdownRemaining como de _restTotalSeconds
+  // para que el cálculo por timestamp en el tick siga correcto.
+  const decrement = Math.min(seconds, countdownRemaining);
   countdownRemaining = Math.max(0, countdownRemaining - seconds);
+  _restTotalSeconds = Math.max(0, _restTotalSeconds - decrement);
   closeAdjustRestSheet();
 }
 
@@ -13983,14 +13993,46 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Re-sincronizar rest timer al volver a foreground (evita timer pegado al bloquear pantalla)
+let _lastKnownCountdown = null; // última lectura de countdownRemaining antes de ocultar pestaña
 document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    _lastKnownCountdown = (isResting && typeof countdownRemaining === 'number') ? countdownRemaining : null;
+    return;
+  }
+  // volvió a visible
   if (document.visibilityState === 'visible' && isResting && restStartedAt) {
     const elapsed = Math.floor((Date.now() - restStartedAt) / 1000);
-    countdownRemaining = _restTotalSeconds - elapsed;
+    const newCountdown = _restTotalSeconds - elapsed;
+    const previousCountdown = _lastKnownCountdown;
+    countdownRemaining = newCountdown;
+    // Forzar actualización inmediata del UI
     const ringNum = document.getElementById('ringNumber');
     if (ringNum && countdownRemaining >= 0) {
       ringNum.textContent = countdownRemaining;
     }
+    // Disparar eventos perdidos durante el suspend
+    if (previousCountdown !== null && _restTotalSeconds > 15) {
+      const halfPoint = Math.round(_restTotalSeconds / 2);
+      // Alerta de mitad — solo si cruzó ese umbral mientras estaba oculto
+      if (previousCountdown > halfPoint && newCountdown <= halfPoint && newCountdown > 10) {
+        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([80, 50, 80, 50, 120]);
+        playBeep(660, 120);
+        setTimeout(() => playBeep(880, 180), 180);
+        speakCoach('mid');
+      }
+      // Alerta de 10s — solo si cruzó ese umbral mientras estaba oculto
+      if (previousCountdown > 10 && newCountdown <= 10 && newCountdown > 0) {
+        speakCoach('ten');
+        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([100, 60, 100]);
+        playBeep(800, 150);
+      }
+      // Llegó a 0 mientras estaba oculto — disparar beep final y feedback
+      if (previousCountdown > 0 && newCountdown <= 0) {
+        playFinalBeep();
+        if (vibrationEnabled && navigator.vibrate) navigator.vibrate([400, 200, 400]);
+      }
+    }
+    _lastKnownCountdown = null;
   }
 });
 
