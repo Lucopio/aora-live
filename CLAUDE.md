@@ -3,20 +3,25 @@
 ## Identidad del Proyecto
 - **Nombre:** Aora Live (antes GymTracker)
 - **Tipo:** PWA fitness app — mercado LATAM con ambición global
-- **URL producción:** https://lucopio.github.io/aora-live (via GitHub Pages)
+- **URL producción:** https://app.aoralive.com (GitHub Pages + custom domain)
+- **URL preview/staging:** https://aora-live.pages.dev (Cloudflare Pages, sync con `main`)
+- **URL legacy:** https://lucopio.github.io/aora-live (redirige a custom domain)
 - **Repositorio:** https://github.com/Lucopio/aora-live
 - **Rama principal:** `main`
+- **Ramas auxiliares:** `gh-pages` (creada por PR preview action — ver sección Infraestructura de Deploys)
 
 ## Stack Técnico
 - **Arquitectura:** Monolítica — un solo archivo `index.html` (~14,000 líneas)
 - **Backend:** Supabase (`edythbvezafpnkslavcv.supabase.co`)
 - **Auth:** Supabase Auth (email/password)
 - **Storage local:** localStorage (offline-first) — no se usa IndexedDB
-- **Deploy:** GitHub Pages (automático al hacer push a `main`)
-- **PWA:** Service Worker (`sw.js`) + `manifest.json` + meta tags Apple
+- **Deploy producción:** GitHub Pages desde `main` (custom domain `app.aoralive.com` vía CNAME)
+- **Deploy preview:** Cloudflare Pages (`aora-live.pages.dev`) — sync automático con `main`
+- **PWA:** Service Worker (`sw.js`, cache `gymtracker-v119`) + `manifest.json` + meta tags Apple
 - **Companion:** `watch.html` para Samsung Galaxy Watch
 - **Fuentes:** Syne (display), DM Sans (body), JetBrains Mono (mono)
 - **Iconos:** 40+ SVGs custom en `Icons/SVG/` — referenciados como `<img>` en el nav y UI
+- **Ilustraciones de ejercicios:** 60+ PNGs en `Images/exercises/` — filenames snake_case minúscula (Linux case-sensitive)
 
 ## Design System — Dark Premium UI
 ```css
@@ -89,13 +94,31 @@
 - **Voice IDs:** maría `VmejBeYhbrcTPwDniox7`, carlos `dn9HtxgDwCH96MVX9iAO`, andrea `6Mo5ciGH5nWiQacn5FYk`, diego `eklUXgdI2kEgVcRbATIu`
 - **Límite texto:** 500 caracteres por llamada
 
+### CORS — Configuración de Orígenes Permitidos
+Cada Edge Function tiene un array `ALLOWED_ORIGINS` hardcodeado. La función `getCorsHeaders(req)` refleja el origen del request si está en la lista; si no, fallback a `ALLOWED_ORIGINS[0]` (bloqueando el request).
+
+**Orígenes permitidos actuales** (los 3 functions tienen la misma lista):
+```typescript
+const ALLOWED_ORIGINS = [
+  "https://lucopio.github.io",
+  "https://aora-live.pages.dev",    // Cloudflare Pages preview
+  "https://app.aoralive.com",       // Producción
+  "https://aoralive.com",
+  "https://www.aoralive.com",
+  "http://localhost:5500",           // dev — Live Server
+  "http://127.0.0.1:5500",
+];
+```
+
+**CRÍTICO:** cambios en `ALLOWED_ORIGINS` requieren `npx supabase functions deploy <nombre>` — el `git push` a `main` NO despliega Edge Functions automáticamente. Ver sección "Comandos Útiles" para deploy-all.
+
 ## 4 Entrenadores IA (Diferenciador Principal)
 | Entrenador | País | Especialidad | Personalidad |
 |---|---|---|---|
 | **María** | Colombia 🇨🇴 (Medellín) | HIIT, funcional | Energética, empática |
 | **Carlos** | México 🇲🇽 | Fuerza, hipertrofia | Datos-driven, preciso |
 | **Andrea** | Argentina 🇦🇷 | Movilidad, wellness | Equilibrada, reflexiva |
-| **Diego** | Perú 🇵🇪 | Calistenia, resistencia | Resiliente, sereno |
+| **Diego** | Perú 🇵🇪 | Técnica, resistencia | Resiliente, sereno |
 
 Los entrenadores son IA — los usuarios lo saben. La confianza se construye por **competencia**, no por transparencia. Las fotos deben verse como personas reales profesionales.
 
@@ -190,9 +213,16 @@ const OB_STEP_IDS_BASE = ['obStep1','obStepCycle','obStepLocation','obStep2','ob
 - **API:** RapidAPI endpoint `exercisedb.p.rapidapi.com/exercises/name/{name}?limit=1`
 - **Cache:** localStorage key `aora_gif_cache` — cada GIF se busca una vez y se almacena permanentemente
 - **Quota:** 500 calls/mes en free tier
-- **Ubicación del array:** `grep -n "exerciseDB\s*=" index.html` (~línea 4736)
-- **Grupos:** Pecho, Espalda, Hombros, Bíceps, Tríceps, Core, Piernas, Glúteos, Cardio, Calistenia
+- **Ubicación del array:** `grep -n "exerciseDB\s*=" index.html` (~línea 8263)
+- **Grupos:** Pecho, Espalda, Hombros, Bíceps, Tríceps, Piernas, Glúteos, Abdomen, Cardio (Calistenia ELIMINADO en commit `cf17b41`)
 - **`filter: invert(1)`** aplicado a `#exGifImg` — las imágenes de AscendAPI tienen fondo blanco; invertir las hace correctas sobre el dark UI
+
+### Ilustraciones estáticas (`Images/exercises/`)
+- 60+ PNGs con ilustraciones de ejercicios — se muestran en el catálogo junto al chip de equipo
+- Filenames en **snake_case minúscula** (Linux es case-sensitive — GitHub Pages falla silenciosamente con mayúsculas)
+- Mapa `EXERCISE_ILLUSTRATIONS` (~línea 9665) relaciona nombre del ejercicio → path del PNG
+- Si un ejercicio existe pero no tiene imagen: entrada comentada con `// 'Nombre' — imagen no disponible`
+- Cobertura actual: ~60/83 ejercicios del catálogo tienen ilustración
 
 ### Mapas de traducción de ejercicios
 - **`EXERCISE_EN`** — mapa Español→Inglés. Incluye aliases sin tilde (exerciseDB almacena nombres SIN acentos). Si un ejercicio no aparece, agregar alias aquí.
@@ -246,9 +276,16 @@ Los prompts a Claude Code deben prohibir explícitamente tocar JS logic, DOM str
 ## Bugs Conocidos (Prioridad de Implementación)
 1. **Rest timer state loss** — el timer pierde estado al navegar (ROOT CAUSE de múltiples bugs)
 2. **Back button** — comportamiento inconsistente al volver de workout
-3. **Alerta persistente** — notificaciones que no se descartan correctamente
-4. **Series evaluation window** — ventana de evaluación de series incorrecta
-5. **Unilateral exercise side-switching** — ejercicios unilaterales no alternan lado correctamente
+3. **Series evaluation window** — ventana de evaluación de series incorrecta
+4. **Unilateral exercise side-switching** — ejercicios unilaterales no alternan lado correctamente
+
+### Bugs fixeados recientes (historia)
+- ~~**Alerta persistente**~~ — fixeado: auto-clear `_pendingSetFeedbackMsg` tras 5s en `openConfig()` + `warmupAlertFiredThisVisit` per-visit (commits `a3fd7f6`, `9dcf4fd`)
+- ~~**Mensaje coach perdido al navegar**~~ — fixeado: `sendCoachMessage` persiste inmediatamente en localStorage (commit `9dcf4fd`)
+- ~~**warmupSkipped alert no disparaba**~~ — fixeado: slot `_pendingSetFeedbackMsg` ya no bloquea (commit `a3fd7f6`)
+- ~~**Nombres de ejercicios duplicados (`Press con mancuernas`)**~~ — eliminado del catálogo, reemplazado por `Press de banca` en 6 presets (commit `cf17b41`)
+- ~~**Grupo Calistenia redundante**~~ — eliminado completamente (12 puntos del código) (commit `cf17b41`)
+- ~~**SW interceptando Edge Functions con CORS cacheado**~~ — fixeado: early-return para URLs con `supabase.co` (commit `4540d80`)
 
 ## En Desarrollo / Próximas Features
 - Videos de entrenamiento con María (generados con Kling AI — Video O1)
@@ -267,6 +304,41 @@ Los prompts a Claude Code deben prohibir explícitamente tocar JS logic, DOM str
 - Ejercicios pendientes: sentadilla trasera (validada), peso muerto, hack squat, leg press
 - 1 video implementado: `videos/maria_rotaciones_brazos.mp4` (warmup)
 
+## Infraestructura de Deploys
+
+### Producción — GitHub Pages
+- **URL:** https://app.aoralive.com
+- **Source:** branch `main`, directorio raíz `/`
+- **Custom domain:** `app.aoralive.com` — configurado vía archivo `CNAME` en la raíz del repo
+- **Auto-deploy:** en cada `git push origin main`, GitHub Pages reconstruye y publica (1-3 min)
+- **Legacy URL:** `lucopio.github.io/aora-live` redirige automáticamente al custom domain
+
+### Preview — Cloudflare Pages
+- **URL:** https://aora-live.pages.dev
+- **Source:** branch `main` (mismo que producción)
+- **Uso:** entorno de preview/staging para verificar cambios sin pasar por el custom domain
+- **Deploy automático:** en cada push a `main` (paralelo al deploy de GitHub Pages)
+- **Requiere CORS en Edge Functions** — el dominio `aora-live.pages.dev` debe estar en `ALLOWED_ORIGINS`
+
+### PR Previews (EN DISEÑO — NO FUNCIONAL)
+- Workflow creado: `.github/workflows/preview.yml` usando `rossjrw/pr-preview-action@v1`
+- **Problema detectado:** la action despliega a branch `gh-pages`, pero GitHub Pages sirve desde `main` → los previews no son accesibles (404 en `app.aoralive.com/pr-preview/pr-N/`)
+- **Rama `gh-pages`:** existe (creada por la action en la validación del PR #2), contiene `pr-preview/pr-2/` orphan
+- **Decisión pendiente (Camino A vs B):**
+  - **A:** Migrar Pages source a `gh-pages` + workflow que sincroniza `main` → raíz de `gh-pages`
+  - **B:** Abandonar workflow, usar Cloudflare Pages para previews por PR (servicio separado)
+- **Estado:** workflow desactivado funcionalmente, commit `preview.yml` se mantiene en repo
+- **No borrar** la rama `gh-pages` ni el workflow hasta decidir el camino
+
+## Service Worker (`sw.js`)
+- **Cache version actual:** `gymtracker-v119`
+- **Assets precacheados:** `./`, `./index.html`, `./manifest.json`, `./icon-192.png`, `./icon-512.png`
+- **Estrategia HTML:** network-first con fallback a cache (siempre intenta fresh version)
+- **Estrategia assets estáticos:** cache-first (imágenes, iconos, etc.)
+- **Excepción crítica:** peticiones a `supabase.co` (Edge Functions) usan **early-return** — el SW NO las intercepta, pasan directo a la red. Esto evita que respuestas con CORS cacheado antiguo bloqueen nuevos orígenes (bug fixeado en commit `4540d80`).
+- **Activación:** NO llamar `skipWaiting()` en install — rompería workouts activos. El nuevo SW se activa naturalmente cuando no hay clientes con el SW anterior (próxima apertura de app).
+- **Bump de versión:** cambiar `CACHE_NAME = 'gymtracker-vXXX'` solo cuando hay cambios estructurales en cache (nuevos assets, reorganización). Cambios solo de código en `sw.js` activan el nuevo SW automáticamente por diff de bytes.
+
 ## MCPs Configurados en Este Proyecto
 - **supabase** — consultas y modificaciones de BD
 - **github** — commits, PRs, estado del repo
@@ -276,10 +348,15 @@ Los prompts a Claude Code deben prohibir explícitamente tocar JS logic, DOM str
 ```
 aora-live/
 ├── index.html              # App completa (~14,000 líneas)
-├── sw.js                   # Service Worker (network-first para HTML)
+├── sw.js                   # Service Worker (v119, early-return para supabase.co)
 ├── manifest.json           # PWA manifest
 ├── watch.html              # Companion para Samsung Galaxy Watch
+├── CNAME                   # app.aoralive.com (GitHub Pages custom domain)
+├── CLAUDE.md               # Este archivo — contexto del proyecto
 ├── .gitignore              # Excluye mcp_config*.json (tienen API keys)
+├── .github/
+│   └── workflows/
+│       └── preview.yml     # PR preview action (EN DISEÑO — incompatible con Pages=main)
 ├── supabase/
 │   ├── config.toml
 │   ├── migrations/
@@ -287,12 +364,18 @@ aora-live/
 │   └── functions/
 │       ├── coach-chat/     # Chat IA con coaches
 │       ├── generate-insights/ # Análisis semanal IA
-│       └── tts-coach/      # ElevenLabs TTS (NUEVO)
-├── Images/coaches/         # Fotos de coaches (maria1.png, etc.)
+│       └── tts-coach/      # ElevenLabs TTS
+├── Images/
+│   ├── coaches/            # Fotos de coaches (maria1.png, etc.)
+│   └── exercises/          # 60+ ilustraciones PNG en snake_case minúscula
 ├── Icons/SVG/              # 40+ iconos SVG del design system
 └── videos/                 # Videos generados con Kling AI
     └── maria_rotaciones_brazos.mp4
 ```
+
+**Ramas del repo:**
+- `main` — producción, deploya a GitHub Pages + Cloudflare Pages
+- `gh-pages` — creada por `rossjrw/pr-preview-action` en validación; contiene `pr-preview/pr-2/` (orphan, no servido actualmente). No borrar hasta decidir Camino A vs B de PR Previews.
 
 **Archivos ignorados por git** (contienen API keys o son locales):
 - `mcp_config.json`, `mcp_config_min.json` — RapidAPI key
@@ -304,7 +387,7 @@ aora-live/
 # Ver estado del deploy
 git log --oneline -5
 
-# Push a producción
+# Push a producción (deploya a app.aoralive.com Y aora-live.pages.dev)
 git add . && git commit -m "feat: descripción" && git push origin main
 
 # Encontrar exerciseDB array
@@ -317,16 +400,32 @@ grep -n "COACH_ALERTS" index.html
 grep -n "const screenMap" index.html
 
 # Encontrar mapas de ejercicios
-grep -n "EXERCISE_EN\|EXERCISE_IDS" index.html | head -10
+grep -n "EXERCISE_EN\|EXERCISE_IDS\|EXERCISE_ILLUSTRATIONS" index.html | head -10
 
 # Encontrar funciones TTS
 grep -n "function speakCoach\|function _speakElevenLabs\|_elAvailable\|voiceAlertMode" index.html | head -15
 
-# Deploy de Edge Function
+# ── Edge Functions ────────────────────────────────────────────
+# Deploy de UNA Edge Function
 npx supabase functions deploy <nombre-funcion> --project-ref edythbvezafpnkslavcv
 
-# Ver tablas de Supabase
-# → Preguntarle directamente a Claude Code usando MCP
+# Deploy de TODAS las Edge Functions (usar tras cambios en CORS)
+npx supabase functions deploy coach-chat --project-ref edythbvezafpnkslavcv && \
+npx supabase functions deploy generate-insights --project-ref edythbvezafpnkslavcv && \
+npx supabase functions deploy tts-coach --project-ref edythbvezafpnkslavcv
+
+# Verificar CORS configurado en las 3 Edge Functions
+grep -n "ALLOWED_ORIGINS\|aora-live.pages.dev" supabase/functions/*/index.ts
+
+# ── Service Worker ────────────────────────────────────────────
+# Ver versión actual del cache
+grep -n "CACHE_NAME" sw.js
+
+# Bump de versión del SW (solo si hay cambios en ASSETS[])
+# Editar sw.js línea 1: const CACHE_NAME = 'gymtracker-vXXX';
+
+# ── Ver tablas de Supabase ────────────────────────────────────
+# → Preguntarle directamente a Claude Code usando MCP supabase
 ```
 
 ## Contacto del Proyecto
