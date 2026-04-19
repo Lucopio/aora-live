@@ -7,6 +7,7 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 // ── Allowed origins ────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   "https://lucopio.github.io",
+  "https://aora-live.pages.dev",
   "https://app.aoralive.com",
   "https://aoralive.com",
   "https://www.aoralive.com",

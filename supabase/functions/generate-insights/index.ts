@@ -13,6 +13,7 @@ const WELLNESS_CATEGORIES = ["sleep", "hydration", "supplement_omega3", "supplem
 // ── Allowed origins ────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   "https://lucopio.github.io",
+  "https://aora-live.pages.dev",
   "https://app.aoralive.com",
   "https://aoralive.com",
   "https://www.aoralive.com",

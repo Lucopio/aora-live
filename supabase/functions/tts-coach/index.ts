@@ -12,6 +12,7 @@ const VOICE_IDS: Record<string, string> = {
 // ── Allowed origins ────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   "https://lucopio.github.io",
+  "https://aora-live.pages.dev",
   "https://aoralive.com",
   "https://app.aoralive.com",
   "https://www.aoralive.com",
