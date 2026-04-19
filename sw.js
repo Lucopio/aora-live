@@ -30,6 +30,11 @@ self.addEventListener('activate', e => {
 
 // Fetch: network-first for HTML, cache-first for static assets
 self.addEventListener('fetch', e => {
+  // No interceptar peticiones a Supabase (Edge Functions)
+  if (e.request.url.includes('supabase.co')) {
+    return; // deja pasar al network directamente
+  }
+
   const url = new URL(e.request.url);
   const isHTML = e.request.destination === 'document'
     || url.pathname.endsWith('.html')
