@@ -11920,6 +11920,12 @@ function skipRest() {
   if (restStartedAt && _restTargetSet) {
     const restDurationMs = Date.now() - restStartedAt;
     const restDurationSeconds = Math.floor(restDurationMs / 1000);
+    if (restDurationSeconds < 0 || restDurationSeconds > 600) {
+      // Invalid: restStartedAt fue desplazado al futuro por _estimateSetMs; no guardar
+      resetRestZone();
+      updateAvgRestPill();
+      return;
+    }
     const restConfigured = restSeconds * 1000;
     _restTargetSet.rest_duration_seconds = restDurationSeconds;
     _restTargetSet.rest_after_ms = restDurationMs;
@@ -12009,7 +12015,7 @@ function extendRest(seconds) {
 
 function updateAvgRestPill() {
   const allSets = completedExercises.flatMap(ex => ex.sets || []);
-  const rests = allSets.filter(s => s.rest_after_ms != null && !s.is_warmup_set);
+  const rests = allSets.filter(s => s.rest_after_ms != null && s.rest_after_ms > 0 && !s.is_warmup_set);
   const pill = document.getElementById('avgRestPill');
   if (!pill) return;
   if (rests.length === 0) { pill.style.display = 'none'; return; }
