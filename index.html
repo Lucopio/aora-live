@@ -7529,7 +7529,7 @@ function _wsuRenderExPicker() {
     updatePendingPill();
     saveToStorage();
     showToast('✓ ' + name + ' añadido a tu lista', 'success');
-  }, { title: 'Agregar ejercicios', showCustom: true });
+  }, { title: 'Agregar ejercicios', showCustom: true, largeItems: true });
 }
 
 // ─── Workout ────────────────────────────────────────────────
@@ -17229,7 +17229,7 @@ function openPreWorkoutPicker() {
     updatePendingPill();
     saveToStorage();
     showToast('\u2713 ' + name + ' añadido a tu lista', 'success');
-  }, { title: 'Agregar ejercicios', onClose: closePreWorkoutPicker, onDone: closePreWorkoutPicker, showCustom: true });
+  }, { title: 'Agregar ejercicios', onClose: closePreWorkoutPicker, onDone: closePreWorkoutPicker, showCustom: true, largeItems: true });
   document.getElementById('preWkPickerSheet').style.display = 'flex';
 }
 function closePreWorkoutPicker() {
