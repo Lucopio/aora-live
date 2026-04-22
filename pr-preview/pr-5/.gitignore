@@ -1,0 +1,19 @@
+# API keys & config with secrets
+mcp_config.json
+mcp_config_min.json
+
+# Local dev server (not needed in repo)
+serve3001.js
+
+# Claude local backup files
+.claude/settings.local.json.bak
+
+# Claude agents (local only)
+.claude/agents/
+
+# Claude skills (installed globally, not per-repo)
+.claude/skills/
+
+# OS files
+.DS_Store
+Thumbs.db
