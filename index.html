@@ -2581,6 +2581,15 @@ body {
   margin: 0 auto 4px;
 }
 .ob-coach-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.ob-coach-photo.ob-coach-andrea { object-position: center top; }
+.ob-coach-photo.ob-coach-diego  { object-position: center top; }
+
+/* Slide 2 del onboarding: fotos más grandes (no afectar coach change sheet) */
+#obStepCoach .ob-coach-photo-wrap {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 10px;
+}
 
 /* GIF invert para dark background — preserva colores rojos de músculos marcados */
 #exGifImg,
@@ -3051,14 +3060,14 @@ body {
           <button onclick="event.stopPropagation();showCoachProfile('carlos','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'andrea')" data-coach="andrea">
-          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/andrea1.png" alt="Andrea"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo ob-coach-andrea" src="Images/coaches/andrea1.png" alt="Andrea"></div>
           <div class="trainer-flag">🇦🇷</div>
           <div class="trainer-name">Andrea</div>
           <div class="trainer-specialty">Bienestar integral</div>
           <button onclick="event.stopPropagation();showCoachProfile('andrea','onboarding')" style="margin-top:8px;padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font);cursor:pointer;letter-spacing:0.3px">Ver perfil →</button>
         </div>
         <div class="trainer-card" onclick="obSelectCoach(this,'diego')" data-coach="diego">
-          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego1.png" alt="Diego"></div>
+          <div class="ob-coach-photo-wrap"><img class="ob-coach-photo ob-coach-diego" src="Images/coaches/diego1.png" alt="Diego"></div>
           <div class="trainer-flag">🇵🇪</div>
           <div class="trainer-name">Diego</div>
           <div class="trainer-specialty">Resiliencia & Técnica</div>
@@ -3829,7 +3838,7 @@ body {
     </div>
 
     <!-- BOTÓN 1: Nuevo entrenamiento — GRANDE, gradiente, texto negro -->
-    <button class="start-btn" onclick="openConfig()" style="margin-bottom:10px;width:100%;display:flex;align-items:center;gap:16px;text-align:left;border-radius:18px !important;justify-content:flex-start !important">
+    <button class="start-btn" onclick="openConfig()" style="margin:0 auto 10px;width:100%;max-width:420px;display:flex;align-items:center;gap:16px;text-align:left;border-radius:18px !important;justify-content:flex-start !important">
       <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </div>
@@ -3841,7 +3850,7 @@ body {
     </button>
 
     <!-- BOTÓN 2: Express -->
-    <button onclick="openQuickWorkout()" id="quickWorkoutBtn" style="width:100%;margin-bottom:10px;background:#0A1F0A;border:1.5px solid #1F4A1F;border-radius:18px;padding:20px 24px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
+    <button onclick="openQuickWorkout()" id="quickWorkoutBtn" style="width:100%;max-width:420px;margin:0 auto 10px;background:#0A1F0A;border:1.5px solid #1F4A1F;border-radius:18px;padding:20px 24px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
       <div style="width:52px;height:52px;border-radius:14px;background:rgba(74,222,128,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       </div>
@@ -3853,7 +3862,7 @@ body {
     </button>
 
     <!-- BOTÓN 3: Mis Rutinas -->
-    <button id="routinesByLevelBtn" onclick="showRoutinesSheet()" style="width:100%;margin-bottom:20px;background:#0A0820;border:1.5px solid #1E1445;border-radius:18px;padding:20px 24px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
+    <button id="routinesByLevelBtn" onclick="showRoutinesSheet()" style="width:100%;max-width:420px;margin:0 auto 20px;background:#0A0820;border:1.5px solid #1E1445;border-radius:18px;padding:20px 24px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
       <div style="width:52px;height:52px;border-radius:14px;background:rgba(123,97,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7B61FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="4" height="8" rx="1"/><rect x="9" y="9" width="4" height="13" rx="1"/><rect x="16" y="4" width="4" height="18" rx="1"/></svg>
       </div>
@@ -4234,13 +4243,13 @@ body {
       <div class="trainer-specialty">Fuerza & Masa</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('andrea')" id="changeCard_andrea">
-      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/andrea1.png" alt="Andrea"></div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo ob-coach-andrea" src="Images/coaches/andrea1.png" alt="Andrea"></div>
       <div class="trainer-flag">🇦🇷</div>
       <div class="trainer-name">Andrea</div>
       <div class="trainer-specialty">Bienestar integral</div>
     </div>
     <div class="trainer-card" onclick="selectCoachFromChat('diego')" id="changeCard_diego">
-      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo" src="Images/coaches/diego1.png" alt="Diego"></div>
+      <div class="ob-coach-photo-wrap"><img class="ob-coach-photo ob-coach-diego" src="Images/coaches/diego1.png" alt="Diego"></div>
       <div class="trainer-flag">🇵🇪</div>
       <div class="trainer-name">Diego</div>
       <div class="trainer-specialty">Resiliencia & Técnica</div>
@@ -5932,7 +5941,7 @@ function renderWeekDots() {
   }).join('');
   let streak = 0;
   for (let i = todayOffset; i >= 0; i--) { if (dayHasWorkout(i)) streak++; else break; }
-  if (badgeEl) badgeEl.textContent = streak > 0 ? '🔥 ' + streak + ' día' + (streak > 1 ? 's' : '') : '';
+  if (badgeEl) badgeEl.textContent = streak > 0 ? streak + ' día' + (streak > 1 ? 's' : '') : '';
 
   // Tip del coach para usuario nuevo (sin entrenamientos aún)
   const tipEl = document.getElementById('weekFirstTip');
