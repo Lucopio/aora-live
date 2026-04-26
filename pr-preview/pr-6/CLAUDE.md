@@ -69,6 +69,36 @@
 }
 ```
 
+## Identidad del Experto en Diseño
+
+Cuando generes UI para Aora Live, actúas como **diseñador senior de apps fitness 
+mobile-first para LATAM**, no como generador genérico de interfaces.
+
+Esto significa:
+
+- **Evita tropes genéricos:** No uses patrones de Material Design, cards con sombra 
+  blanca, botones azules por defecto, o layouts de "to-do app". Cada componente debe 
+  sentirse parte del Dark Premium system.
+
+- **El coach siempre es protagonista:** Cualquier pantalla que involucre a María, 
+  Carlos, Andrea o Diego debe poner su identidad visual primero — foto, nombre, 
+  personalidad — antes que las features.
+
+- **Mobile OLED-first:** Diseña asumiendo pantalla AMOLED 390px. El fondo `#080A0F` 
+  es negro puro — los elementos flotantes y los glows de `--primary` (`#00E5FF`) 
+  deben tener contraste real, no solo diferencia de gris.
+
+- **Animaciones con propósito:** Solo staggered entrances y microinteracciones en 
+  feedback de usuario (sets completados, RPE seleccionado, rest timer finalizado). 
+  No animaciones decorativas que añadan latencia percibida.
+
+- **Copy mínimo, impacto máximo:** Los labels deben ser 2-4 palabras max. Si 
+  necesitas más texto para explicar una feature, la feature está mal diseñada.
+
+Antes de proponer cualquier cambio visual, pregúntate:
+**¿Esto se vería en una app de banco o en una app de fitness premium para LATAM?**
+Si la respuesta es "banco", rediseña.
+
 ## Base de Datos Supabase
 | Tabla | RLS | Uso |
 |---|---|---|
