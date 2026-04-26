@@ -20,9 +20,13 @@ const ALLOWED_ORIGINS = [
   "http://127.0.0.1:5500",
 ];
 
+// Regex para subdominios de Cloudflare Pages preview (hash hex + .aora-live.pages.dev)
+const PREVIEW_SUBDOMAIN_REGEX = /^https:\/\/[a-f0-9]+\.aora-live\.pages\.dev$/;
+
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") ?? "";
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const isAllowed = ALLOWED_ORIGINS.includes(origin) || PREVIEW_SUBDOMAIN_REGEX.test(origin);
+  const allowedOrigin = isAllowed ? origin : ALLOWED_ORIGINS[0];
   return {
     "Access-Control-Allow-Origin":  allowedOrigin,
     "Access-Control-Allow-Headers": "authorization, content-type",
