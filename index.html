@@ -3931,9 +3931,9 @@ body {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
         <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 10px">
-          <div style="font-size:14px;font-weight:700;color:var(--text-primary)" id="planChatUsage">—</div>
-          <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:4px 0"><div id="planChatBar" style="height:100%;border-radius:2px;background:var(--warning);width:0%"></div></div>
-          <div style="font-size:9px;color:var(--text-tertiary);margin-top:2px">Mensajes hoy</div>
+          <div id="planChatUsage" style="display:none">—</div>
+          <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;margin:4px 0 6px"><div id="planChatBar" style="height:100%;border-radius:3px;background:var(--warning);width:0%;transition:width 0.3s ease"></div></div>
+          <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px">Mensajes hoy</div>
         </div>
         <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 10px">
           <div style="font-size:14px;font-weight:700;color:var(--text-primary)" id="planAnalysisUsage">—</div>
@@ -4225,7 +4225,7 @@ body {
         </button>
       </div>
       <div class="chat-counter" id="chatCounter"></div>
-      <div class="chat-limit-note" id="chatLimitNote" style="display:none">Límite diario de 20 mensajes alcanzado</div>
+      <div class="chat-limit-note" id="chatLimitNote" style="display:none">Has llegado al límite diario de mensajes. Vuelve mañana ✨</div>
     </div>
   </div>
 </div>
@@ -5414,7 +5414,7 @@ function getRandomAlertMessage(alertType) {
   return msgs[Math.floor(Math.random() * msgs.length)];
 }
 
-function showCoachAlertToast(alertType, vars) {
+function showCoachAlertToast(alertType, vars, customMessage) {
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -5425,8 +5425,14 @@ function showCoachAlertToast(alertType, vars) {
     try {
       message = getRandomAlertMessage(alertType);
     } catch (e) {
-      return;
+      // Si el alertType no tiene mensajes hardcodeados (ej. 'chatResponse'), seguir
+      // — customMessage cubrirá el contenido más abajo
+      message = '';
     }
+  }
+  // Mensaje arbitrario provisto por el caller (ej. respuesta literal del coach)
+  if (customMessage) {
+    message = customMessage;
   }
   if (!message) {
     return;
@@ -5437,8 +5443,8 @@ function showCoachAlertToast(alertType, vars) {
       message = message.replace(new RegExp(`{{${k}}}`, 'g'), vars[k]);
     });
   }
-  // Registrar en historial (máx 20 entradas, ignorar setFeedback para no saturar)
-  if (alertType !== 'setFeedback') {
+  // Registrar en historial (máx 20 entradas, ignorar setFeedback y chatResponse para no saturar)
+  if (alertType !== 'setFeedback' && alertType !== 'chatResponse') {
     _coachAlertLog.push({ type: alertType, coachName: coach.name, coachEmoji: coach.emoji || '👤', coachPhoto: coach.photoUrl || null, message, ts: Date.now() });
     if (_coachAlertLog.length > 20) _coachAlertLog.shift();
     _coachAlertUnread++;
@@ -6280,7 +6286,27 @@ function selectCoachFromChat(coachId) {
 }
 
 // ─── COACH CHAT ────────────────────────────────────────────────────────────
-const CHAT_DAILY_LIMIT = 20;
+function _chatLimitKey() { return 'gymtracker_chat_limit_' + new Date().toISOString().slice(0, 10); }
+
+function getDailyChatLimit() {
+  if (typeof getPlanLimits === 'function' && getPlanLimits().chatPerDay === Infinity) return Infinity;
+  const k = _chatLimitKey();
+  const stored = localStorage.getItem(k);
+  if (stored) return parseInt(stored, 10);
+  const limit = 10 + Math.floor(Math.random() * 6); // 10-15 inclusive
+  localStorage.setItem(k, String(limit));
+  // Limpiar keys de hace más de 7 días
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffKey = 'gymtracker_chat_limit_' + cutoff.toISOString().slice(0, 10);
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('gymtracker_chat_limit_') && key < cutoffKey) {
+      localStorage.removeItem(key);
+    }
+  }
+  return limit;
+}
+
 
 function _chatHistoryKey(coachId) { return 'gymtracker_chat_' + coachId; }
 function _chatCountKey()          { return 'gymtracker_chat_count_' + new Date().toISOString().slice(0, 10); }
@@ -6299,7 +6325,7 @@ function getChatCount() {
 function incrementChatCount() {
   localStorage.setItem(_chatCountKey(), String(getChatCount() + 1));
 }
-function canSendMessage() { return getChatCount() < CHAT_DAILY_LIMIT; }
+function canSendMessage() { return getChatCount() < getDailyChatLimit(); }
 
 function _showCoachResponseBadge(coachName, responseText) {
   // Badge rojo en el tab de Coach del bottom nav
@@ -6314,9 +6340,9 @@ function _showCoachResponseBadge(coachName, responseText) {
       coachNavItem.appendChild(dot);
     }
   }
-  // Toast si el usuario está en otra pantalla
-  const plain = responseText.replace(/<[^>]+>/g, '').slice(0, 70);
-  showToast(`💬 ${coachName}: ${plain}…`, 'info');
+  // Toast con foto del coach (mismo estilo que las demás alertas)
+  const plain = responseText.replace(/<[^>]+>/g, '').slice(0, 140);
+  showCoachAlertToast('chatResponse', null, plain);
   // Push notification nativa si disponible
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
@@ -6483,7 +6509,7 @@ function updateChatCounter() {
   const sendBtn   = document.getElementById('chatSendBtn');
   const input     = document.getElementById('chatInput');
   const el        = document.getElementById('chatCounter');
-  const limit     = typeof getPlanLimits === 'function' ? getPlanLimits().chatPerDay : CHAT_DAILY_LIMIT;
+  const limit     = getDailyChatLimit();
   const used      = getChatCount();
 
   if (limit === Infinity) {
@@ -6500,7 +6526,7 @@ function updateChatCounter() {
   // Solo mostrar aviso cuando llega al 75% de uso
   if (el) {
     if (pct >= 75 && remaining > 0) {
-      el.textContent = `Usaste el ${pct}% de tus mensajes hoy`;
+      el.textContent = `Te quedan pocos mensajes hoy`;
       el.style.color = 'var(--warning)';
       el.style.fontSize = '10px';
       el.style.padding = '4px 0';
@@ -14885,7 +14911,7 @@ async function handleLogout() {
 }
 
 function renderPlanCard() {
-  const limit = typeof CHAT_DAILY_LIMIT !== 'undefined' ? CHAT_DAILY_LIMIT : 10;
+  const limit = getDailyChatLimit();
   const used = typeof getChatCount === 'function' ? getChatCount() : 0;
   const analysesLimit = 2;
   const now = new Date();
