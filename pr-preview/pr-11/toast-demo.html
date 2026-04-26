@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toast Demo — GymTracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080A0F; --surface: #0E1119; --surface2: #151922;
+  --primary: #00E5FF; --border: rgba(255,255,255,0.07);
+  --text-primary: #F0F2F5; --text-secondary: #9CA3AF;
+  --font: 'DM Sans', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:20px; max-width:480px; margin:0 auto; }
+h2 { font-size:20px; color:var(--primary); margin-bottom:8px; }
+.btn { background: var(--primary); color: #000; font-family:var(--font); font-weight:700; font-size:14px; border:none; border-radius:12px; padding:12px 20px; cursor:pointer; width:100%; }
+.btn.outline { background:transparent; border:1px solid var(--border); color:var(--text-primary); }
+.coach-alert-toast {
+  position: fixed; bottom: 90px; left: 16px; right: 16px;
+  max-width: 440px; margin: 0 auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+  z-index: 500; transform: translateY(120%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.coach-alert-toast.visible { transform: translateY(0); }
+.coach-alert-avatar { font-size: 32px; line-height: 1; flex-shrink: 0; }
+.coach-alert-body { flex: 1; }
+.coach-alert-name { font-size:11px; font-weight:600; color:var(--primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.coach-alert-text { font-size:14px; color:var(--text-primary); line-height:1.45; }
+.coach-alert-dismiss { margin-top:10px; font-size:13px; font-weight:600; color:var(--primary); background:none; border:none; padding:0; cursor:pointer; font-family:var(--font); }
+/* Fake nav bar */
+.fake-nav { position:fixed; bottom:0; left:0; right:0; height:64px; background:var(--surface); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; max-width:480px; margin:0 auto; }
+.fake-nav span { font-size:11px; color:var(--text-secondary); }
+</style>
+</head>
+<body>
+<h2>Demo: Coach Alert Toast</h2>
+<p style="color:var(--text-secondary);font-size:13px;text-align:center;margin-bottom:16px">Toca cada botón para ver el toast del coach correspondiente</p>
+
+<button class="btn" onclick="show('hydration','maria','👩🏽','María')">💧 Hidratación — María</button>
+<button class="btn outline" onclick="show('hydration','carlos','👨🏽','Carlos')">💧 Hidratación — Carlos</button>
+<button class="btn outline" onclick="show('hydration','andrea','👩🏻','Andrea')">💧 Hidratación — Andrea</button>
+<button class="btn outline" onclick="show('hydration','diego','👨🏾','Diego')">💧 Hidratación — Diego</button>
+
+<div style="height:1px;background:var(--border);width:100%;margin:4px 0"></div>
+
+<button class="btn" style="background:var(--surface);border:1px solid #FFB800;color:#FFB800" onclick="show('sessionLength','maria','👩🏽','María')">⏱ Sesión larga — María</button>
+<button class="btn outline" onclick="show('sessionLength','diego','👨🏾','Diego')">⏱ Sesión larga — Diego</button>
+
+<div style="height:1px;background:var(--border);width:100%;margin:4px 0"></div>
+
+<button class="btn" style="background:var(--surface);border:1px solid #FF4D6D;color:#FF4D6D" onclick="show('warmupSkipped','carlos','👨🏽','Carlos')">🔥 Sin calentamiento — Carlos</button>
+<button class="btn outline" onclick="show('warmupSkipped','andrea','👩🏻','Andrea')">🔥 Sin calentamiento — Andrea</button>
+
+<div class="fake-nav">
+  <span>Inicio</span><span style="color:var(--primary);font-weight:700">Coach</span><span>Progreso</span><span>Yo</span>
+</div>
+
+<div class="coach-alert-toast" id="toast">
+  <div class="coach-alert-avatar" id="tAvatar"></div>
+  <div class="coach-alert-body">
+    <div class="coach-alert-name" id="tName"></div>
+    <div class="coach-alert-text" id="tText"></div>
+    <button class="coach-alert-dismiss" onclick="dismiss()">Entendido ✓</button>
+  </div>
+</div>
+
+<script>
+const MESSAGES = {
+  hydration: {
+    maria: "¡Ey! ¿Cuándo tomaste agua por última vez? 💧 Cada 15-20 min es clave, parcera. El rendimiento baja antes de que sientas sed.",
+    carlos: "Check de hidratación. Con 2% de deshidratación ya pierdes hasta 20% de rendimiento. Toma agua ahora.",
+    andrea: "Pausa un momento. ¿Cómo está tu cuerpo? El agua no es opcional, es el medio donde ocurre todo. Tómate un sorbo. 💧",
+    diego: "Agua. Ahora. El músculo es 75% agua. No hay progreso sin ella."
+  },
+  sessionLength: {
+    maria: "¡Llevas más de 75 minutos! 🔥 Eso es dedicación, pero el cortisol ya empezó a subir. ¿Qué falta? Terminemos fuerte.",
+    diego: "75 minutos. El cuerpo habló. Los mejores atletas saben cuándo terminar. ¿Qué queda?"
+  },
+  warmupSkipped: {
+    carlos: "Saltaste el warmup. El riesgo de lesión muscular aumenta 40% en el primer ejercicio sin preparación. No vale la pena. 2 minutos mínimo.",
+    andrea: "Noto que fuiste directo al ejercicio. Tu cuerpo necesita ese tiempo de transición — no es solo físico, es también mental. ¿Unos minutos de activación?"
+  }
+};
+let timer;
+function show(type, coachId, emoji, name) {
+  const toast = document.getElementById('toast');
+  document.getElementById('tAvatar').textContent = emoji;
+  document.getElementById('tName').textContent = name;
+  document.getElementById('tText').textContent = MESSAGES[type][coachId];
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  clearTimeout(timer);
+  timer = setTimeout(dismiss, 8000);
+}
+function dismiss() {
+  document.getElementById('toast').classList.remove('visible');
+  clearTimeout(timer);
+}
+</script>
+</body>
+</html>
