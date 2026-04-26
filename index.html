@@ -3181,7 +3181,7 @@ body {
   <div class="screen-pad">
 
     <!-- Banner workout en curso -->
-    <div class="wk-running-banner" id="wkBannerHome" onclick="showScreen('workout')">
+    <div class="wk-running-banner" id="wkBannerHome" onclick="goToActiveWorkout()">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3668,7 +3668,7 @@ body {
 <!-- INSIGHTS -->
 <div class="screen" id="insightsScreen">
   <div class="screen-pad">
-    <div class="wk-running-banner" id="wkBannerInsights" onclick="showScreen('workout')">
+    <div class="wk-running-banner" id="wkBannerInsights" onclick="goToActiveWorkout()">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3807,7 +3807,7 @@ body {
 
 <!-- HISTORY -->
 <div class="screen" id="historyScreen">
-  <div class="screen-pad"><div class="wk-running-banner" id="wkBannerHistory" onclick="showScreen('workout')"><span style="font-size:20px">💪</span><div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
+  <div class="screen-pad"><div class="wk-running-banner" id="wkBannerHistory" onclick="goToActiveWorkout()"><span style="font-size:20px">💪</span><div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
 </div>
 
 <!-- WORKOUT HUB -->
@@ -3815,7 +3815,7 @@ body {
   <div class="screen-pad">
 
     <!-- Banner entrenamiento en curso — sin cambios -->
-    <div class="wk-running-banner" id="wkBannerHub" onclick="showScreen('workout')" style="display:none;margin-bottom:14px">
+    <div class="wk-running-banner" id="wkBannerHub" onclick="goToActiveWorkout()" style="display:none;margin-bottom:14px">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -7196,10 +7196,14 @@ function updateMotivation() {
 
 // ─── Nav ────────────────────────────────────────────────────
 function updateWorkoutNav() {
-  const active = !!workoutStartTime;
+  const active = !!workoutStartTime || !!document.getElementById('recoverBanner');
   const dot = document.getElementById('workoutNavDot');
   if (dot) dot.classList.toggle('active', active);
   document.querySelectorAll('.wk-running-banner').forEach(b => b.classList.toggle('active', active));
+}
+
+function goToActiveWorkout() {
+  if (document.getElementById('recoverBanner')) { recoverSession(); } else { showScreen('workout'); }
 }
 
 function showScreen(name) {
@@ -16103,6 +16107,7 @@ function restoreSessionState() {
     banner.innerHTML = `<span style="font-size:13px;font-weight:600">⚡ Tienes un entrenamiento en progreso</span><div style="display:flex;gap:8px"><button onclick="recoverSession()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer">Continuar</button><button onclick="discardSession()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:none;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px;cursor:pointer">Descartar</button></div>`;
     document.body.appendChild(banner);
     banner._state = state;
+    updateWorkoutNav();
   } catch(e) {}
 }
 
