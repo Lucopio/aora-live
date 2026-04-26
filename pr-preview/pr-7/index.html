@@ -4771,6 +4771,10 @@ body {
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         Volver
       </button>
+      <button id="catalogPrevExBtn" onclick="prevExercise()" style="display:none;background:none;border:none;padding:6px 8px;cursor:pointer;color:var(--text-secondary);align-items:center;gap:4px;font-family:var(--font);font-size:13px;font-weight:600">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Anterior
+      </button>
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <div class="catalog-timer-sm" id="catalogTimerSm">00:00:00</div>
     </div>
@@ -9964,6 +9968,7 @@ function openCatalog() {
   if (backBtn) {
     backBtn.style.display = (workoutStartTime && currentExerciseName) ? 'flex' : 'none';
   }
+  _updatePrevExBtn();
 }
 
 function backToCatalogGroups() {
@@ -10660,7 +10665,6 @@ function nextExercise() {
   // Guardar referencia si el ejercicio se descartó sin series (permite volver con prevExercise)
   _lastSkippedEx = (currentExerciseName && currentExerciseSets.length === 0)
     ? { name: currentExerciseName, equipment: currentEquipment } : null;
-  console.log('[DEBUG-nextExercise] _lastSkippedEx set to:', _lastSkippedEx, '| currentExerciseName was:', currentExerciseName, '| sets.length was:', currentExerciseSets.length);
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
   exerciseCount = completedExercises.length;
@@ -10742,12 +10746,11 @@ function prevExercise() {
 }
 
 function _updatePrevExBtn() {
-  const btn = document.getElementById('prevExerciseBtn');
-  if (!btn) return;
   const show = completedExercises.length > 0 || !!_lastSkippedEx;
-  console.log('[DEBUG-_updatePrevExBtn] show:', show, '| completedExercises.length:', completedExercises.length, '| _lastSkippedEx:', _lastSkippedEx, '| current display:', btn.style.display);
-  btn.style.display = show ? '' : 'none';
-  console.log('[DEBUG-_updatePrevExBtn] new display:', btn.style.display, '| computed display:', getComputedStyle(btn).display);
+  const btn = document.getElementById('prevExerciseBtn');
+  if (btn) btn.style.display = show ? '' : 'none';
+  const catBtn = document.getElementById('catalogPrevExBtn');
+  if (catBtn) catBtn.style.display = !!_lastSkippedEx ? 'flex' : 'none';
 }
 
 function updatePendingPill() {
