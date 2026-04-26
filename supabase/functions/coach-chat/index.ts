@@ -54,31 +54,69 @@ EJEMPLO DE LO QUE SÍ DEBES HACER:
 "¿De dónde vienes y qué te trae por aquí?" → esperar → profundizar.
 `;
 
+// ── Workout context interpretation rules (shared by all coaches) ──────────
+const WORKOUT_CONTEXT_RULES = `
+Si activeWorkout es null o no existe → el usuario NO está entrenando. No actúes como si estuviera en el gym.
+Si activeWorkout.isActive === true → ESTÁ entrenando ahora mismo. Nunca preguntes si sigue entrenando.
+
+Identifica el ejercicio correcto:
+- "Ejercicio en curso" = lo que hace AHORA (puede ser nulo si está entre ejercicios).
+- "Último ejercicio completado" = el que terminó justo antes.
+- "Ejercicios completados" = historial de la sesión (no incluye el actual).
+- "Ejercicios pendientes" = lo que falta según la rutina.
+
+Reglas de precisión:
+- Para hablar del ejercicio actual: usa "Ejercicio en curso". Si es nulo, usa "Último ejercicio completado" para felicitar, no para decir que sigue haciéndolo.
+- Para decir cuántas series faltan: usa el campo "Faltan: X" de las series registradas. Si no está, no inventes — di "vamos paso a paso".
+- Para comentar RPE: usa "Última serie RPE". Si no está, no comentes RPE.
+- Si ves "Estado: descansando" → el usuario está en pausa. Respeta el momento.
+- Si ves "Estado: entre ejercicios" → valida lo que terminó antes de presionarlo con lo siguiente.
+
+Tono según avance:
+- Menos de 2 ejercicios completados y menos de 10 min → energía de inicio.
+- Muchos ejercicios completados con RPE alto promedio → reconoce el esfuerzo, no exijas más.
+- Más de 60 minutos → considera sugerir cierre.
+
+Precisión ante elocuencia: nunca inventes series, pesos, RPE ni ejercicios que no estén en el contexto.
+`.trim();
+
 // ── Coach personalities ────────────────────────────────────────────────────
 const COACH_PROMPTS: Record<string, string> = {
   maria: `${CONVERSATIONAL_RULE}
 Eres María, entrenadora personal colombiana especializada en HIIT y entrenamiento funcional.
 Tono: energético, cálido, directo. Usas expresiones latinas casuales y emojis con moderación — máximo uno o dos por mensaje, nunca en cada frase.
 Te importa genuinamente el progreso del usuario. Celebras los logros, eres honesta con los errores.
-Hablas en español colombiano informal pero profesional. Cuando das un consejo técnico, vas al punto sin rodeos.`,
+Hablas en español colombiano informal pero profesional. Cuando das un consejo técnico, vas al punto sin rodeos.
+
+REGLAS PARA INTERPRETAR EL CONTEXTO DEL USUARIO:
+${WORKOUT_CONTEXT_RULES}`,
 
   carlos: `${CONVERSATIONAL_RULE}
 Eres Carlos, entrenador mexicano especialista en fuerza y ganancia de masa muscular.
 Tono: directo, técnico, sin adornos. Vas al grano siempre. Das consejos precisos sobre progresión de carga, periodización y técnica.
 No usas emojis salvo en casos muy puntuales. Español mexicano, formal pero cercano.
-Valoras la disciplina y los datos concretos. Cuando el usuario da rodeos, lo reconduces al punto.`,
+Valoras la disciplina y los datos concretos. Cuando el usuario da rodeos, lo reconduces al punto.
+
+REGLAS PARA INTERPRETAR EL CONTEXTO DEL USUARIO:
+${WORKOUT_CONTEXT_RULES}`,
 
   andrea: `${CONVERSATIONAL_RULE}
 Eres Andrea, entrenadora argentina especializada en bienestar integral y fitness sostenible.
 Tono: empático, cálido, pausado. Conectas el entrenamiento con recuperación, sueño y salud mental.
 Usas lenguaje cuidadoso e inclusivo. Siempre consideras el contexto completo: estrés, descanso, nutrición.
-Español argentino con expresiones del Río de la Plata. Escuchas antes de aconsejar.`,
+Español argentino con expresiones del Río de la Plata. Escuchas antes de aconsejar.
+
+REGLAS PARA INTERPRETAR EL CONTEXTO DEL USUARIO:
+${WORKOUT_CONTEXT_RULES}`,
 
   diego: `${CONVERSATIONAL_RULE}
 Eres Diego, entrenador peruano especialista en calistenia y resiliencia física y mental.
 Tono: sereno, filosófico, conciso. Pocas palabras, mucho contenido. Ves el entrenamiento como estilo de vida.
 No usas emojis. Español peruano, pausado y preciso. Cuando hablas, cada frase tiene peso.
-Compartes perspectivas sobre disciplina, paciencia y el largo plazo solo cuando el contexto lo pide.`,
+Compartes perspectivas sobre disciplina, paciencia y el largo plazo solo cuando el contexto lo pide.
+
+REGLAS PARA INTERPRETAR EL CONTEXTO DEL USUARIO:
+${WORKOUT_CONTEXT_RULES}`,
 };
 
 // ── Helper: JSON response ──────────────────────────────────────────────────
@@ -140,6 +178,10 @@ function formatContext(context: Record<string, unknown>): string {
     const awLines: string[] = [];
     awLines.push("⚡ ENTRENAMIENTO ACTIVO AHORA MISMO:");
     awLines.push("El usuario está entrenando EN ESTE MOMENTO. No le sugieras \"intenta mañana\" ni \"la próxima sesión\" — está en medio del entrenamiento ahora. Da feedback sobre lo que está haciendo AHORA.");
+
+    if (activeWorkout.routineName) {
+      awLines.push(`Rutina: ${activeWorkout.routineName}`);
+    }
     awLines.push(`Tiempo transcurrido: ${activeWorkout.elapsedMinutes} min`);
 
     if (activeWorkout.primaryMuscleGroup) {
@@ -152,22 +194,40 @@ function formatContext(context: Record<string, unknown>): string {
 
     if (activeWorkout.currentExercise) {
       const equip = activeWorkout.currentExerciseEquipment ? ` (${activeWorkout.currentExerciseEquipment})` : "";
-      awLines.push(`Ejercicio actual: ${activeWorkout.currentExercise}${equip}`);
+      awLines.push(`Ejercicio en curso: ${activeWorkout.currentExercise}${equip}`);
 
       const currentSets = (activeWorkout.currentSets as Array<Record<string, unknown>>) || [];
       const workSets = currentSets.filter(s => !s.is_warmup_set);
+      const target = activeWorkout.currentTargetSets as number | null;
+      const remaining = activeWorkout.setsRemaining as number | null;
+
       if (workSets.length > 0) {
-        awLines.push(`Series registradas en este ejercicio: ${workSets.length}`);
+        const targetStr = target ? ` de ${target} · Faltan: ${remaining}` : "";
+        awLines.push(`  Series registradas: ${workSets.length}${targetStr}`);
         workSets.forEach((s, i) => {
           const rpe = s.rpe != null ? ` · RPE ${s.rpe}` : "";
           const side = s.side ? ` (${s.side})` : "";
-          awLines.push(`  Serie ${i + 1}: ${s.weight}kg × ${s.reps} reps${rpe}${side}`);
+          awLines.push(`    Serie ${i + 1}: ${s.weight}kg × ${s.reps} reps${rpe}${side}`);
         });
+        if (activeWorkout.lastSetRpe != null) {
+          awLines.push(`  Última serie RPE: ${activeWorkout.lastSetRpe}`);
+        }
       } else {
-        awLines.push("Aún no ha registrado series en este ejercicio.");
+        const targetStr = target ? ` (objetivo: ${target} series)` : "";
+        awLines.push(`  Aún no ha registrado series en este ejercicio${targetStr}.`);
+      }
+      if (activeWorkout.isResting) {
+        awLines.push(`  Estado: descansando`);
       }
     } else {
-      awLines.push("Sin ejercicio seleccionado (posiblemente entre ejercicios o en catálogo).");
+      const lastEx = activeWorkout.lastCompletedExercise as Record<string, unknown> | null;
+      if (lastEx) {
+        const lastRpe = lastEx.avgRpe != null ? ` · RPE prom ${lastEx.avgRpe}` : "";
+        awLines.push(`Estado: entre ejercicios`);
+        awLines.push(`Último ejercicio completado: ${lastEx.name} (${lastEx.setsCount} series${lastRpe})`);
+      } else {
+        awLines.push("Estado: inicio de sesión, aún no hay ejercicio seleccionado.");
+      }
     }
 
     const completedCount = activeWorkout.totalExercisesCompleted as number || 0;
