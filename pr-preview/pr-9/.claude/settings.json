@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(*)"
+    ],
+    "deny": [
+      ".env",
+      ".env.*",
+      "**/*.key",
+      "**/*.pem",
+      "Secrets/**",
+      "Credentials/**",
+      ".git/**"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat .claude/agents/aora-dev.md"
+          }
+        ]
+      }
+    ]
+  }
+}
