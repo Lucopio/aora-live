@@ -5414,7 +5414,7 @@ function getRandomAlertMessage(alertType) {
   return msgs[Math.floor(Math.random() * msgs.length)];
 }
 
-function showCoachAlertToast(alertType, vars) {
+function showCoachAlertToast(alertType, vars, customMessage) {
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -5425,8 +5425,14 @@ function showCoachAlertToast(alertType, vars) {
     try {
       message = getRandomAlertMessage(alertType);
     } catch (e) {
-      return;
+      // Si el alertType no tiene mensajes hardcodeados (ej. 'chatResponse'), seguir
+      // — customMessage cubrirá el contenido más abajo
+      message = '';
     }
+  }
+  // Mensaje arbitrario provisto por el caller (ej. respuesta literal del coach)
+  if (customMessage) {
+    message = customMessage;
   }
   if (!message) {
     return;
@@ -5437,8 +5443,8 @@ function showCoachAlertToast(alertType, vars) {
       message = message.replace(new RegExp(`{{${k}}}`, 'g'), vars[k]);
     });
   }
-  // Registrar en historial (máx 20 entradas, ignorar setFeedback para no saturar)
-  if (alertType !== 'setFeedback') {
+  // Registrar en historial (máx 20 entradas, ignorar setFeedback y chatResponse para no saturar)
+  if (alertType !== 'setFeedback' && alertType !== 'chatResponse') {
     _coachAlertLog.push({ type: alertType, coachName: coach.name, coachEmoji: coach.emoji || '👤', coachPhoto: coach.photoUrl || null, message, ts: Date.now() });
     if (_coachAlertLog.length > 20) _coachAlertLog.shift();
     _coachAlertUnread++;
@@ -6314,9 +6320,9 @@ function _showCoachResponseBadge(coachName, responseText) {
       coachNavItem.appendChild(dot);
     }
   }
-  // Toast si el usuario está en otra pantalla
-  const plain = responseText.replace(/<[^>]+>/g, '').slice(0, 70);
-  showToast(`💬 ${coachName}: ${plain}…`, 'info');
+  // Toast con foto del coach (mismo estilo que las demás alertas)
+  const plain = responseText.replace(/<[^>]+>/g, '').slice(0, 140);
+  showCoachAlertToast('chatResponse', null, plain);
   // Push notification nativa si disponible
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
