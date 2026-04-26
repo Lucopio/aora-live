@@ -4225,7 +4225,7 @@ body {
         </button>
       </div>
       <div class="chat-counter" id="chatCounter"></div>
-      <div class="chat-limit-note" id="chatLimitNote" style="display:none">Límite diario de 20 mensajes alcanzado</div>
+      <div class="chat-limit-note" id="chatLimitNote" style="display:none">Has llegado al límite diario de mensajes. Vuelve mañana ✨</div>
     </div>
   </div>
 </div>
@@ -6286,7 +6286,27 @@ function selectCoachFromChat(coachId) {
 }
 
 // ─── COACH CHAT ────────────────────────────────────────────────────────────
-const CHAT_DAILY_LIMIT = 20;
+function _chatLimitKey() { return 'gymtracker_chat_limit_' + new Date().toISOString().slice(0, 10); }
+
+function getDailyChatLimit() {
+  if (typeof getPlanLimits === 'function' && getPlanLimits().chatPerDay === Infinity) return Infinity;
+  const k = _chatLimitKey();
+  const stored = localStorage.getItem(k);
+  if (stored) return parseInt(stored, 10);
+  const limit = 10 + Math.floor(Math.random() * 6); // 10-15 inclusive
+  localStorage.setItem(k, String(limit));
+  // Limpiar keys de hace más de 7 días
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffKey = 'gymtracker_chat_limit_' + cutoff.toISOString().slice(0, 10);
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('gymtracker_chat_limit_') && key < cutoffKey) {
+      localStorage.removeItem(key);
+    }
+  }
+  return limit;
+}
+
 
 function _chatHistoryKey(coachId) { return 'gymtracker_chat_' + coachId; }
 function _chatCountKey()          { return 'gymtracker_chat_count_' + new Date().toISOString().slice(0, 10); }
@@ -6305,7 +6325,7 @@ function getChatCount() {
 function incrementChatCount() {
   localStorage.setItem(_chatCountKey(), String(getChatCount() + 1));
 }
-function canSendMessage() { return getChatCount() < CHAT_DAILY_LIMIT; }
+function canSendMessage() { return getChatCount() < getDailyChatLimit(); }
 
 function _showCoachResponseBadge(coachName, responseText) {
   // Badge rojo en el tab de Coach del bottom nav
@@ -6489,7 +6509,7 @@ function updateChatCounter() {
   const sendBtn   = document.getElementById('chatSendBtn');
   const input     = document.getElementById('chatInput');
   const el        = document.getElementById('chatCounter');
-  const limit     = typeof getPlanLimits === 'function' ? getPlanLimits().chatPerDay : CHAT_DAILY_LIMIT;
+  const limit     = getDailyChatLimit();
   const used      = getChatCount();
 
   if (limit === Infinity) {
@@ -6506,7 +6526,7 @@ function updateChatCounter() {
   // Solo mostrar aviso cuando llega al 75% de uso
   if (el) {
     if (pct >= 75 && remaining > 0) {
-      el.textContent = `Usaste el ${pct}% de tus mensajes hoy`;
+      el.textContent = `Te quedan pocos mensajes hoy`;
       el.style.color = 'var(--warning)';
       el.style.fontSize = '10px';
       el.style.padding = '4px 0';
@@ -14891,7 +14911,7 @@ async function handleLogout() {
 }
 
 function renderPlanCard() {
-  const limit = typeof CHAT_DAILY_LIMIT !== 'undefined' ? CHAT_DAILY_LIMIT : 10;
+  const limit = getDailyChatLimit();
   const used = typeof getChatCount === 'function' ? getChatCount() : 0;
   const analysesLimit = 2;
   const now = new Date();
