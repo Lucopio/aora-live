@@ -10694,8 +10694,15 @@ function nextExercise() {
           const sub = document.getElementById('restSub');
           if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
         }, 100);
-        if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
-          setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 1800);
+        if (effectiveHeavy) {
+          const _baseDelay = window._pendingSetFeedbackMsg ? 4000 : 1800;
+          setTimeout(() => {
+            if (window._pendingSetFeedbackMsg) {
+              setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 2000);
+            } else {
+              showCoachAlertToast('heavySetExtendedRest', { secs: delta });
+            }
+          }, _baseDelay);
         }
       } else {
         const sub = document.getElementById('restSub');
@@ -10711,8 +10718,15 @@ function nextExercise() {
         const sub = document.getElementById('restSub');
         if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
       }, 100);
-      if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
-        setTimeout(() => showCoachAlertToast('heavySetTransition'), 1800);
+      if (effectiveHeavy) {
+        const _baseDelay = window._pendingSetFeedbackMsg ? 4000 : 1800;
+        setTimeout(() => {
+          if (window._pendingSetFeedbackMsg) {
+            setTimeout(() => showCoachAlertToast('heavySetTransition'), 2000);
+          } else {
+            showCoachAlertToast('heavySetTransition');
+          }
+        }, _baseDelay);
       }
     }
   }
