@@ -3181,7 +3181,7 @@ body {
   <div class="screen-pad">
 
     <!-- Banner workout en curso -->
-    <div class="wk-running-banner" id="wkBannerHome" onclick="showScreen('workout')">
+    <div class="wk-running-banner" id="wkBannerHome" onclick="goToActiveWorkout()">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3316,7 +3316,6 @@ body {
       <div class="workout-status-pill"><div class="pulse-dot"></div><span>Activo</span></div>
       <button onclick="showScreen('coach')" id="workoutCoachBtn" style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:rgba(0,229,255,0.08);border:1.5px solid var(--primary);border-radius:var(--radius-full);font-family:var(--font);font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;flex-shrink:0"><span id="workoutCoachEmoji">👩🏽</span><span>Coach</span></button>
       <div class="exercise-pill"><div class="ex-badge" id="exBadge">0</div><span>ejercicios</span></div>
-      <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none"><svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Calentar</button>
       <div class="avg-rest-pill" id="avgRestPill" style="display:none">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span style="color:var(--text-tertiary);font-weight:400">descanso prom </span>
@@ -3336,6 +3335,9 @@ body {
         </button>
       </div>
     </div>
+
+    <!-- Calentar pill — fuera del top-bar para no desplazar botones -->
+    <button class="warmup-return-pill" id="warmupReturnPill" onclick="showWarmup()" style="display:none;margin-bottom:8px;width:fit-content"><svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Calentar</button>
 
     <!-- Chip de rutina activa — visible solo cuando hay rutina seleccionada -->
     <div id="activeRoutineChip" style="display:none;margin-bottom:8px;cursor:pointer" onclick="openPendingExercisesSheet()">
@@ -3666,7 +3668,7 @@ body {
 <!-- INSIGHTS -->
 <div class="screen" id="insightsScreen">
   <div class="screen-pad">
-    <div class="wk-running-banner" id="wkBannerInsights" onclick="showScreen('workout')">
+    <div class="wk-running-banner" id="wkBannerInsights" onclick="goToActiveWorkout()">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3805,7 +3807,7 @@ body {
 
 <!-- HISTORY -->
 <div class="screen" id="historyScreen">
-  <div class="screen-pad"><div class="wk-running-banner" id="wkBannerHistory" onclick="showScreen('workout')"><span style="font-size:20px">💪</span><div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
+  <div class="screen-pad"><div class="wk-running-banner" id="wkBannerHistory" onclick="goToActiveWorkout()"><span style="font-size:20px">💪</span><div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div><div class="history-header"><h1>Historial</h1></div><div id="historyList"></div><div style="height:80px"></div></div>
 </div>
 
 <!-- WORKOUT HUB -->
@@ -3813,7 +3815,7 @@ body {
   <div class="screen-pad">
 
     <!-- Banner entrenamiento en curso — sin cambios -->
-    <div class="wk-running-banner" id="wkBannerHub" onclick="showScreen('workout')" style="display:none;margin-bottom:14px">
+    <div class="wk-running-banner" id="wkBannerHub" onclick="goToActiveWorkout()" style="display:none;margin-bottom:14px">
       <span style="font-size:20px">💪</span>
       <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--success)">Entrenamiento en curso</div><div style="font-size:11px;color:var(--text-secondary)">Toca para volver</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -4720,7 +4722,7 @@ body {
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Listo, empezar entrenamiento
     </button>
-    <button class="warmup-skip-btn" onclick="console.log('[AORA:warmup-skip] BOTON CLICK INLINE'); skipWarmup()" style="width:100%">Saltar calentamiento</button>
+    <button class="warmup-skip-btn" onclick="skipWarmup()" style="width:100%">Saltar calentamiento</button>
   </div>
 </div>
 
@@ -5409,17 +5411,6 @@ function getRandomAlertMessage(alertType) {
 }
 
 function showCoachAlertToast(alertType, vars) {
-  console.log('[AORA:alert] showCoachAlertToast called', {
-    alertType,
-    vars,
-    _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg,
-    trace: new Error().stack.split('\n').slice(1,4).join(' | ')
-  });
-  if (alertType === 'warmupSkipped') {
-    console.log('[AORA:warmup-alert] showCoachAlertToast called', {
-      _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg
-    });
-  }
   const coach = getSelectedCoach() || { id: 'maria', ...COACHES.maria };
   // Soporte para mensaje pre-calculado (usado en setFeedback)
   let message;
@@ -5430,12 +5421,10 @@ function showCoachAlertToast(alertType, vars) {
     try {
       message = getRandomAlertMessage(alertType);
     } catch (e) {
-      console.log('[AORA:alert] BLOCKED', { reason: 'getRandomAlertMessage threw', alertType, err: e.message });
       return;
     }
   }
   if (!message) {
-    console.log('[AORA:alert] BLOCKED', { reason: 'no message', alertType });
     return;
   }
   // Reemplazo de variables {{key}} con valores del objeto vars
@@ -6438,15 +6427,6 @@ function appendChatBubble(role, text) {
     div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1);border-radius:10px;font-size:12px;text-align:center">${text}</div>`;
   }
   wrap.appendChild(div);
-  // Log defensivo — diagnóstico de mensajes largos que "no aparecen"
-  console.log('[AORA:chat]', {
-    role,
-    length: text.length,
-    bubbleHeight: div.offsetHeight,
-    wrapScrollHeight: wrap.scrollHeight,
-    wrapClientHeight: wrap.clientHeight,
-    timestamp: new Date().toISOString()
-  });
   // Doble RAF: esperar al layout Y al paint antes de hacer scroll
   // Evita el salto visual al inicio cuando el auto-resize del textarea
   // cambia el viewport antes de que el bubble se renderice
@@ -6540,7 +6520,6 @@ async function _getCoachToken() {
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
     ]);
     if (!error && data?.session?.access_token) {
-      console.log('[coach] token renovado via refreshSession OK');
       currentUser = currentUser || data.session.user;
       return data.session.access_token;
     }
@@ -6552,10 +6531,8 @@ async function _getCoachToken() {
   //    Ir directo a sesión anónima — más confiable que un token posiblemente revocado.
   if (sb) {
     try {
-      console.log('[coach] SDK sin sesión válida, creando sesión anónima para TTS...');
       const { data, error } = await sb.auth.signInAnonymously();
       if (!error && data?.session?.access_token) {
-        console.log('[coach] sesión anónima OK');
         currentUser = currentUser || data.user;
         return data.session.access_token;
       }
@@ -6570,7 +6547,6 @@ async function _getCoachToken() {
       const tok = stored?.access_token;
       const exp = stored?.expires_at;
       if (tok && (!exp || (Date.now() / 1000) < exp)) {
-        console.log('[coach] usando token localStorage como último recurso');
         return tok;
       }
     }
@@ -6603,7 +6579,6 @@ async function sendCoachMessage() {
   input.style.height = 'auto';
   appendChatBubble('user', text);
   _coachMsgQueue.push(text);
-  console.log('[AORA:coach-send]', { text, queueBefore: _coachMsgQueue.length - 1 });
   // Persist immediately so navigation away doesn't lose the user bubble
   {
     const _c = getSelectedCoach();
@@ -6630,7 +6605,6 @@ async function sendCoachMessage() {
 }
 
 function flushCoachQueue() {
-  console.log('[AORA:coach-flush] called', { queueLen: _coachMsgQueue.length });
   clearTimeout(_coachDebounceTimer);
   _coachDebounceTimer = null;
   if (_coachMsgQueue.length === 0) return;
@@ -6641,7 +6615,6 @@ function flushCoachQueue() {
 }
 
 async function _sendCoachMessageCore(text) {
-  console.log('[AORA:coach-core] invoked', { textLength: text?.length });
   // ── 1. Recuperar sesión si currentUser es null (usuarios sin cuenta) ──────
   if (!currentUser && sb && localStorage.getItem('gymtracker_skip_auth')) {
     try {
@@ -7222,11 +7195,26 @@ function updateMotivation() {
 }
 
 // ─── Nav ────────────────────────────────────────────────────
+function _hasRecoverableSession() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    return !!(s && s.workoutStartTime && (Date.now() - s.lastSaved) <= 12 * 3600000);
+  } catch(e) { return false; }
+}
+
 function updateWorkoutNav() {
-  const active = !!workoutStartTime;
+  const active = !!workoutStartTime || !!document.getElementById('recoverBanner') || _hasRecoverableSession();
   const dot = document.getElementById('workoutNavDot');
   if (dot) dot.classList.toggle('active', active);
   document.querySelectorAll('.wk-running-banner').forEach(b => b.classList.toggle('active', active));
+}
+
+function goToActiveWorkout() {
+  if (workoutStartTime) { showScreen('workout'); return; }
+  if (document.getElementById('recoverBanner')) { recoverSession(); return; }
+  if (_hasRecoverableSession()) { restoreSessionState(); }
 }
 
 function showScreen(name) {
@@ -8129,22 +8117,19 @@ function finishWarmup() {
 }
 
 function skipWarmup() {
-  console.log('[AORA:warmup-skip] called', {
-    warmupDuration,
-    workoutStartTime: !!workoutStartTime,
-    warmupAlertFiredThisVisit,
-    trace: new Error().stack.split('\n').slice(1,4).join(' | ')
-  });
   clearInterval(warmupInterval);
   warmupDuration = 0;
   // If workout already started, just return to it + alertar al coach una sola vez
   if (workoutStartTime) {
     if (!warmupAlertFiredThisVisit) {
       warmupAlertFiredThisVisit = true;
-      console.log('[AORA:warmup-skip] about to fire alert');
       setTimeout(() => showCoachAlertToast('warmupSkipped'), 1000);
     }
     showScreen('workout');
+    setTimeout(() => {
+      const pill = document.getElementById('warmupReturnPill');
+      if (pill) pill.style.display = 'flex';
+    }, 10500);
   } else {
     launchWorkout();
   }
@@ -8171,6 +8156,7 @@ function launchWorkout() {
     }
   }, 1500);
   workoutStartTime = Date.now();
+  saveCurrentSessionState();
   _heavyExtended.clear();
   resetRestZone();
   startTimer();
@@ -8201,8 +8187,8 @@ function launchWorkout() {
     }, 100);
   }
 
-  // Alert if user skipped warmup
-  if (warmupDuration === 0) {
+  // Alert if user skipped warmup or did <60s
+  if (warmupDuration < 60000) {
     setTimeout(() => showCoachAlertToast('warmupSkipped'), 2000);
     setTimeout(() => {
       const pill = document.getElementById('warmupReturnPill');
@@ -10169,7 +10155,6 @@ function showChangeExerciseDialog(newName, newEquip) {
 
 function keepAndChangeExercise(newName, newEquip) {
   completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
-  console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'keepAndChangeExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
   exerciseCount = completedExercises.length;
   currentExerciseSets = [];
   document.getElementById('changeExOverlay')?.remove();
@@ -10192,7 +10177,6 @@ function _doSelectExercise(name, equip) {
       equipment: _changeExerciseSnapshot.equipment,
       sets: _changeExerciseSnapshot.sets
     });
-    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: _changeExerciseSnapshot.name, location: '_doSelectExercise(snapshot)', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     exerciseCount = completedExercises.length;
     const exBadge = document.getElementById('exBadge');
     if (exBadge) exBadge.textContent = exerciseCount;
@@ -10201,7 +10185,6 @@ function _doSelectExercise(name, equip) {
   // Save previous exercise if it had sets (normal flow — same exercise kept adding)
   if (currentExerciseName && currentExerciseName !== name && currentExerciseSets.length > 0) {
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
-    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: '_doSelectExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     exerciseCount = completedExercises.length;
     document.getElementById('exBadge').textContent = exerciseCount;
   }
@@ -10242,6 +10225,7 @@ function _doSelectExercise(name, equip) {
   renderSets();
   _renderExerciseNote(name);
   _updatePrevExBtn();
+  saveCurrentSessionState();
   showScreen('workout');
 }
 
@@ -10423,6 +10407,7 @@ function addSet() {
   if (btn) { btn.style.borderColor='var(--border)'; btn.style.background='var(--bg)'; btn.style.color='var(--text-secondary)'; }
   if (dot) dot.style.background = 'var(--text-tertiary)';
   renderSets();
+  saveCurrentSessionState();
   // Auto-cambiar lado en ejercicios unilaterales
   if (isUnilateral) setSide(activeSide === 'left' ? 'right' : 'left');
   // Series de aproximación: guardar descanso previo si había uno, luego iniciar nuevo
@@ -10607,7 +10592,6 @@ function closeEditSet() {
 
 function nextExercise() {
   if (window._nextExerciseInProgress) {
-    console.log('[AORA:nextExercise] IGNORADO — ya en progreso');
     return;
   }
   window._nextExerciseInProgress = true;
@@ -10641,10 +10625,7 @@ function nextExercise() {
           if (sub) sub.textContent = `Transición · +${delta}s para recuperar`;
         }, 100);
         if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
-          console.log('[AORA:alert] scheduling heavySetExtendedRest (1800ms)');
           setTimeout(() => showCoachAlertToast('heavySetExtendedRest', { secs: delta }), 1800);
-        } else {
-          console.log('[AORA:alert] heavySetExtendedRest NOT scheduled', { effectiveHeavy, isHeavy, alreadyExtended, _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg });
         }
       } else {
         const sub = document.getElementById('restSub');
@@ -10661,10 +10642,7 @@ function nextExercise() {
         if (sub) sub.textContent = `Transición · ${transitionRest}s para recuperar`;
       }, 100);
       if (effectiveHeavy && !window._pendingSetFeedbackMsg) {
-        console.log('[AORA:alert] scheduling heavySetTransition (1800ms)');
         setTimeout(() => showCoachAlertToast('heavySetTransition'), 1800);
-      } else {
-        console.log('[AORA:alert] heavySetTransition NOT scheduled', { effectiveHeavy, isHeavy, alreadyExtended, _pendingSetFeedbackMsg: window._pendingSetFeedbackMsg });
       }
     }
   }
@@ -10674,7 +10652,6 @@ function nextExercise() {
   if (currentExerciseName && currentExerciseSets.length > 0) {
     const ssGroup = supersetActive ? (supersetGroupCounter || (supersetGroupCounter = 1)) : null;
     completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets], superset_group: ssGroup });
-    console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'nextExercise', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
   }
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
@@ -10717,7 +10694,6 @@ function prevExercise() {
   }
   // Recuperar el último ejercicio completado
   const prev = completedExercises.pop();
-  console.log('[AORA:exerciseCount]', { action: 'pop', total: completedExercises.length, poppedName: prev?.name, location: 'prevExercise', timestamp: new Date().toISOString() });
   exerciseCount = completedExercises.length;
   document.getElementById('exBadge').textContent = exerciseCount;
   updatePendingPill();
@@ -12122,15 +12098,7 @@ function selectRPE(value) {
     }
     _setFeedbackCount++;
     window._pendingSetFeedbackMsg = _feedbackMsg;
-    console.log('[AORA:alert] setFeedback scheduled (800ms)', { _feedbackMsg: !!_feedbackMsg, _setFeedbackCount, _workSetsCount });
     setTimeout(() => showCoachAlertToast('setFeedback'), 800);
-  } else {
-    console.log('[AORA:alert] setFeedback NOT scheduled', {
-      _workSetsCount,
-      _setFeedbackCount,
-      modulo: _workSetsCount % 3,
-      gate: _workSetsCount > 0 && _setFeedbackCount < 6 && _workSetsCount % 3 === 0
-    });
   }
 }
 
@@ -12326,7 +12294,6 @@ function endWorkout() {
     // Save current exercise if it has sets
     if (currentExerciseName && currentExerciseSets.length > 0) {
       completedExercises.push({ name: currentExerciseName, equipment: currentEquipment, sets: [...currentExerciseSets] });
-      console.log('[AORA:exerciseCount]', { action: 'push', total: completedExercises.length, name: currentExerciseName, location: 'finishWorkout', pendingRemaining: pendingExercises.length, timestamp: new Date().toISOString() });
     }
     exerciseCount = completedExercises.length;
     document.getElementById('sumExercises').textContent = exerciseCount;
@@ -16151,6 +16118,7 @@ function restoreSessionState() {
     banner.innerHTML = `<span style="font-size:13px;font-weight:600">⚡ Tienes un entrenamiento en progreso</span><div style="display:flex;gap:8px"><button onclick="recoverSession()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer">Continuar</button><button onclick="discardSession()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:none;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px;cursor:pointer">Descartar</button></div>`;
     document.body.appendChild(banner);
     banner._state = state;
+    updateWorkoutNav();
   } catch(e) {}
 }
 
@@ -16166,13 +16134,16 @@ function recoverSession() {
     currentExerciseSets = JSON.parse(state.currentExerciseSets || '[]');
     completedExercises = JSON.parse(state.completedExercises || '[]');
     exerciseCount = completedExercises.length;
-    selectMode(workoutMode); // reinicia el timer
+    isResting = false;
+    startTimer();
+    updateWorkoutNav();
     if (currentExerciseName) {
       document.getElementById('exerciseCardName').textContent = currentExerciseName;
       document.getElementById('exerciseCard').style.display = '';
       renderSets();
     }
     if (exerciseCount > 0) document.getElementById('exBadge').textContent = exerciseCount;
+    showScreen('workout');
   } catch(e) { console.error('Recover session error:', e); }
   banner.remove();
 }
