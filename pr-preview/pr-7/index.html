@@ -10660,6 +10660,7 @@ function nextExercise() {
   // Guardar referencia si el ejercicio se descartó sin series (permite volver con prevExercise)
   _lastSkippedEx = (currentExerciseName && currentExerciseSets.length === 0)
     ? { name: currentExerciseName, equipment: currentEquipment } : null;
+  console.log('[DEBUG-nextExercise] _lastSkippedEx set to:', _lastSkippedEx, '| currentExerciseName was:', currentExerciseName, '| sets.length was:', currentExerciseSets.length);
   currentExerciseName = ''; currentEquipment = ''; currentExerciseSets = [];
   isUnilateral = false;
   exerciseCount = completedExercises.length;
@@ -10744,7 +10745,9 @@ function _updatePrevExBtn() {
   const btn = document.getElementById('prevExerciseBtn');
   if (!btn) return;
   const show = completedExercises.length > 0 || !!_lastSkippedEx;
+  console.log('[DEBUG-_updatePrevExBtn] show:', show, '| completedExercises.length:', completedExercises.length, '| _lastSkippedEx:', _lastSkippedEx, '| current display:', btn.style.display);
   btn.style.display = show ? '' : 'none';
+  console.log('[DEBUG-_updatePrevExBtn] new display:', btn.style.display, '| computed display:', getComputedStyle(btn).display);
 }
 
 function updatePendingPill() {
