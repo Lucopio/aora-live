@@ -5446,6 +5446,12 @@ function showCoachAlertToast(alertType, vars) {
   }
   // Leer la alerta en voz alta si la voz está habilitada
   speakCoachText(message);
+  // Sonido + vibración para alertas cuando el usuario no está en el chat
+  // (hydration tiene su propio beep externo con frecuencias distintas)
+  if (alertType !== 'hydration' && !document.getElementById('coachScreen')?.classList.contains('active')) {
+    playCoachAlertSound();
+    if (vibrationEnabled && navigator.vibrate) navigator.vibrate([80, 50, 80]);
+  }
 
   let toast = document.getElementById('coachAlertToast');
   if (!toast) {
@@ -6406,6 +6412,8 @@ function buildChatContext() {
 }
 
 let _coachChatDraft = '';
+let _chatBulkRendering = false; // true mientras se renderiza historial en bloque
+let _chatAtBottom = true;       // false si el usuario scrolleó hacia arriba
 function autoResizeChatInput(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
@@ -6434,14 +6442,15 @@ function appendChatBubble(role, text) {
     div.innerHTML = `<div class="chat-bubble-content" style="color:var(--danger);background:rgba(234,67,53,0.1);border-radius:10px;font-size:12px;text-align:center">${text}</div>`;
   }
   wrap.appendChild(div);
-  // Doble RAF: esperar al layout Y al paint antes de hacer scroll
-  // Evita el salto visual al inicio cuando el auto-resize del textarea
-  // cambia el viewport antes de que el bubble se renderice
-  requestAnimationFrame(() => {
+  // Saltar scroll durante render de historial en bloque (se hace una sola vez al final).
+  // Durante chat activo, solo scrollear si el usuario está al fondo.
+  if (!_chatBulkRendering && _chatAtBottom) {
     requestAnimationFrame(() => {
-      wrap.scrollTop = wrap.scrollHeight;
+      requestAnimationFrame(() => {
+        wrap.scrollTop = wrap.scrollHeight;
+      });
     });
-  });
+  }
 }
 
 function showTypingIndicator() {
@@ -6621,7 +6630,7 @@ function flushCoachQueue() {
   _sendCoachMessageCore(combinedText);
 }
 
-async function _sendCoachMessageCore(text) {
+async function _sendCoachMessageCore(text, opts = {}) {
   // ── 1. Recuperar sesión si currentUser es null (usuarios sin cuenta) ──────
   if (!currentUser && sb && localStorage.getItem('gymtracker_skip_auth')) {
     try {
@@ -6707,9 +6716,11 @@ async function _sendCoachMessageCore(text) {
     history.push({ role: 'assistant', content: data.response, ts: new Date().toISOString() });
     saveChatHistory(coach.id, history);
     incrementChatCount();
-    // Badge + notificación si el usuario no está viendo el chat
+    // Badge + sonido + vibración si el usuario no está viendo el chat
     if (!document.getElementById('coachScreen')?.classList.contains('active')) {
       _showCoachResponseBadge(coach.name, data.response);
+      playCoachAlertSound();
+      if (vibrationEnabled && navigator.vibrate) navigator.vibrate([80, 50, 80]);
     }
 
   } catch(err) {
@@ -6722,7 +6733,13 @@ async function _sendCoachMessageCore(text) {
       || msg.includes('abort')
       || msg.includes('network');
     if (isNetworkErr) {
-      // Restaurar el mensaje al input para que el usuario pueda reintentar
+      // Primer fallo con red disponible: retry silencioso tras 1.5s
+      if (navigator.onLine && !opts.isRetry) {
+        showToast('Reconectando...', 'info');
+        setTimeout(() => { showTypingIndicator(); _sendCoachMessageCore(text, { isRetry: true }); }, 1500);
+        return;
+      }
+      // Segunda vez o sin red: restaurar mensaje al input
       const inp = document.getElementById('chatInput');
       if (inp && !inp.value.trim()) inp.value = text;
       showToast('Sin conexión — mensaje guardado, toca Enviar cuando tengas señal', 'error');
@@ -6930,18 +6947,21 @@ function initCoachChat() {
       const welcome = getCoachMessage(coach.id, {});
       appendChatBubble('coach', welcome);
     } else {
+      _chatBulkRendering = true;
       history.forEach(m => {
         if ((m.role === 'user' || m.role === 'assistant') && !m.hidden) {
           appendChatBubble(m.role === 'assistant' ? 'coach' : 'user', m.content);
         }
       });
+      _chatBulkRendering = false;
     }
   } else {
     appendChatBubble('coach', 'Selecciona un entrenador con el botón "Cambiar" para comenzar.');
   }
 
-  // Scroll to bottom
+  // Scroll to bottom — una sola vez, instantáneo, sin saltos
   wrap.scrollTop = wrap.scrollHeight;
+  _chatAtBottom = true;
 
   // Restaurar borrador si el usuario lo escribió y navegó
   const chatInput = document.getElementById('chatInput');
@@ -13307,6 +13327,10 @@ function playFinalBeep() {
     o.start(c.currentTime); o.stop(c.currentTime + 0.8);
   } catch(e) {}
 }
+function playCoachAlertSound() {
+  playBeep(660, 200);
+  setTimeout(() => playBeep(880, 200), 250);
+}
 
 // ─── ElevenLabs TTS ─────────────────────────────────────────
 async function _speakElevenLabs(text, coachId) {
@@ -16226,6 +16250,14 @@ function initializeApp() {
 
   // initSupabase() maneja el flujo: auth screen o home según sesión real
   initSupabase();
+
+  // Trackear si el usuario scrolleó hacia arriba en el chat (para no forzar scroll al fondo)
+  const chatWrap = document.getElementById('chatMessages');
+  if (chatWrap) {
+    chatWrap.addEventListener('scroll', () => {
+      _chatAtBottom = (chatWrap.scrollHeight - chatWrap.scrollTop - chatWrap.clientHeight) < 60;
+    }, { passive: true });
+  }
 }
 initializeApp();
 
