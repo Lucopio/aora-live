@@ -7195,15 +7195,26 @@ function updateMotivation() {
 }
 
 // ─── Nav ────────────────────────────────────────────────────
+function _hasRecoverableSession() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    return !!(s && s.workoutStartTime && (Date.now() - s.lastSaved) <= 12 * 3600000);
+  } catch(e) { return false; }
+}
+
 function updateWorkoutNav() {
-  const active = !!workoutStartTime || !!document.getElementById('recoverBanner');
+  const active = !!workoutStartTime || !!document.getElementById('recoverBanner') || _hasRecoverableSession();
   const dot = document.getElementById('workoutNavDot');
   if (dot) dot.classList.toggle('active', active);
   document.querySelectorAll('.wk-running-banner').forEach(b => b.classList.toggle('active', active));
 }
 
 function goToActiveWorkout() {
-  if (document.getElementById('recoverBanner')) { recoverSession(); } else { showScreen('workout'); }
+  if (workoutStartTime) { showScreen('workout'); return; }
+  if (document.getElementById('recoverBanner')) { recoverSession(); return; }
+  if (_hasRecoverableSession()) { restoreSessionState(); }
 }
 
 function showScreen(name) {
