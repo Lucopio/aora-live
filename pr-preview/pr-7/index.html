@@ -16173,6 +16173,7 @@ function discardSession() {
   clearSessionState();
   const banner = document.getElementById('recoverBanner');
   if (banner) banner.remove();
+  updateWorkoutNav();
 }
 
 // Guardar estado cada 10 segundos cuando hay entrenamiento activo
