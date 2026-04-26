@@ -6417,7 +6417,22 @@ function buildChatContext() {
       completedExercises: completed,
       pendingExercises: pending,
       totalExercisesCompleted: completed.length,
-      totalExercisesPending: pending.length
+      totalExercisesPending: pending.length,
+      // ── Campos nuevos (Fase 4A) ──────────────────────────────
+      currentTargetSets: (typeof currentTargetSets !== 'undefined' && currentTargetSets) ? currentTargetSets : null,
+      workSetsRegistered: (currentExerciseSets || []).filter(s => !s.is_warmup_set).length,
+      setsRemaining: (typeof currentTargetSets !== 'undefined' && currentTargetSets)
+        ? Math.max(0, currentTargetSets - (currentExerciseSets || []).filter(s => !s.is_warmup_set).length)
+        : null,
+      isExerciseInProgress: !!(currentExerciseName && (currentExerciseSets || []).length > 0),
+      isBetweenExercises: !currentExerciseName || (currentExerciseSets || []).length === 0,
+      lastCompletedExercise: completed.length > 0 ? completed[completed.length - 1] : null,
+      isResting: !!isResting,
+      routineName: (typeof currentSelectedRoutine !== 'undefined' && currentSelectedRoutine && currentSelectedRoutine.name) ? currentSelectedRoutine.name : null,
+      lastSetRpe: (() => {
+        const wsets = (currentExerciseSets || []).filter(s => !s.is_warmup_set && s.rpe != null);
+        return wsets.length > 0 ? wsets[wsets.length - 1].rpe : null;
+      })()
     };
   }
 
